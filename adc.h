@@ -1,5 +1,5 @@
 /* Copyright (C)
-* 2015 - John Melton, G0ORX/N6LYT
+* 2018 - John Melton, G0ORX/N6LYT
 *
 * This program is free software; you can redistribute it and/or
 * modify it under the terms of the GNU General Public License
@@ -17,9 +17,56 @@
 *
 */
 
-#ifndef _LIME_DISCOVERY_H
-#define _LIME_DISCOVERY_H
+#ifndef ADC_H
+#define ADC_H
 
-void lime_discovery();
+enum {
+  AUTOMATIC=0,
+  MANUAL
+};
+
+enum {
+  BYPASS=0,
+  HPF_1_5,
+  HPF_6_5,
+  HPF_9_5,
+  HPF_13,
+  HPF_20
+};
+
+enum {
+  LPF_160=0,
+  LPF_80,
+  LPF_60_40,
+  LPF_30_20,
+  LPF_17_15,
+  LPF_12_10,
+  LPF_6
+};
+
+enum {
+  ANTENNA_1=0,
+  ANTENNA_2,
+  ANTENNA_3,
+  ANTENNA_XVTR,
+  ANTENNA_EXT1,
+  ANTENNA_EXT2
+};
+
+typedef struct _adc {
+  gint filters;
+  gint hpf;
+  gint lpf;
+  gint antenna;
+  gboolean dither;
+  gboolean random;
+  gboolean preamp;
+  gint attenuation;
+  gboolean enable_step_attenuation;
+#ifdef SOAPYSDR
+  gint *rx_gain;
+  gboolean agc;
+#endif
+} ADC;
 
 #endif
