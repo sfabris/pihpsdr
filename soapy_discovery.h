@@ -1,5 +1,5 @@
 /* Copyright (C)
-* 2015 - John Melton, G0ORX/N6LYT
+* 2019 - John Melton, G0ORX/N6LYT
 *
 * This program is free software; you can redistribute it and/or
 * modify it under the terms of the GNU General Public License
@@ -17,10 +17,9 @@
 *
 */
 
-#include <gtk/gtk.h>
-#include "discovered.h"
+#ifndef _SOAPY_DISCOVERY_H
+#define _SOAPY_DISCOVERY_H
 
-int selected_device=0;
-int devices=0;
-DISCOVERED discovered[MAX_DEVICES];
+void soapy_discovery();
 
+#endif

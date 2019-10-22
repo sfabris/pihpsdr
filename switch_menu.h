@@ -1,5 +1,5 @@
 /* Copyright (C)
-* 2015 - John Melton, G0ORX/N6LYT
+* 2016 - John Melton, G0ORX/N6LYT
 *
 * This program is free software; you can redistribute it and/or
 * modify it under the terms of the GNU General Public License
@@ -17,16 +17,10 @@
 *
 */
 
-#ifndef _LIME_PROTOCOL_H
-#define _LIME_PROTOCOL_H
+#ifndef _SWITCH_MENU_H
+#define _SWITCH_MENU_H
 
-#define BUFFER_SIZE 1024
+extern void switch_menu(GtkWidget *parent);
 
-void lime_protocol_init(int rx,int pixels,int sample_rate);
-void lime_protocol_stop();
-void lime_protocol_set_frequency(long long f);
-void lime_protocol_set_antenna(int ant);
-void lime_protocol_set_attenuation(int attenuation);
-void lime_protocol_change_sample_rate(int rate);
-
+extern void switch_select(int pos);
 #endif
