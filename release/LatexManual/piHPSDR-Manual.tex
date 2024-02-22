@@ -2420,7 +2420,7 @@ two peaks on the TX panadapter during the two-tone experiment.
 \label{fig:PSoff}
 \end{figure}
 
-To demonstrate what happens, I show an example performed with a HermesLite-II
+To demonstrate what happens, I show an example performed with a Hermes\-Lite-II
 radio running P1. Checking both \rett{Enable PS} and
 \rett{Auto Attenuation}, and hitting the \rett{Two Tone} button, it needs only few
 seconds to stabilize and then Fig. \ref{fig:PSnomon} results, where the TX
@@ -2444,9 +2444,9 @@ is shown in Fig. \ref{fig:PSoff}. After hitting that button, IM3 satellites imme
 grow and rise to about $-40$ dbM (which means IM3
 about $-34$ dBc), which is s reflects the intrinsic
 non-linearity of the PA.
- Note that this is a very good value,
+ Note that this is still a quite acceptable value,
 unless you have a class-A amplifier, your PA probably won't be much better.
-This shows that adaptive predistortion is a mechanism that allows you to produce a clean
+This experiment demonstrates that adaptive predistortion is a mechanism that allows you to produce a clean
 signal with a quality that would be impossible (or \textit{very} difficult) to achieve
 with traditional hardware.
 
@@ -3014,6 +3014,22 @@ This way it is possible to run two instances of piHPSDR on the same computer, bo
 connected to different radios, and control them independently with two different MIDI
 consoles. The first thing you have to do is to check all MIDI devices you want to use.
 
+\rett{Ignore Controller Pairs}. This check box  which is un-checked by default
+The MIDI standard offers the possiblity to combine two controllers, one
+(primary one) in the range 0--31 and the other (auxiliary one)
+with a a controller number larger by 32, thus in
+the range 32--63. The value of the auxiliary controller is then interpreted as a
+fine resolution correction of the value of the primary controller. Technically
+speaking,
+a pair of ControllerChange events sets a 14-bit value for the lower controller.
+Some MIDI consoles
+from the music market (for example, the Hercules DJ200 controller)
+use this mechanism. piHPSDR, especially the MIDI menu, gets confused
+by these "controller pairs". Checking the \rett{Ignore Controller Pairs} box just tells
+piHPSDR to ignore MIDI ControllerChange event if the controller number is between 32 and 63.
+As a consequence, only the most signicant 7 bits of the 14-bit value are used, which
+is fine for most applications.
+
 \begin{figure}[ht]
 \center
 \includegraphics[width=12cm]{MIDImenu2.png}
@@ -3021,8 +3037,8 @@ consoles. The first thing you have to do is to check all MIDI devices you want t
 \label{fig:MIDImenu2}
 \end{figure}
 
-It is important to note that as long as the MIDI menu is open, piHPSDR cannot be
-operated through MIDI. Instead all MIDI messages are captured by the menu and
+It is important to note that as long as the MIDI menu is open, the radio cannot be
+operated through MIDI since all MIDI messages are captured by the menu and
 displayed. This is used to implement a ,,self-learning'' configuration. To explain
 this in detail, we demonstrate how to configure MIDI such that the big wheel on the
 controller is used as a VFO knob. After I have activated the checkbox of our
@@ -3079,7 +3095,7 @@ the \bltt{VFO} button, which then becomes highlighted (Fig. \ref{fig:MIDImenu3})
  Then one has to click the OK button to make the choice, and one returns to the
  MIDI menu (see Fig. \ref{fig:MIDImenu4}).
 
-One sees that the choise has entered the MIDI configuration, as documented by the
+One sees that the choice just made has entered the MIDI configuration, as documented by the
 list in the bottom right part of the menu. At this stage, we can continue
 assigning more encoders, potentiometers, or buttons. If we close the menu at
 this point, then the big wheel on the MIDI console can immediately be used
