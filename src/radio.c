@@ -284,6 +284,8 @@ double vox_threshold = 0.001;
 double vox_hang = 250.0;
 int vox = 0;
 int CAT_cw_is_active = 0;
+int MIDI_cw_is_active = 0;
+int radio_ptt = 0;
 int cw_key_hit = 0;
 int n_adc = 1;
 
