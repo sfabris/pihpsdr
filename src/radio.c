@@ -1217,12 +1217,15 @@ void start_radio() {
                p,
                version);
     } else {
-      snprintf(text, 1024, "piHPSDR: %s (%s %s) %s (%s) on %s",
+      // radio MAC address removed from the top bar otherwise
+      // it does not fit  in windows 640 pixels wide.
+      // if needed, the MAC address of the radio can be
+      // found in the ABOUT menu.
+      snprintf(text, 1024, "piHPSDR: %s (%s %s) %s on %s",
                radio->name,
                p,
                version,
                ip,
-               mac,
                iface);
     }
 
