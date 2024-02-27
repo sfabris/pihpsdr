@@ -2396,7 +2396,7 @@ static void process_high_priority() {
   // Stops CAT cw transmission if radio reports "CW action"
   //
   radio_cw = 0;
-  if (device == NEW_DEVICE_ORION2 || device == NEW_DEVICE_SATURN) {
+  if (device == NEW_DEVICE_ORION2) {
     //
     // These devices reflect a "keyer CW input" in bit 3 of byte59
     // and this is active-high (!)
