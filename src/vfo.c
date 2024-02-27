@@ -71,7 +71,7 @@ char *step_labels[] = {"1Hz", "10Hz", "25Hz", "50Hz", "100Hz", "250Hz", "500Hz",
                        "5kHz", "6.25k", "9kHz", "10kHz", "12.5k", "100kHz", "250kHz", "500kHz", "1MHz"
                       };
 
-inline long long ROUND(long long freq, int nsteps, int step) {
+static inline long long ROUND(long long freq, int nsteps, int step) {
   //
   // Move frequency f by n steps, adjust to multiple of step size
   // This should replace *all* divisions by the step size
