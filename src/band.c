@@ -420,15 +420,15 @@ void bandSaveState() {
     if (strlen(bands[b].title) == 0) { continue; }
 
     if (b >= BANDS) {
-      SetPropS1("band.%d.title", b,              bands[b].title);
-      SetPropI1("band.%d.frequencyMin", b,       bands[b].frequencyMin);
-      SetPropI1("band.%d.frequencyMax", b,       bands[b].frequencyMax);
       SetPropI1("band.%d.frequencyLO", b,        bands[b].frequencyLO);
       SetPropI1("band.%d.errorLO", b,            bands[b].errorLO);
-      SetPropI1("band.%d.disablePA", b,          bands[b].disablePA);
       SetPropI1("band.%d.gain", b,               bands[b].gain);
     }
 
+    SetPropS1("band.%d.title", b,              bands[b].title);
+    SetPropI1("band.%d.frequencyMin", b,       bands[b].frequencyMin);
+    SetPropI1("band.%d.frequencyMax", b,       bands[b].frequencyMax);
+    SetPropI1("band.%d.disablePA", b,          bands[b].disablePA);
     SetPropI1("band.%d.current", b,            bands[b].bandstack->current_entry);
     SetPropI1("band.%d.alexRxAntenna", b,      bands[b].alexRxAntenna);
     SetPropI1("band.%d.alexTxAntenna", b,      bands[b].alexTxAntenna);
@@ -456,20 +456,21 @@ void bandRestoreState() {
 
   for (int b = 0; b < BANDS + XVTRS; b++) {
     //
-    // For the "normal" (non-XVTR) bands, do not overwrite
-    // the compile-time constants title,fmin,fmax,LO,errorLO,disablePA
-    // (This is to guard against starting from an out-dated props file)
+    // For the "normal" (non-XVTR) bands, do not change the title,
+    // and do not fill in XVTR-specific data. There is no GUI for these bands
+    // to change frequencyMin, frequencyMax, and disablePA, but
+    // we allow users to change this by hand-editing the props file.
     //
     if (b >= BANDS) {
       GetPropS1("band.%d.title", b,              bands[b].title);
-      GetPropI1("band.%d.frequencyMin", b,       bands[b].frequencyMin);
-      GetPropI1("band.%d.frequencyMax", b,       bands[b].frequencyMax);
       GetPropI1("band.%d.frequencyLO", b,        bands[b].frequencyLO);
       GetPropI1("band.%d.errorLO", b,            bands[b].errorLO);
-      GetPropI1("band.%d.disablePA", b,          bands[b].disablePA);
       GetPropI1("band.%d.gain", b,               bands[b].gain);
     }
-
+    
+    GetPropI1("band.%d.frequencyMin", b,       bands[b].frequencyMin);
+    GetPropI1("band.%d.frequencyMax", b,       bands[b].frequencyMax);
+    GetPropI1("band.%d.disablePA", b,          bands[b].disablePA);
     GetPropI1("band.%d.current", b,            bands[b].bandstack->current_entry);
     GetPropI1("band.%d.alexRxAntenna", b,      bands[b].alexRxAntenna);
     GetPropI1("band.%d.alexTxAntenna", b,      bands[b].alexTxAntenna);
