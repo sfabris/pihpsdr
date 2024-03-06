@@ -4933,6 +4933,7 @@ other single-board computers with a GPIO.
 \label{fig:GPIO}
 \end{figure}
 
+\section{GPIO lines used by piHPSDR}
 Fig. \ref{fig:GPIO} lists which GPIO lines are used for which controller option. In the first column,
 the GPIO pin number (0--31) ist listed. The second column indicates the function often
 associated with this pin in the RaspberryPi community, and the third column states on which connector
@@ -5058,6 +5059,55 @@ To use GPIO14 for \texttt{PTTOUT}, simply modify the assignment such that the va
 value \texttt{-1} and \texttt{PTTOUT\_LINE} gets the value \texttt{14}.
  That's all except that you have to recompile
 simply by typing in the command ,,make'' in the piHPSDR directory (see Appendix \ref{sec:installsources}).
+
+\section{A note on the ,,BookWorm'' OS and the Pi5 GPIO}
+
+Both, BookWorm and the Pi5, are a little different from BullsEye/Pi4 if it comes to the GPIO.
+ It is planned that sooner or later all what follows here
+will be done automatically, so take this note as useful hint for the time being.
+
+\begin{itemize}
+\item{
+The install procedure puts two additional lines at the end of the file \texttt{/boot/config.txt},
+namely
+
+\begin{verbatim}
+[all]
+gpio=4-13,16-27=ip,pu
+\end{verbatim}
+
+These lines take care that
+all the GPIO lines used by piHPSDR are switched to input with a pull-up upon booting the computer.
+This is only necessary if the hardware attached to the GPIO does not feature external pull-up
+resistors. Note that the Controller2 also uses GPIO line 15, but this one has external pull-up
+resistors and lines 14/15 are used by serial interface if it is enabled.
+
+This configuration file has been moved in BookWorm to another location,
+ \texttt{/boot/firmware/config.txt}. If your hardware lacks pull-up resistors,
+  you have to modify the file 
+ and add the two lines manually. Although I have not tried it, I guess this
+is also necessary if you run BookWorm on a Pi4.}
+
+\item{The Pi5 has a GPIO layout different from the Pi4. Fortunately, the external library (libgpiod) 
+handles most of this for piHPSDR. While the mapping of GPIO  line numbers to GPIO header pins
+has not changed, the GPIO lines on the Pi5 are now associated
+with GPIO chip \#4, while the were associated with GPIO chip \#0 on the Pi4.
+
+ For this reason, on a Pi5 one has to change one line in the
+source code file \texttt{src/gpio.c}. Somewhere around line 230, there is a string \texttt{"/dev/gpiochip0")}
+which must be replaced by \texttt{"/dev/gpiochip4"} on a Pi5.}
+
+\item{It seems that GPIO line 20 is not available to piHPSDR on a Pi5, 
+since it is used there for a special purpose (power switch).
+Unfortunately, this line is used by all controllers so the connection to GPIO20
+has to be re-wired to GPIO14 (the only line not used by any of the controllers).
+Then, the tables in gpio.c have to be modified accordingly. To this end, locate the number "20" in
+\texttt{src/gpio.c} 
+in the line range 240--300, and replace it by "14". Locate further the three places where the value 14 is
+assigned to \texttt{PTTIN\_LINE}, and replace this by the number $-1$, simply because GPIO14 is no longer
+available for other purposes.}
+\end{itemize}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter[RaspPi: Activating I2C]{RaspPi: Activating the I2C interface}
@@ -5074,8 +5124,9 @@ If you want to use the Controller2 or the G2 frontpanel controller, the Raspberr
 must be enabled. This is done by opening \texttt{Menu}$\to$\texttt{Preferences}$\to$
 \texttt{Raspberry Pi Configuration} and moving to the \texttt{Interfaces} tab
 (shown in Fig. \ref{fig:piEnableI2C}. In the I2C line, move the button to the right
-(marked by the red arrows) and restart the computer.
-Do not change the buttons in the other lines, the need not be as shown here.
+(marked by the red arrows). Take care that the SerialPort is also disabled (as shown here),
+since the Controller2 uses GPIO lines normally used by the serial interface. Then, restart the computer.
+The other buttons (SSH, VNC, etc) need not be changed and can be set according to your needs.
 
 
 
@@ -5224,13 +5275,13 @@ and the logo is there.
 \label{sec:installsources}
 \textit{This procedure has been tested on a Pi 4B, with a fresh and plain vanilla operating
 system (32-bit ,,BullsEye'', released May 3rd 2023, Kernel version 6.1) obtained from} \\
+\\
 \texttt{https://www.raspberrypi.com/software/operating-systems/} \\
-\textit{It also works with the current
-version (32-bit ,,BookWorm'', released Oct 10 2023, Kernel version 6.1). Although there are reports
-that piHPSDR does not work as smoothly with the new ,,WayLand'' window manager as it used to work
-with X11,
-I personally cannot confirm this.}
+\\
+\textit{It has also been tested on a Pi 5B with the ,,BookWorm'' (64 bit version) operating system.
+If you want to use the GPIO with BookWorm and/or Pi5, see the end of Appendix \ref{sec:gpio}.}
 
+\section{General Remarks}
 Installation from the sources is the preferred way of installing piHPSDR, for the following reasons
 
 \begin{itemize}
@@ -5272,7 +5323,7 @@ execute \grtt{sudo} commands without being askes a password.
 }
 \end{center}
 
-
+\section{Install piHPSDR from the internet}
 To install from the sources, open a terminal window. If you do so, you get
 a prompt and are in your home directory. It is assumed that no directory named \texttt{pihpsdr}
 exists. If it does, then this is likely a left-over from some previous
@@ -5298,7 +5349,8 @@ from time to time which will are normally corrected very quickly, but you could 
  Checking out the \texttt{RELEASE-2.2-DL1YCF}
 release version is safer since this is more stable, and will only be updated for simple bug fixes.
 New features will be included and accumulated in the development branch until eventually a new
-release (with version 2.3) is made in the future.
+release (with version 2.3) is made in the future. This manual corresponds, however, to the
+,,current snapshot'', that is, the development version.
 }
 }
 \end{center}
@@ -5348,10 +5400,11 @@ as audio module. If you want, for example, use SoapySDR hardware such as the Ada
 or RTL sticks, you have to enable \texttt{SOAPYSDR} and recompile as described in
 Appendix \ref{sec:compiletime}.
 
-If you do not plan to use SoapySDR devices, you need not compile with \texttt{SOAPYSDR}
-enabled and can skip the rest of this appendix.
 
-\textbf{Checking the SoapySDR installation.}
+\section{Checking the SoapySDR installation}
+If you do not plan to use SoapySDR devices, you need not compile with \texttt{SOAPYSDR}
+enabled and can skip the rest of this section.
+
 The installation of the SoapySDR core and the modules for the Adalm Pluto and for RTL SDR
 sticks is the most complicated task performed by the \texttt{libinstall.sh} command.
 Although I tried hard to let everything be done auto-magically, you may want to check
@@ -5360,7 +5413,6 @@ option, you can simply ignore this. To check the SoapySDR installation, open a n
 window and just type the command (be careful to use the correct capitalization!)
 
 \grtt{SoapySDRUtil -info}
-\clearpage
 On my test system, this command produced the following output:
 \begin{tiny}
 \begin{verbatim}
@@ -5400,6 +5452,62 @@ designed
 to work (and has been tested on) a plain vanilla operating system, not on a ,,spoiled'' one
 where the user has manually installed additional software packages that may induce incompatibilities.
 The best way out of such a problem is to re-install Linux (on a RaspPi, simply use a new SD card to do so).
+
+\clearpage
+\section{A note on the ,,BookWorm'' OS and the Pi5 GPIO}
+
+Starting with BookWorm, all piHPSDR testing is done with the 64-bit OS version so it is highly recommended
+to switch to 64 if you use BookWorm. This especially holds if you run piHPSDR on the new Raspberry Pi5 
+which requires BookWorm.
+
+Both, BookWorm and the Pi5, are a little different from BullsEye/Pi4 if it comes to the GPIO.
+You can skip the rest of
+this section if you are not using the GPIO. It is planned that sooner or later all what follows here
+will be done automatically, so take this note as useful hint for the time being.
+
+\begin{itemize}
+\item{
+The install procedure puts two additional lines at the end of the file \texttt{/boot/config.txt},
+namely
+
+\begin{verbatim}
+[all]
+gpio=4-27=ip,pu
+\end{verbatim}
+
+These lines take care that
+all the GPIO lines used by piHPSDR are switched to input with a pull-up upon booting the computer.
+This is only necessary if the hardware attached to the GPIO does not feature external pull-up
+resistors.
+
+The file has been moved in BookWorm to
+ \texttt{/boot/firmware/config.txt}. If your hardware lacks pull-up resistors,
+  you have to modify the file 
+ and add the two lines manually. Although I have not tried it, I guess this
+is also necessary if you run BookWorm on a Pi4.}
+
+\item{The Pi5 has a GPIO layout different from the Pi4. Fortunately, the external library (libgpiod) 
+handles most of this for piHPSDR. While the mapping of GPIO  line numbers to GPIO header pins
+has not changed,
+the  remaining difference is  that the GPIO lines on the Pi5 are associated
+with ,,gpiochip4'', while the were associated with ,,gpiochip1'' on the Pi4.
+
+ For this reason, on a Pi5 one has to change one line in the
+source code file \texttt{src/gpio.c}. Somewhere around line 230, there is a string \texttt{"/dev/gpiochip1")}
+which must be replaced by \texttt{"/dev/gpiochip4"} on a Pi5.}
+
+\item{It seems that GPIO line 20 is not available to piHPSDR on a Pi5, 
+since it is used there for a special purpose (power switch).
+Unfortunately, this line is used by all controllers so the connection to GPIO20
+has to be re-wired to GPIO14 (the only line not used by any of the controllers).
+Then, the tables in gpio.c have to be modified accordingly. To this end, locate the number "20" in
+\texttt{src/gpio.c} 
+in the line range 240--300, and replace it by "14". Locate further the three places where the value 14 is
+assigned to \texttt{PTTIN\_LINE}, and replace this by the number $-1$, simply because GPIO14 is no longer
+available for other purposes.}
+\end{itemize}
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -5443,7 +5551,7 @@ released in January 26, 2023. The package is good both for Intel and Silicon Mac
 file (e.g. XQuartz-2.8.5.pkg) to your desktop and run it by double-clicking.
 
 
-Compiling piHPSDR on a Mac requires some basis LINUX/Unix skills. The most important program to use is
+Compiling piHPSDR on a Mac requires some basic LINUX/Unix skills. The most important program to use is
 the Terminal application (\texttt{Terminal.app}), that can be found in the Utilities folder that resides
 in the Applications folder. It is suggested to drag this application into the ,,dock'' so you have quick
 access.
@@ -5486,7 +5594,7 @@ release (with version 2.3) is made in the future.
 }
 \end{center}
 
-The last command starts with installing Apple's command line tools, in particular the Apple C and C++
+The last command starts with installing Apple's command line tools, in particular the Apple C and C\texttt{++}
 compilers. You may get an error message from \texttt{xcode-select} that the tools are already
 installed, which you can safely ignore. Then, the
  \texttt{HomeBrew} universe is installed, and the installation starts with asking you for the administrator
