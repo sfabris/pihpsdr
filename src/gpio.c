@@ -224,7 +224,11 @@ guchar encoder_state_table[13][4] = {
 #ifdef GPIO
   char *consumer = "pihpsdr";
 
-  char *gpio_device = "/dev/gpiochip0";   // RPI5: /dev/gpiochip4
+  //
+  // gpio_init() tries several chips, until success.
+  // gpio_device is then set to the first device sucessfully opened.
+  //
+  char *gpio_device            = NULL;
 
   static struct gpiod_chip *chip = NULL;
   static GMutex encoder_mutex;
@@ -1147,6 +1151,10 @@ static gpointer monitor_thread(gpointer arg) {
   // thread to monitor gpio events
   t_print("%s: monitoring %d lines.\n", __FUNCTION__, lines);
 
+  if (gpio_device == NULL) {
+    return NULL;
+  }
+
   for (int i = 0; i < lines; i++) {
     t_print("... monitoring line  %u\n", monitor_lines[i]);
   }
@@ -1236,14 +1244,30 @@ int gpio_init() {
   g_mutex_init(&encoder_mutex);
   gpio_set_defaults(controller);
   chip = NULL;
-  //t_print("%s: open gpio 0\n",__FUNCTION__);
-  chip = gpiod_chip_open_by_number(0);
 
+  //
+  // Open GPIO device. Try several devices, until
+  // there is success.
+  //
+  if (chip == NULL) {
+    gpio_device="/dev/gpiochip4";        // works on RPI5
+    chip = gpiod_chip_open(gpio_device);
+  }
+  if (chip == NULL) {
+    gpio_device="/dev/gpiochip0";       // works on RPI4
+    chip = gpiod_chip_open(gpio_device);
+  }
+
+  //
+  // If no success so far, give up
+  //
   if (chip == NULL) {
     t_print("%s: open chip failed: %s\n", __FUNCTION__, g_strerror(errno));
     ret = -1;
     goto err;
   }
+
+  t_print("%s: GPIO device=%s\n", __FUNCTION__, gpio_device);
 
   if (controller == CONTROLLER1 || controller == CONTROLLER2_V1 || controller == CONTROLLER2_V2
       || controller == G2_FRONTPANEL) {
@@ -1350,7 +1374,7 @@ int gpio_init() {
 
   if (have_button || controller != NO_CONTROLLER) {
     monitor_thread_id = g_thread_new( "gpiod monitor", monitor_thread, NULL);
-    t_print("%s: monitor_thread: id=%p\n", __FUNCTION__, rotary_encoder_thread_id);
+    t_print("%s: monitor_thread: id=%p\n", __FUNCTION__, monitor_thread_id);
   }
 
   if (controller != NO_CONTROLLER) {
@@ -1366,8 +1390,9 @@ err:
 
   if (chip != NULL) {
     gpiod_chip_close(chip);
-    chip = NULL;
   }
+  chip = NULL;
+  gpio_device = NULL;
 
   return ret;
 #endif
