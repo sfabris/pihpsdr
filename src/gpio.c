@@ -224,7 +224,7 @@ guchar encoder_state_table[13][4] = {
 #ifdef GPIO
   char *consumer = "pihpsdr";
 
-  char *gpio_device = "/dev/gpiochip0";
+  char *gpio_device = "/dev/gpiochip0";   // RPI5: /dev/gpiochip4
 
   static struct gpiod_chip *chip = NULL;
   static GMutex encoder_mutex;
@@ -252,6 +252,10 @@ long settle_time = 50; // ms
 // The controller1 switches are hard-wired to the toolbar buttons
 //
 
+//
+// RPI5: GPIO line 20 not available, replace "20" by "14" at four places in the following lines
+//       and re-wire the controller connection from GPIO20 to GPIO14
+//
 static const ENCODER encoders_no_controller[MAX_ENCODERS] = {
   {FALSE, TRUE, 0, 0, 0, 0, 0, 0, R_START, FALSE, TRUE, 0, 0, 0, 0, 0, 0, R_START, FALSE, TRUE, 0, 0, 0L},
   {FALSE, TRUE, 0, 0, 0, 0, 0, 0, R_START, FALSE, TRUE, 0, 0, 0, 0, 0, 0, R_START, FALSE, TRUE, 0, 0, 0L},
