@@ -103,7 +103,7 @@ static void *midi_thread(void *arg) {
     if (!midi_devices[index].active) { break; }
 
     if (ret < 0) {
-      t_print("poll failed: %s\n", strerror(errno));
+      t_print("%s: poll failed: %s\n", __FUNCTION__, strerror(errno));
       // Do not give up, but also do not fire too rapidly
       usleep(250000);
     }
@@ -111,7 +111,7 @@ static void *midi_thread(void *arg) {
     if (ret <= 0) { continue; }  // nothing arrived, do next poll()
 
     if ((ret = snd_rawmidi_poll_descriptors_revents(input, pfds, npfds, &revents)) < 0) {
-      t_print("cannot get poll events: %s\n", snd_strerror(errno));
+      t_print("%s: cannot get poll events: %s\n", __FUNCTION__, snd_strerror(errno));
       continue;
     }
 
@@ -125,7 +125,7 @@ static void *midi_thread(void *arg) {
     if (ret == 0) { continue; }
 
     if (ret < 0) {
-      t_print("cannot read from port \"%s\": %s\n", port, snd_strerror(ret));
+      t_print("%s: cannot read from port \"%s\": %s\n", __FUNCTION__, port, snd_strerror(ret));
       continue;
     }
 
@@ -251,7 +251,7 @@ void register_midi_device(int index) {
   t_print("%s: open MIDI device %d\n", __FUNCTION__, index);
 
   if ((ret = snd_rawmidi_open(&midi_input[index], NULL, midi_port[index], SND_RAWMIDI_NONBLOCK)) < 0) {
-    t_print("cannot open port \"%s\": %s\n", midi_port[index], snd_strerror(ret));
+    t_print("%s: cannot open port \"%s\": %s\n", __FUNCTION__, midi_port[index], snd_strerror(ret));
     return;
   }
 
@@ -313,16 +313,16 @@ void get_midi_devices() {
   card = -1;
 
   if ((ret = snd_card_next(&card)) < 0) {
-    t_print("cannot determine card number: %s\n", snd_strerror(ret));
+    t_print("%s: cannot determine card number: %s\n", __FUNCTION__, snd_strerror(ret));
     return;
   }
 
   while (card >= 0) {
-    //t_print("Found Sound Card=%d\n",card);
+    //t_print("%s: Found Sound Card=%d\n", __FUNCTION__, card);
     snprintf(portname, 64, "hw:%d", card);
 
     if ((ret = snd_ctl_open(&ctl, portname, 0)) < 0) {
-      t_print("cannot open control for card %d: %s\n", card, snd_strerror(ret));
+      t_print("%s: cannot open control for card %d: %s\n", __FUNCTION__, card, snd_strerror(ret));
       return;
     }
 
@@ -331,13 +331,13 @@ void get_midi_devices() {
     // loop through devices of the card
     for (;;) {
       if ((ret = snd_ctl_rawmidi_next_device(ctl, &device)) < 0) {
-        t_print("cannot determine device number: %s\n", snd_strerror(ret));
+        t_print("%s: cannot determine device number: %s\n", __FUNCTION__, snd_strerror(ret));
         break;
       }
 
       if (device < 0) { break; }
 
-      //t_print("Found Device=%d on Card=%d\n", device, card);
+      //t_print("%s: Found Device=%d on Card=%d\n", __FUNCTION__, device, card);
       // found sub-device
       snd_rawmidi_info_alloca(&info);
       snd_rawmidi_info_set_device(info, device);
@@ -350,7 +350,7 @@ void get_midi_devices() {
         subs = 0;
       }
 
-      //t_print("Number of MIDI input devices: %d\n", subs);
+      //t_print("%s: Number of MIDI input devices: %d\n", __FUNCTION__, subs);
       if (!subs) { break; }
 
       // subs: number of sub-devices to device on card
@@ -360,8 +360,8 @@ void get_midi_devices() {
         ret = snd_ctl_rawmidi_info(ctl, info);
 
         if (ret < 0) {
-          t_print("cannot get rawmidi information %d:%d:%d: %s\n",
-                  card, device, sub, snd_strerror(ret));
+          t_print("%s: cannot get rawmidi information %d:%d:%d: %s\n",
+                  __FUNCTION__, card, device, sub, snd_strerror(ret));
           break;
         }
 
@@ -425,7 +425,7 @@ void get_midi_devices() {
 
     // next card
     if ((ret = snd_card_next(&card)) < 0) {
-      t_print("cannot determine card number: %s\n", snd_strerror(ret));
+      t_print("%s: cannot determine card number: %s\n", __FUNCTION__, snd_strerror(ret));
       break;
     }
   }
