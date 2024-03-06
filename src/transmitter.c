@@ -318,49 +318,50 @@ static gboolean update_display(gpointer data) {
       RECEIVER *rx_feedback = receiver[PS_RX_FEEDBACK];
       g_mutex_lock(&rx_feedback->display_mutex);
       GetPixels(rx_feedback->id, 0, rx_feedback->pixel_samples, &rc);
-      int full  = rx_feedback->pixels;  // number of pixels in the feedback spectrum
-      int width = tx->pixels;           // number of pixels to copy from the feedback spectrum
-      int start = (full - width) / 2;   // Copy from start ... (end-1)
-      float *tfp = tx->pixel_samples;
-      float *rfp = rx_feedback->pixel_samples + start;
-      float offset;
-      int i;
+      if (rc) {
+        int full  = rx_feedback->pixels;  // number of pixels in the feedback spectrum
+        int width = tx->pixels;           // number of pixels to copy from the feedback spectrum
+        int start = (full - width) / 2;   // Copy from start ... (end-1)
+        float *tfp = tx->pixel_samples;
+        float *rfp = rx_feedback->pixel_samples + start;
+        float offset;
+        int i;
 
-      //
-      // The TX panadapter shows a RELATIVE signal strength. A CW or single-tone signal at
-      // full drive appears at 0dBm, the two peaks of a full-drive two-tone signal appear
-      // at -6 dBm each. THIS DOES NOT DEPEND ON THE POSITION OF THE DRIVE LEVEL SLIDER.
-      // The strength of the feedback signal, however, depends on the drive, on the PA and
-      // on the attenuation effective in the feedback path.
-      // We try to shift the RX feeback signal such that is looks like a "normal" TX
-      // panadapter if the feedback is optimal for PureSignal (that is, if the attenuation
-      // is optimal). The correction (offset) depends on the FPGA software inside the radio
-      // (diffent peak levels in the TX feedback channel).
-      //
-      // The (empirically) determined offset is 4.2 - 20*Log10(GetPk value), it is the larger
-      // the smaller the amplitude of the RX feedback signal is.
-      //
-      switch (protocol) {
-      case ORIGINAL_PROTOCOL:
-        // TX dac feedback peak = 0.406, on HermesLite2 0.230
-        offset = (device == DEVICE_HERMES_LITE2) ? 17.0 : 12.0;
-        break;
+        //
+        // The TX panadapter shows a RELATIVE signal strength. A CW or single-tone signal at
+        // full drive appears at 0dBm, the two peaks of a full-drive two-tone signal appear
+        // at -6 dBm each. THIS DOES NOT DEPEND ON THE POSITION OF THE DRIVE LEVEL SLIDER.
+        // The strength of the feedback signal, however, depends on the drive, on the PA and
+        // on the attenuation effective in the feedback path.
+        // We try to shift the RX feeback signal such that is looks like a "normal" TX
+        // panadapter if the feedback is optimal for PureSignal (that is, if the attenuation
+        // is optimal). The correction (offset) depends on the FPGA software inside the radio
+        // (diffent peak levels in the TX feedback channel).
+        //
+        // The (empirically) determined offset is 4.2 - 20*Log10(GetPk value), it is the larger
+        // the smaller the amplitude of the RX feedback signal is.
+        //
+        switch (protocol) {
+        case ORIGINAL_PROTOCOL:
+          // TX dac feedback peak = 0.406, on HermesLite2 0.230
+          offset = (device == DEVICE_HERMES_LITE2) ? 17.0 : 12.0;
+          break;
 
-      case NEW_PROTOCOL:
-        // TX dac feedback peak = 0.2899, on SATURN 0.6121
-        offset = (device == NEW_DEVICE_SATURN) ? 8.5 : 15.0;
-        break;
+        case NEW_PROTOCOL:
+          // TX dac feedback peak = 0.2899, on SATURN 0.6121
+          offset = (device == NEW_DEVICE_SATURN) ? 8.5 : 15.0;
+          break;
 
-      default:
-        // we probably never come here
-        offset = 0.0;
-        break;
+        default:
+          // we probably never come here
+          offset = 0.0;
+          break;
+        }
+
+        for (i = 0; i < width; i++) {
+          *tfp++ = *rfp++ + offset;
+        }
       }
-
-      for (i = 0; i < width; i++) {
-        *tfp++ = *rfp++ + offset;
-      }
-
       g_mutex_unlock(&rx_feedback->display_mutex);
     } else {
       GetPixels(tx->id, 0, tx->pixel_samples, &rc);
