@@ -97,16 +97,19 @@ static struct sockaddr_in server_address;
 
 typedef struct _client {
   int fd;
-  int fifo;    // only needed for serial clients to
-  // indicate this is a FIFO and not a
-  // true serial line
-  int busy;    // only needed for serial clients over FIFOs
-  int done;    // only needed for serial clients over FIFOs
-  int running; // set this to zero to terminate client
+  int fifo;                    // only needed for serial clients to
+                               // indicate this is a FIFO and not a
+                               // true serial line
+  int busy;                    // only needed for serial clients over FIFOs
+  int done;                    // only needed for serial clients over FIFOs
+  int running;                 // set this to zero to terminate client
   socklen_t address_length;
   struct sockaddr_in address;
   GThread *thread_id;
-  guint andromeda_timer;  // for periodic andromeda_tasks
+  guint andromeda_timer;       // for periodic andromeda_tasks (serial only)
+  guint AI_timer;              // for auto-reporting (AI, ZZAI)
+  long long last_fa;           // last VFOA freq for auto-reporting
+  long long last_fb;           // last VFOB freq for auto-reporting
 } CLIENT;
 
 typedef struct _command {
@@ -780,6 +783,7 @@ static gpointer rigctl_server(gpointer data) {
 
   for (i = 0; i < MAX_CLIENTS; i++) {
     tcp_client[i].fd = -1;
+    tcp_client[i].AI_timer = 0;
   }
 
   // listen with a max queue of 3
@@ -872,6 +876,13 @@ static gpointer rigctl_client (gpointer data) {
 
   while (client->running && (numbytes = recv(client->fd, cmd_input, MAXDATASIZE - 2, 0)) > 0 ) {
     for (i = 0; i < numbytes; i++) {
+      //
+      // Filter out newlines and other non-printable characters
+      // These may occur when doing CAT manually with a terminal program
+      //
+      if (cmd_input[i] < 32) {
+        continue;
+      }
       command[command_index] = cmd_input[i];
       command_index++;
 
@@ -965,7 +976,36 @@ static int ts2000_mode(int m) {
   return mode;
 }
 
-gboolean parse_extended_cmd (const char *command, const CLIENT *client) {
+gboolean AI_handler(gpointer data) {
+  //
+  // This function is repeatedly called until it returns FALSE
+  //
+  //
+  CLIENT *client = (CLIENT *)data;
+  char reply[256];
+  long long fa;
+  long long fb;
+
+  if (!client->running) { return FALSE; }
+
+  fa = vfo[VFO_A].ctun ? vfo[VFO_A].ctun_frequency : vfo[VFO_A].frequency;
+  fb = vfo[VFO_B].ctun ? vfo[VFO_B].ctun_frequency : vfo[VFO_B].frequency;
+
+  if (fa != client->last_fa) {
+    client->last_fa = fa;
+    snprintf(reply, 256, "FA%011lld;", fa);
+    send_resp(client->fd, reply);
+  }
+
+  if (fb != client->last_fb) {
+    client->last_fb = fb;
+    snprintf(reply, 256, "FB%011lld;", fa);
+    send_resp(client->fd, reply);
+  }
+
+  return TRUE;
+}
+gboolean parse_extended_cmd (const char *command, CLIENT *client) {
   gboolean implemented = TRUE;
   char reply[256];
   reply[0] = '\0';
@@ -1052,7 +1092,29 @@ gboolean parse_extended_cmd (const char *command, const CLIENT *client) {
       break;
 
     case 'I': //ZZAI
-      implemented = FALSE;
+      //
+      // Code duplicated from the AI command
+      // set/read Auto Information
+      // AI0 disables reporting
+      // AI1 enables periodic (every 500 msec) reporting
+      //     via FA/FB frames if the VFO frequencies have changed
+      if (command[4] == ';') {
+        // Query status
+        snprintf(reply, 256, "ZZAI%d;", client->AI_timer ? 1 : 0);
+        send_resp(client->fd, reply) ;
+      } else if (command[4] == '0' && command[5] == ';') {
+        // disable reporting
+        if (client->AI_timer) { g_source_remove(client->AI_timer); }
+        client->AI_timer = 0;
+      } else if (command[4] == '1' && command[5] == ';') {
+        // enable reporting
+        client->last_fa = client->last_fb = -1;
+        if (client->AI_timer) { g_source_remove(client->AI_timer); }
+        client->AI_timer = g_timeout_add(500, AI_handler, (gpointer) client); // executed periodically
+      } else {
+        implemented = FALSE;
+      }
+
       break;
 
     case 'P': //ZZAP
@@ -3885,12 +3947,20 @@ int parse_cmd(void *data) {
     case 'I': //AI
 
       // set/read Auto Information
-      // many clients start the connection with an "AI0" command.
-      // piHPSDR is constantly in an "AI0" state, therefore
-      // silently ignore AI0 commands and flag an error for
-      // all other possiblities
-      if (command[2] == '0' && command[3] == ';') {
-        // do nothing
+      // AI0 disables reporting
+      // AI1 enables periodic (every 500 msec) reporting
+      //     via FA/FB frames if the VFO frequencies have changed
+      if (command[2] == ';') {
+        // Query status
+        snprintf(reply, 256, "AI%d;", client->AI_timer ? 1 : 0);
+        send_resp(client->fd, reply) ;
+      } else if (command[2] == '0' && command[3] == ';') {
+        // disable reporting
+        if (client->AI_timer) { g_source_remove(client->AI_timer); }
+        client->AI_timer = 0;
+      } else if (command[2] == '1' && command[3] == ';') {
+        // enable reporting
+        client->AI_timer = g_timeout_add(500, AI_handler, client); // executed periodically
       } else {
         implemented = FALSE;
       }
@@ -5662,6 +5732,13 @@ static gpointer serial_server(gpointer data) {
 
     if (numbytes > 0) {
       for (i = 0; i < numbytes; i++) {
+        //
+        // Filter out newlines and other non-printable characters
+        // These may occur when doing CAT manually with a terminal program
+        //
+        if (cmd_input[i] < 32) {
+          continue;
+        }
         command[command_index] = cmd_input[i];
         command_index++;
 
@@ -5695,15 +5772,15 @@ static gpointer serial_server(gpointer data) {
   return NULL;
 }
 
-static int last_mox;
-static int last_tune;
-static int last_ps;
-static int last_ctun;
-static int last_lock;
-static int last_div;
-static int last_rit;
-static int last_xit;
-static int last_vfoa;
+static int andromeda_last_mox;
+static int andromeda_last_tune;
+static int andromeda_last_ps;
+static int andromeda_last_ctun;
+static int andromeda_last_lock;
+static int andromeda_last_div;
+static int andromeda_last_rit;
+static int andromeda_last_xit;
+static int andromeda_last_vfoa;
 
 gboolean andromeda_handler(gpointer data) {
   //
@@ -5715,64 +5792,64 @@ gboolean andromeda_handler(gpointer data) {
 
   if (!client->running) { return FALSE; }
 
-  if (last_vfoa != active_receiver->id) {
+  if (andromeda_last_vfoa != active_receiver->id) {
     snprintf(reply, 256, "ZZZI10%d;", active_receiver->id ^ 1);
     send_resp(client->fd, reply);
-    last_vfoa = active_receiver->id;
+    andromeda_last_vfoa = active_receiver->id;
   }
 
-  if (last_div != diversity_enabled) {
+  if (andromeda_last_div != diversity_enabled) {
     snprintf(reply, 256, "ZZZI05%d;", diversity_enabled);
     send_resp(client->fd, reply);
-    last_div = diversity_enabled;
+    andromeda_last_div = diversity_enabled;
   }
 
-  if (last_mox != mox) {
+  if (andromeda_last_mox != mox) {
     snprintf(reply, 256, "ZZZI01%d;", mox);
     send_resp(client->fd, reply);
-    last_mox = mox;
+    andromeda_last_mox = mox;
   }
 
-  if (last_tune != tune) {
+  if (andromeda_last_tune != tune) {
     snprintf(reply, 256, "ZZZI03%d;", tune);
     send_resp(client->fd, reply);
-    last_tune = tune;
+    andromeda_last_tune = tune;
   }
 
   if (can_transmit) {
-    if (last_ps != transmitter->puresignal) {
+    if (andromeda_last_ps != transmitter->puresignal) {
       snprintf(reply, 256, "ZZZI04%d;", transmitter->puresignal);
       send_resp(client->fd, reply);
-      last_ps = transmitter->puresignal;
+      andromeda_last_ps = transmitter->puresignal;
     }
   }
 
-  if (last_ctun != vfo[active_receiver->id].ctun) {
+  if (andromeda_last_ctun != vfo[active_receiver->id].ctun) {
     snprintf(reply, 256, "ZZZI07%d;", vfo[active_receiver->id].ctun);
     send_resp(client->fd, reply);
-    last_ctun = vfo[active_receiver->id].ctun;
+    andromeda_last_ctun = vfo[active_receiver->id].ctun;
   }
 
-  if (last_rit != vfo[active_receiver->id].rit_enabled) {
+  if (andromeda_last_rit != vfo[active_receiver->id].rit_enabled) {
     snprintf(reply, 256, "ZZZI08%d;", vfo[active_receiver->id].rit_enabled);
     send_resp(client->fd, reply);
-    last_rit = vfo[active_receiver->id].rit_enabled;
+    andromeda_last_rit = vfo[active_receiver->id].rit_enabled;
   }
 
   if (can_transmit) {
     int new_xit = vfo[get_tx_vfo()].xit_enabled;
 
-    if (last_xit != new_xit) {
+    if (andromeda_last_xit != new_xit) {
       snprintf(reply, 256, "ZZZI09%d;", new_xit);
       send_resp(client->fd, reply);
-      last_xit = new_xit;
+      andromeda_last_xit = new_xit;
     }
   }
 
-  if (last_lock != locked) {
+  if (andromeda_last_lock != locked) {
     snprintf(reply, 256, "ZZZI11%d;", locked);
     send_resp(client->fd, reply);
-    last_lock = locked;
+    andromeda_last_lock = locked;
   }
 
   return TRUE;
@@ -5788,7 +5865,9 @@ gboolean andromeda_init(gpointer data) {
   if (!client->running) { return FALSE; }
 
   // This triggers new results to be reported;
-  last_mox = last_tune = last_ps = last_ctun = last_lock = last_div = last_rit = last_xit = last_vfoa = -999;
+  andromeda_last_mox = andromeda_last_tune = andromeda_last_ps = andromeda_last_ctun 
+                     = andromeda_last_lock = andromeda_last_div = andromeda_last_rit
+                     = andromeda_last_xit = andromeda_last_vfoa = -999;
   // This triggers a reply (from Andromeda) to report its FP version
   send_resp(client->fd, "ZZZS;");
   return FALSE;
@@ -5839,6 +5918,7 @@ int launch_serial (int id) {
 
   serial_client[id].running = 1;
   serial_client[id].andromeda_timer = 0;
+  serial_client[id].AI_timer = 0;
   serial_client[id].thread_id = g_thread_new( "Serial server", serial_server, &serial_client[id]);
   //
   // If this is a serial line to an ANDROMEDA controller, initialize it and start a periodic GTK task
