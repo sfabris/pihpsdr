@@ -62,6 +62,7 @@ sudo apt-get --yes install libi2c-dev
 sudo apt-get --yes install libgpiod-dev
 sudo apt-get --yes install libpulse-dev
 sudo apt-get --yes install pulseaudio
+sudo apt-get --yes install libpcap-dev
 
 # ----------------------------------------------
 # Install standard libraries necessary for SOAPY

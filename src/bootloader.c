@@ -59,7 +59,7 @@
 // -i <adapter>  Use specific adapter. The name <adapter> must match
 //               one of the adapters displayed with -d
 //
-// -s <ip-addr>  Set IP addr of radio to <ip-addr>
+// -s <ip-addr>  Set IP addr of radio to <ip-addr>  (If addr=0.0.0.0, use DHCP)
 //
 // -f <file>     The name of the firmware file to be uploaded
 //
@@ -82,7 +82,12 @@
 #include <arpa/inet.h>
 #include <netinet/if_ether.h>
 #include <fcntl.h>
+#ifdef __APPLE__
 #include <net/if_dl.h>
+#else
+#include <sys/ioctl.h>
+#include <net/if.h>
+#endif
 #include <string.h>
 
 //
@@ -131,8 +136,8 @@ int main(int argc, char **argv) {
   struct sockaddr *sa;
   struct sockaddr_dl *link;
   char string[256];
-  int have_addr, have_mac;
-  int do_display, do_lookup;
+  int have_addr;
+  int do_display, do_lookup, do_burnip;
   char *rbffile;
   int rbffd;
   int timeout;
@@ -141,8 +146,26 @@ int main(int argc, char **argv) {
   unsigned char *rbfcontent;  // the whole .rbf file (+ padding)
   char *cp;
   do_display = 1;
+  do_burnip = 0;
   do_lookup = 0;
+
   hisip[0] = 0;
+  hisip[1] = 0;
+  hisip[2] = 0;
+  hisip[3] = 0;
+
+  //
+  // Set "bogus" mac addr,
+  // if MAC addr cannot be determined neither
+  // using AF_LINK or SOICGIFHWADDR.
+  //
+  mymac[0] = 0x00;
+  mymac[1] = 0xC0;
+  mymac[2] = 0x11;
+  mymac[3] = 0x12;
+  mymac[4] = 0x13;
+  mymac[5] = 0x14;
+
   rbffile = NULL;
   i = 0;
 
@@ -180,6 +203,7 @@ int main(int argc, char **argv) {
         hisip[1] = i2 & 0xff;
         hisip[2] = i3 & 0xff;
         hisip[3] = i4 & 0xff;
+        do_burnip = 1;
       }
 
       continue;
@@ -196,7 +220,6 @@ int main(int argc, char **argv) {
 
   ifp = devlist;
   have_addr = 0;
-  have_mac = 0;
 
   while (ifp != NULL) {
     if (do_lookup && strcmp(ifp->name, dev)) {
@@ -207,7 +230,6 @@ int main(int argc, char **argv) {
 
     if (do_display) {
       have_addr = 0;
-      have_mac = 0;
     }
 
     addr = ifp->addresses;
@@ -229,6 +251,10 @@ int main(int argc, char **argv) {
         }
       }
 
+#ifdef __APPLE__
+      //
+      // BSD code (e.g. MacOS), need  to include net/if_dl.h
+      //
       if (sa->sa_family == AF_LINK) {
         link = (struct sockaddr_dl *)sa->sa_data;
         unsigned char mac[link->sdl_alen];
@@ -255,13 +281,25 @@ int main(int argc, char **argv) {
           mymac[5] = mac[6];
         }
 
-        have_mac = 1;
       }
+#endif
 
       addr = addr->next;
     }
+#ifdef SIOCGIFHADDR
+    //
+    // Alternate method to query the MAC address.
+    // This works on RaspPi.
+    //
+    struct ifreq ifr;
+    int fd=socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
+    strcpy(ifr.ifr_name, ifp->name);
+    if (ioctl(fd, SIOCGIFHWADDR, &ifr) == 0) {
+      memcpy(mymac, ifr.ifr_addr.sa_data, 6);
+    }
+#endif
 
-    if (have_addr && have_mac) {
+    if (have_addr) {
       printf("Interface=%-10s MAC=%02x:%02x:%02x:%02x:%02x:%02x Address=%d.%d.%d.%d\n",
              ifp->name,
              mymac[0], mymac[1], mymac[2], mymac[3], mymac[4], mymac[5],
@@ -281,9 +319,7 @@ int main(int argc, char **argv) {
 
   if (!have_addr) { printf("Interface %s has no IP  address (exiting).\n", dev); }
 
-  if (!have_mac) { printf("Interface %s has no MAC address (exiting).\n", dev); }
-
-  if (!have_addr || !have_mac) { return 8; }
+  if (!have_addr) { return 8; }
 
   //
   //  Check some assumptions about RBF file
@@ -329,11 +365,11 @@ int main(int argc, char **argv) {
     }
   }
 
-  if (hisip[0] > 127) {
+  if (do_burnip) {
     printf("Shall burn IP addr = (%d,%d,%d,%d) into radio.\n", hisip[0], hisip[1], hisip[2], hisip[3]);
   }
 
-  if (hisip[0] > 127 || rbffd >= 0) {
+  if (do_burnip || rbffd >= 0) {
     printf("Is this OK (y/n)?\n");
     i = getchar();
 
@@ -378,6 +414,12 @@ int main(int argc, char **argv) {
     printf("pcap_open_live(): %s\n", errbuf);
     exit(1);
   }
+  //
+  // On some systems, pcap_next() hangs when no packet arrives at all
+  // To cope with these cases, set "nonblocking" mode and explicitly
+  // wait 10 msec before when doing pcap_next
+  //
+  pcap_setnonblock(descr, 1, errbuf);
 
   state = STATE_QUERYMAC;
   timeout = 0;
@@ -456,18 +498,32 @@ int main(int argc, char **argv) {
     }
 
     //
-    // Obtain next packet
+    // Obtain next packet. If it is already there, take it.
+    // Otherwise retry after 10 milli seconds. This is why
+    // all the above time outs are in units of 10 ms.
     //
     packet = pcap_next(descr, &hdr);
+    if (packet == NULL) {
+      usleep(10000);
+      packet = pcap_next(descr, &hdr);
+    }
+    if (packet == NULL) { continue; } // Nothing arrived within 10 msec
 
-    if (packet == NULL) { continue; } // Nothing arrived within time-out
+    /*
+     A packet has arrived, but this could be anything.
+     So check whether
+       - it has mymac               as the "to"   address
+       - it has 11:22:33:44:55:66   as the "from" address
+       - it has 0xEF 0xFE 0x03      as boot loader header
 
-    /* determine if this is a packet from a bootloader to our computer */
-    if (hdr.len > 22 && packet[0] == mymac[0] && packet[1] == mymac[1] && packet[2] == mymac[2]
-        && packet[3] == mymac[3] && packet[4] == mymac[4] && packet[5] == mymac[5]
-        && packet[6] == 0x11     && packet[7] == 0x22     && packet[8] == 0x33
-        && packet[9] == 0x44     && packet[10] == 0x55     && packet[11] == 0x66
-        && packet[12] == 0xef && packet[13] == 0xfe && packet[14] == 0x03) {
+       and only then process the contents (otherwise get next packet)
+     */
+    if (hdr.len > 22
+        && packet[ 0] == mymac[0] && packet[ 1] == mymac[1] && packet[ 2] == mymac[2]
+        && packet[ 3] == mymac[3] && packet[ 4] == mymac[4] && packet[ 5] == mymac[5]
+        && packet[ 6] == 0x11     && packet[ 7] == 0x22     && packet[ 8] == 0x33
+        && packet[ 9] == 0x44     && packet[10] == 0x55     && packet[11] == 0x66
+        && packet[12] == 0xef     && packet[13] == 0xfe     && packet[14] == 0x03) {
       switch (packet[15]) {
       case HAVE_MAC_ADDRESS:
         printf("HPSDR board detected, MAC=%02x:%02x:%02x:%02x:%02x:%02x\n", packet[16], packet[17], packet[18], packet[19],
@@ -481,7 +537,7 @@ int main(int argc, char **argv) {
 
         if (rbffd >= 0) { state = STATE_ERASE; }   // if there is something to upload
 
-        if (hisip[0] > 127) { state = STATE_SETIP; } // if we want to set an IP address
+        if (do_burnip) { state = STATE_SETIP; } // if we want to set an IP address
 
         break;
 
