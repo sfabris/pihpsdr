@@ -286,7 +286,7 @@ int main(int argc, char **argv) {
 
       addr = addr->next;
     }
-#ifdef SIOCGIFHADDR
+#ifdef SIOCGIFHWADDR
     //
     // Alternate method to query the MAC address.
     // This works on RaspPi.
