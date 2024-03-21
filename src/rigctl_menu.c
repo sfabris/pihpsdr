@@ -55,6 +55,9 @@ static gboolean close_cb () {
   return TRUE;
 }
 
+static void autoreporting_cb(GtkWidget *widget, gpointer data) {
+  rigctl_start_with_autoreporting = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+}
 static void rigctl_value_changed_cb(GtkWidget *widget, gpointer data) {
   rigctl_port_base = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
 }
@@ -83,7 +86,7 @@ static void rigctl_enable_cb(GtkWidget *widget, gpointer data) {
       gtk_toggle_button_set_active( GTK_TOGGLE_BUTTON(serial_enable_b[id]), 0);
     }
 
-    disable_rigctl();
+    shutdown_rigctl();
   }
 }
 
@@ -205,7 +208,7 @@ void rigctl_menu(GtkWidget *parent) {
   gtk_widget_set_name(close_b, "close_button");
   g_signal_connect (close_b, "button-press-event", G_CALLBACK(close_cb), NULL);
   gtk_grid_attach(GTK_GRID(grid), close_b, 0, 0, 1, 1);
-  GtkWidget *rigctl_port_label = gtk_label_new("RigCtl TCP Port");
+  GtkWidget *rigctl_port_label = gtk_label_new("TCP Port");
   gtk_widget_set_name(rigctl_port_label, "boldlabel");
   gtk_widget_set_halign(rigctl_port_label, GTK_ALIGN_END);
   gtk_widget_show(rigctl_port_label);
@@ -228,11 +231,18 @@ void rigctl_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(grid), rigctl_debug_b, 3, 1, 1, 1);
   g_signal_connect(rigctl_debug_b, "toggled", G_CALLBACK(rigctl_debug_cb), NULL);
 
+  GtkWidget *autoreporting_b = gtk_check_button_new_with_label("Start clients AutoReporting");
+  gtk_widget_set_name(autoreporting_b, "boldlabel");
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (autoreporting_b), rigctl_start_with_autoreporting);
+  gtk_grid_attach(GTK_GRID(grid), autoreporting_b, 4, 1, 2, 1);
+  g_signal_connect(autoreporting_b, "toggled", G_CALLBACK(autoreporting_cb), NULL);
+
+
   /* Put the Serial Port stuff here, one port per line */
 
+  int row=2;
   for (int i = 0; i < MAX_SERIAL; i++) {
     char str[64];
-    int row = i + 2;
     snprintf (str, 64, "Serial Port%d:", i);
     GtkWidget *serial_text_label = gtk_label_new(str);
     gtk_widget_set_name(serial_text_label, "boldlabel");
@@ -279,6 +289,8 @@ void rigctl_menu(GtkWidget *parent) {
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (andromeda_b[i]), SerialPorts[i].andromeda);
     gtk_grid_attach(GTK_GRID(grid), andromeda_b[i], 5, row, 1, 1);
     g_signal_connect(andromeda_b[i], "toggled", G_CALLBACK(andromeda_cb), GINT_TO_POINTER(i));
+
+    row++;
   }
 
   gtk_container_add(GTK_CONTAINER(content), grid);

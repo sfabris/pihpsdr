@@ -72,6 +72,7 @@
 
 int rigctl_port_base = 19090;
 int rigctl_enable = 0;
+int rigctl_start_with_autoreporting = 0;
 
 // max number of bytes we can get at once
 #define MAXDATASIZE 2000
@@ -87,7 +88,7 @@ typedef struct {GMutex m; } GT_MUTEX;
 GT_MUTEX * mutex_a;
 GT_MUTEX * mutex_busy;
 
-#define MAX_CLIENTS 3
+#define MAX_TCP_CLIENTS 3
 static GThread *rigctl_server_thread_id = NULL;
 static GThread *rigctl_cw_thread_id = NULL;
 static int server_running;
@@ -107,9 +108,7 @@ typedef struct _client {
   struct sockaddr_in address;
   GThread *thread_id;
   guint andromeda_timer;       // for periodic andromeda_tasks (serial only)
-  guint AI_timer;              // for auto-reporting (AI, ZZAI)
-  long long last_fa;           // last VFOA freq for auto-reporting
-  long long last_fb;           // last VFOB freq for auto-reporting
+  int auto_reporting;          // auto-reporting (AI, ZZAI) on/off
 } CLIENT;
 
 typedef struct _command {
@@ -117,39 +116,47 @@ typedef struct _command {
   char *command;
 } COMMAND;
 
-static CLIENT tcp_client[MAX_CLIENTS];     // TCP clients
+static CLIENT tcp_client[MAX_TCP_CLIENTS]; // TCP clients
 static CLIENT serial_client[MAX_SERIAL];   // serial clienta
 SERIALPORT SerialPorts[MAX_SERIAL];
 
 static gpointer rigctl_client (gpointer data);
 
-void close_rigctl_ports() {
-  int i;
+static guint auto_timer = 0;
+
+void shutdown_rigctl() {
   struct linger linger = { 0 };
   linger.l_onoff = 1;
   linger.l_linger = 0;
   t_print("%s: server_socket=%d\n", __FUNCTION__, server_socket);
+
   server_running = 0;
 
-  for (i = 0; i < MAX_CLIENTS; i++) {
-    tcp_client[i].running = 0;
+  if (auto_timer > 0) {
+    g_source_remove(auto_timer);
+    auto_timer = 0;
+  }
 
-    if (tcp_client[i].fd != -1) {
-      t_print("%s: setting SO_LINGER to 0 for client_socket: %d\n", __FUNCTION__, tcp_client[i].fd);
+  for (int id = 0; id < MAX_TCP_CLIENTS; id++) {
+    tcp_client[id].running = 0;
 
-      if (setsockopt(tcp_client[i].fd, SOL_SOCKET, SO_LINGER, (const char *)&linger, sizeof(linger)) == -1) {
+    if (tcp_client[id].fd != -1) {
+      t_print("%s: setting SO_LINGER to 0 for client_socket: %d\n", __FUNCTION__, tcp_client[id].fd);
+
+      if (setsockopt(tcp_client[id].fd, SOL_SOCKET, SO_LINGER, (const char *)&linger, sizeof(linger)) == -1) {
         t_perror("setsockopt(...,SO_LINGER,...) failed for client");
       }
 
-      t_print("%s: closing client socket: %d\n", __FUNCTION__, tcp_client[i].fd);
-      close(tcp_client[i].fd);
-      tcp_client[i].fd = -1;
+      t_print("%s: closing client socket: %d\n", __FUNCTION__, tcp_client[id].fd);
+      close(tcp_client[id].fd);
+      tcp_client[id].fd = -1;
     }
 
-    if (tcp_client[i].thread_id) {
-      g_thread_join(tcp_client[i].thread_id);
-      tcp_client[i].thread_id = NULL;
+    if (tcp_client[id].thread_id) {
+      g_thread_join(tcp_client[id].thread_id);
+      tcp_client[id].thread_id = NULL;
     }
+
   }
 
   if (server_socket >= 0) {
@@ -581,29 +588,29 @@ static gpointer rigctl_cw_thread(gpointer data) {
       switch (cwchar) {
       case '+':
         buffered_speed = (5 * cw_keyer_speed) / 4;
-        cwchar=0;
+        cwchar = 0;
         break;
       case '-':
         buffered_speed = (3 * cw_keyer_speed) / 4;
-        cwchar=0;
+        cwchar = 0;
         break;
       case '.':
         join_cw_characters = 1;
-        cwchar=0;
+        cwchar = 0;
         break;
       }
-      bracket_command=0;
+      bracket_command = 0;
     }
 
     if (cwchar == '[') {
       bracket_command = 1;
-      cwchar=0;
+      cwchar = 0;
     } 
 
     if (cwchar == ']') {
       buffered_speed = 0;
       join_cw_characters = 0;
-      cwchar=0;
+      cwchar = 0;
     } 
       
     // The dot and dash length may have changed, so recompute them here
@@ -638,7 +645,7 @@ static gpointer rigctl_cw_thread(gpointer data) {
       }
     }
 
-    // At this point, mox==1 and CAT_cw_active == 1
+    // At this point, mox == 1 and CAT_cw_active == 1
     if (cw_key_hit || cw_not_ready) {
       //
       // CW transmission has been aborted, either due to manually
@@ -716,6 +723,10 @@ static gpointer rigctl_cw_thread(gpointer data) {
 }
 
 void send_resp (int fd, char * msg) {
+  //
+  // send_resp is ONLY called from within the GTK event queue
+  // ==> no multi-thread problems can occur.
+  //
   if (fd == -1) {
     //
     // This means the client fd has been explicitly closed
@@ -730,12 +741,12 @@ void send_resp (int fd, char * msg) {
   int length = strlen(msg);
   int count = 0;
 
-  //
-  // Possibly, the channel is already closed. In this case
-  // give up (rc < 0) or at most try a few times (rc == 0)
-  // since we are in the GTK idle loop
-  //
   while (length > 0) {
+    //
+    // Since this is in the GTK event queue, we cannot try
+    // for a long time. In case of an error (rc < 0) we give
+    // up immediately, for rc == 0 we try at most 10 times.
+    //
     int rc = write(fd, msg, length);
 
     if (rc < 0) { return; }
@@ -751,6 +762,67 @@ void send_resp (int fd, char * msg) {
   }
 }
 
+gboolean auto_reporter(gpointer data) {
+  //
+  // This function is repeatedly called as long as rigctl
+  // is running. It reports VFOA and VFOB frequency changes
+  // to *all* clients that are running and have
+  // autoreporting enabled.
+  //
+  // Note this runs in the GTK event queue so it cannot interfere
+  // with another CAT command
+  //
+  char reply[256];
+  static long long last_fa = -1;
+  static long long last_fb = -1;
+  long long fa;
+  long long fb;
+
+  if (!server_running) { return FALSE; }
+  
+  fa = vfo[VFO_A].ctun ? vfo[VFO_A].ctun_frequency : vfo[VFO_A].frequency;
+  fb = vfo[VFO_B].ctun ? vfo[VFO_B].ctun_frequency : vfo[VFO_B].frequency;
+
+  //
+  // Loop through *all* clients and report changed frequencies, if
+  // - that client is running
+  // - autoreporting is enabled for that client
+  // - that client is not a FIFO
+  //
+  // Auto-reporting to a FIFO is suppressed because all data sent there will
+  // then be read again.
+  //
+  if (fa != last_fa || fb != last_fb) {
+
+    for (int id = 0; id < MAX_SERIAL; id++) {
+      if (!serial_client[id].running || !serial_client[id].auto_reporting || serial_client[id].fifo) { continue; }
+      if (fa != last_fa) {
+        snprintf(reply, 256, "FA%011lld;", fa);
+        send_resp(serial_client[id].fd, reply);
+      }
+      if (fb != last_fb) {
+        snprintf(reply, 256, "FB%011lld;", fa);
+        send_resp(serial_client[id].fd, reply);
+      }
+    }
+    for (int id = 0; id < MAX_TCP_CLIENTS; id++) {
+      if (!tcp_client[id].running || !tcp_client[id].auto_reporting) { continue; }
+      if (fa != last_fa) {
+        snprintf(reply, 256, "FA%011lld;", fa);
+        send_resp(tcp_client[id].fd, reply);
+      }
+      if (fb != last_fb) {
+        snprintf(reply, 256, "FB%011lld;", fa);
+        send_resp(tcp_client[id].fd, reply);
+      }
+    }
+    last_fa = fa;
+    last_fb = fb;
+  }
+
+  return TRUE;
+}
+
 //
 // 2-25-17 - K5JAE - removed duplicate rigctl
 //
@@ -758,7 +830,6 @@ void send_resp (int fd, char * msg) {
 static gpointer rigctl_server(gpointer data) {
   int port = GPOINTER_TO_INT(data);
   int on = 1;
-  int i;
   t_print("%s: starting TCP server on port %d\n", __FUNCTION__, port);
   server_socket = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -781,9 +852,10 @@ static gpointer rigctl_server(gpointer data) {
     return NULL;
   }
 
-  for (i = 0; i < MAX_CLIENTS; i++) {
-    tcp_client[i].fd = -1;
-    tcp_client[i].AI_timer = 0;
+  for (int id = 0; id < MAX_TCP_CLIENTS; id++) {
+    tcp_client[id].fd = -1;
+    tcp_client[id].fifo = 0;
+    tcp_client[id].auto_reporting = 0;
   }
 
   // listen with a max queue of 3
@@ -806,9 +878,9 @@ static gpointer rigctl_server(gpointer data) {
     //
     spare = -1;
 
-    for (i = 0; i < MAX_CLIENTS; i++) {
-      if (tcp_client[i].fd == -1) {
-        spare = i;
+    for (int id = 0; id < MAX_TCP_CLIENTS; id++) {
+      if (tcp_client[id].fd == -1) {
+        spare = id;
         break;
       }
     }
@@ -851,6 +923,7 @@ static gpointer rigctl_server(gpointer data) {
     // Spawn off a thread for handling this new connection
     //
     tcp_client[spare].running = 1;
+    tcp_client[spare].auto_reporting = SET(rigctl_start_with_autoreporting);
     tcp_client[spare].thread_id = g_thread_new("rigctl client", rigctl_client, (gpointer)&tcp_client[spare]);
   }
 
@@ -904,7 +977,7 @@ static gpointer rigctl_client (gpointer data) {
   t_print("%s: Leaving rigctl_client thread\n", __FUNCTION__);
 
   //
-  // If rigctl is disabled via the GUI, the connections are closed by close_rigctl_ports()
+  // If rigctl is disabled via the GUI, the connections are closed by shutdown_rigctl_ports()
   // but even the we should decrement cat_control
   //
   if (client->fd != -1) {
@@ -917,6 +990,7 @@ static gpointer rigctl_client (gpointer data) {
       t_perror("setsockopt(...,SO_LINGER,...) failed for client");
     }
 
+    client->running = 0;
     close(client->fd);
     client->fd = -1;
   }
@@ -976,35 +1050,6 @@ static int ts2000_mode(int m) {
   return mode;
 }
 
-gboolean AI_handler(gpointer data) {
-  //
-  // This function is repeatedly called until it returns FALSE
-  //
-  //
-  CLIENT *client = (CLIENT *)data;
-  char reply[256];
-  long long fa;
-  long long fb;
-
-  if (!client->running) { return FALSE; }
-
-  fa = vfo[VFO_A].ctun ? vfo[VFO_A].ctun_frequency : vfo[VFO_A].frequency;
-  fb = vfo[VFO_B].ctun ? vfo[VFO_B].ctun_frequency : vfo[VFO_B].frequency;
-
-  if (fa != client->last_fa) {
-    client->last_fa = fa;
-    snprintf(reply, 256, "FA%011lld;", fa);
-    send_resp(client->fd, reply);
-  }
-
-  if (fb != client->last_fb) {
-    client->last_fb = fb;
-    snprintf(reply, 256, "FB%011lld;", fa);
-    send_resp(client->fd, reply);
-  }
-
-  return TRUE;
-}
 gboolean parse_extended_cmd (const char *command, CLIENT *client) {
   gboolean implemented = TRUE;
   char reply[256];
@@ -1100,17 +1145,14 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //     via FA/FB frames if the VFO frequencies have changed
       if (command[4] == ';') {
         // Query status
-        snprintf(reply, 256, "ZZAI%d;", client->AI_timer ? 1 : 0);
+        snprintf(reply, 256, "ZZAI%d;", client->auto_reporting);
         send_resp(client->fd, reply) ;
       } else if (command[4] == '0' && command[5] == ';') {
         // disable reporting
-        if (client->AI_timer) { g_source_remove(client->AI_timer); }
-        client->AI_timer = 0;
+        client->auto_reporting = 0 ;
       } else if (command[4] == '1' && command[5] == ';') {
         // enable reporting
-        client->last_fa = client->last_fb = -1;
-        if (client->AI_timer) { g_source_remove(client->AI_timer); }
-        client->AI_timer = g_timeout_add(500, AI_handler, (gpointer) client); // executed periodically
+        client->auto_reporting = 1;
       } else {
         implemented = FALSE;
       }
@@ -3952,15 +3994,14 @@ int parse_cmd(void *data) {
       //     via FA/FB frames if the VFO frequencies have changed
       if (command[2] == ';') {
         // Query status
-        snprintf(reply, 256, "AI%d;", client->AI_timer ? 1 : 0);
+        snprintf(reply, 256, "AI%d;", client->auto_reporting);
         send_resp(client->fd, reply) ;
       } else if (command[2] == '0' && command[3] == ';') {
         // disable reporting
-        if (client->AI_timer) { g_source_remove(client->AI_timer); }
-        client->AI_timer = 0;
+        client->auto_reporting = 0;
       } else if (command[2] == '1' && command[3] == ';') {
         // enable reporting
-        client->AI_timer = g_timeout_add(500, AI_handler, client); // executed periodically
+        client->auto_reporting = 1;
       } else {
         implemented = FALSE;
       }
@@ -5918,8 +5959,9 @@ int launch_serial (int id) {
 
   serial_client[id].running = 1;
   serial_client[id].andromeda_timer = 0;
-  serial_client[id].AI_timer = 0;
-  serial_client[id].thread_id = g_thread_new( "Serial server", serial_server, &serial_client[id]);
+  serial_client[id].auto_reporting = SET(rigctl_start_with_autoreporting);
+
+  serial_client[id].thread_id = g_thread_new( "Serial server", serial_server, (gpointer)&serial_client[id]);
   //
   // If this is a serial line to an ANDROMEDA controller, initialize it and start a periodic GTK task
   //
@@ -5961,6 +6003,7 @@ void disable_serial (int id) {
     serial_client[id].thread_id = NULL;
   }
 
+  serial_client[id].running = 0;
   if (serial_client[id].fd >= 0) {
     close(serial_client[id].fd);
     serial_client[id].fd = -1;
@@ -5984,5 +6027,11 @@ void launch_rigctl () {
   mutex_a = g_new(GT_MUTEX, 1); // memory leak
   g_mutex_init(&mutex_a->m);
   server_running = 1;
+  
+  //
+  // Start auto reporter
+  //
+  g_timeout_add(250, auto_reporter, NULL);
+
   rigctl_server_thread_id = g_thread_new( "rigctl server", rigctl_server, GINT_TO_POINTER(rigctl_port_base));
 }

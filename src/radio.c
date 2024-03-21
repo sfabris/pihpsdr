@@ -1534,11 +1534,6 @@ void start_radio() {
 #endif
 }
 
-void disable_rigctl() {
-  t_print("RIGCTL: disable_rigctl()\n");
-  close_rigctl_ports();
-}
-
 void radio_change_receivers(int r) {
   t_print("radio_change_receivers: from %d to %d\n", receivers, r);
 
@@ -2480,6 +2475,7 @@ void radioRestoreState() {
   GetPropI0("radio.display_warnings",                        display_warnings);
   GetPropI0("radio.display_pacurr",                          display_pacurr);
   GetPropI0("rigctl_enable",                                 rigctl_enable);
+  GetPropI0("rigctl_start_with_autoreporting",               rigctl_start_with_autoreporting);
   GetPropI0("rigctl_port_base",                              rigctl_port_base);
   GetPropI0("mute_spkr_amp",                                 mute_spkr_amp);
   GetPropI0("adc0_filter_bypass",                            adc0_filter_bypass);
@@ -2685,6 +2681,7 @@ void radioSaveState() {
   SetPropI0("radio.display_warnings",                        display_warnings);
   SetPropI0("radio.display_pacurr",                          display_pacurr);
   SetPropI0("rigctl_enable",                                 rigctl_enable);
+  SetPropI0("rigctl_start_with_autoreporting",               rigctl_start_with_autoreporting);
   SetPropI0("rigctl_port_base",                              rigctl_port_base);
   SetPropI0("mute_spkr_amp",                                 mute_spkr_amp);
   SetPropI0("adc0_filter_bypass",                            adc0_filter_bypass);

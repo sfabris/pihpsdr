@@ -42,7 +42,7 @@ void launch_andromeda (int id);
 void disable_serial (int id);
 void disable_andromeda (int id);
 
-void  close_rigctl_ports (void);
+void  shutdown_rigctl(void);
 int   rigctlGetMode(void);
 int   lookup_band(int);
 char * rigctlGetFilter(void);
@@ -53,5 +53,6 @@ extern int rigctl_busy;
 
 extern int rigctl_port_base;
 extern int rigctl_enable;
+extern int rigctl_start_with_autoreporting;
 
 #endif // RIGCTL_H
