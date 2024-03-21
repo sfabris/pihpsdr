@@ -75,24 +75,6 @@ int cw_key_up = 0;
 int cw_key_down = 0;
 int cw_not_ready = 1;
 
-//
-// In the old protocol, the CW signal is generated within pihpsdr,
-// and the pulses must be shaped. This is done via "cw_shape_buffer".
-// The TX mic samples buffer could possibly be used for this as well.
-//
-static double *cw_shape_buffer48 = NULL;
-static double *cw_shape_buffer192 = NULL;
-static int cw_shape = 0;
-//
-// cwramp is the function defining the "ramp" of the CW pulse.
-// an array with RAMPLEN+1 entries. To change the ramp width,
-// new arrays cwramp48[] and cwramp192[] have to be provided
-// in cwramp.c
-//
-#define RAMPLEN 250         // 200: 4 msec ramp width, 250: 5 msec ramp width
-extern double cwramp48[];       // see cwramp.c, for 48 kHz sample rate
-extern double cwramp192[];      // see cwramp.c, for 192 kHz sample rate
-
 double ctcss_frequencies[CTCSS_FREQUENCIES] = {
   67.0, 71.9, 74.4, 77.0, 79.7, 82.5, 85.4, 88.5, 91.5, 94.8,
   97.4, 100.0, 103.5, 107.2, 110.9, 114.8, 118.8, 123.0, 127.3, 131.8,
@@ -157,6 +139,28 @@ void transmitter_set_compressor(TRANSMITTER *tx, int state) {
   SetTXACompressorRun(tx->id, tx->compressor);
 }
 
+static void init_ramp(double *ramp, int width) {
+  //
+  // Calculate a "Blackman-Harris-Ramp"
+  // Output: ramp[0] ... ramp[width] contain numbers
+  // that smoothly grow from zero to one.
+  // (yes, the length of the ramp is width+1)
+  //
+  for (int i=0; i<= width; i++) {
+    double y = (double) i / ((double) width);           // between 0 and 1
+    double y2 = y * 6.2831853071795864769252867665590;  // 2 Pi y
+    double y4 = y * 12.566370614359172953850573533118;  // 4 Pi y
+    double y6 = y * 18.849555921538759430775860299677;  // 6 Pi y
+
+    ramp[i]=2.787456445993031358885017421602787456445993031358885 * (
+        0.358750000000000000000000000000000000000000000000000    * y
+      - 0.0777137671623415735025882528171650378378063004186075  * sin(y2)
+      + 0.01124270518001148651871394904463441453411422937510584 * sin(y4)
+      - 0.00061964324510444584059352078539698924952082955408284 * sin(y6)
+    );
+  }
+}
+
 void reconfigure_transmitter(TRANSMITTER *tx, int width, int height) {
   if (width != tx->width || height != tx->height) {
     g_mutex_lock(&tx->display_mutex);
@@ -164,7 +168,6 @@ void reconfigure_transmitter(TRANSMITTER *tx, int width, int height) {
     tx->width = width;
     tx->height = height;
     gtk_widget_set_size_request(tx->panel, width, height);
-    int ratio = tx->iq_output_rate / tx->mic_sample_rate;
     //
     // Upon calling, width either equals display_width (non-duplex) and
     // the *shown* TX spectrum is 24 kHz wide, or width equals 1/4 display_width (duplex)
@@ -174,7 +177,7 @@ void reconfigure_transmitter(TRANSMITTER *tx, int width, int height) {
     // The value of tx->pixels corresponds to the *full* TX spectrum in the
     // target resolution.
     //
-    tx->pixels = display_width * ratio * 2;
+    tx->pixels = display_width * tx->ratio * 2;
     g_free(tx->pixel_samples);
     tx->pixel_samples = g_new(float, tx->pixels);
     init_analyzer(tx);
@@ -695,18 +698,21 @@ TRANSMITTER *create_transmitter(int id, int width, int height) {
     tx->mic_sample_rate = 48000;   // sample rate of incoming audio signal
     tx->mic_dsp_rate = 48000;      // sample rate of TX signal processing within WDSP
     tx->iq_output_rate = 48000;    // output TX IQ sample rate
+    tx->ratio = 1;
     break;
 
   case NEW_PROTOCOL:
     tx->mic_sample_rate = 48000;
     tx->mic_dsp_rate = 96000;
     tx->iq_output_rate = 192000;
+    tx->ratio = 4;
     break;
 
   case SOAPYSDR_PROTOCOL:
     tx->mic_sample_rate = 48000;
     tx->mic_dsp_rate = 96000;
-    tx->iq_output_rate = radio_sample_rate;
+    tx->iq_output_rate = radio_sample_rate;  // MUST be a multiple of 48k
+    tx->ratio = radio_sample_rate / 48000;
     break;
   }
 
@@ -730,9 +736,8 @@ TRANSMITTER *create_transmitter(int id, int width, int height) {
     tx->buffer_size = 256;
   }
 
-  int ratio = tx->iq_output_rate / tx->mic_sample_rate;
-  tx->output_samples = tx->buffer_size * ratio;
-  tx->pixels = display_width * ratio * 2;
+  tx->output_samples = tx->buffer_size * tx->ratio;
+  tx->pixels = display_width * tx->ratio * 2;
   tx->width = width;
   tx->height = height;
   tx->display_panadapter = 1;
@@ -788,39 +793,21 @@ TRANSMITTER *create_transmitter(int id, int width, int height) {
   tx->swr_alarm = 3.0;     // default value for SWR protection
   tx->alc = 0.0;
   transmitterRestoreState(tx);
+  //
   // allocate buffers
+  //
   t_print("transmitter: allocate buffers: mic_input_buffer=%d iq_output_buffer=%d pixels=%d\n", tx->buffer_size,
           tx->output_samples, tx->pixels);
   tx->mic_input_buffer = g_new(double, 2 * tx->buffer_size);
   tx->iq_output_buffer = g_new(double, 2 * tx->output_samples);
+  tx->cw_sig_rf = g_new(double, tx->output_samples);
   tx->samples = 0;
   tx->pixel_samples = g_new(float, tx->pixels);
 
-  if (cw_shape_buffer48) { g_free(cw_shape_buffer48); }
-
-  if (cw_shape_buffer192) { g_free(cw_shape_buffer192); }
-
-  switch (protocol) {
-  case ORIGINAL_PROTOCOL:
-    //
-    // We need no buffer for the IQ sample amplitudes because
-    // we make dual use of the buffer for the audio amplitudes
-    // (TX sample rate ==  mic sample rate)
-    //
-    cw_shape_buffer48 = g_new(double, tx->buffer_size);
-    break;
-
-  case NEW_PROTOCOL:
-  case SOAPYSDR_PROTOCOL:
-    //
-    // We need two buffers: one for the audio sample amplitudes
-    // and another one for the TX IQ amplitudes
-    // (TX and mic sample rate are usually different).
-    //
-    cw_shape_buffer48 = g_new(double, tx->buffer_size);
-    cw_shape_buffer192 = g_new(double, tx->output_samples);
-    break;
-  }
+  g_mutex_init(&tx->cw_ramp_mutex);
+  tx->cw_ramp_audio = NULL;
+  tx->cw_ramp_rf    = NULL;
+  tx_set_ramps(tx);
 
   t_print("create_transmitter: OpenChannel id=%d buffer_size=%d dsp_size=%d fft_size=%d sample_rate=%d dspRate=%d outputRate=%d\n",
           tx->id,
@@ -1013,7 +1000,7 @@ void tx_set_pre_emphasize(TRANSMITTER *tx, int state) {
 static void full_tx_buffer(TRANSMITTER *tx) {
   long isample;
   long qsample;
-  double gain, sidevol, ramp;
+  double gain;
   double *dp;
   int j;
   int error;
@@ -1065,23 +1052,10 @@ static void full_tx_buffer(TRANSMITTER *tx) {
 
     // These are the I/Q samples that describe our CW signal
     // The only use we make of it is displaying the spectrum.
-    switch (protocol) {
-    case ORIGINAL_PROTOCOL:
-      for (j = 0; j < tx->output_samples; j++) {
-        *dp++ = 0.0;
-        *dp++ = cw_shape_buffer48[j];
-      }
 
-      break;
-
-    case NEW_PROTOCOL:
-    case SOAPYSDR_PROTOCOL:
-      for (j = 0; j < tx->output_samples; j++) {
-        *dp++ = 0.0;
-        *dp++ = cw_shape_buffer192[j];
-      }
-
-      break;
+    for (j = 0; j < tx->output_samples; j++) {
+      *dp++ = 0.0;
+      *dp++ = tx->cw_sig_rf[j];
     }
   } else {
     update_vox(tx);
@@ -1144,7 +1118,7 @@ static void full_tx_buffer(TRANSMITTER *tx) {
     txflag = 1;
 
     //
-    //  When doing CW, we do not need WDSP since Q(t) = cw_shape_buffer(t) and I(t)=0
+    //  When doing CW, we do not need WDSP since Q(t) = cw_sig_rf(t) and I(t)=0
     //  For the old protocol where the IQ and audio samples are tied together, we can
     //  easily generate a synchronous side tone
     //
@@ -1164,32 +1138,31 @@ static void full_tx_buffer(TRANSMITTER *tx) {
       // new protocol: already done in add_mic_sample
       // soapy       : no audio to radio
       //
+
       switch (protocol) {
       case ORIGINAL_PROTOCOL:
-        //
-        // tx->output_samples equals tx->buffer_size
-        // Take TX envelope from the 48kHz shape buffer
+        {
         //
         // An inspection of the IQ samples produced by WDSP when TUNEing shows
         // that the amplitude of the pulse is in I (in the range 0.0 - 1.0)
         // and Q should be zero
+        // Note that we re-cycle the TXIQ pulse shape here to generate the
+        // side tone sent to the radio.
         //
-        sidevol = 64.0 * cw_keyer_sidetone_volume; // between 0.0 and 8128.0
+        double sidevol = 64.0 * cw_keyer_sidetone_volume; // between 0.0 and 8128.0
 
         for (j = 0; j < tx->output_samples; j++) {
-          ramp = cw_shape_buffer48[j];              // between 0.0 and 1.0
+          double ramp = tx->cw_sig_rf[j];       // between 0.0 and 1.0
           isample = floor(gain * ramp + 0.5);   // always non-negative, isample is just the pulse envelope
           sidetone = sidevol * ramp * sine_generator(&p1radio, &p2radio, cw_keyer_sidetone_frequency);
           old_protocol_iq_samples(isample, 0, sidetone);
+        }
         }
 
         break;
 
       case NEW_PROTOCOL:
 
-        //
-        // tx->output_samples is four times tx->buffer_size
-        // Take TX envelope from the 192kHz shape buffer
         //
         // An inspection of the IQ samples produced by WDSP when TUNEing shows
         // that the amplitude of the pulse is in I (in the range 0.0 - 0.896)
@@ -1200,7 +1173,7 @@ static void full_tx_buffer(TRANSMITTER *tx) {
         // This is why we apply the factor 0.896 HERE.
         //
         for (j = 0; j < tx->output_samples; j++) {
-          ramp = cw_shape_buffer192[j];                    // between 0.0 and 1.0
+          double ramp = tx->cw_sig_rf[j];                  // between 0.0 and 1.0
           isample = floor(0.896 * gain * ramp + 0.5);      // always non-negative, isample is just the pulse envelope
           new_protocol_iq_samples(isample, 0);
         }
@@ -1211,11 +1184,11 @@ static void full_tx_buffer(TRANSMITTER *tx) {
       case SOAPYSDR_PROTOCOL:
 
         //
-        // the only difference to the P2 treatment is that we do not
+        // No scaling, no audio.
         // generate audio samples to be sent to the radio
         //
         for (j = 0; j < tx->output_samples; j++) {
-          ramp = cw_shape_buffer192[j];             // between 0.0 and 1.0
+          double ramp = tx->cw_sig_rf[j];                   // between 0.0 and 1.0
           soapy_protocol_iq_samples(0.0F, (float)ramp);     // SOAPY: just convert double to float
         }
 
@@ -1288,52 +1261,102 @@ void add_mic_sample(TRANSMITTER *tx, float mic_sample) {
   //
   if ((txmode == modeCWL || txmode == modeCWU) && isTransmitting()) {
     int updown;
+    double val;
+    float cwsample;
     //
-    //  RigCtl CW sets the variables cw_key_up and cw_key_down
+    //  'piHPSDR' CW sets the variables cw_key_up and cw_key_down
     //  to the number of samples for the next down/up sequence.
     //  cw_key_down can be zero, for inserting some space
     //
     //  We HAVE TO shape the signal to avoid hard clicks to be
     //  heard way beside our frequency. The envelope (ramp function)
-    //      is stored in cwramp48[0::RAMPLEN], so we "move" cw_shape between these
-    //      values. The ramp width is RAMPLEN/48000 seconds.
+    //  is stored in cw_ramp_rf[0::cw_ramp_rf_len], so we "move" the
+    //  pointer cw_ramp_rf_ptr between the edges.
     //
-    //      In the new protocol, we use this ramp for the side tone, but
-    //      must use values from cwramp192 for the TX iq signal.
+    //  In the same way, cw_ramp_audio, cw_ramp_audio_len,
+    //  and cw_ramp_audio_ptr are used to shape the envelope of
+    //  the side tone pulse.
     //
-    //      Note that usually, the pulse is much broader than the ramp,
-    //      that is, cw_key_down and cw_key_up are much larger than RAMPLEN.
+    //  Note that usually, the pulse is much broader than the ramp,
+    //  that is, cw_key_down and cw_key_up are much larger than
+    //  the ramp length.
+    //
+    //  We arrive here once per microphone sample. This means, that
+    //  we have to produce tx->ratio RF samples and one sidetone
+    //  sample.
     //
     cw_not_ready = 0;
 
     if (cw_key_down > 0 ) {
-      if (cw_shape < RAMPLEN) { cw_shape++; }   // walk up the ramp
-
       cw_key_down--;            // decrement key-up counter
       updown = 1;
     } else {
-      // dig into this even if cw_key_up is already zero, to ensure
-      // that we reach the bottom of the ramp for very small pauses
-      if (cw_shape > 0) { cw_shape--; } // walk down the ramp
 
-      if (cw_key_up > 0) { cw_key_up--; } // decrement key-down counter
+      if (cw_key_up > 0) {
+        cw_key_up--;  // decrement key-down counter
+      }
 
       updown = 0;
     }
 
     //
-    // store the ramp value in cw_shape_buffer, but also use it for shaping the "local"
-    // side tone
-    double ramp = cwramp48[cw_shape];
-    float cwsample = 0.00196 * cw_keyer_sidetone_volume * ramp * sine_generator(&p1local, &p2local,
-                     cw_keyer_sidetone_frequency);
+    // Shape RF pulse and side tone.
+    //
+    j=tx->ratio*tx->samples;  // pointer into cw_rf_sig
+    if (g_mutex_trylock(&tx->cw_ramp_mutex)) {
+      if (updown) {
+
+        if (tx->cw_ramp_audio_ptr < tx->cw_ramp_audio_len) {
+          tx->cw_ramp_audio_ptr++;
+        }
+
+        val = tx->cw_ramp_audio[tx->cw_ramp_audio_ptr];
+
+        for (i=0; i<tx->ratio; i++) {
+          if (tx->cw_ramp_rf_ptr < tx->cw_ramp_rf_len) {
+            tx->cw_ramp_rf_ptr++;
+          }
+          tx->cw_sig_rf[j++] = tx->cw_ramp_rf[tx->cw_ramp_rf_ptr];
+        }
+
+      } else {
+
+        if (tx->cw_ramp_audio_ptr > 0) {
+          tx->cw_ramp_audio_ptr--;
+        }
+
+        val = tx->cw_ramp_audio[tx->cw_ramp_audio_ptr];
+
+        for (i=0; i<tx->ratio; i++) {
+          if (tx->cw_ramp_rf_ptr > 0) {
+            tx->cw_ramp_rf_ptr--;
+          }
+          tx->cw_sig_rf[j++] = tx->cw_ramp_rf[tx->cw_ramp_rf_ptr];
+        }
+
+      }
+
+      cwsample = 0.00196 * cw_keyer_sidetone_volume * val 
+                  * sine_generator(&p1local, &p2local, cw_keyer_sidetone_frequency);
+      
+      g_mutex_unlock(&tx->cw_ramp_mutex);
+    } else {
+      //
+      // This can happen if the CW ramp width is changed while transmitting
+      // Simply insert a "hard zero".
+      //
+      cwsample = 0.0;
+      for (i=0; i<tx->ratio; i++) {
+        tx->cw_sig_rf[j++] = 0.0;
+      }
+    }
 
     //
     // cw_keyer_sidetone_volume is in the range 0...127 so cwsample is 0.00 ... 0.25
     //
-    if (active_receiver->local_audio && cw_keyer_sidetone_volume > 0) { cw_audio_write(active_receiver, cwsample); }
-
-    cw_shape_buffer48[tx->samples] = ramp;
+    if (active_receiver->local_audio && cw_keyer_sidetone_volume > 0) {
+      cw_audio_write(active_receiver, cwsample);
+    }
 
     //
     // In the new protocol, we MUST maintain a constant flow of audio samples to the radio
@@ -1372,113 +1395,26 @@ void add_mic_sample(TRANSMITTER *tx, float mic_sample) {
       }
 
       new_protocol_cw_audio_samples(s, s);
-      s = 4 * cw_shape;
-      i = 4 * tx->samples;
-
-      // The 192kHz-ramp is constructed such that for cw_shape==0 or cw_shape==RAMPLEN,
-      // the two following cases create the same shape.
-      if (updown) {
-        // climbing up...
-        cw_shape_buffer192[i + 0] = cwramp192[s + 0];
-        cw_shape_buffer192[i + 1] = cwramp192[s + 1];
-        cw_shape_buffer192[i + 2] = cwramp192[s + 2];
-        cw_shape_buffer192[i + 3] = cwramp192[s + 3];
-      } else {
-        // descending...
-        cw_shape_buffer192[i + 0] = cwramp192[s + 3];
-        cw_shape_buffer192[i + 1] = cwramp192[s + 2];
-        cw_shape_buffer192[i + 2] = cwramp192[s + 1];
-        cw_shape_buffer192[i + 3] = cwramp192[s + 0];
-      }
-    }
-
-    if (protocol == SOAPYSDR_PROTOCOL) {
-      //
-      // The ratio between the TX and microphone sample rate can be any value, so
-      // it is difficult to construct a general ramp here. We may at least *assume*
-      // that the ratio is integral. We can extrapolate from the shapes calculated
-      // for 48 and 192 kHz sample rate.
-      //
-      // At any rate, we *must* produce tx->outputsamples IQ samples from an input
-      // buffer of size tx->buffer_size.
-      //
-      int ratio = tx->output_samples / tx->buffer_size;
-      i = ratio * tx->samples; // current position in TX IQ buffer
-
-      if (updown) {
-        //
-        // Climb up the ramp
-        //
-        if (ratio % 4 == 0) {
-          // simple adaptation from the 192 kHz ramp
-          ratio = ratio / 4;
-          int s = 4 * cw_shape;
-
-          for (j = 0; j < ratio; j++) { cw_shape_buffer192[i++] = cwramp192[s + 0]; }
-
-          for (j = 0; j < ratio; j++) { cw_shape_buffer192[i++] = cwramp192[s + 1]; }
-
-          for (j = 0; j < ratio; j++) { cw_shape_buffer192[i++] = cwramp192[s + 2]; }
-
-          for (j = 0; j < ratio; j++) { cw_shape_buffer192[i++] = cwramp192[s + 3]; }
-        } else {
-          // simple adaptation from the 48 kHz ramp
-          for (j = 0; j < ratio; j++) { cw_shape_buffer192[i++] = cwramp48[cw_shape]; }
-        }
-      } else {
-        //
-        // Walk down the ramp
-        //
-        if (ratio % 4 == 0) {
-          // simple adaptation from the 192 kHz ramp
-          ratio = ratio / 4;
-          int s = 4 * cw_shape;
-
-          for (j = 0; j < ratio; j++) { cw_shape_buffer192[i++] = cwramp192[s + 3]; }
-
-          for (j = 0; j < ratio; j++) { cw_shape_buffer192[i++] = cwramp192[s + 2]; }
-
-          for (j = 0; j < ratio; j++) { cw_shape_buffer192[i++] = cwramp192[s + 1]; }
-
-          for (j = 0; j < ratio; j++) { cw_shape_buffer192[i++] = cwramp192[s + 0]; }
-        } else {
-          // simple adaptation from the 48 kHz ramp
-          for (j = 0; j < ratio; j++) { cw_shape_buffer192[i++] = cwramp48[cw_shape]; }
-        }
-      }
     }
   } else {
     //
     //  If no longer transmitting, or no longer doing CW: reset pulse shaper.
-    //  This will also swallow any pending CW in rigtl CAT CW and wipe out
-    //      cw_shape_buffer very quickly. In order to tell rigctl etc. that CW should be
-    //  aborted, we also use the cw_not_ready flag.
+    //  This will also swallow any pending CW and wipe out the buffers
+    //  In order to tell rigctl etc. that CW should be aborted, we also use the cw_not_ready flag.
     //
     cw_not_ready = 1;
     cw_key_up = 0;
 
     if (cw_key_down > 0) { cw_key_down--; }  // in case it occured before the RX/TX transition
 
-    cw_shape = 0;
+    tx->cw_ramp_audio_ptr = 0;
+    tx->cw_ramp_rf_ptr = 0;
+
     // insert "silence" in CW audio and TX IQ buffers
-    cw_shape_buffer48[tx->samples] = 0.0;
 
-    if (protocol == NEW_PROTOCOL) {
-      cw_shape_buffer192[4 * tx->samples + 0] = 0.0;
-      cw_shape_buffer192[4 * tx->samples + 1] = 0.0;
-      cw_shape_buffer192[4 * tx->samples + 2] = 0.0;
-      cw_shape_buffer192[4 * tx->samples + 3] = 0.0;
-    }
-
-    if (protocol == SOAPYSDR_PROTOCOL) {
-      //
-      // this essentially the P2 code, where the ratio
-      // is fixed to 4
-      //
-      int ratio = tx->output_samples / tx->buffer_size;
-      i = ratio * tx->samples;
-
-      for (j = 0; j < ratio; j++) { cw_shape_buffer192[i++] = 0.0; }
+    j = tx->ratio * tx->samples;
+    for (i=0; i<tx->ratio; i++) {
+      tx->cw_sig_rf[j++]=0.0;
     }
   }
 
@@ -1744,4 +1680,26 @@ float sine_generator(int *phase1, int *phase2, int freq) {
   *phase1 = p1;
   *phase2 = p2;
   return val;
+}
+
+void tx_set_ramps(TRANSMITTER *tx) {
+  //t_print("%s: new width=%d\n", __FUNCTION__, cw_ramp_width);
+  //
+  // Calculate a new CW ramp
+  //
+  g_mutex_lock(&tx->cw_ramp_mutex);
+
+  if (tx->cw_ramp_audio) { g_free(tx->cw_ramp_audio); }
+  tx->cw_ramp_audio_ptr = 0;
+  tx->cw_ramp_audio_len = 48*cw_ramp_width;
+  tx->cw_ramp_audio=g_new(double, tx->cw_ramp_audio_len+1);
+  init_ramp(tx->cw_ramp_audio, tx->cw_ramp_audio_len);
+
+  if (tx->cw_ramp_rf) { g_free(tx->cw_ramp_rf); }
+  tx->cw_ramp_rf_ptr = 0;
+  tx->cw_ramp_rf_len = 48*tx->ratio*cw_ramp_width;
+  tx->cw_ramp_rf=g_new(double, tx->cw_ramp_rf_len+1);
+  init_ramp(tx->cw_ramp_rf, tx->cw_ramp_rf_len);
+
+  g_mutex_unlock(&tx->cw_ramp_mutex);
 }

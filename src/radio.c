@@ -210,6 +210,7 @@ int cw_keyer_ptt_delay = 30;           // 0-255ms
 int cw_keyer_hang_time = 500;          // ms
 int cw_keyer_sidetone_frequency = 800; // Hz
 int cw_breakin = 1;                    // 0=disabled 1=enabled
+int cw_ramp_width = 8;                 // default value (in ms)
 
 int enable_auto_tune = 0;
 int auto_tune_flag = 0;
@@ -2441,6 +2442,7 @@ void radioRestoreState() {
   GetPropI0("cw_keyer_hang_time",                            cw_keyer_hang_time);
   GetPropI0("cw_keyer_sidetone_frequency",                   cw_keyer_sidetone_frequency);
   GetPropI0("cw_breakin",                                    cw_breakin);
+  GetPropI0("cw_ramp_width",                                 cw_ramp_width);
   GetPropI0("vfo_encoder_divisor",                           vfo_encoder_divisor);
   GetPropI0("OCtune",                                        OCtune);
   GetPropI0("OCfull_tune_time",                              OCfull_tune_time);
@@ -2655,6 +2657,7 @@ void radioSaveState() {
   SetPropI0("cw_keyer_hang_time",                            cw_keyer_hang_time);
   SetPropI0("cw_keyer_sidetone_frequency",                   cw_keyer_sidetone_frequency);
   SetPropI0("cw_breakin",                                    cw_breakin);
+  SetPropI0("cw_ramp_width",                                 cw_ramp_width);
   SetPropI0("vfo_encoder_divisor",                           vfo_encoder_divisor);
   SetPropI0("OCtune",                                        OCtune);
   SetPropI0("OCfull_tune_time",                              OCfull_tune_time);

@@ -1443,6 +1443,10 @@ static void new_protocol_transmit_specific() {
   transmit_specific_buffer[11] = cw_keyer_hang_time >> 8;
   transmit_specific_buffer[12] = cw_keyer_hang_time;
   transmit_specific_buffer[13] = rfdelay;
+  transmit_specific_buffer[14] = 0;
+  transmit_specific_buffer[15] = 0;   // should be 192: TX sample rate 192k
+  transmit_specific_buffer[16] = 0;   // should be 24:  TX IQ sample width 24 bits
+  transmit_specific_buffer[17] = cw_ramp_width;
   transmit_specific_buffer[50] = 0;
 
   if (mic_linein) {

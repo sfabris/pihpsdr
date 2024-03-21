@@ -160,6 +160,7 @@ extern int cw_keyer_ptt_delay;
 extern int cw_keyer_hang_time;
 extern int cw_keyer_sidetone_frequency;
 extern int cw_breakin;
+extern int cw_ramp_width;
 
 extern int enable_auto_tune;
 extern int auto_tune_flag;

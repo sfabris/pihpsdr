@@ -87,7 +87,10 @@ static int txrate = -1;
 static int ducbits = -1;
 static int orion = -1;
 static int gain = -1;
-static int txatt = -1;
+static int txatt0 = -1;
+static int txatt1 = -1;
+static int txatt2 = -1;
+static int ramplen = -1;
 
 //stat from high-priority packet
 static int run = 0;
@@ -112,7 +115,9 @@ static int stepatt1 = -1;
 //
 static double rxatt0_dbl = 1.0;
 static double rxatt1_dbl = 1.0;
-static double txatt_dbl = 1.0;
+static double txatt0_dbl = 1.0;
+static double txatt1_dbl = 1.0;
+static double txatt2_dbl = 1.0;
 static double txdrv_dbl = 0.0;
 
 // End of state variables
@@ -630,6 +635,11 @@ void *duc_specific_thread(void *data) {
       t_print("TX: DUC sample width: %d bits\n", ducbits);
     }
 
+    if (ramplen != buffer[17]) {
+      ramplen = buffer[17];
+      t_print("TX: CW ramp length %d msec\n",ramplen);
+    }
+
     if (orion != buffer[50]) {
       t_print("---------------------------------------------------\n");
       orion = buffer[50];
@@ -685,10 +695,22 @@ void *duc_specific_thread(void *data) {
       t_print("TX: LineIn Gain (dB): %f\n", -34.0 + 1.5 * gain);
     }
 
-    if (txatt != buffer[59]) {
-      txatt = buffer[59];
-      txatt_dbl = pow(10.0, -0.05 * txatt);
-      t_print("TX: ATT DUC0/ADC0: %d\n", txatt);
+    if (txatt2 != buffer[57]) {
+      txatt2 = buffer[57];
+      txatt2_dbl = pow(10.0, -0.05 * txatt2);
+      t_print("TX: ATT ADC2: %d\n", txatt2);
+    }
+
+    if (txatt1 != buffer[58]) {
+      txatt1 = buffer[58];
+      txatt1_dbl = pow(10.0, -0.05 * txatt1);
+      t_print("TX: ATT ADC1: %d\n", txatt1);
+    }
+
+    if (txatt0 != buffer[59]) {
+      txatt0 = buffer[59];
+      txatt0_dbl = pow(10.0, -0.05 * txatt0);
+      t_print("TX: ATT ADC0: %d\n", txatt0);
     }
   }
 
@@ -1011,7 +1033,6 @@ void *rx_thread(void *data) {
   double i0sample, q0sample;
   double i1sample, q1sample;
   double irsample, qrsample;
-  double fac;
   int sample;
   unsigned char *p;
   int noisept;
@@ -1172,9 +1193,8 @@ void *rx_thread(void *data) {
 
         if (rxptr >= NEWRTXLEN) { rxptr = 0; }
 
-        fac = txatt_dbl * txdrv_dbl * (IM3a + IM3b * (irsample * irsample + qrsample * qrsample) * txdrv_dbl * txdrv_dbl);
-
         if (myadc == 0) {
+          double fac = txatt0_dbl * txdrv_dbl * (IM3a + IM3b * (irsample * irsample + qrsample * qrsample) * txdrv_dbl * txdrv_dbl);
           i0sample += irsample * fac;
           q0sample += qrsample * fac;
         }

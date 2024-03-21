@@ -377,7 +377,6 @@ src/bandstack_menu.c \
 src/css.c \
 src/configure.c \
 src/cw_menu.c \
-src/cwramp.c \
 src/discovered.c \
 src/discovery.c \
 src/display_menu.c \
@@ -546,7 +545,6 @@ src/bandstack_menu.o \
 src/configure.o \
 src/css.o \
 src/cw_menu.o \
-src/cwramp.o \
 src/discovered.o \
 src/discovery.o \
 src/display_menu.o \

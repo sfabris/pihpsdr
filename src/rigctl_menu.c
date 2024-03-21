@@ -240,9 +240,9 @@ void rigctl_menu(GtkWidget *parent) {
 
   /* Put the Serial Port stuff here, one port per line */
 
-  int row=2;
   for (int i = 0; i < MAX_SERIAL; i++) {
     char str[64];
+    int row = i + 2;
     snprintf (str, 64, "Serial Port%d:", i);
     GtkWidget *serial_text_label = gtk_label_new(str);
     gtk_widget_set_name(serial_text_label, "boldlabel");
@@ -290,7 +290,6 @@ void rigctl_menu(GtkWidget *parent) {
     gtk_grid_attach(GTK_GRID(grid), andromeda_b[i], 5, row, 1, 1);
     g_signal_connect(andromeda_b[i], "toggled", G_CALLBACK(andromeda_cb), GINT_TO_POINTER(i));
 
-    row++;
   }
 
   gtk_container_add(GTK_CONTAINER(content), grid);

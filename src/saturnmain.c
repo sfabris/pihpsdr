@@ -1612,6 +1612,8 @@ void saturn_handle_duc_specific(bool FromNetwork, unsigned char *UDPInBuffer) {
   uint8_t SidetoneVolume;
   uint8_t CWRFDelay;
   uint16_t CWHangDelay;
+  uint8_t CWRampTime;
+  uint32_t CWRampTime_us;
 
   //t_print("DUC specific %sbuffer received\n", (FromNetwork)?"network ":"");
   if (FromNetwork) {
@@ -1639,6 +1641,13 @@ void saturn_handle_duc_specific(bool FromNetwork, unsigned char *UDPInBuffer) {
   CWHangDelay = ntohs(CWHangDelay);                       // convert from big endian
   SetCWPTTDelay(CWRFDelay);
   SetCWHangTime(CWHangDelay);
+  CWRampTime = *(uint8_t*)(UDPInBuffer+17);               // ramp transition time
+  if(CWRampTime != 0) {                                   // if ramp period supported by client app
+    CWRampTime_us = 1000 * CWRampTime;
+    InitialiseCWKeyerRamp(true, CWRampTime_us);         // create required ramp, P2
+  }
+
+
   // mic and line in options
   Byte = *(uint8_t*)(UDPInBuffer + 50);                   // mic/line options
   SetMicBoost((bool)((Byte >> 1) & 1));
