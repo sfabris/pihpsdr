@@ -801,7 +801,7 @@ gboolean auto_reporter(gpointer data) {
         send_resp(serial_client[id].fd, reply);
       }
       if (fb != last_fb) {
-        snprintf(reply, 256, "FB%011lld;", fa);
+        snprintf(reply, 256, "FB%011lld;", fb);
         send_resp(serial_client[id].fd, reply);
       }
     }
@@ -812,7 +812,7 @@ gboolean auto_reporter(gpointer data) {
         send_resp(tcp_client[id].fd, reply);
       }
       if (fb != last_fb) {
-        snprintf(reply, 256, "FB%011lld;", fa);
+        snprintf(reply, 256, "FB%011lld;", fb);
         send_resp(tcp_client[id].fd, reply);
       }
     }
