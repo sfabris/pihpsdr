@@ -2892,7 +2892,7 @@ adapted to piHPSDR. The \bltt{RigCtl} menu is shown in Fig. \ref{fig:RigCtlMenu}
 \label{fig:RigCtlMenu}
 \end{figure}
 
-\rett{RigCtl TCP Port}. This sets the TCP port number for CAT connection to TCP. The default value (19090)
+\rett{TCP Port}. This sets the TCP port number for CAT connection to TCP. The default value (19090)
 is rather standard,
 using another one is only necessary if you are running more than one SDR program on the host computer at the
 same time.
@@ -2913,6 +2913,17 @@ the preferences
 are stored. This checkbox is only of interest for software developers to analyze programming or connection
 errors, and should
 not be checked for normal use.
+
+\rett{Start clients AutoReporting}. CAT clients can enable and disable an \textit{auto reporting} mode
+for their connection. In this mode, VFO-A and VFO-B frequency are periodically reported to the client,
+if they have changed since the last report. External hardware such as tuners or amplifiers sometimes
+use this feature. Unfortunately, there is such hardware which
+depends on such unsolicited frequency reporting messages \textit{without} explicitly requesting
+auto reporting. This checkbox, if checked, circumvents problems with such hardware by putting
+all new CAT connections into auto reporting mode. Clients that do not like auto reporting can then
+switch auto reporting off, and this then only applies to that client. For example the piHPSDR backend
+of the hamlib rig control library disables auto reporting (,,\texttt{AI0;}'' command) when it connects to piHPSDR
+and will thus not be affected by this checkbox.
 
 \rett{Serial Port}. In this text field, enter the device name of the serial port or the named pipe to use.
 Which names to use
@@ -5787,71 +5798,54 @@ and now it should contain an IP address in the ,,eth0'' field (look for ,,inet 1
 The DHCP server software is not installed on a ,,virgin'' RaspPi OS, therefore install it with the
 command (you need internet connection to do so)
 
-\grtt{sudo apt-get install isc-dhcp-server}
+\grtt{sudo apt-get install kea-dhcp4-server}
 
-(a few more packages that are needed for the DHCP server are installed as well). The output of the
-command will end with an error message. In my view it is a bug, but installing the DHCP server will
-also try to start it, which is not possible at the moment since we need to provide some information
-first. As a first step, you have to modify two lines in
-the file \texttt{/etc/default/isc-dhcp-server}  by
-executing the command
+(a few more packages that are needed for the DHCP server are installed as well).
+It is a bit difficult to manually configure the DHCP server, so just edit
+the relevant configuration file with the command
 
-\grtt{sudo nano /etc/default/isc-dhcp-server}
+\grtt{sudo nano /etc/kea/kea-dhcp4.conf}
 
-\begin{itemize}
-\item{Locate the line (in my case, the fourth line) reading \\
-\texttt{\#DHCPDv4\_CONF=/etc/dhcp/dhcpd.conf} \\
-and activate this line by removing the first character (the number sign).}
-\item{Locate the line (in my case, the second-last one) reading \\
-\texttt{INTERFACESv4=""}\\
-and change it such that it reads \texttt{INTERFACESv4="eth0"} (the last character
-of the interface name eth0 is a zero).}
-\end{itemize}
-
-The second step is then to provide some information in the configuration file
-of the DHCP daemon,
-and to this end, edit the file using the command
-
-\grtt{sudo nano /etc/dhcp/dhcpd.conf}
-
+There is extensive explanation in this file (mostly comments). 
+Delete everything that is in there
+and replace it with the contents given at the top of the next page.
+The file contents is placed at the beginning of the page. It it placed
+there and does not look very readable, since all blank lines have 
+been removed and all lines start at the left margin. This is so to make
+it easier to drag-and-drop it directly from  the PDF manual file
+into the configuration file. Start copy-pasting with the very first
+opening curly brace and end it with the very last curly brace!
 \clearpage
-This is a very large file, and most of its contents are comments (the lines starting with
-a number sign). So it is easiest to delete everything that is there in this file and replace
-it with
 
 \begin{verbatim}
-default-lease-time 99999;
-max-lease-time 99999;
-
-subnet 192.168.8.0 netmask 255.255.255.0 {
-   range 192.168.8.10 192.168.8.30;
+{
+"Dhcp4": {
+"valid-lifetime": 99999,
+"interfaces-config": {
+"interfaces": [ "eth0/192.168.8.1" ]
+},
+"lease-database": {
+"type": "memfile",
+"lfc-interval": 3600
+},
+"subnet4": [{
+"subnet": "192.168.8.0/24",
+"pools": [{ "pool": "192.168.8.10 - 192.168.8.30" }]
+}]
+}
 }
 \end{verbatim}
 
-After making the changes to the two files, \texttt{/etc/default/isc-dhcp-server} and
-\texttt{/etc/dhcp/dhcpd.conf}, you should again reboot the RaspPi. After rebooting,
-you can check the status
-of the DCHP server with the command
+After changing the configuration file and rebooting, the status of the DHCP server
+can be checked with the command
 
-\grtt{systemctl status isc-dhcp-server}
+\grtt{systemctl status kea-dhcp4-server}
 
-and the output of this commmand should indicate that the DCHP server is active and running.
-
-
-From now on, each time the RaspPi is
-started, the network interface is configured and the DHCP server is started. If you then
-connect (or power up) the radio, then the radio should get a valid IP address and 
-pihpsdr ,,finds'' the radio. Some radios try to get a DHCP address only once upon powering up,
-for these radios it is important to boot the RaspPi first, and power up the radio only after
-the RaspPi operating system is up and running.
-
-In this example, the IP addresses given by the DHCP server have been restricted to the range 192.168.8.10
-through 192.168.8.30. Normally the DHCP server will assign the first one first, so expect that your radio,
-when you start piHPSDR, is ,,discovered'' with IP address 192.168.8.10.
-
+and this should indicate that the DHCP server is active and running.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
 \begin{center}
 \fbox{
 \parbox{\textwidth - 4cm}{
