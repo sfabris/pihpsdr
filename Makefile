@@ -675,7 +675,6 @@ clean:
 
 .PHONY:	release
 release: $(PROGRAM)
-	make -C release/LatexManual release
 	rm -f release/pihpsdr/pihpsdr
 	rm -f release/pihpsdr/libwdsp.so
 	cp $(PROGRAM) release/pihpsdr
