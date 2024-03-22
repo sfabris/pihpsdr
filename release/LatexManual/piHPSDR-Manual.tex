@@ -5843,6 +5843,45 @@ can be checked with the command
 
 and this should indicate that the DHCP server is active and running.
 
+\textbf{The chicken-and-egg problem.}
+However, there is frequently the problem of bringing up the network interfaces
+early enough such that the DHCP server can use it. This is in particular the case
+if the RaspPi is powered up before the radio is powered up, since then the ethernet
+jack behaves as if unconnected and the ethernet interface is not brought up.
+I this case, the output of the above command has line(s)
+containing ,,\texttt{WARN}'' and one of these further contains
+
+\texttt{failed to open socket: the interface eth0 is not running}
+
+This is a chicken-and-egg problem: the radio wants go get its DHCP request serviced
+immediately after it is powered up, which requires to start the RaspPi first. On the
+other hand, the RaspPi wants to see ,,something'' connected to the network jack,
+which requires the radio to be started first.
+
+
+
+It is quite difficult to have a general bullet-proof solution for this.
+This involves virtual interfaces, bridges, and all that stuff.
+Therefore, I think the easiest to proceed as follows if you meet this difficulty:
+Power up the radio (if not yet done), wait a few seconds, and then issue the command
+
+\grtt{sudo systemctl restart kea-dhcp4-server}
+
+This restarts the DHCP server and this should be successful now, because the
+ethernet interface should be up and running.
+Therefore, if one then repeats the ,,systemctl status'' command (the second-last one), 
+the lines containing WARN should have been gone. 
+Because meanwhile the radio has probably given up to obtain an IP address,
+it is then required
+to power cycle (power off, wait few second, power up) the radio once more.
+It is fully admitted that this procedure is quite ugly, but it works!
+
+P.S.: anybody who comes up with an easy solution that lets the DHCP server correctly start while
+the radio is powered off, and that the radio's DHCP request is then processed after
+it has been powered up, should let me know. 
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \clearpage
