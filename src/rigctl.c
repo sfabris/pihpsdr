@@ -3932,6 +3932,10 @@ int parse_cmd(void *data) {
 
   switch (command[0]) {
   case '#':
+    //CATDEF    Shutdown Console
+    //SET       #|S|;
+    //NOTES     Write-Only, no response
+    //ENDDEF
     if (command[1] == 'S' && command[2] == ';') {
       stop_program();
       (void) system("shutdown -h -P now");
@@ -3951,7 +3955,13 @@ int parse_cmd(void *data) {
 
     case 'G': //AG
 
-      // set/read AF Gain
+      //CATDEF    Sets/Reads AF Slider
+      //SET       A|G|P1|P2|P2|P2|;
+      //READ      A|G|P1|;
+      //RESP      A|G|P1|P2|P2|P2|;
+      //NOTES     P1 is and must be zero
+      //          P2 is 0-255 log-mapped to -40-0 dB
+      //ENDDEF
       if (command[3] == ';' && command[2] == '0') { // query, main receiver
         // send reply back (covert from -40...0dB to 0..255)
         snprintf(reply, 256, "AG0%03d;", (int)(255.0 * pow(10.0, 0.05 * receiver[0]->volume)));
@@ -3973,10 +3983,12 @@ int parse_cmd(void *data) {
 
     case 'I': //AI
 
-      // set/read Auto Information
-      // AI0 disables reporting
-      // AI1 enables periodic (every 500 msec) reporting
-      //     via FA/FB frames if the VFO frequencies have changed
+      //CATDEF    Sets/Reads AI (auto reporting)
+      //SET       A|I|P1;
+      //READ      A|I|;
+      //RESP      A|I|P1;
+      //NOTES     P1 = 0/1 refers to auto-reporting disabled/enabled
+      //ENDDEF
       if (command[2] == ';') {
         // Query status
         snprintf(reply, 256, "AI%d;", client->auto_reporting);
@@ -4028,7 +4040,10 @@ int parse_cmd(void *data) {
       break;
 
     case 'D': //BD
-      //band down 1 band
+      //CATDEF    Band down
+      //SET       B|D|;
+      //NOTES     Write-only. Wraps from the lowest to the highest band.
+      //ENDDEF
       band_minus(receiver[0]->id);
       break;
 
@@ -4038,7 +4053,10 @@ int parse_cmd(void *data) {
       break;
 
     case 'U': //BU
-      //band up 1 band
+      //CATDEF    Band up
+      //SET       B|U|;
+      //NOTES     Write-only. Wraps from the lowest to the highest band.
+      //ENDDEF
       band_plus(receiver[0]->id);
       break;
 
@@ -4078,6 +4096,13 @@ int parse_cmd(void *data) {
 
     case 'N': //CN
 
+      //CATDEF    Sets/Reads the CTCSS frequency
+      //SET       C|N|P1|P1;
+      //READ      C|N|P1;
+      //RESP      C|N|P1|P1;
+      //NOTES     Upon  read, P1 must be zero. Set/Resp: P1 = 1, 2, 3, ....
+      //NOTES     corresponding to the lowest, second lowest, ... CTCSS frequency
+      //ENDDEF
       // sets/reads CTCSS function (frequency)
       if (can_transmit) {
         if (command[3] == ';') {
@@ -4094,7 +4119,12 @@ int parse_cmd(void *data) {
 
     case 'T': //CT
 
-      // sets/reads CTCSS status (on/off)
+      //CATDEF    Enable/Disable CTCSS
+      //SET       C|N|P1;
+      //READ      C|N|;
+      //RESP      C|N||P1;
+      //NOTES     P1 = 0/1 for CTCSS off/on
+      //ENDDEF
       if (can_transmit) {
         if (command[2] == ';') {
           snprintf(reply, 256, "CT%d;", transmitter->ctcss_enabled);
