@@ -1141,11 +1141,11 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       // Code duplicated from the AI command
       // set/read Auto Information
       // AI0 disables reporting
-      // AI1 enables periodic (every 500 msec) reporting
-      //     via FA/FB frames if the VFO frequencies have changed
+      // AI1 enables periodic reporting
+      //
       if (command[4] == ';') {
         // Query status
-        snprintf(reply, 256, "ZZAI%d;", client->auto_reporting);
+        snprintf(reply, 256, "ZZAI%d;", SET(client->auto_reporting));
         send_resp(client->fd, reply) ;
       } else if (command[4] == '0' && command[5] == ';') {
         // disable reporting
