@@ -1482,31 +1482,16 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
   case 'C': //ZZCx
     switch (command[3]) {
-    case 'B': //ZZCB: VFO A to B
-      if (!locked) {
-        if (command[4] == ';') {
-          vfo_a_to_b();
-        }
-      }
-
+    case 'B': //ZZCB
+      implemented = FALSE;
       break;
 
-    case 'D': //ZZCD: VFO B to A
-      if (!locked) {
-        if (command[4] == ';') {
-          vfo_b_to_a();
-        }
-      }
-
+    case 'D': //ZZCD
+      implemented = FALSE;
       break;
 
-    case 'F': //ZZCF: Swap VFO A and B
-      if (!locked) {
-        if (command[4] == ';') {
-          vfo_a_swap_b();
-        }
-      }
-
+    case 'F': //ZZCF
+      implemented = FALSE;
       break;
 
     case 'I': //ZZCI
