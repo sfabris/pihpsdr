@@ -76,8 +76,8 @@ int cw_key_down = 0;
 int cw_not_ready = 1;
 
 double ctcss_frequencies[CTCSS_FREQUENCIES] = {
-  67.0, 71.9, 74.4, 77.0, 79.7, 82.5, 85.4, 88.5, 91.5, 94.8,
-  97.4, 100.0, 103.5, 107.2, 110.9, 114.8, 118.8, 123.0, 127.3, 131.8,
+   67.0,  71.9,  74.4,  77.0,  79.7,  82.5,  85.4,  88.5,  91.5,  94.8,
+   97.4, 100.0, 103.5, 107.2, 110.9, 114.8, 118.8, 123.0, 127.3, 131.8,
   136.5, 141.3, 146.2, 151.4, 156.7, 162.2, 167.9, 173.8, 179.9, 186.2,
   192.8, 203.5, 210.7, 218.1, 225.7, 233.6, 241.8, 250.3
 };
@@ -1387,10 +1387,10 @@ void add_mic_sample(TRANSMITTER *tx, float mic_sample) {
           s = (int) (cwsample * 131000.0);
         } else {
           //
-          // Match found experimentally on my ANAN-7000 and *implies*
-          // level 0...127 ==> amplitude 0...16300
+          // This factor has been measured on my ANAN-7000 and implies
+          // level 0...127 ==> amplitude 0...8191
           //
-          s = (int) (cwsample * 65000.0);
+          s = (int) (cwsample * 32768.0);
         }
       }
 
