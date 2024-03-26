@@ -3956,27 +3956,29 @@ int parse_cmd(void *data) {
     case 'G': //AG
 
       //CATDEF    Sets/Reads AF Slider
-      //SET       A|G|P1|P2|P2|P2|;
-      //READ      A|G|P1|;
-      //RESP      A|G|P1|P2|P2|P2|;
-      //NOTES     P1 is and must be zero
-      //          P2 is 0-255 log-mapped to -40-0 dB
+      //SET       AGxyyy;
+      //READ      AGx;
+      //RESP      AGxyyy;
+      //NOTES     x is 0/1 for RX0/RX1; yyy is 0-255 and mapped logarithmically to the volume -40 ... 0 dB
       //ENDDEF
-      if (command[3] == ';' && command[2] == '0') { // query, main receiver
-        // send reply back (covert from -40...0dB to 0..255)
-        snprintf(reply, 256, "AG0%03d;", (int)(255.0 * pow(10.0, 0.05 * receiver[0]->volume)));
+      if (command[2] == ';' || command[3] == ';') {
+        int id=SET(command[2] == '1');  // will be zero for "AG;"
+        int val = (id < receivers) ? (int)(255.0 * pow(10.0, 0.05 * receiver[id]->volume)) : 0;
+        snprintf(reply, 256, "AG%1d%03d;", id, val);
         send_resp(client->fd, reply) ;
-      } else if (command[6] == ';' && command[2] == '0') {
+      } else if (command[6] == ';') {
+        int id=SET(command[2] == '1');
         int gain = atoi(&command[3]);
 
-        // gain is 0...255
-        if (gain < 3 ) {
-          receiver[0]->volume = -40.0;
-        } else {
-          receiver[0]->volume = 20.0 * log10((double) gain / 255.0);
-        }
+        if (id < receivers) {
+          if (gain < 3 ) {
+            receiver[id]->volume = -40.0;
+          } else {
+            receiver[id]->volume = 20.0 * log10((double) gain / 255.0);
+          }
 
-        set_af_gain(0, receiver[0]->volume);
+          set_af_gain(0, receiver[id]->volume);
+        }
       }
 
       break;
