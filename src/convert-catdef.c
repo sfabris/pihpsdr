@@ -14,9 +14,9 @@ int main(int argc, char **argv) {
   
   char catcmd[8];
   char catdescr[128];
-  char catset[64];
-  char catread[64];
-  char catresp[64];
+  char catset[128];
+  char catread[128];
+  char catresp[256];
 
   int notenum;
   char notes[16][128];
