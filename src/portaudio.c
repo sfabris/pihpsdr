@@ -574,8 +574,7 @@ int audio_write (RECEIVER *rx, float left, float right) {
   int txmode = get_tx_mode();
   float *buffer = rx->local_audio_buffer;
 
-  if (rx == active_receiver && isTransmitting() && (txmode == modeCWU || txmode == modeCWL)
-      && cw_keyer_sidetone_volume > 0) {
+  if (rx == active_receiver && isTransmitting() && (txmode == modeCWU || txmode == modeCWL)) {
     //
     // If a CW side tone may occur, quickly return
     //

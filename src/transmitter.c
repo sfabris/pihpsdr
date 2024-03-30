@@ -1148,8 +1148,11 @@ static void full_tx_buffer(TRANSMITTER *tx) {
         // and Q should be zero
         // Note that we re-cycle the TXIQ pulse shape here to generate the
         // side tone sent to the radio.
+        // Apply a minimum side tone volume for CAT CW messages.
         //
-        double sidevol = 64.0 * cw_keyer_sidetone_volume; // between 0.0 and 8128.0
+        int vol = cw_keyer_sidetone_volume;
+        if (vol == 0 && CAT_cw_is_active) { vol = 12; }
+        double sidevol = 64.0 * vol; // between 0.0 and 8128.0
 
         for (j = 0; j < tx->output_samples; j++) {
           double ramp = tx->cw_sig_rf[j];       // between 0.0 and 1.0
@@ -1336,9 +1339,12 @@ void add_mic_sample(TRANSMITTER *tx, float mic_sample) {
 
       }
 
-      cwsample = 0.00196 * cw_keyer_sidetone_volume * val 
-                  * sine_generator(&p1local, &p2local, cw_keyer_sidetone_frequency);
-      
+
+      // Apply a minimum side tone volume for CAT CW messages.
+      int vol = cw_keyer_sidetone_volume;
+      if (vol == 0 && CAT_cw_is_active) { vol = 12; }
+      cwsample = 0.00196 * vol * val * sine_generator(&p1local, &p2local, cw_keyer_sidetone_frequency);
+
       g_mutex_unlock(&tx->cw_ramp_mutex);
     } else {
       //
@@ -1354,7 +1360,7 @@ void add_mic_sample(TRANSMITTER *tx, float mic_sample) {
     //
     // cw_keyer_sidetone_volume is in the range 0...127 so cwsample is 0.00 ... 0.25
     //
-    if (active_receiver->local_audio && cw_keyer_sidetone_volume > 0) {
+    if (active_receiver->local_audio) {
       cw_audio_write(active_receiver, cwsample);
     }
 
