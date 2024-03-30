@@ -128,7 +128,7 @@ static guint auto_timer = 0;
 // This macro handles cases where RX1 is referred to but might not
 // exist. These macros lead to an action only  if the RX exists.
 // RXCHECK_ERR sets an error flag if RX is non-exisiting.
-// RXCHECK     just silently ignores the command 
+// RXCHECK     just silently ignores the command
 //
 #define RXCHECK_ERR(id, what) if (id >= 0 && id < receivers) { what; } else { implemented = FALSE; }
 #define RXCHECK(id, what)     if (id >= 0 && id < receivers) { what; }
@@ -614,14 +614,14 @@ static gpointer rigctl_cw_thread(gpointer data) {
     if (cwchar == '[') {
       bracket_command = 1;
       cwchar = 0;
-    } 
+    }
 
     if (cwchar == ']') {
       buffered_speed = 0;
       join_cw_characters = 0;
       cwchar = 0;
-    } 
-      
+    }
+
     // The dot and dash length may have changed, so recompute them here
     // This means that we can change the speed (KS command) while
     // the buffer is being sent
@@ -788,7 +788,7 @@ gboolean auto_reporter(gpointer data) {
   long long fb;
 
   if (!server_running) { return FALSE; }
-  
+
   fa = vfo[VFO_A].ctun ? vfo[VFO_A].ctun_frequency : vfo[VFO_A].frequency;
   fb = vfo[VFO_B].ctun ? vfo[VFO_B].ctun_frequency : vfo[VFO_B].frequency;
 
@@ -1067,14 +1067,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
   switch (command[2]) {
   case 'A': //ZZAx
     switch (command[3]) {
-    case 'A': //ZZAA
-      implemented = FALSE;
-      break;
-
-    case 'B': //ZZAB
-      implemented = FALSE;
-      break;
-
     case 'C': //ZZAC
       //CATDEF    ZZAC
       //DESCR     Set/read VFO-A step size
@@ -1194,10 +1186,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
       break;
 
-    case 'P': //ZZAP
-      implemented = FALSE;
-      break;
-
     case 'R': //ZZAR
       //CATDEF    ZZAR
       //DESCR     Set/Read RX0 AGC gain
@@ -1238,10 +1226,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         implemented = FALSE;
       }
 
-      break;
-
-    case 'T': //ZZAT
-      implemented = FALSE;
       break;
 
     case 'U': //ZZAU
@@ -1314,7 +1298,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'E': //ZZBE
       //CATDEF    ZZBE
-      //DESCR     Move down VFO-B frequency by multiple steps 
+      //DESCR     Move down VFO-B frequency by multiple steps
       //SET       ZZBExx;
       //NOTE      VFO-B frequency moves down by x (0..99) times the current step size
       //ENDDEF
@@ -1336,14 +1320,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         vfo_id_step(VFO_B, +steps);
       }
 
-      break;
-
-    case 'G': //ZZBG
-      implemented = FALSE;
-      break;
-
-    case 'I': //ZZBI
-      implemented = FALSE;
       break;
 
     case 'M': //ZZBM
@@ -1376,14 +1352,10 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
       break;
 
-    case 'R': //ZZBR
-      implemented = FALSE;
-      break;
-
     case 'S': //ZZBS
-      //CATDEF    ZZBP
+      //CATDEF    ZZBS
       //DESCR     Set/Read VFO-B band
-      //SET       ZZBPxxx;
+      //SET       ZZBSxxx;
       //NOTE      x 0...999 encodes the band:
       //NOTE      136 kHz (x=136), 472 kHz (x=472), 160m (x=160)
       //NOTE      80m (x=80), 60m (x=60), 40m (x=40), 30m (x=30)
@@ -1532,10 +1504,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
       break;
 
-    case 'T': //ZZBT
-      // set/read RX2 band switch
-      break;
-
     case 'U': //ZZBU
       //CATDEF    ZZBU
       //DESCR     Move VFO-A one band up
@@ -1561,30 +1529,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
   case 'C': //ZZCx
     switch (command[3]) {
-    case 'B': //ZZCB
-      implemented = FALSE;
-      break;
-
-    case 'D': //ZZCD
-      implemented = FALSE;
-      break;
-
-    case 'F': //ZZCF
-      implemented = FALSE;
-      break;
-
-    case 'I': //ZZCI
-      implemented = FALSE;
-      break;
-
-    case 'L': //ZZCL
-      implemented = FALSE;
-      break;
-
-    case 'M': //ZZCM
-      implemented = FALSE;
-      break;
-
     case 'N': //ZZCN
       //CATDEF    ZZCN
       //DESCR     Set/Read VFO-A CTUN status
@@ -1634,18 +1578,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
       break;
 
-    case 'S': //ZZCS
-      implemented = FALSE;
-      break;
-
-    case 'T': //ZZCT
-      implemented = FALSE;
-      break;
-
-    case 'U': //ZZCU
-      implemented = FALSE;
-      break;
-
     default:
       implemented = FALSE;
       break;
@@ -1655,9 +1587,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
   case 'D': //ZZDx
     switch (command[3]) {
-    case 'A': //ZZDA
-      break;
-
     case 'B': //ZZDB
       //DO NOT DOCUMENT, CAN THIS BE REMOVED?
       // set/read RX Reference
@@ -1685,14 +1614,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         snprintf(reply, 256, "ZZDD%04d;", (int)div_phase);
         send_resp(client->fd, reply) ;
       }
-
-    case 'E': //ZZDE
-      implemented = FALSE;
-      break;
-
-    case 'F': //ZZDF
-      implemented = FALSE;
-      break;
 
     case 'M': //ZZDM
       //DO NOT DOCUMENT, CAN THIS BE REMOVED?
@@ -1762,18 +1683,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
       break;
 
-    case 'U': //ZZDU
-      implemented = FALSE;
-      break;
-
-    case 'X': //ZZDX
-      implemented = FALSE;
-      break;
-
-    case 'Y': //ZZDY
-      implemented = FALSE;
-      break;
-
     default:
       implemented = FALSE;
       break;
@@ -1837,10 +1746,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       } else {
       }
 
-      break;
-
-    case 'M': //ZZEM
-      implemented = FALSE;
       break;
 
     case 'R': //ZZER
@@ -2050,34 +1955,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
       break;
 
-    case 'M': //ZZFM
-      implemented = FALSE;
-      break;
-
-    case 'R': //ZZFR
-      implemented = FALSE;
-      break;
-
-    case 'S': //ZZFS
-      implemented = FALSE;
-      break;
-
-    case 'V': //ZZFV
-      implemented = FALSE;
-      break;
-
-    case 'W': //ZZFW
-      implemented = FALSE;
-      break;
-
-    case 'X': //ZZFX
-      implemented = FALSE;
-      break;
-
-    case 'Y': //ZZFY
-      implemented = FALSE;
-      break;
-
     default:
       implemented = FALSE;
       break;
@@ -2087,14 +1964,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
   case 'G': //ZZGx
     switch (command[3]) {
-    case 'E': //ZZGE
-      implemented = FALSE;
-      break;
-
-    case 'L': //ZZGL
-      implemented = FALSE;
-      break;
-
     case 'T': //ZZGT
       //CATDEF    ZZGT
       //DESCR     Set/Read RX0 AGC
@@ -2149,98 +2018,9 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
     break;
 
   case 'H': //ZZHx
-    switch (command[3]) {
-    case 'A': //ZZHA
-      implemented = FALSE;
-      break;
-
-    case 'R': //ZZHR
-      implemented = FALSE;
-      break;
-
-    case 'T': //ZZHT
-      implemented = FALSE;
-      break;
-
-    case 'U': //ZZHU
-      implemented = FALSE;
-      break;
-
-    case 'V': //ZZHV
-      implemented = FALSE;
-      break;
-
-    case 'W': //ZZHW
-      implemented = FALSE;
-      break;
-
-    case 'X': //ZZHX
-      implemented = FALSE;
-      break;
-
-    default:
-      implemented = FALSE;
-      break;
-    }
-
-    break;
-
   case 'I': //ZZIx
-    switch (command[3]) {
-    case 'D': //ZZID
-      implemented = FALSE;
-      break;
-
-    case 'F': //ZZIF
-      implemented = FALSE;
-      break;
-
-    case 'O': //ZZIO
-      implemented = FALSE;
-      break;
-
-    case 'S': //ZZIS
-      implemented = FALSE;
-      break;
-
-    case 'T': //ZZIT
-      implemented = FALSE;
-      break;
-
-    case 'U': //ZZIU
-      implemented = FALSE;
-      break;
-
-    default:
-      implemented = FALSE;
-      break;
-    }
-
-    break;
-
   case 'K': //ZZKx
-    switch (command[3]) {
-    case 'M': //ZZIM
-      implemented = FALSE;
-      break;
-
-    case 'O': //ZZIO
-      implemented = FALSE;
-      break;
-
-    case 'S': //ZZIS
-      implemented = FALSE;
-      break;
-
-    case 'Y': //ZZIY
-      implemented = FALSE;
-      break;
-
-    default:
-      implemented = FALSE;
-      break;
-    }
-
+    implemented = FALSE;
     break;
 
   case 'L': //ZZLx
@@ -2272,10 +2052,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
       break;
 
-    case 'B': //ZZLB
-      implemented = FALSE;
-      break;
-
     case 'C': //ZZLC
       //CATDEF    ZZLC
       //DESCR     Set/Read RX1 volume (AF slider)
@@ -2284,7 +2060,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //RESP      ZZLCxxx;
       //NOTE      x = 0...100, mapped logarithmically to -40 ... 0 dB.
       //ENDDEF
-      RXCHECK(1, 
+      RXCHECK(1,
         if (command[4] == ';') {
           // send reply back
           snprintf(reply, 256, "ZZLC%03d;", (int)(255.0 * pow(10.0, 0.05 * receiver[1]->volume)));
@@ -2303,26 +2079,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         }
       )
 
-      break;
-
-    case 'D': //ZZLD
-      implemented = FALSE;
-      break;
-
-    case 'E': //ZZLE
-      implemented = FALSE;
-      break;
-
-    case 'F': //ZZLF
-      implemented = FALSE;
-      break;
-
-    case 'G': //ZZLG
-      implemented = FALSE;
-      break;
-
-    case 'H': //ZZLH
-      implemented = FALSE;
       break;
 
     case 'I': //ZZLI
@@ -2382,7 +2138,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //RESP      ZZMBx;
       //NOTE      x=0: RX1 not muted, x=1: muted
       //ENDDEF
-      RXCHECK(1, 
+      RXCHECK(1,
         if (command[4] == ';') {
           snprintf(reply, 256, "ZZMA%d;", receiver[1]->mute_radio);
           send_resp(client->fd, reply) ;
@@ -2503,7 +2259,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       break;
 
     case 'R': //ZZMR
-
+      //DO NOT DOCUMENT, CAN THIS BE REMOVED?
       // set/read RX Meter mode
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZMR%d;", smeter + 1);
@@ -2514,10 +2270,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
       break;
 
-    case 'S': //ZZMS
-      implemented = FALSE;
-      break;
-
     case 'T': //ZZMT
       //DO NOT DOCUMENT, CAN THIS BE REMOVED?
       if (command[4] == ';') {
@@ -2526,30 +2278,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       } else {
       }
 
-      break;
-
-    case 'U': //ZZMU
-      implemented = FALSE;
-      break;
-
-    case 'V': //ZZMV
-      implemented = FALSE;
-      break;
-
-    case 'W': //ZZMW
-      implemented = FALSE;
-      break;
-
-    case 'X': //ZZMX
-      implemented = FALSE;
-      break;
-
-    case 'Y': //ZZMY
-      implemented = FALSE;
-      break;
-
-    case 'Z': //ZZMZ
-      implemented = FALSE;
       break;
 
     default:
@@ -2625,16 +2353,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
       break;
 
-    case 'L': //ZZNL
-      // set/read NB1 threshold
-      implemented = FALSE;
-      break;
-
-    case 'M': //ZZNM
-      // set/read NB2 threshold
-      implemented = FALSE;
-      break;
-
     case 'N': //ZZNN
 
       // set/read RX1 SNB status
@@ -2660,7 +2378,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
           update_noise();
         }
       } else {
-        implemented = FALSE;
+      implemented = FALSE;
       }
 
       break;
@@ -2771,12 +2489,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
     break;
 
   case 'O': //ZZOx
-    switch (command[3]) {
-    default:
-      implemented = FALSE;
-      break;
-    }
-
+    implemented = FALSE;
     break;
 
   case 'P': //ZZPx
@@ -2854,12 +2567,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
     break;
 
   case 'Q': //ZZQx
-    switch (command[3]) {
-    default:
-      implemented = FALSE;
-      break;
-    }
-
+    implemented = FALSE;
     break;
 
   case 'R': //ZZRx
@@ -2930,7 +2638,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       break;
 
     case 'T': //ZZRT
-
       // set/read RIT enable
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZRT%d;", vfo[VFO_A].rit_enabled);
@@ -2983,14 +2690,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
       break;
 
-    case 'D': //ZZSD
-      implemented = FALSE;
-      break;
-
-    case 'F': //ZZSF
-      implemented = FALSE;
-      break;
-
     case 'G': //ZZSG
 
       // move VFO B down 1 step
@@ -3028,10 +2727,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
       break;
 
-    case 'N': //ZZSN
-      implemented = FALSE;
-      break;
-
     case 'P': //ZZSP
 
       // set/read split
@@ -3043,26 +2738,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         radio_set_split(val);
       }
 
-      break;
-
-    case 'R': //ZZSR
-      implemented = FALSE;
-      break;
-
-    case 'S': //ZZSS
-      implemented = FALSE;
-      break;
-
-    case 'T': //ZZST
-      implemented = FALSE;
-      break;
-
-    case 'U': //ZZSU
-      implemented = FALSE;
-      break;
-
-    case 'V': //ZZSV
-      implemented = FALSE;
       break;
 
     case 'W': //ZZSW
@@ -3078,14 +2753,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
       break;
 
-    case 'Y': //ZZSY
-      implemented = FALSE;
-      break;
-
-    case 'Z': //ZZSZ
-      implemented = FALSE;
-      break;
-
     default:
       implemented = FALSE;
       break;
@@ -3095,46 +2762,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
   case 'T': //ZZTx
     switch (command[3]) {
-    case 'A': //ZZTA
-      implemented = FALSE;
-      break;
-
-    case 'B': //ZZTB
-      implemented = FALSE;
-      break;
-
-    case 'F': //ZZTF
-      implemented = FALSE;
-      break;
-
-    case 'H': //ZZTH
-      implemented = FALSE;
-      break;
-
-    case 'I': //ZZTI
-      implemented = FALSE;
-      break;
-
-    case 'L': //ZZTL
-      implemented = FALSE;
-      break;
-
-    case 'M': //ZZTM
-      implemented = FALSE;
-      break;
-
-    case 'O': //ZZTO
-      implemented = FALSE;
-      break;
-
-    case 'P': //ZZTP
-      implemented = FALSE;
-      break;
-
-    case 'S': //ZZTS
-      implemented = FALSE;
-      break;
-
     case 'U': //ZZTU
 
       // sets or reads TUN status
@@ -3145,10 +2772,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         tune_update(atoi(&command[4]));
       }
 
-      break;
-
-    case 'V': //ZZTV
-      implemented = FALSE;
       break;
 
     case 'X': //ZZTX
@@ -3171,104 +2794,15 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
     break;
 
   case 'U': //ZZUx
-    switch (command[3]) {
-    case 'A': //ZZUA
-      implemented = FALSE;
-      break;
-
-    case 'S': //ZZUS
-      implemented = FALSE;
-      break;
-
-    case 'T': //ZZUT
-      implemented = FALSE;
-      break;
-
-    case 'X': //ZZUX
-      implemented = FALSE;
-      break;
-
-    case 'Y': //ZZUY
-      implemented = FALSE;
-      break;
-
-    default:
-      implemented = FALSE;
-      break;
-    }
-
+    implemented = FALSE;
     break;
 
   case 'V': //ZZVx
     switch (command[3]) {
-    case 'A': //ZZVA
-      implemented = FALSE;
-      break;
-
-    case 'B': //ZZVB
-      implemented = FALSE;
-      break;
-
-    case 'C': //ZZVC
-      implemented = FALSE;
-      break;
-
-    case 'D': //ZZVD
-      implemented = FALSE;
-      break;
-
-    case 'E': //ZZVE
-      implemented = FALSE;
-      break;
-
-    case 'F': //ZZVF
-      implemented = FALSE;
-      break;
-
-    case 'H': //ZZVH
-      implemented = FALSE;
-      break;
-
-    case 'I': //ZZVI
-      implemented = FALSE;
-      break;
-
-    case 'J': //ZZVJ
-      implemented = FALSE;
-      break;
-
-    case 'K': //ZZVK
-      implemented = FALSE;
-      break;
-
     case 'L': //ZZVL
       // set/get VFO Lock
       locked = command[4] == '1';
       g_idle_add(ext_vfo_update, NULL);
-      break;
-
-    case 'M': //ZZVM
-      implemented = FALSE;
-      break;
-
-    case 'N': //ZZVN
-      implemented = FALSE;
-      break;
-
-    case 'O': //ZZVO
-      implemented = FALSE;
-      break;
-
-    case 'P': //ZZVP
-      implemented = FALSE;
-      break;
-
-    case 'Q': //ZZVQ
-      implemented = FALSE;
-      break;
-
-    case 'R': //ZZVR
-      implemented = FALSE;
       break;
 
     case 'S': { //ZZVS
@@ -3284,34 +2818,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
     }
     break;
 
-    case 'T': //ZZVT
-      implemented = FALSE;
-      break;
-
-    case 'U': //ZZVU
-      implemented = FALSE;
-      break;
-
-    case 'V': //ZZVV
-      implemented = FALSE;
-      break;
-
-    case 'W': //ZZVW
-      implemented = FALSE;
-      break;
-
-    case 'X': //ZZVX
-      implemented = FALSE;
-      break;
-
-    case 'Y': //ZZVY
-      implemented = FALSE;
-      break;
-
-    case 'Z': //ZZVZ
-      implemented = FALSE;
-      break;
-
     default:
       implemented = FALSE;
       break;
@@ -3320,100 +2826,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
     break;
 
   case 'W': //ZZWx
-    switch (command[3]) {
-    case 'A': //ZZWA
-      implemented = FALSE;
-      break;
-
-    case 'B': //ZZWB
-      implemented = FALSE;
-      break;
-
-    case 'C': //ZZWC
-      implemented = FALSE;
-      break;
-
-    case 'D': //ZZWD
-      implemented = FALSE;
-      break;
-
-    case 'E': //ZZWE
-      implemented = FALSE;
-      break;
-
-    case 'F': //ZZWF
-      implemented = FALSE;
-      break;
-
-    case 'G': //ZZWG
-      implemented = FALSE;
-      break;
-
-    case 'H': //ZZWH
-      implemented = FALSE;
-      break;
-
-    case 'J': //ZZWJ
-      implemented = FALSE;
-      break;
-
-    case 'K': //ZZWK
-      implemented = FALSE;
-      break;
-
-    case 'L': //ZZWL
-      implemented = FALSE;
-      break;
-
-    case 'M': //ZZWM
-      implemented = FALSE;
-      break;
-
-    case 'N': //ZZWN
-      implemented = FALSE;
-      break;
-
-    case 'O': //ZZWO
-      implemented = FALSE;
-      break;
-
-    case 'P': //ZZWP
-      implemented = FALSE;
-      break;
-
-    case 'Q': //ZZWQ
-      implemented = FALSE;
-      break;
-
-    case 'R': //ZZWR
-      implemented = FALSE;
-      break;
-
-    case 'S': //ZZWS
-      implemented = FALSE;
-      break;
-
-    case 'T': //ZZWT
-      implemented = FALSE;
-      break;
-
-    case 'U': //ZZWU
-      implemented = FALSE;
-      break;
-
-    case 'V': //ZZWV
-      implemented = FALSE;
-      break;
-
-    case 'W': //ZZWW
-      implemented = FALSE;
-      break;
-
-    default:
-      implemented = FALSE;
-      break;
-    }
-
+    implemented = FALSE;
     break;
 
   case 'X': //ZZXx
@@ -3433,10 +2846,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         vfo_xit_value(atoi(&command[4]));
       }
 
-      break;
-
-    case 'H': //ZZXH
-      implemented = FALSE;
       break;
 
     case 'N': //ZZXN
@@ -3539,10 +2948,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
       break;
 
-    case 'T': //ZZXT
-      implemented = FALSE;
-      break;
-
     case 'V': //ZZXV
       //DO NOT DOCUMENT, CAN THIS BE REMOVED?
       // read combined VFO status
@@ -3594,18 +2999,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
   case 'Y': //ZZYx
     switch (command[3]) {
-    case 'A': //ZZYA
-      implemented = FALSE;
-      break;
-
-    case 'B': //ZZYB
-      implemented = FALSE;
-      break;
-
-    case 'C': //ZZYC
-      implemented = FALSE;
-      break;
-
     case 'R': //ZZYR
 
       // switch receivers
@@ -3632,19 +3025,11 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
   case 'Z': //ZZZx
     switch (command[3]) {
-    case 'A': //ZZZA
-      implemented = FALSE;
-      break;
-
-    case 'B': //ZZZB
-      implemented = FALSE;
-      break;
-
     case 'D': //ZZZD
       //CATDEF    ZZZD
       //DESCR     Move down frequency of active receiver
       //SET       ZZZDxx;
-      //NOTE      ANDROMEDA-specific command. x = number of steps.
+      //NOTE      ANDROMEDA extension. x = number of steps.
       //NOTE      The "VFO encoder divisor" is applied to the steps
       //ENDDEF
       if (command[6] == ';') {
@@ -3663,7 +3048,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //CATDEF    ZZZE
       //DESCR     Handle ANDROMEDA encoders
       //SET       ZZZExxx;
-      //NOTE      ANDROMEDA-specific command.
+      //NOTE      ANDROMEDA extension.
       //NOTE      x encodes the encoder and the direction.
       //ENDDEF
       if (command[7] == ';') {
@@ -3751,6 +3136,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       }
 
       break;
+
     case 'I': //ZZZI ANDROMEDA info
       //CATDEF    ZZZI
       //DESCR     ANDROMEDA reports
@@ -3766,7 +3152,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //CATDEF    ZZZP
       //DESCR     Handle ANDROMEDA push-buttons
       //SET       ZZZPxxx;
-      //NOTE      ANDROMEDA-specific command. x = number of steps.
+      //NOTE      ANDROMEDA extension. x = number of steps.
       //NOTE      x encodes the button and the press/release status
       //ENDDEF
       if (command[7] == ';') {
@@ -4097,9 +3483,9 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //CATDEF    ZZZS
       //DESCR     Log ANDROMEDA version
       //SET       ZZZSxxyzabc;
-      //NOTE      ANDROMEDA-specific command.
+      //NOTE      ANDROMEDA extension.
       //NOTE      The ANDROMEDA hardware (yz) and software (abc) version
-      //NOTE      is logged in piHPSDR's log file. 
+      //NOTE      is logged in piHPSDR's log file.
       //ENDDEF
       if (command[11] == ';') {
         t_print("RIGCTL:INFO: Andromeda FP Version: h/w:%c%c s/w:%c%c%c\n",
@@ -4112,7 +3498,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //CATDEF    ZZZU
       //DESCR     Move up frequency of active receiver
       //SET       ZZZUxx;
-      //NOTE      ANDROMEDA-specific command. x = number of steps.
+      //NOTE      ANDROMEDA extension. x = number of steps.
       //NOTE      The "VFO encoder divisor" is applied to the steps
       //ENDDEF
       if (command[6] == ';') {
@@ -4125,10 +3511,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         }
       }
 
-      break;
-
-    case 'Z': //ZZZZ
-      implemented = FALSE;
       break;
 
     default:
@@ -4330,7 +3712,7 @@ int parse_cmd(void *data) {
       //NOTE      136.5 (x=21), 141.3 (x=22), 146.2 (x=23), 151.4 (x=24), 156.7 (x=25)
       //NOTE      162.2 (x=26), 167.9 (x=27), 173.8 (x=28), 179.9 (x=29), 186.2 (x=30)
       //NOTE      192.8 (x=31), 203.5 (x=32), 210.7 (x=33), 218.1 (x=34), 225.7 (x=35)
-    //NOTE      233.6 (x=36), 241.8 (x=37), 250.3 (x=38)
+      //NOTE      233.6 (x=36), 241.8 (x=37), 250.3 (x=38)
       //ENDDEF
       // sets/reads CTCSS function (frequency)
       if (can_transmit) {
@@ -4724,14 +4106,7 @@ int parse_cmd(void *data) {
     break;
 
     case 'S': //IS
-      // not yet fully implemented
-      //XCATDEF    IS
-      //DESCR     Set VFO-A filter shift (CW, AM, FM modes)
-      //SET       ISxyyyy
-      //READ      IS;
-      //RESP      IDxyyyy;
-      //NOTE      x is always a space
-      //ENDDEF
+      //DO NOT DOCUMENT, CAN THIS BE REMOVED?
       if (command[2] == ';') {
         STRLCPY(reply, "IS 0000;", 256);
         send_resp(client->fd, reply);
@@ -6331,7 +5706,7 @@ gboolean andromeda_init(gpointer data) {
   if (!client->running) { return FALSE; }
 
   // This triggers new results to be reported;
-  andromeda_last_mox = andromeda_last_tune = andromeda_last_ps = andromeda_last_ctun 
+  andromeda_last_mox = andromeda_last_tune = andromeda_last_ps = andromeda_last_ctun
                      = andromeda_last_lock = andromeda_last_div = andromeda_last_rit
                      = andromeda_last_xit = andromeda_last_vfoa = -999;
   // This triggers a reply (from Andromeda) to report its FP version
@@ -6452,7 +5827,7 @@ void launch_rigctl () {
   mutex_a = g_new(GT_MUTEX, 1); // memory leak
   g_mutex_init(&mutex_a->m);
   server_running = 1;
-  
+
   //
   // Start auto reporter
   //
