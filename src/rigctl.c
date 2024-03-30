@@ -3705,14 +3705,16 @@ int parse_cmd(void *data) {
       //READ      CN;
       //RESP      CNxx;
       //NOTE      x =  1...38. CTCSS frequencies in Hz are:
-      //NOTE      67.0 (x=1),  71.9 (x=2),  74.4 (x=3),  77.0 (x=4),  79.7 (x=5)
-      //NOTE      82.5 (x=6),  85.4 (x=7),  88.5 (x=8), 91.5 (x=9),  94.8 (x=10)
-      //NOTE      97.4 (x=11), 100.0 (x=12), 103.5 (x=13), 107.2 (x=14), 110.9 (x=15)
-      //NOTE      114.8 (x=16), 118.8 (x=17), 123.0 (x=18), 127.3 (x=19), 131.8 (x=20)
-      //NOTE      136.5 (x=21), 141.3 (x=22), 146.2 (x=23), 151.4 (x=24), 156.7 (x=25)
-      //NOTE      162.2 (x=26), 167.9 (x=27), 173.8 (x=28), 179.9 (x=29), 186.2 (x=30)
-      //NOTE      192.8 (x=31), 203.5 (x=32), 210.7 (x=33), 218.1 (x=34), 225.7 (x=35)
-      //NOTE      233.6 (x=36), 241.8 (x=37), 250.3 (x=38)
+      //NOTE      67.0 (x=1),  71.9 (x=2),  74.4 (x=3),  77.0 (x=4),
+      //NOTE      79.7 (x=5),  82.5 (x=6),  85.4 (x=7),  88.5 (x=8),
+      //NOTE      91.5 (x=9),  94.8 (x=10), 97.4 (x=11), 100.0 (x=12)
+      //NOTE      103.5 (x=13), 107.2 (x=14), 110.9 (x=15), 114.8 (x=16)
+      //NOTE      118.8 (x=17), 123.0 (x=18), 127.3 (x=19), 131.8 (x=20)
+      //NOTE      136.5 (x=21), 141.3 (x=22), 146.2 (x=23), 151.4 (x=24)
+      //NOTE      156.7 (x=25), 162.2 (x=26), 167.9 (x=27), 173.8 (x=28)
+      //NOTE      179.9 (x=29), 186.2 (x=30), 192.8 (x=31), 203.5 (x=32)
+      //NOTE      210.7 (x=33), 218.1 (x=34), 225.7 (x=35), 233.6 (x=36)
+      //NOTE      241.8 (x=37), 250.3 (x=38)
       //ENDDEF
       // sets/reads CTCSS function (frequency)
       if (can_transmit) {
@@ -3913,8 +3915,8 @@ int parse_cmd(void *data) {
       //RESP      FWxxxx;
       //NOTE      When setting, this switches to the Var1 filter
       //NOTE      Only valid for CW, FM, AM. Use SH/SL for LSB, USB, DIGL, DIGU.
-      //NOTE      For AM, x=0 translates to 8kHz filter width, x!=0 to 16kHz.
-      //NOTE      For FM, x=0 translates to 2.5kHz deviation, x!=0 to 5 kHz.
+      //NOTE      For AM, 8kHz filter width (x=0) or  16 kHz (x$\ne$0)
+      //NOTE      For FM, 2.5kHz deviation (x=0) or 5 kHz (x$\ne$=0)
       //ENDDEF
       if (command[2] == ';') {
         int val = 0;
@@ -4023,7 +4025,8 @@ int parse_cmd(void *data) {
       //SET       GTxxx;
       //READ      GT;
       //RESP      GTxxx;
-      //NOTE      x=0: AGC OFF, x=5: LONG, x=10: SLOW, x=15: MEDIUM, x=20: FAST
+      //NOTE      x=0: AGC OFF, x=5: LONG, x=10: SLOW
+      //NOTE      x=15: MEDIUM, x=20: FAST
       //ENDDEF
       if (command[2] == ';') {
         snprintf(reply, 256, "GT%03d;", receiver[0]->agc * 5);
@@ -4069,7 +4072,7 @@ int parse_cmd(void *data) {
       //CATDEF    IF
       //DESCR     Get VFO-A Frequency/Mode etc.
       //READ      IF;
-      //RESP      IFxxxxxxxxxxxyyyyzzzzzzabcddefghikllm;
+      //RESP      IFxxxxxxxxxxxyyyyzzzzzzabc|ddefghikllm;
       //NOTE      x : VFO-A Frequency (11 digit)
       //NOTE      y : VFO-A step size
       //NOTE      z : VFO-A rit step size
@@ -4165,7 +4168,7 @@ int parse_cmd(void *data) {
       //RESP      KYx;
       //NOTE      When setting (sending), x must be a space.
       //NOTE      When reading, x=1 indicates buffer space is available, x=0  buffer full
-      //NOTE      y is a string of up to 24 characters NOT containing ';'
+      //NOTE      y: string of up to 24 characters NOT containing ';'
       //NOTE      trailing blanks are ignored in y, but if it is completely blank it causes an inter-word space.
       //ENDDEF
       if (command[2] == ';') {
@@ -4274,7 +4277,8 @@ int parse_cmd(void *data) {
       //SET       MDx;
       //READ      MD;
       //RESP      MDx;
-      //NOTE      Modes: LSB (x=1), USB (x=2), CWU (x=3), FMN (x=4),
+      //NOTE      Kenwood-stype  mode  list:
+      //NOTE      LSB (x=1), USB (x=2), CWU (x=3), FMN (x=4),
       //NOTE      AM (x=5), DIGL (x=6), CWL (x=7), DIGU (x=9)
       //ENDDEF
       if (command[2] == ';') {
@@ -4337,7 +4341,7 @@ int parse_cmd(void *data) {
       //SET       MGxxx;
       //READ      MG;
       //RESP      MGxxx;
-      //NOTE      xxx 0-100 mapped to -12 ... +50 dB
+      //NOTE      x 0-100 mapped to -12 ... +50 dB
       //ENDDEF
       if (command[2] == ';') {
         snprintf(reply, 256, "MG%03d;", (int)(((mic_gain + 12.0) / 62.0) * 100.0));
@@ -4788,12 +4792,12 @@ int parse_cmd(void *data) {
       //DESCR     Set/Read SAT mode
       //SET       SAxyzabcdssssssss;
       //READ      SA;
-      //RESP      SAxyzabcdssssssss;
+      //RESP      SAxyzsbcdeeeeeeee;
       //NOTE      x=0: neither SAT nor RSAT, x=1: SAT or RSAT
-      //NOTE      y,z,a always zero
+      //NOTE      y,z,s always zero
       //NOTE      c = 1 indicates SAT mode (TRACE)
       //NOTE      d = 1 indicates RSAT mode (TRACE REV)
-      //NOTE      s = eight-character label, here "SAT     "
+      //NOTE      e = eight-character label, here "SAT     "
       //NOTE      when setting, c == d == 1 is illegal
       //NOTE      when setting, s is ignored
       //ENDDEF
@@ -4861,9 +4865,9 @@ int parse_cmd(void *data) {
       //RESP      SHxx;
       //NOTE      When setting, the Var1 filter is activated
       //NOTE      x = 0...11 encodes filter high water mark in Hz:
-      //NOTE      1400 (x=0), 1600 (x=1), 1800 (x=2), 2000 (x=3), 2200 (x=4),
-      //NOTE      2400 (x=5), 2600 (x=6), 2800 (x=7), 3000 (x=8), 3400 (x=9),
-      //NOTE      4000 (x=10), 5000 (x=11)
+      //NOTE      1400 (x=0), 1600 (x=1), 1800 (x=2), 2000 (x=3)
+      //NOTE      2200 (x=4), 2400 (x=5), 2600 (x=6), 2800 (x=7)
+      //NOTE      3000 (x=8), 3400 (x=9), 4000 (x=10), 5000 (x=11)
       //ENDDEF
       if (command[2] == ';') {
         FILTER *mode_filters = filters[vfo[VFO_A].mode];
@@ -5009,9 +5013,9 @@ int parse_cmd(void *data) {
       //RESP      SLxx;
       //NOTE      When setting, the Var1 filter is activated
       //NOTE      x = 0...11 encodes filter low water mark in Hz:
-      //NOTE      10 (x=0), 50 (x=1), 100 (x=2), 200 (x=3), 300 (x=4),
-      //NOTE      400 (x=5), 500 (x=6), 600 (x=7), 700 (x=8), 800 (x=9),
-      //NOTE      900 (x=10), 1000 (x=11)
+      //NOTE      10 (x=0), 50 (x=1), 100 (x=2), 200 (x=3)
+      //NOTE      300 (x=4), 400 (x=5), 500 (x=6), 600 (x=7)
+      //NOTE      700 (x=8), 800 (x=9), 900 (x=10), 1000 (x=11)
       //ENDDEF
       if (command[2] == ';') {
         FILTER *mode_filters = filters[vfo[VFO_A].mode];
@@ -5139,7 +5143,7 @@ int parse_cmd(void *data) {
       //READ      SMx;
       //RESP      SMxyyyy;
       //NOTE      x=0: read RX0, x=1: RX1
-      //NOTE      y : -127...-19 dBm mapped to 0 - 30
+      //NOTE      y : 0 ... 30 mapped to -127...-19 dBm
       //ENDDEF
       if (command[3] == ';') {
         int id = atoi(&command[2]);
@@ -5318,7 +5322,8 @@ int parse_cmd(void *data) {
       //SET       VGxxx;
       //READ      VG;
       //RESP      VGxxx;
-      //NOTE      x is in the range 0-9, mapped to 0.0-1.0
+      //NOTE      x is in the range 0-9, mapped to an amplitude
+      //NOTE      threshold 0.0-1.0
       //ENDDEF
       if (command[2] == ';') {
         snprintf(reply, 256, "VG%03d;", (int)((vox_threshold * 100.0) * 0.9));
