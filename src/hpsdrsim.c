@@ -637,7 +637,7 @@ int main(int argc, char *argv[]) {
       }
 
 #ifdef PACKETLIST
-      t_print("TCP received\n");
+      t_print("TCP P1\n");
 #endif
       bytes_read = size;
 
@@ -672,7 +672,7 @@ int main(int argc, char *argv[]) {
       if (bytes_read > 0) {
         udp_retries = 0;
 #ifdef PACKETLIST
-        t_print("UDP received\n");
+        t_print("UDP P1\n");
 #endif
       } else {
         udp_retries++;

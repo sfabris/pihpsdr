@@ -1,3 +1,4 @@
+#define TXIQ_FIFO
 /* Copyright (C)
 * 2019 - Christoph van Wüllen, DL1YCF
 *
@@ -162,7 +163,7 @@ void new_protocol_general_packet(unsigned char *buffer) {
     t_print("GP: SEQ ERROR, old=%lu new=%lu\n", seqold, seqnum);
   }
 
-#ifdef PACKETLIST
+#ifdef GP_PACKETLIST
   t_print("GP rcvd, seq=%lu\n", seqnum);
 #endif
   rc = (buffer[5] << 8) + buffer[6];
@@ -431,7 +432,7 @@ void *ddc_specific_thread(void *data) {
 
     seqold = seqnum;
     seqnum = (buffer[0] >> 24) + (buffer[1] << 16) + (buffer[2] << 8) + buffer[3];
-#ifdef PACKETLIST
+#ifdef DDC_SPEC_PACKETLIST
     t_print("DDC SPEC rcvd seq=%lu\n", seqnum);
 #endif
 
@@ -571,7 +572,7 @@ void *duc_specific_thread(void *data) {
     watchdog_count = 0;
     seqold = seqnum;
     seqnum = (buffer[0] >> 24) + (buffer[1] << 16) + (buffer[2] << 8) + buffer[3];
-#ifdef PACKETLIST
+#ifdef DUC_SPEC_PACKETLIST
     t_print("DUC SPEC rcvd seq=%lu\n", seqnum);
 #endif
 
@@ -779,7 +780,7 @@ void *highprio_thread(void *data) {
     hp_mod = 0;
     seqold = seqnum;
     seqnum = (buffer[0] >> 24) + (buffer[1] << 16) + (buffer[2] << 8) + buffer[3];
-#ifdef PACKETLIST
+#ifdef HP_PACKETLIST
     t_print("HP rcvd seq=%lu\n", seqnum);
 #endif
 
@@ -1329,8 +1330,14 @@ void *tx_thread(void * data) {
   int sample;
   double di, dq;
   double sum;
-#ifdef PACKETLIST
+#ifdef TXIQ_LEVEL
   long lsum;
+#endif
+#ifdef TXIQ_FIFO
+  double  FIFO = 0.0;
+  double last = -9999.9;
+  double now, gap;
+  struct timespec ts;
 #endif
   struct timeval tv;
   sock = socket(AF_INET, SOCK_DGRAM, 0);
@@ -1381,16 +1388,31 @@ void *tx_thread(void * data) {
       t_print("TXthread: SEQ ERROR, old=%lu new=%lu\n", seqold, seqnum);
     }
 
-    p = buffer + 4;
-    sum = 0.0;
-
+#ifdef TXIQ_FIFO
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    now = ts.tv_sec + 1.0E-9*ts.tv_nsec;
+    gap = now - last;
+    FIFO -= (192000.0 * gap);
+    if (FIFO < 0.0) FIFO = 0.0;
+    if (gap > 0.25) {
+      printf("TXIQ t=%8.3f gap=        Fill=%4d Seq=%6lu\n", now, (int) FIFO, seqnum);
+    } else {
+      printf("TXIQ t=%8.3f gap=%7.2f Fill=%4d Seq=%6lu\n", now, gap*1000.0, (int) FIFO, seqnum);
+    }
+    last = now;
+    FIFO +=240;
+#endif
+    
     if (txptr < 0) {
       txptr = NEWRTXLEN / 2;
     }
 
-#ifdef PACKETLIST
+#ifdef TXIQ_LEVEL
     lsum = 0;
 #endif
+
+    p = buffer + 4;
+    sum = 0.0;
 
     for (i = 0; i < 240; i++) {
       // process 240 TX iq samples
@@ -1398,13 +1420,13 @@ void *tx_thread(void * data) {
       sample |= (int)((((unsigned char)(*p++)) << 8) & 0xFF00);
       sample |= (int)((unsigned char)(*p++) & 0xFF);
       di = (double) sample / 8388608.0;
-#ifdef PACKETLIST
+#ifdef TXIQ_LEVEL
       lsum = lsum + labs(sample);
 #endif
       sample  = (int)((signed char) (*p++)) << 16;
       sample |= (int)((((unsigned char)(*p++)) << 8) & 0xFF00);
       sample |= (int)((unsigned char)(*p++) & 0xFF);
-#ifdef PACKETLIST
+#ifdef TXIQ_LEVEL
       lsum = lsum + labs(sample);
 #endif
       dq = (double) sample / 8388608.0;
@@ -1434,7 +1456,7 @@ void *tx_thread(void * data) {
     // and thus txlevel = txdrv_dbl^2
     //
     txlevel = sum * txdrv_dbl * txdrv_dbl * 0.0041667;
-#ifdef PACKETLIST
+#ifdef TXIQ_LEVEL
     t_print("TXIQ-SUM=%ld\n", lsum);
 #endif
   }
@@ -1615,7 +1637,7 @@ void *audio_thread(void *data) {
   socklen_t lenaddr = sizeof(addr);
   unsigned long seqnum, seqold;
   unsigned char buffer[260];
-#ifdef PACKETLIST
+#ifdef AUDIO_LEVEL
   long lsum;
 #endif
   int yes = 1;
@@ -1671,7 +1693,7 @@ void *audio_thread(void *data) {
     }
 
     // just skip the audio samples
-#ifdef PACKETLIST
+#ifdef AUDIO_LEVEL
     lsum = 0;
 
     for (int  i = 4; i < 260; i++) {
@@ -1692,12 +1714,13 @@ void *audio_thread(void *data) {
 //
 void *mic_thread(void *data) {
   int sock;
+  unsigned long seqnum = 0;
   struct sockaddr_in addr;
-  unsigned long seqnum;
   unsigned char buffer[132];
   unsigned char *p;
   int yes = 1;
   struct timespec delay;
+
   sock = socket(AF_INET, SOCK_DGRAM, 0);
 
   if (sock < 0) {
@@ -1718,7 +1741,6 @@ void *mic_thread(void *data) {
     return NULL;
   }
 
-  seqnum = 0;
   memset(buffer, 0, 132);
   clock_gettime(CLOCK_MONOTONIC, &delay);
 
