@@ -1108,9 +1108,11 @@ static void full_tx_buffer(TRANSMITTER *tx) {
     if (txflag == 0 && protocol == NEW_PROTOCOL) {
       //
       // this is the first time (after a pause) that we send TX samples
-      // so send some "silence" to prevent FIFO underflows
+      // so send some "silence" to pre-fill the sample buffer to
+      // suppress underflows if one of the following buckets comes
+      // a little late.
       //
-      for (j = 0; j < 480; j++) {
+      for (j = 0; j < 1024; j++) {
         new_protocol_iq_samples(0, 0);
       }
     }
@@ -1231,9 +1233,11 @@ static void full_tx_buffer(TRANSMITTER *tx) {
     if (txflag == 1 && protocol == NEW_PROTOCOL) {
       //
       // We arrive here ONCE after a TX -> RX transition
-      // and send 240 zero samples to make sure everything
-      // will be sent out (some silence may remain but just
-      // adds to the silence sent in the next RX->TX transition
+      // and send 240 zero samples to make sure the the
+      // 0...239 samples that remain in the ring buffer
+      // after stopping the TX are zero and won't produce
+      // an unwanted signal after the next RX -> TX transition.
+      //
       for (j = 0; j < 240; j++) {
         new_protocol_iq_samples(0, 0);
       }
