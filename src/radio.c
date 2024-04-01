@@ -308,6 +308,9 @@ double drive_digi_max = 100.0; // maximum drive in DIGU/DIGL
 gboolean display_warnings = TRUE;
 gboolean display_pacurr = TRUE;
 
+gint window_x_pos=0;
+gint window_y_pos=0;
+
 int rx_height;
 
 void radio_stop() {
@@ -2371,6 +2374,8 @@ void radioRestoreState() {
   // but this is too much for the moment. TODO: initialize at least all
   // variables that are needed if the radio is remote
   //
+  GetPropI0("WindowPositionX",                               window_x_pos);
+  GetPropI0("WindowPositionY",                               window_y_pos);
   GetPropI0("display_zoompan",                               display_zoompan);
   GetPropI0("display_sliders",                               display_sliders);
   GetPropI0("display_toolbar",                               display_toolbar);
@@ -2393,6 +2398,15 @@ void radioRestoreState() {
 
   if (display_height > screen_height ) { display_height = screen_height; }
 
+  //
+  // Re-position top window to the position in the props file, provided
+  // there are at least 100 pixels left. This assumes the default setting
+  // (GDK_GRAVITY_NORTH_WEST) where the "position" refers to the top left corner
+  // of the window.
+  //
+  if ((window_x_pos < screen_width - 100) && (window_y_pos < screen_height - 100)) {
+    gtk_window_move(GTK_WINDOW(top_window), window_x_pos, window_y_pos);
+  }
 #ifdef CLIENT_SERVER
   GetPropI0("radio.hpsdr_server",                            hpsdr_server);
   GetPropI0("radio.hpsdr_server.listen_port",                listen_port);
@@ -2586,6 +2600,12 @@ void radioSaveState() {
 
     transmitterSaveState(transmitter);
   }
+  //
+  // Obtain window position and save in props file
+  //
+  gtk_window_get_position(GTK_WINDOW(top_window), &window_x_pos, &window_y_pos);
+  SetPropI0("WindowPositionX",                               window_x_pos);
+  SetPropI0("WindowPositionY",                               window_y_pos);
 
   //
   // What comes now is essentially copied from radioRestoreState,
