@@ -54,6 +54,14 @@ void NewMidiEvent(enum MIDIevent event, int channel, int note, int val) {
   t_print("%s:EVENT=%d CHAN=%d NOTE=%d VAL=%d\n", __FUNCTION__, now, event, channel, note, val);
 #endif
 
+  //
+  // Sometimes a "heart beat" from a device might be useful. Therefore, we resert
+  // channel=16 note=0 for this purpose and filter this out here
+  //
+  if (event == MIDI_KEY && channel == 15 && note == 0) {
+    return;
+  }
+
   if (event == MIDI_PITCH) {
     desc = MidiCommandsTable[128];
   } else {
