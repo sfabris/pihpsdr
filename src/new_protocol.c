@@ -1818,10 +1818,10 @@ static gpointer new_protocol_rxaudio_thread(gpointer data) {
 
       //
       // Depending on how we estimate the FIFO filling, wait
-      // 1000usec, or 300 usec, or nothing before sending
+      // 1000usec, or 300 usec, or nothing, before sending
       // out the next packet.
       //
-      if (FIFO > 1000.0) {
+      if (FIFO > 500.0) {
         // Wait about 1000 usec before sending the next packet.
         ts.tv_nsec += 1000000;
         if (ts.tv_nsec > 999999999) {
@@ -1829,7 +1829,7 @@ static gpointer new_protocol_rxaudio_thread(gpointer data) {
           ts.tv_nsec -= 1000000000;
         }
         clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, NULL);
-      } else if (FIFO > 300.0) {
+      } else if (FIFO > 250.0) {
         // Wait about 300 usec before sending the next packet.
         ts.tv_nsec += 300000;
         if (ts.tv_nsec > 999999999) {

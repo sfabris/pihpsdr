@@ -292,15 +292,23 @@ uint32_t ReadFIFOMonitorChannel(EDMAStreamSelect Channel, bool* Overflowed, bool
 //
 void InitialiseFIFOSizes(void) {
   ESoftwareID ID;
-  unsigned int Version = 0;
-  Version = GetFirmwareVersion(&ID);
+  unsigned int Version =  GetFirmwareVersion(&ID);
 
-  if (Version >= 10) {
-    t_print("loading new FIFO sizes for updated firmware version:%d\n", Version);
-    DMAFIFODepths[0] = 16384;       //  eRXDDCDMA,    selects RX
-    DMAFIFODepths[1] = 2048;        //  eTXDUCDMA,    selects TX
+  //
+  // For Version < 10, the defaults given above are used
+  //
+  if((Version >= 10) && (Version <= 12)) {
+    t_print("loading new FIFO sizes for updated firmware <= 12\n");
+    DMAFIFODepths[0] = 16384;       //  eRXDDCDMA,           selects RX
+    DMAFIFODepths[1] = 2048;        //  eTXDUCDMA,           selects TX
     DMAFIFODepths[2] = 256;         //  eMicCodecDMA, selects mic samples
-    DMAFIFODepths[3] = 1024;        //  eSpkCodecDMA  selects speaker samples
+    DMAFIFODepths[3] = 1024;        //  eSpkCodecDMA selects speaker samples
+  } else if(Version >= 13) {
+    t_print("loading new FIFO sizes for updated firmware V13+\n");
+    DMAFIFODepths[0] = 16384;       //  eRXDDCDMA,           selects RX
+    DMAFIFODepths[1] = 4096;        //  eTXDUCDMA,           selects TX
+    DMAFIFODepths[2] = 256;         //  eMicCodecDMA, selects mic samples
+    DMAFIFODepths[3] = 1024;        //  eSpkCodecDMA selects speaker samples
   }
 }
 
