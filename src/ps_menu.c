@@ -596,7 +596,7 @@ void ps_menu(GtkWidget *parent) {
   gtk_widget_set_name(oneshot_b, "boldlabel");
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (oneshot_b), transmitter->ps_oneshot);
   gtk_grid_attach(GTK_GRID(grid), oneshot_b, col, row, 1, 1);
-  g_signal_connect(tol_b, "toggled", G_CALLBACK(oneshot_cb), NULL);
+  g_signal_connect(oneshot_b, "toggled", G_CALLBACK(oneshot_cb), NULL);
   row++;
   col = 0;
   feedback_l = gtk_label_new("Feedback Lvl");
