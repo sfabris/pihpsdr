@@ -210,7 +210,11 @@ int ps_calibration_timer(gpointer arg) {
        case 2:
          // Perform a PS restart and proceed to the calibration loop
          state = 0;
-         SetPSControl(transmitter->id, 0, 0, 1, 0);
+         if (transmitter->ps_oneshot) {
+           SetPSControl(transmitter->id, 0, 1, 0, 0);
+         } else {
+           SetPSControl(transmitter->id, 0, 0, 1, 0);
+         }
          break;
       }
     }
@@ -348,7 +352,11 @@ static void ps_off_on() {
   if (transmitter->puresignal) {
     SetPSControl(transmitter->id, 1, 0, 0, 0);
     usleep(100000);
-    SetPSControl(transmitter->id, 0, 0, 1, 0);
+    if (transmitter->ps_oneshot) {
+      SetPSControl(transmitter->id, 0, 1, 0, 0);
+    } else {
+      SetPSControl(transmitter->id, 0, 0, 1, 0);
+    }
   }
 }
 
@@ -398,6 +406,11 @@ static void tol_cb(GtkWidget *widget, gpointer data) {
   int tol = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
   transmitter->ps_ptol = tol ? 0.4 : 0.8;
   SetPSPtol(transmitter->id, transmitter->ps_ptol);
+  ps_off_on();
+}
+
+static void oneshot_cb(GtkWidget *widget, gpointer data) {
+  transmitter->ps_oneshot = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
   ps_off_on();
 }
 
@@ -560,24 +573,36 @@ void ps_menu(GtkWidget *parent) {
 
   my_combo_attach(GTK_GRID(grid), ps_ant_combo, col, row, 1, 1);
   g_signal_connect(ps_ant_combo, "changed", G_CALLBACK(ps_ant_cb), NULL);
+
   col++;
   GtkWidget *map_b = gtk_check_button_new_with_label("PS MAP");
   gtk_widget_set_name(map_b, "boldlabel");
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (map_b), transmitter->ps_map);
   gtk_grid_attach(GTK_GRID(grid), map_b, col, row, 1, 1);
   g_signal_connect(map_b, "toggled", G_CALLBACK(map_cb), NULL);
+
   col++;
   GtkWidget *tol_b = gtk_check_button_new_with_label("PS Relax Tolerance");
   gtk_widget_set_name(tol_b, "boldlabel");
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (tol_b), (transmitter->ps_ptol < 0.6));
   gtk_grid_attach(GTK_GRID(grid), tol_b, col, row, 2, 1);
   g_signal_connect(tol_b, "toggled", G_CALLBACK(tol_cb), NULL);
+
+  col++;
+  col++;
+  GtkWidget *oneshot_b = gtk_check_button_new_with_label("OneShot");
+  gtk_widget_set_name(oneshot_b, "boldlabel");
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (oneshot_b), transmitter->ps_oneshot);
+  gtk_grid_attach(GTK_GRID(grid), oneshot_b, col, row, 1, 1);
+  g_signal_connect(tol_b, "toggled", G_CALLBACK(oneshot_cb), NULL);
+
   row++;
   col = 0;
   feedback_l = gtk_label_new("Feedback Lvl");
   gtk_widget_set_name(feedback_l, "boldlabel");
   gtk_widget_show(feedback_l);
   gtk_grid_attach(GTK_GRID(grid), feedback_l, col, row, 1, 1);
+
   col++;
   correcting_l = gtk_label_new("Correcting");
   gtk_widget_set_name(correcting_l, "boldlabel");
