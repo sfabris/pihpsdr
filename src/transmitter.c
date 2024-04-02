@@ -776,7 +776,7 @@ TRANSMITTER *create_transmitter(int id, int width, int height) {
   // PS 2.0 default parameters
   //
   tx->ps_ampdelay = 150;      // ATTENTION: this value is in nano-seconds
-  tx->ps_oneshot = 1;
+  tx->ps_oneshot = 0;
   tx->ps_ints = 16;
   tx->ps_spi = 256;           // ints=16/spi=256 corresponds to "TINT=0.5 dB"
   tx->ps_stbl = 0;            // "Stbl" un-checked
