@@ -1758,7 +1758,7 @@ static gpointer new_protocol_rxaudio_thread(gpointer data) {
   // Ideally, a RX audio buffer with 64 samples is sent every 1333 usecs.
   // We thus wait until we have 64 samples, and then send a packet
   // (in network mode) or start DMA (in xdma mode).
-  // After sending a packet in network mode, wait 1000 usecs before
+  // After sending a packet in network mode, wait a little bit before
   // attempting to send the next one.
   //
   while (running) {
@@ -1793,13 +1793,60 @@ static gpointer new_protocol_rxaudio_thread(gpointer data) {
       saturn_handle_speaker_audio(audiobuffer);
 #endif
     } else {
+      //
+      // We used to have a fixed sleeping time of 1000 usec, and
+      // observed that there is no guarantee to wake up in time
+      // The idea is now to monitor how fast we actually send
+      // the packets, and FIFO is the coarse (!) estimation of the
+      // FPGA-FIFO filling level.
+      // If we lag behind and FIFO goes low, send packets with
+      // little or no delay. Never sleep longer than 1000 usec, the
+      // fixed time we had before.
+      //
+      struct timespec ts;
+      static double last = -9999.9;
+      static double FIFO = 0.0;
+      double now;
+      clock_gettime(CLOCK_MONOTONIC, &ts);
+      now = ts.tv_sec + 1.0E-9 * ts.tv_nsec;
+      FIFO -= (now - last) * 48000.0; 
+      last = now;
+
+      if (FIFO < 0.0) {
+       FIFO = 0.0;
+      }
+
+      //
+      // Depending on how we estimate the FIFO filling, wait
+      // 1000usec, or 300 usec, or nothing before sending
+      // out the next packet.
+      //
+      if (FIFO > 1000.0) {
+        // Wait about 1000 usec before sending the next packet.
+        ts.tv_nsec += 1000000;
+        if (ts.tv_nsec > 999999999) {
+          ts.tv_sec++;
+          ts.tv_nsec -= 1000000000;
+        }
+        clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, NULL);
+      } else if (FIFO > 300.0) {
+        // Wait about 300 usec before sending the next packet.
+        ts.tv_nsec += 300000;
+        if (ts.tv_nsec > 999999999) {
+          ts.tv_sec++;
+          ts.tv_nsec -= 1000000000;
+        }
+        clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, NULL);
+      }
+
+      FIFO += 64.0;  // number of samples in THIS packet
+
+
       int rc = sendto(data_socket, audiobuffer, sizeof(audiobuffer), 0, (struct sockaddr*)&audio_addr, audio_addr_length);
 
       if (rc != sizeof(audiobuffer)) {
         t_print("sendto socket failed for %ld bytes of audio: %d\n", (long)sizeof(audiobuffer), rc);
       }
-
-      usleep(1000);
     }
   }
 
@@ -2594,7 +2641,7 @@ void new_protocol_cw_audio_samples(short left_audio_sample, short right_audio_sa
   }
 }
 
-void new_protocol_audio_samples(RECEIVER *rx, short left_audio_sample, short right_audio_sample) {
+void new_protocol_audio_samples(short left_audio_sample, short right_audio_sample) {
   int txmode = get_tx_mode();
 
   //

@@ -249,7 +249,15 @@ static gpointer old_protocol_txiq_thread(gpointer data) {
   //
   // Ideally, an output METIS buffer with 126 samples is sent every 2625 usec.
   // We thus wait until we have 126 samples, and then send a packet.
-  // After sending the packet, wait 2000 usecs before sending the next one.
+  // Upon RX, the packets come from the RX thread and contain the receiver audio,
+  // and the rate in which packets fly in strongly depends on the receiver sample
+  // rate:
+  // Each WDSP "fexchange" event, with a fixed buffer size of 1024, produces
+  // between 128 (384k sample rate) and 1024 (48k sample rate) audio samples,
+  // which therefore arrive every 2.7 msec (384k) up to every 21.3 msec (48k).
+  //
+  // When TXing, a bunch of 1024 TX IQ samples is produced every 21.3 msec.
+  //
   // If "txring_drain" is set, drain the buffer
   //
   for (;;) {
@@ -277,13 +285,63 @@ static gpointer old_protocol_txiq_thread(gpointer data) {
       //
       txring_outptr = nptr;
     } else {
+      //
+      // We used to have a fixed sleeping time of 2000 usec, and
+      // observed that the sleep was sometimes too long, especially
+      // at 48k sample rate.
+      // The idea is now to monitor how fast we actually send
+      // the packets, and FIFO is the coarse (!) estimation of the
+      // FPGA-FIFO filling level.
+      // If we lag behind and FIFO goes low, send packets with
+      // little or no delay. Never sleep longer than 2000 usec, the
+      // fixed time we had before.
+      //
+      struct timespec ts;
+      static double last = -9999.9;
+      static double FIFO = 0.0;
+      double now;
+      clock_gettime(CLOCK_MONOTONIC, &ts);
+      now = ts.tv_sec + 1.0E-9 * ts.tv_nsec;
+      FIFO -= (now - last) * 48000.0;
+      last = now;
+
+      if (FIFO < 0.0) {
+       FIFO = 0.0;
+      }
+     
+      //
+      // Depending on how we estimate the FIFO filling, wait
+      // 2000usec, or 500 usec, or nothing before sending
+      // out the next packet.
+      //
+      // Note that in reality, the "sleep" is a little bit longer
+      // than specified by ts (we cannot rely on a wake-up in time).
+      //
+      if (FIFO > 1500.0) {
+        // Wait about 2000 usec before sending the next packet.
+        ts.tv_nsec += 2000000;
+        if (ts.tv_nsec > 999999999) {
+          ts.tv_sec++;
+          ts.tv_nsec -= 1000000000;
+        }
+        clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, NULL);
+      } else if (FIFO > 300.0) {
+        // Wait about 500 usec before sending the next packet.
+        ts.tv_nsec += 500000;
+        if (ts.tv_nsec > 999999999) {
+          ts.tv_sec++;
+          ts.tv_nsec -= 1000000000;
+        }
+        clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, NULL);
+      }
+
+      FIFO += 126.0;  // number of samples in THIS packet
       memcpy(output_buffer + 8, &TXRINGBUF[txring_outptr    ], 504);
       ozy_send_buffer();
       memcpy(output_buffer + 8, &TXRINGBUF[txring_outptr + 504], 504);
       ozy_send_buffer();
       MEMORY_BARRIER;
       txring_outptr = nptr;
-      usleep(2000);
       pthread_mutex_unlock(&send_ozy_mutex);
     }
   }
@@ -1572,7 +1630,7 @@ static gpointer process_ozy_input_buffer_thread(gpointer arg) {
   return NULL;
 }
 
-void old_protocol_audio_samples(RECEIVER *rx, short left_audio_sample, short right_audio_sample) {
+void old_protocol_audio_samples(short left_audio_sample, short right_audio_sample) {
   if (!isTransmitting()) {
     pthread_mutex_lock(&send_audio_mutex);
 
@@ -1585,11 +1643,11 @@ void old_protocol_audio_samples(RECEIVER *rx, short left_audio_sample, short rig
     if (txring_flag) {
       //
       // First time we arrive here after a TX->RX transition:
-      // set the "drain" flag, wait 10 msec, clear it
+      // set the "drain" flag, wait 5 msec, clear it
       // This should drain the txiq ring buffer
       //
       txring_drain = 1;
-      usleep(10000);
+      usleep(5000);
       txring_drain = 0;
       txring_flag = 0;
     }
@@ -1656,12 +1714,12 @@ void old_protocol_iq_samples(int isample, int qsample, int side) {
     if (!txring_flag) {
       //
       // First time we arrive here after a RX->TX transition:
-      // set the "drain" flag, wait 10 msec, clear it
+      // set the "drain" flag, wait 5 msec, clear it
       // This should drain the txiq ring buffer (which also
       // contains the audio samples) for minimum CW side tone latency.
       //
       txring_drain = 1;
-      usleep(10000);
+      usleep(5000);
       txring_drain = 0;
       txring_flag = 1;
     }
@@ -2620,13 +2678,12 @@ static void metis_restart() {
   // to the RedPitaya *before* sending a METIS start packet.
   // We fill the DUC FIFO here with about 500 samples before
   // starting. This also sends some vital C&C data.
-  // Note we send 8 OZY buffers, that is, 4 METIS buffers
-  // containing 504 samples.
+  // Note we send 504 audio samples = 8 OZY buffers =  4 METIS buffers
   //
   command = 1;
 
-  for (i = 0; i < 8; i++) {
-    ozy_send_buffer();
+  for (i = 0; i < 504; i++) {
+    old_protocol_audio_samples(0, 0);
   }
 
   usleep(100000);
