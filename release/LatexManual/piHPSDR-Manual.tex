@@ -1368,10 +1368,15 @@ for the RX  spectrum scope (see chapter \ref{sec:FillingGradient}).
 \rett{Gradient} This is used to enable/disable the ,,Gradient'' option
 (color coding) for the RX spectrum scope (see chapter \ref{sec:FillingGradient}).
 
- \rett{Display Waterfall} This option enables/disables the waterfall display
- of the RX panels. Note the spectrum scope is always shown (you cannot have the
- waterfall alone).
+\rett{Display Panadapter}. This option enables/disables the panadapter display
+on the RX panels. With the panadapter enabled, you can have the waterfall alone.
 
+ \rett{Display Waterfall}. This option enables/disables the waterfall display
+ of the RX panels. Note if both the waterfall and the panadapter is disabled,
+ there will simply be a large ,,hole'' in the piHPSDR window. This makes little sense
+ except on machines with very weak CPUs, since \textit{not} displaying neither waterfall
+ nor panadapter saves some CPU time in the graphics back-end.
+ 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The \texttt{Meter} menu}
@@ -2315,47 +2320,56 @@ If you open the \bltt{PS} menu for the first time it looks like shown in Fig.
 
 The elements have the following function:
 
-\rett{Enable PS} With this check box, PS can be enabled/disabled.
+\rett{Enable PS}. With this check box, PS can be enabled/disabled.
 
-\rett{Two Tone} With this button, a two-tone experiment can be started/stopped. The button
+\rett{Two Tone}. With this button, a two-tone experiment can be started/stopped. The button
 will be highlighted as long as the two-tone signal is transmitted. In the lower sideband
 modes (LSB, DIGL, CWL), an RF two-tone signal with frequencies 700 and 1900 Hz 
 \textit{below} the dial frequency are transmitted, in all other modes the two
 RF frequencies are 700 and 1900 Hz \textit{above} the dial frequency. 
 
-\rett{Auto Attenuate} This enables/disables automatic adjustment of the RF input
+\rett{Auto Attenuate}. This enables/disables automatic adjustment of the RF input
 attenuator to give the feedback level the correct strength. It is highly recommened
 to use this option.
 
-\rett{OFF} With this button, the PS correction can be stopped (the \rett{status} will
+\rett{OFF}. With this button, the PS correction can be stopped (the \rett{status} will
 then change to RESET).
 
-\rett{Restart} With this button, the PS correction can be resumed, for example after
+\rett{Restart}. With this button, the PS correction can be resumed, for example after
 it has been stopped.
 
-\rett{MON} With this button, it can be chosen whether the TX spectrum scope shows
+\rett{MON}. With this button, it can be chosen whether the TX spectrum scope shows
 the signal sent to the PA (MON button not highlighted) or whether the feedback signal
 from the antenna is shown (MON button highlighted).
 
-\rett{PS Feedback ANT} Here it must be specified which antenna jack is used for the
+\rett{PS Feedback ANT}. Here it must be specified which antenna jack is used for the
 PS feedback signal. It can be \rett{Internal} which means internal feedback
 (for example as built into the Anan-7000 or  simply the cross-talk from the
 TX/RX relay), or it can be \rett{Ext1} or \rett{ByPass} which refers to the
 auxiliary antenna jacks.
 
-\rett{PS MAP} This box controls the PURESIGNAL ,,Map mode'' and is normally checked. 
+\rett{PS MAP}. This box controls the PURESIGNAL ,,Map mode'' and is normally checked. 
 According to the WDSP manual, changing the Map mode allows easier calibration in
 situations where a very poor PA is driven into heavy gain compression. The state
 of this box has
 no effect if there is no compression. \textit{PS is stopped and re-started if
 this box is changed.}
 
-\rett{PS Relax Tolerance} This box is normally unchecked which means that the default
+\rett{PS Relax Tolerance}. This box is normally unchecked which means that the default
 value 0.8 is used for the PURESIGNAL calibration tolerance. If checked, this tolerance
 is reduced to 0.4. According to the WDSP manual, relaxing the tolerance my be helpful
 for PAs with a very poor load regulation in the power supply such that there are
 severe and slow memory effects. \textit{PS is stopped and re-started if
 this box is changed.}
+ 
+ \rett{OneShot}. This box is unchecked by default. In the default case, the PURESIGNAL
+ algorithm constantly compares the transmitted and the feedback signal and thus
+ constantly updates the calibration. If \rett{OneShot} is checked, the calibration
+ is kept when the two tone experiment is finished. There are cases, especially if
+ CPU power is lacking, where the PURESIGNAL algorithm from time to time fails to obtain
+ a valid calibration, and when this happens during transmitting, a bad signal may
+ be transmitted for a short amount of time. Checking \rett{OneShot} can help in such
+ situations because the calibration, once obtained, is kept and not changed.
  
 \begin{figure}[ht]
 \center
@@ -2364,13 +2378,13 @@ this box is changed.}
 \label{fig:PSnomon}
 \end{figure}
 
-\rett{Feedback Lvl} When doing a PS calibration through a two-tone experiment, this string
+\rett{Feedback Lvl}. When doing a PS calibration through a two-tone experiment, this string
 turns red if the feedback level is good. It turns yellow if the feedback level is slightly
 to weak and read if it is too weak. A blue colour indicates a too string feedback level.
 The feedback level reported by the PS calibration algorithm is further reported in the
 ,,feedbk'' field. The optimum value is about 154.
 
-\rett{Correcting} When doing a PS calibration through a two-tone experiment, this string
+\rett{Correcting}. When doing a PS calibration through a two-tone experiment, this string
 is green if calibration was successful and PS correction takes place, and the string is
 red if no good calibration could be made.
 
@@ -2381,7 +2395,8 @@ red if no good calibration could be made.
 \label{fig:PSmon}
 \end{figure}
 
-\rett{TX ATT} If \rett{Auto Attenuate} is not enabled, this is a spin button with which
+\rett{TX ATT}. This element can occur both as a text field or as a spin button.
+If \rett{Auto Attenuate} is not enabled, it is a spin button with which
 you can manually adjust the RF attenuation. For normal HPSDR radios, this is a value
 between 0 and 31, other radios such as the HermesLite have an extended range from
 -29 to 31. If the feedback level is too strong, this value must be increased, if it
@@ -2391,7 +2406,7 @@ Note that this attenuation value is only effective if \texttt{PURESIGNAL} is ena
 If not, the RF input attenuators are set to maximum attenution while transmitting, if the
 PA is enabled.
 
-\rett{SetPk} This field shows the currently assumed value of the peak value of the TX DAC
+\rett{SetPk}. This field shows the currently assumed value of the peak value of the TX DAC
 feedback signal. piHPSDR chooses is automatically, depending on the radio hardware.
 The standard value for P1 and P2 radios are 0.407 and 0.290. Notable exceptions are
 the HermesLite-II running P1 (SetPK=0.240) and the Anan-G2 running P2 (SetPK=0.612).
@@ -2497,7 +2512,12 @@ last Morse key closure.
 either generated by the radio (if CW is handled there and the radio
 has an audio codec) or
 by piHPSDR (if CW is not handled in the radio). The allowed range
-is 0--127, typical values are between 10 and 20.
+is 0--127, typical values are between 10 and 20. The side tone level
+is usually set to zero if, for example, a low latency sidetone is
+produced outside piHPSDR. In this case, one usually wants to hear
+the tone from CAT CW messages being sent, so if the side tone is
+zero, a default side tone level (12) is used while transmitting
+via CAT.
 
 \rett{Sidetone Freq}. This is the frequency of the side tone and the
 ,,BFO offset''. That is, if a CW signal is received exactly at the
@@ -2627,26 +2647,42 @@ is shown in Fig. \ref{fig:EqualizerMenu}.
 \label{fig:EqualizerMenu}
 \end{figure}
 
-Using \rett{Enable RX Equalizer} and \rett{Enable TX Equalizer},
-you can individually enable/disable the RX and TX equalizer.
-If the RX equalizer is enabled, the EQ indicator in the
+With the combo-box at the top right one can select if one
+wants to change the equalizer settings for the receivers
+RX0 or RX1, or for the transmitter. The equalizers are
+four-channel equalizers where the gain set with the sliders
+applies to the corner frequencies displayed at the left margin.
+Between two corner frequencies, the gain is interpolated
+(see the WDSP manual). The first slider, denoted \rett{Preamp},
+applies an additional, frequency-independent gain.
+
+The \rett{Enable} checkbox enables/disables the equalizer
+(either for RX0, for RX1, or for TX). 
+If the equalizer of the active receiver 
+is enabled, the EQ indicator in the
 VFO bar, upon receiving, turns yellow and reads \rett{RxEQ}.
 If the TX equalizer is enabled, this indicator turns yellow
 while transmitting and reads \rett{TxEQ}. So while receiving,
 you cannot tell, from the VFO bar, whether the TX equalizer is
 actually enabled or not!
 
-For both equalizers, there are four sliders which affect the
-overall gain (Preamp), and the amplification in the low/mid/high
-frequency range. Equalizer settings are saved with the mode, so
-if you adjust the Equaliziers when doing SSB, and then switch to
-DIGU, the equalizers are disabled and they resume their SSB
-settings upon going back to LSB/USB. This also applies to other
+Equalizer settings are saved with the mode, so
+if you adjust the Equaliziers when doing LSB, and then switch to
+DIGU, the equalizers are disabled and they resume their LSB
+settings upon going back to LSB. This also applies to other
 modes such as CWU/CWL, where the TX equalizer has no meaning
-anyway, and where the RX equalizer is normally not needed because
-CW filters usually are narrow.
+anyway, and where the RX equalizer is normally not needed 
+because CW filters usually are narrow. The corner frequencies
+can (in principle) be different for RX0, RX1, and TX. 
+There is currently
+no GUI to change them, but they can be changed by hand-editing
+the radio settings (props file), which is ,,nerds only'' and
+will not be discussed in the manual.
 
-For RX-only radios, the TX part of the equalizer menu is not shown.
+If the radio currently runs only a single receiver, RX1 cannot
+be selected with the top right combo-box. Likewise, if the
+radio does not have transmitter, the TX settings cannot be
+selected.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The \texttt{Ant} (Antenna) Menu}
