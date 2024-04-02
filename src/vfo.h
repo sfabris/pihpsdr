@@ -86,8 +86,8 @@ struct _mode_settings {
   int snb;                  // Spectral noise blanker
   int en_txeq;              // TX equalizer on/off
   int en_rxeq;              // RX equalizer on/off
-  int txeq[4];              // TX equalizer settings
-  int rxeq[4];              // RX equalizer settings
+  double txeq[5];           // TX equalizer settings
+  double rxeq[5];           // RX equalizer settings
   long long step;           // VFO step size
   int compressor;           // TX compressor on/off
   double compressor_level;  // TX compressor level

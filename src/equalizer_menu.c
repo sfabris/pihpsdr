@@ -30,9 +30,15 @@
 #include "radio.h"
 #include "ext.h"
 #include "vfo.h"
+#include "transmitter.h"
 #include "message.h"
 
 static GtkWidget *dialog = NULL;
+
+static GtkWidget *scale[5];
+static GtkWidget *freqlabel[5];
+
+static int eqid;  // 0: RX0, 1: RX1, 2: TX
 
 static void cleanup() {
   if (dialog != NULL) {
@@ -49,26 +55,6 @@ static gboolean close_cb () {
   return TRUE;
 }
 
-void set_eq() {
-  //
-  // Note that WDSP implements a four-channel equalizer
-  // with frequencies 150, 400, 1500, and 6000 Hz.
-  // However, the 150 and 400 Hz setting share the value,
-  // so
-  // preamp slider --> eq[0] --> overall amplification
-  // low    slider --> eq[1] --> 150 *and* 400 Hz channel
-  // med    slider --> eq[2] --> 1500 Hz channel
-  // high   slider --> eq[3] --> 6000 Hz channel
-  //
-  if (can_transmit) {
-    SetTXAGrphEQ(transmitter->id, tx_equalizer);
-    SetTXAEQRun(transmitter->id, enable_tx_equalizer);
-  }
-
-  SetRXAGrphEQ(active_receiver->id, rx_equalizer);
-  SetRXAEQRun(active_receiver->id, enable_rx_equalizer);
-}
-
 void update_eq() {
 #ifdef CLIENT_SERVER
 
@@ -79,7 +65,13 @@ void update_eq() {
     //
   } else {
 #endif
-    set_eq();
+    if (can_transmit) {
+      tx_set_equalizer(transmitter);
+    }
+  
+    for (int id=0; id < receivers; id++) {
+      receiver_set_equalizer(receiver[id]);
+    }
 #ifdef CLIENT_SERVER
   }
 
@@ -87,43 +79,103 @@ void update_eq() {
 }
 
 static void enable_cb (GtkWidget *widget, gpointer data) {
-  int i = GPOINTER_TO_INT(data);
+  int val = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   int m;
 
-  if (i != 0) {
-    enable_tx_equalizer = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-    m = vfo[get_tx_vfo()].mode;
-    mode_settings[m].en_txeq = enable_tx_equalizer;
-  } else {
-    enable_rx_equalizer = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-    m = vfo[active_receiver->id].mode;
-    mode_settings[m].en_rxeq = enable_rx_equalizer;
+  switch (eqid) {
+  case 0:
+  case 1:
+    if (eqid < receivers) {
+      receiver[eqid]->eq_enable = val;
+      m = vfo[eqid].mode;
+      mode_settings[m].en_rxeq = val;
+    }
+    break;
+  case 2:
+    if (can_transmit) {
+      transmitter->eq_enable = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+      m = vfo[get_tx_vfo()].mode;
+      mode_settings[m].en_txeq = transmitter->eq_enable;
+    }
+    break;
   }
 
   update_eq();
   g_idle_add(ext_vfo_update, NULL);
 }
 
-static void rx_changed_cb (GtkWidget *widget, gpointer data) {
-  int i = GPOINTER_TO_INT(data);
+static void scale_changed_cb (GtkWidget *widget, gpointer data) {
+  int i=GPOINTER_TO_INT(data);
+  double val = gtk_range_get_value(GTK_RANGE(widget));
   int m;
-  rx_equalizer[i] = (int)gtk_range_get_value(GTK_RANGE(widget));
-  m = vfo[active_receiver->id].mode;
-  mode_settings[m].rxeq[i] = rx_equalizer[i];
+
+  switch (eqid) {
+  case 0:
+  case 1:
+    if (eqid < receivers) {
+      receiver[eqid]->eq_gain[i] = val;
+      m = vfo[eqid].mode;
+      mode_settings[m].rxeq[i] = val;
+    }
+    break;
+  case 2:
+    if (can_transmit) {
+      transmitter->eq_gain[i] = val;
+      m = vfo[get_tx_vfo()].mode;
+      mode_settings[m].txeq[i] = val;
+    }
+    break;
+  }
+
   update_eq();
 }
 
-static void tx_changed_cb (GtkWidget *widget, gpointer data) {
-  int i = GPOINTER_TO_INT(data);
-  int m;
-  tx_equalizer[i] = (int)gtk_range_get_value(GTK_RANGE(widget));
-  m = vfo[get_tx_vfo()].mode;
-  mode_settings[m].txeq[i] = tx_equalizer[i];
-  update_eq();
+//
+// If RX1 is selected while only one RX is running, or if TX
+// is selected but there is no transmitter, silently force
+// the combo box back to RX0
+//
+static void eqid_changed_cb(GtkWidget *widget, gpointer data) {
+  char text[16];
+  eqid = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+
+  switch (eqid) {
+  case 0:
+  case 1:
+    if (eqid < receivers) {
+      for (int i=0; i<5; i++) {
+        gtk_range_set_value(GTK_RANGE(scale[i]), receiver[eqid]->eq_gain[i]);
+      }
+      for (int i=1; i<5; i++) {
+        snprintf(text, 16, "%4d Hz  ", (int)(receiver[eqid]->eq_freq[i] + 0.5));
+        gtk_label_set_text(GTK_LABEL(freqlabel[i]), text);
+      }
+    } else {
+      gtk_combo_box_set_active(GTK_COMBO_BOX(widget), 0);
+    }
+    break;
+  case 2:
+    if (can_transmit) {
+      for (int i=0; i<5; i++) {
+        gtk_range_set_value(GTK_RANGE(scale[i]), transmitter->eq_gain[i]);
+      }
+      for (int i=1; i<5; i++) {
+        snprintf(text, 16, "%4d Hz  ", (int)(transmitter->eq_freq[i] + 0.5));
+        gtk_label_set_text(GTK_LABEL(freqlabel[i]), text);
+      }
+    } else {
+      gtk_combo_box_set_active(GTK_COMBO_BOX(widget), 0);
+    }
+    break;
+  }
 }
+
 
 void equalizer_menu(GtkWidget *parent) {
-  GtkWidget *label;
+  char text[16];
+
+  eqid = 0;
+
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(parent));
   GtkWidget *headerbar = gtk_header_bar_new();
@@ -138,75 +190,58 @@ void equalizer_menu(GtkWidget *parent) {
   gtk_grid_set_row_spacing (GTK_GRID(grid), 5);
   gtk_grid_set_row_homogeneous(GTK_GRID(grid), FALSE);
   gtk_grid_set_column_homogeneous(GTK_GRID(grid), TRUE);
+
   GtkWidget *close_b = gtk_button_new_with_label("Close");
   gtk_widget_set_name(close_b, "close_button");
   g_signal_connect (close_b, "button-press-event", G_CALLBACK(close_cb), NULL);
   gtk_grid_attach(GTK_GRID(grid), close_b, 0, 0, 1, 1);
-  GtkWidget *enable_rx_b = gtk_check_button_new_with_label("Enable RX Equalizer");
-  gtk_widget_set_name(enable_rx_b, "boldlabel");
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (enable_rx_b), enable_rx_equalizer);
-  g_signal_connect(enable_rx_b, "toggled", G_CALLBACK(enable_cb), GINT_TO_POINTER(0));
-  gtk_grid_attach(GTK_GRID(grid), enable_rx_b, 1, 1, 2, 1);
 
-  if (can_transmit) {
-    // This makes column #3 "empty" so it acts as a separator
-    label = gtk_label_new(NULL);
-    gtk_grid_attach(GTK_GRID(grid), label, 3, 1, 1, 1);
-    GtkWidget *enable_tx_b = gtk_check_button_new_with_label("Enable TX Equalizer");
-    gtk_widget_set_name(enable_tx_b, "boldlabel");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (enable_tx_b), enable_tx_equalizer);
-    g_signal_connect(enable_tx_b, "toggled", G_CALLBACK(enable_cb), GINT_TO_POINTER(1));
-    gtk_grid_attach(GTK_GRID(grid), enable_tx_b, 4, 1, 2, 1);
-  }
+  GtkWidget *eqid_combo_box = gtk_combo_box_text_new();
+  gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(eqid_combo_box), NULL, "RX0 Equalizer Settings");
+  gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(eqid_combo_box), NULL, "RX1 Equalizer Settings");
+  gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(eqid_combo_box), NULL, "TX  Equalizer Settings");
+  gtk_combo_box_set_active(GTK_COMBO_BOX(eqid_combo_box), 0);
+  my_combo_attach(GTK_GRID(grid), eqid_combo_box, 1, 1, 3, 1);
+  g_signal_connect(eqid_combo_box, "changed", G_CALLBACK(eqid_changed_cb), NULL);
 
-  label = gtk_label_new("Preamp  ");
-  gtk_widget_set_name(label, "boldlabel");
-  gtk_widget_set_halign(label, GTK_ALIGN_END);
-  gtk_grid_attach(GTK_GRID(grid), label, 0, 2, 1, 1);
-  label = gtk_label_new("Low  ");
-  gtk_widget_set_name(label, "boldlabel");
-  gtk_widget_set_halign(label, GTK_ALIGN_END);
-  gtk_grid_attach(GTK_GRID(grid), label, 0, 3, 1, 1);
-  label = gtk_label_new("Mid  ");
-  gtk_widget_set_name(label, "boldlabel");
-  gtk_widget_set_halign(label, GTK_ALIGN_END);
-  gtk_grid_attach(GTK_GRID(grid), label, 0, 4, 1, 1);
-  label = gtk_label_new("High  ");
-  gtk_widget_set_name(label, "boldlabel");
-  gtk_widget_set_halign(label, GTK_ALIGN_END);
-  gtk_grid_attach(GTK_GRID(grid), label, 0, 5, 1, 1);
 
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 2; j++) {
-      if (!can_transmit && j == 1 ) { break; }
+  GtkWidget *enable_b = gtk_check_button_new_with_label("Enable");
+  gtk_widget_set_name(enable_b, "boldlabel");
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (enable_b), receiver[0]->eq_enable);
+  g_signal_connect(enable_b, "toggled", G_CALLBACK(enable_cb), GINT_TO_POINTER(0));
+  gtk_grid_attach(GTK_GRID(grid), enable_b, 0, 1, 1, 1);
 
-      GtkWidget *scale = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, -12.0, 15.0, 1.0);
-      gtk_range_set_increments (GTK_RANGE(scale), 1.0, 1.0);
-
-      switch (j) {
-      case 0:
-        gtk_range_set_value(GTK_RANGE(scale), (double)rx_equalizer[i]);
-        g_signal_connect(scale, "value-changed", G_CALLBACK(rx_changed_cb), GINT_TO_POINTER(i));
-        break;
-
-      case 1:
-        gtk_range_set_value(GTK_RANGE(scale), (double)tx_equalizer[i]);
-        g_signal_connect(scale, "value-changed", G_CALLBACK(tx_changed_cb), GINT_TO_POINTER(i));
-        break;
-      }
-
-      gtk_grid_attach(GTK_GRID(grid), scale, 1 + 3 * j, i + 2, 2, 1);
-      gtk_scale_add_mark(GTK_SCALE(scale), -12.0, GTK_POS_LEFT, "-12dB");
-      gtk_scale_add_mark(GTK_SCALE(scale), -9.0, GTK_POS_LEFT, NULL);
-      gtk_scale_add_mark(GTK_SCALE(scale), -6.0, GTK_POS_LEFT, NULL);
-      gtk_scale_add_mark(GTK_SCALE(scale), -3.0, GTK_POS_LEFT, NULL);
-      gtk_scale_add_mark(GTK_SCALE(scale), 0.0, GTK_POS_LEFT, "0dB");
-      gtk_scale_add_mark(GTK_SCALE(scale), 3.0, GTK_POS_LEFT, NULL);
-      gtk_scale_add_mark(GTK_SCALE(scale), 6.0, GTK_POS_LEFT, NULL);
-      gtk_scale_add_mark(GTK_SCALE(scale), 9.0, GTK_POS_LEFT, NULL);
-      gtk_scale_add_mark(GTK_SCALE(scale), 12.0, GTK_POS_LEFT, NULL);
-      gtk_scale_add_mark(GTK_SCALE(scale), 15.0, GTK_POS_LEFT, "15dB");
+  for (int i = 0; i < 5; i++) {
+    if (i == 0) {
+      freqlabel[i] = gtk_label_new("Preamp  ");
+      gtk_widget_set_name(freqlabel[i], "boldlabel");
+      gtk_widget_set_halign(freqlabel[i], GTK_ALIGN_END);
+      gtk_grid_attach(GTK_GRID(grid), freqlabel[i], 0, 2, 1, 2);
+    } else {
+      snprintf(text, 16, "%4d Hz  ", (int) receiver[0]->eq_freq[i]);
+      freqlabel[i] = gtk_label_new(text);
+      gtk_widget_set_name(freqlabel[i], "boldlabel");
+      gtk_widget_set_halign(freqlabel[i], GTK_ALIGN_END);
+      gtk_grid_attach(GTK_GRID(grid), freqlabel[i], 0, 2*i+2, 1, 2);
     }
+
+    scale[i] = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, -12.0, 15.0, 1.0);
+    gtk_range_set_increments (GTK_RANGE(scale[i]), 1.0, 1.0);
+
+    gtk_range_set_value(GTK_RANGE(scale[i]), receiver[0]->eq_gain[i]);
+    g_signal_connect(scale[i], "value-changed", G_CALLBACK(scale_changed_cb), GINT_TO_POINTER(i));
+
+    gtk_grid_attach(GTK_GRID(grid), scale[i], 1, 2*i + 2, 3, 2);
+    gtk_scale_add_mark(GTK_SCALE(scale[i]), -12.0, GTK_POS_LEFT, "-12dB");
+    gtk_scale_add_mark(GTK_SCALE(scale[i]), -9.0, GTK_POS_LEFT, NULL);
+    gtk_scale_add_mark(GTK_SCALE(scale[i]), -6.0, GTK_POS_LEFT, NULL);
+    gtk_scale_add_mark(GTK_SCALE(scale[i]), -3.0, GTK_POS_LEFT, NULL);
+    gtk_scale_add_mark(GTK_SCALE(scale[i]), 0.0, GTK_POS_LEFT, "0dB");
+    gtk_scale_add_mark(GTK_SCALE(scale[i]), 3.0, GTK_POS_LEFT, NULL);
+    gtk_scale_add_mark(GTK_SCALE(scale[i]), 6.0, GTK_POS_LEFT, NULL);
+    gtk_scale_add_mark(GTK_SCALE(scale[i]), 9.0, GTK_POS_LEFT, NULL);
+    gtk_scale_add_mark(GTK_SCALE(scale[i]), 12.0, GTK_POS_LEFT, NULL);
+    gtk_scale_add_mark(GTK_SCALE(scale[i]), 15.0, GTK_POS_LEFT, "15dB");
   }
 
   gtk_container_add(GTK_CONTAINER(content), grid);

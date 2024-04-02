@@ -118,7 +118,7 @@ static void modesettingsSaveState() {
     SetPropF1("modeset.%d.compressor_level", i,      mode_settings[i].compressor_level);
     SetPropI1("modeset.%d.compressor", i,            mode_settings[i].compressor);
 
-    for (int j = 0; j < 4; j++) {
+    for (int j = 0; j < 5; j++) {
       SetPropI2("modeset.%d.txeq.%d", i, j,          mode_settings[i].txeq[j]);
       SetPropI2("modeset.%d.rxeq.%d", i, j,          mode_settings[i].rxeq[j]);
     }
@@ -165,16 +165,12 @@ static void modesettingsRestoreState() {
     mode_settings[i].nb = 0;
     mode_settings[i].anf = 0;
     mode_settings[i].snb = 0;
-    mode_settings[i].en_txeq = 0;
-    mode_settings[i].txeq[0] = 0;
-    mode_settings[i].txeq[1] = 0;
-    mode_settings[i].txeq[2] = 0;
-    mode_settings[i].txeq[3] = 0;
     mode_settings[i].en_rxeq = 0;
-    mode_settings[i].rxeq[0] = 0;
-    mode_settings[i].rxeq[1] = 0;
-    mode_settings[i].rxeq[2] = 0;
-    mode_settings[i].rxeq[3] = 0;
+    mode_settings[i].en_txeq = 0;
+    for (int j = 0; j < 5; j++) {
+      mode_settings[i].txeq[j] = 0;
+      mode_settings[i].rxeq[j] = 0;
+    }
     mode_settings[i].compressor = 0;
     mode_settings[i].compressor_level = 0.0;
     GetPropI1("modeset.%d.filter", i,                mode_settings[i].filter);
@@ -188,7 +184,7 @@ static void modesettingsRestoreState() {
     GetPropF1("modeset.%d.compressor_level", i,      mode_settings[i].compressor_level);
     GetPropI1("modeset.%d.compressor", i,            mode_settings[i].compressor);
 
-    for (int j = 0; j < 4; j++) {
+    for (int j = 0; j < 5; j++) {
       GetPropI2("modeset.%d.txeq.%d", i, j,          mode_settings[i].txeq[j]);
       GetPropI2("modeset.%d.rxeq.%d", i, j,          mode_settings[i].rxeq[j]);
     }
@@ -379,11 +375,10 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
   rx->nb               = mode_settings[m].nb;
   rx->anf              = mode_settings[m].anf;
   rx->snb              = mode_settings[m].snb;
-  enable_rx_equalizer  = mode_settings[m].en_rxeq;
-  rx_equalizer[0]      = mode_settings[m].rxeq[0];
-  rx_equalizer[1]      = mode_settings[m].rxeq[1];
-  rx_equalizer[2]      = mode_settings[m].rxeq[2];
-  rx_equalizer[3]      = mode_settings[m].rxeq[3];
+  rx->eq_enable        = mode_settings[m].en_rxeq;
+  for (int i = 0; i < 5; i++) {
+    rx->eq_gain[i]       = mode_settings[m].rxeq[i];
+  }
   vfo[id].step         = mode_settings[m].step;
 
   //
@@ -391,11 +386,10 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
   // controls the TX
   //
   if ((id == get_tx_vfo()) && can_transmit) {
-    enable_tx_equalizer  = mode_settings[m].en_txeq;
-    tx_equalizer[0]      = mode_settings[m].txeq[0];
-    tx_equalizer[1]      = mode_settings[m].txeq[1];
-    tx_equalizer[2]      = mode_settings[m].txeq[2];
-    tx_equalizer[3]      = mode_settings[m].txeq[3];
+    transmitter->eq_enable  = mode_settings[m].en_txeq;
+    for (int i = 0; i < 5; i++) {
+      transmitter->eq_gain[i]       = mode_settings[m].txeq[i];
+    }
     transmitter_set_compressor_level(transmitter, mode_settings[m].compressor_level);
     transmitter_set_compressor      (transmitter, mode_settings[m].compressor      );
   }
@@ -1637,10 +1631,10 @@ void vfo_update() {
   if (vfl->eq_x != 0) {
     cairo_move_to(cr, vfl->eq_x, vfl->eq_y);
 
-    if (isTransmitting() && enable_tx_equalizer) {
+    if (isTransmitting() && transmitter->eq_enable) {
       cairo_set_source_rgba(cr, COLOUR_ATTN);
       cairo_show_text(cr, "TxEQ");
-    } else if (!isTransmitting() && enable_rx_equalizer) {
+    } else if (!isTransmitting() && active_receiver->eq_enable) {
       cairo_set_source_rgba(cr, COLOUR_ATTN);
       cairo_show_text(cr, "RxEQ");
     } else {

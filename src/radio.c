@@ -241,6 +241,21 @@ unsigned int alex_reverse_power = 0;
 unsigned int ADC1 = 0;
 unsigned int ADC0 = 0;
 
+//
+// At the moment we have "late mox update", this means:
+// in a RX/TX or TX/RX transition, mox is updated after
+// rxtx has completed (which may take a while during
+// down- and up-slew).
+// Sometimes one wants to know before, that a RX/TX
+// change is being initiated. So rxtx() sets the pre_mox
+// variable immediatedly after it has been called to the new
+// state.
+// This variable is used to suppress audio samples being
+// sent to the radio while shutting down the receivers,
+// so it shall not be used in DUPLEX mode.
+//
+int pre_mox = 0;
+
 int ptt = 0;
 int mox = 0;
 int tune = 0;
@@ -271,12 +286,6 @@ int tx_filter_high = 2850;
 
 static int pre_tune_mode;
 static int pre_tune_cw_internal;
-
-int enable_tx_equalizer = 0;
-int tx_equalizer[4] = {0, 0, 0, 0};
-
-int enable_rx_equalizer = 0;
-int rx_equalizer[4] = {0, 0, 0, 0};
 
 int pre_emphasize = 0;
 
@@ -1650,6 +1659,7 @@ static void rxtx(int state) {
     t_print("WARNING: rxtx called but no transmitter!");
     return;
   }
+  pre_mox = state && !duplex;
 
   if (state) {
     // switch to tx
@@ -1999,7 +2009,11 @@ void setTune(int state) {
         // Since we have done a "PS reset" when we started tuning,
         // resume PS engine now.
         //
-        SetPSControl(transmitter->id, 0, 0, 1, 0);
+        if (transmitter->ps_oneshot) {
+          SetPSControl(transmitter->id, 0, 1, 0, 0);
+        } else {
+          SetPSControl(transmitter->id, 0, 0, 1, 0);
+        }
       }
 
       tune = state;
@@ -2464,16 +2478,6 @@ void radioRestoreState() {
   GetPropI0("analog_meter",                                  analog_meter);
   GetPropI0("smeter",                                        smeter);
   GetPropI0("alc",                                           alc);
-  GetPropI0("enable_tx_equalizer",                           enable_tx_equalizer);
-  GetPropI0("tx_equalizer.0",                                tx_equalizer[0]);
-  GetPropI0("tx_equalizer.1",                                tx_equalizer[1]);
-  GetPropI0("tx_equalizer.2",                                tx_equalizer[2]);
-  GetPropI0("tx_equalizer.3",                                tx_equalizer[3]);
-  GetPropI0("enable_rx_equalizer",                           enable_tx_equalizer);
-  GetPropI0("rx_equalizer.0",                                rx_equalizer[0]);
-  GetPropI0("rx_equalizer.1",                                rx_equalizer[1]);
-  GetPropI0("rx_equalizer.2",                                rx_equalizer[2]);
-  GetPropI0("rx_equalizer.3",                                rx_equalizer[3]);
   GetPropI0("rit_increment",                                 rit_increment);
   GetPropI0("pre_emphasize",                                 pre_emphasize);
   GetPropI0("vox_enabled",                                   vox_enabled);
@@ -2500,11 +2504,6 @@ void radioRestoreState() {
   GetPropI0("client_enable_tx",                              client_enable_tx);
   GetPropI0("saturn_server_en",                              saturn_server_en);
 #endif
-
-  for (int i = 0; i < 4; i++) {
-    GetPropI1("tx_equalizer.%d", i,                          tx_equalizer[i]);
-    GetPropI1("rx_equalizer.%d", i,                          rx_equalizer[i]);
-  }
 
   for (int i = 0; i < 11; i++) {
     GetPropF1("pa_trim[%d]", i,                              pa_trim[i]);
@@ -2685,8 +2684,6 @@ void radioSaveState() {
   SetPropI0("analog_meter",                                  analog_meter);
   SetPropI0("smeter",                                        smeter);
   SetPropI0("alc",                                           alc);
-  SetPropI0("enable_tx_equalizer",                           enable_tx_equalizer);
-  SetPropI0("enable_rx_equalizer",                           enable_tx_equalizer);
   SetPropI0("rit_increment",                                 rit_increment);
   SetPropI0("pre_emphasize",                                 pre_emphasize);
   SetPropI0("vox_enabled",                                   vox_enabled);
@@ -2713,11 +2710,6 @@ void radioSaveState() {
   SetPropI0("client_enable_tx",                              client_enable_tx);
   SetPropI0("saturn_server_en",                              saturn_server_en);
 #endif
-
-  for (int i = 0; i < 4; i++) {
-    SetPropI1("tx_equalizer.%d", i,                          tx_equalizer[i]);
-    SetPropI1("rx_equalizer.%d", i,                          rx_equalizer[i]);
-  }
 
   for (int i = 0; i < 11; i++) {
     SetPropF1("pa_trim[%d]", i,                              pa_trim[i]);

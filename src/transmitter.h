@@ -89,6 +89,7 @@ typedef struct _transmitter {
   double ps_ptol;
   double ps_moxdelay;
   double ps_loopdelay;
+  int    ps_oneshot;   
 
   gboolean ctcss_enabled;
   int ctcss;
@@ -136,6 +137,13 @@ typedef struct _transmitter {
   double *cw_ramp_rf;     // ramp for the RF signal
   GMutex cw_ramp_mutex;   // needed when changing the ramp width during TX
 
+  //
+  // Equalizer data
+  //
+  int  eq_enable;
+  double eq_freq[5];
+  double eq_gain[5];
+
 } TRANSMITTER;
 
 extern TRANSMITTER *create_transmitter(int id, int width, int height);
@@ -178,6 +186,7 @@ extern void cw_hold_key(int state);
 extern float sine_generator(int *p1, int *p2, int freq);
 
 extern void tx_set_ramps(TRANSMITTER *tx);
+extern void tx_set_equalizer(TRANSMITTER *tx);
 #endif
 
 

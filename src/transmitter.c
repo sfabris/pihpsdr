@@ -204,6 +204,7 @@ void transmitterSaveState(const TRANSMITTER *tx) {
   SetPropI1("transmitter.%d.auto_on",           tx->id,               tx->auto_on);
   SetPropI1("transmitter.%d.feedback",          tx->id,               tx->feedback);
   SetPropF1("transmitter.%d.ps_ampdelay",       tx->id,               tx->ps_ampdelay);
+  SetPropI1("transmitter.%d.ps_oneshot",        tx->id,               tx->ps_oneshot);
   SetPropI1("transmitter.%d.ps_ints",           tx->id,               tx->ps_ints);
   SetPropI1("transmitter.%d.ps_spi",            tx->id,               tx->ps_spi);
   SetPropI1("transmitter.%d.ps_stbl",           tx->id,               tx->ps_stbl);
@@ -231,6 +232,12 @@ void transmitterSaveState(const TRANSMITTER *tx) {
   SetPropI1("transmitter.%d.dialog_x",          tx->id,               tx->dialog_x);
   SetPropI1("transmitter.%d.dialog_y",          tx->id,               tx->dialog_y);
   SetPropI1("transmitter.%d.display_filled",    tx->id,               tx->display_filled);
+
+  SetPropI1("transmitter.%d.eq_enable", tx->id,                    tx->eq_enable);
+  for (int i=0; i<5; i++) {
+    SetPropF2("transmitter.%d.eq_freq[%d]", tx->id, i,             tx->eq_freq[i]);
+    SetPropF2("transmitter.%d.eq_gain[%d]", tx->id, i,             tx->eq_gain[i]);
+  }
 }
 
 static void transmitterRestoreState(TRANSMITTER *tx) {
@@ -250,6 +257,7 @@ static void transmitterRestoreState(TRANSMITTER *tx) {
   GetPropI1("transmitter.%d.auto_on",           tx->id,               tx->auto_on);
   GetPropI1("transmitter.%d.feedback",          tx->id,               tx->feedback);
   GetPropF1("transmitter.%d.ps_ampdelay",       tx->id,               tx->ps_ampdelay);
+  GetPropI1("transmitter.%d.ps_oneshot",        tx->id,               tx->ps_oneshot);
   GetPropI1("transmitter.%d.ps_ints",           tx->id,               tx->ps_ints);
   GetPropI1("transmitter.%d.ps_spi",            tx->id,               tx->ps_spi);
   GetPropI1("transmitter.%d.ps_stbl",           tx->id,               tx->ps_stbl);
@@ -277,6 +285,14 @@ static void transmitterRestoreState(TRANSMITTER *tx) {
   GetPropI1("transmitter.%d.dialog_x",          tx->id,               tx->dialog_x);
   GetPropI1("transmitter.%d.dialog_y",          tx->id,               tx->dialog_y);
   GetPropI1("transmitter.%d.display_filled",    tx->id,               tx->display_filled);
+
+  GetPropI1("transmitter.%d.eq_enable", tx->id,                    tx->eq_enable);
+  for (int i=0; i<5; i++) {
+    GetPropF2("transmitter.%d.eq_freq[%d]", tx->id, i,             tx->eq_freq[i]);
+    GetPropF2("transmitter.%d.eq_gain[%d]", tx->id, i,             tx->eq_gain[i]);
+    t_print("TX EQ i=%d F=%f G=%f\n", i,  tx->eq_freq[i], tx->eq_gain[i]);
+  }
+
 }
 
 static double compute_power(double p) {
@@ -760,6 +776,7 @@ TRANSMITTER *create_transmitter(int id, int width, int height) {
   // PS 2.0 default parameters
   //
   tx->ps_ampdelay = 150;      // ATTENTION: this value is in nano-seconds
+  tx->ps_oneshot = 1;
   tx->ps_ints = 16;
   tx->ps_spi = 256;           // ints=16/spi=256 corresponds to "TINT=0.5 dB"
   tx->ps_stbl = 0;            // "Stbl" un-checked
@@ -792,6 +809,19 @@ TRANSMITTER *create_transmitter(int id, int width, int height) {
   tx->swr_protection = FALSE;
   tx->swr_alarm = 3.0;     // default value for SWR protection
   tx->alc = 0.0;
+
+  tx->eq_enable = 0;
+  tx->eq_freq[0]=0.0;
+  tx->eq_freq[1]=200.0;
+  tx->eq_freq[2]=1000.0;
+  tx->eq_freq[3]=2000.0;
+  tx->eq_freq[4]=4000.0;
+  tx->eq_gain[0]=0.0;
+  tx->eq_gain[1]=0.0;
+  tx->eq_gain[2]=0.0;
+  tx->eq_gain[3]=0.0;
+  tx->eq_gain[4]=0.0;
+
   transmitterRestoreState(tx);
   //
   // allocate buffers
@@ -834,15 +864,7 @@ TRANSMITTER *create_transmitter(int id, int width, int height) {
   SetTXAFMEmphPosition(tx->id, pre_emphasize);
   SetTXACFIRRun(tx->id, SET(protocol == NEW_PROTOCOL)); // turned on if new protocol
 
-  //
-  // enable_tx_equalizer and tx_equalizer should be part of TX
-  //
-  if (enable_tx_equalizer) {
-    SetTXAGrphEQ(tx->id, tx_equalizer);
-    SetTXAEQRun(tx->id, 1);
-  } else {
-    SetTXAEQRun(tx->id, 0);
-  }
+  tx_set_equalizer(tx);
 
   transmitter_set_ctcss(tx, tx->ctcss_enabled, tx->ctcss);
   SetTXAAMSQRun(tx->id, 0);
@@ -893,6 +915,11 @@ void tx_set_mode(TRANSMITTER* tx, int mode) {
     SetTXAMode(tx->id, mode);
     tx_set_filter(tx);
   }
+}
+
+void tx_set_equalizer(TRANSMITTER *tx) {
+  SetTXAEQProfile(tx->id, 5, tx->eq_freq, tx->eq_gain);
+  SetTXAEQRun(tx->id, tx->eq_enable);
 }
 
 void tx_set_filter(TRANSMITTER *tx) {
@@ -1566,7 +1593,11 @@ void tx_set_ps(TRANSMITTER *tx, int state) {
     // if switching on: wait a while to get the feedback
     // streams flowing, then start PS engine
     usleep(100000);
-    SetPSControl(tx->id, 0, 0, 1, 0);
+    if (tx->ps_oneshot) {
+      SetPSControl(tx->id, 0, 1, 0, 0);
+    } else {
+      SetPSControl(tx->id, 0, 0, 1, 0);
+    }
     // Set PS 2.0 parameters
     SetPSIntsAndSpi(transmitter->id, transmitter->ps_ints, transmitter->ps_spi);
     SetPSStabilize(transmitter->id, transmitter->ps_stbl);

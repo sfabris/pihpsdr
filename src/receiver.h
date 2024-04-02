@@ -229,14 +229,21 @@ typedef struct _receiver {
   // feature that is relevant for HermesLite-II and STEMlab
   // (and possibly some other radios)
   //
-  guint txrxcount;
-  guint txrxmax;
+  int txrxcount;
+  int txrxmax;
 
   int display_gradient;
   int display_filled;
   int display_detector_mode;
   int display_average_mode;
   double display_average_time;
+
+  //
+  // Equalizer data
+  //
+  int  eq_enable;
+  double eq_freq[5];
+  double eq_gain[5];
 
 } RECEIVER;
 
@@ -272,6 +279,7 @@ extern gboolean receiver_scroll_event(GtkWidget *widget, const GdkEventScroll *e
 extern void set_displaying(RECEIVER *rx, int state);
 
 extern void receiver_set_active(RECEIVER *rx);
+extern void receiver_set_equalizer(RECEIVER *rx);
 
 #ifdef CLIENT_SERVER
   extern void receiver_create_remote(RECEIVER *rx);

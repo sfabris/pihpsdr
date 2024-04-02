@@ -179,6 +179,7 @@ extern int mercury_software_version[2];
 extern int penelope_software_version;
 extern int ptt;
 extern int mox;
+extern int pre_mox;
 extern int tune;
 extern int memory_tune;
 extern int full_tune;
@@ -214,12 +215,6 @@ extern int tx_filter_low;
 extern int tx_filter_high;
 
 extern int ctun;
-
-extern int enable_tx_equalizer;
-extern int tx_equalizer[4];
-
-extern int enable_rx_equalizer;
-extern int rx_equalizer[4];
 
 extern int pre_emphasize;
 

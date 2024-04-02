@@ -1692,71 +1692,14 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
   case 'E': //ZZEx
     switch (command[3]) {
-    case 'A': //ZZEA
-      //DO NOT DOCUMENT, CAN THIS BE REMOVED?
-      // set/read rx equalizer values
-      if (command[4] == ';') {
-        snprintf(reply, 256, "ZZEA%03d%03d%03d%03d%03d00000000000000000000;", 3, rx_equalizer[0], rx_equalizer[1],
-                 rx_equalizer[2],
-                 rx_equalizer[3]);
-        send_resp(client->fd, reply) ;
-      } else if (command[37] == ';') {
-        char temp[4];
-        temp[3] = '\0';
-        strncpy(temp, &command[4], 3);
-        int bands = atoi(temp);
-
-        if (bands == 3) {
-          strncpy(temp, &command[7], 3);
-          rx_equalizer[0] = atoi(temp);
-          strncpy(temp, &command[10], 3);
-          rx_equalizer[1] = atoi(temp);
-          strncpy(temp, &command[13], 3);
-          rx_equalizer[2] = atoi(temp);
-        } else {
-        }
-      } else {
-      }
-
-      break;
-
-    case 'B': //ZZEB
-      //DO NOT DOCUMENT, CAN THIS BE REMOVED?
-      // set/read tx equalizer values
-      if (command[4] == ';') {
-        snprintf(reply, 256, "ZZEB%03d%03d%03d%03d%03d00000000000000000000;", 3, tx_equalizer[0], tx_equalizer[1],
-                 tx_equalizer[2],
-                 tx_equalizer[3]);
-        send_resp(client->fd, reply) ;
-      } else if (command[37] == ';') {
-        char temp[4];
-        temp[3] = '\0';
-        strncpy(temp, &command[4], 3);
-        int bands = atoi(temp);
-
-        if (bands == 3) {
-          strncpy(temp, &command[7], 3);
-          tx_equalizer[0] = atoi(temp);
-          strncpy(temp, &command[10], 3);
-          tx_equalizer[1] = atoi(temp);
-          strncpy(temp, &command[13], 3);
-          tx_equalizer[2] = atoi(temp);
-        } else {
-        }
-      } else {
-      }
-
-      break;
-
     case 'R': //ZZER
       //DO NOT DOCUMENT, CAN THIS BE REMOVED?
       // set/read rx equalizer
       if (command[4] == ';') {
-        snprintf(reply, 256, "ZZER%d;", enable_rx_equalizer);
+        snprintf(reply, 256, "ZZER%d;", receiver[0]->eq_enable);
         send_resp(client->fd, reply) ;
       } else if (command[5] == ';') {
-        enable_rx_equalizer = atoi(&command[4]);
-      } else {
+        receiver[0]->eq_enable = SET(atoi(&command[4]));
       }
 
       break;
@@ -1764,12 +1707,13 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
     case 'T': //ZZET
       //DO NOT DOCUMENT, CAN THIS BE REMOVED?
       // set/read tx equalizer
-      if (command[4] == ';') {
-        snprintf(reply, 256, "ZZET%d;", enable_tx_equalizer);
-        send_resp(client->fd, reply) ;
-      } else if (command[5] == ';') {
-        enable_tx_equalizer = atoi(&command[4]);
-      } else {
+      if (can_transmit) {
+        if (command[4] == ';') {
+          snprintf(reply, 256, "ZZET%d;", transmitter->eq_enable);
+          send_resp(client->fd, reply) ;
+        } else if (command[5] == ';') {
+          transmitter->eq_enable = SET(atoi(&command[4]));
+        }
       }
 
       break;

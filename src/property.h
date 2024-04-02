@@ -106,6 +106,13 @@ extern void saveProperties(const char* filename);
   if (value) { d = atoll(value); } \
 }
 
+#define GetPropF2(a,b,c,d) { \
+  char name[128]; \
+  snprintf(name, sizeof(name), a, b, c); \
+  const char *value=getProperty(name); \
+  if (value) { d = atof(value); } \
+}
+
 #define GetPropS2(a,b,c,d) { \
   char name[128]; \
   snprintf(name, sizeof(name), a, b, c); \
@@ -192,6 +199,14 @@ extern void saveProperties(const char* filename);
   char value[128]; \
   snprintf(name, sizeof(name), a, b, c); \
   snprintf(value, sizeof(value), "%lld", (long long) (d)); \
+  setProperty(name, value); \
+}
+
+#define SetPropF2(a,b,c,d) { \
+  char name[128]; \
+  char value[128]; \
+  snprintf(name, sizeof(name), a, b, c); \
+  snprintf(value, sizeof(value), "%f", (double) (d)); \
   setProperty(name, value); \
 }
 

@@ -254,6 +254,7 @@ void receiverSaveState(RECEIVER *rx) {
   SetPropI1("receiver.%d.panadapter_high", rx->id,              rx->panadapter_high);
   SetPropI1("receiver.%d.panadapter_step", rx->id,              rx->panadapter_step);
   SetPropI1("receiver.%d.display_waterfall", rx->id,            rx->display_waterfall);
+  SetPropI1("receiver.%d.display_panadapter", rx->id,           rx->display_panadapter);
   SetPropI1("receiver.%d.display_filled", rx->id,               rx->display_filled);
   SetPropI1("receiver.%d.display_gradient", rx->id,             rx->display_gradient);
   SetPropI1("receiver.%d.display_detector_mode", rx->id,        rx->display_detector_mode);
@@ -301,6 +302,12 @@ void receiverSaveState(RECEIVER *rx) {
   SetPropI1("receiver.%d.binaural", rx->id,                     rx->binaural);
   SetPropI1("receiver.%d.zoom", rx->id,                         rx->zoom);
   SetPropI1("receiver.%d.pan", rx->id,                          rx->pan);
+
+  SetPropI1("receiver.%d.eq_enable", rx->id,                    rx->eq_enable);
+  for (int i=0; i<5; i++) {
+    SetPropF2("receiver.%d.eq_freq[%d]", rx->id, i,             rx->eq_freq[i]);
+    SetPropF2("receiver.%d.eq_gain[%d]", rx->id, i,             rx->eq_gain[i]);
+  }
 }
 
 void receiverRestoreState(RECEIVER *rx) {
@@ -351,6 +358,7 @@ void receiverRestoreState(RECEIVER *rx) {
   GetPropI1("receiver.%d.panadapter_high", rx->id,              rx->panadapter_high);
   GetPropI1("receiver.%d.panadapter_step", rx->id,              rx->panadapter_step);
   GetPropI1("receiver.%d.display_waterfall", rx->id,            rx->display_waterfall);
+  GetPropI1("receiver.%d.display_panadapter", rx->id,           rx->display_panadapter);
   GetPropI1("receiver.%d.display_filled", rx->id,               rx->display_filled);
   GetPropI1("receiver.%d.display_gradient", rx->id,             rx->display_gradient);
   GetPropI1("receiver.%d.display_detector_mode", rx->id,        rx->display_detector_mode);
@@ -398,6 +406,12 @@ void receiverRestoreState(RECEIVER *rx) {
   GetPropI1("receiver.%d.binaural", rx->id,                     rx->binaural);
   GetPropI1("receiver.%d.zoom", rx->id,                         rx->zoom);
   GetPropI1("receiver.%d.pan", rx->id,                          rx->pan);
+
+  GetPropI1("receiver.%d.eq_enable", rx->id,                    rx->eq_enable);
+  for (int i=0; i<5; i++) {
+    GetPropF2("receiver.%d.eq_freq[%d]", rx->id, i,             rx->eq_freq[i]);
+    GetPropF2("receiver.%d.eq_gain[%d]", rx->id, i,             rx->eq_gain[i]);
+  }
 }
 
 void reconfigure_receiver(RECEIVER *rx, int height) {
@@ -557,6 +571,11 @@ void set_displaying(RECEIVER *rx, int state) {
   }
 
 #endif
+}
+
+void receiver_set_equalizer(RECEIVER *rx) {
+  SetRXAEQProfile(rx->id, 5, rx->eq_freq, rx->eq_gain);
+  SetRXAEQRun(rx->id, rx->eq_enable);
 }
 
 void set_mode(RECEIVER *rx, int m) {
@@ -969,6 +988,19 @@ RECEIVER *create_receiver(int id, int pixels, int width, int height) {
   rx->mute_radio = 0;
   rx->zoom = 1;
   rx->pan = 0;
+
+  rx->eq_enable = 0;
+  rx->eq_freq[0]=0.0;
+  rx->eq_freq[1]=200.0;
+  rx->eq_freq[2]=1000.0;
+  rx->eq_freq[3]=2000.0;
+  rx->eq_freq[4]=4000.0;
+  rx->eq_gain[0]=0.0;
+  rx->eq_gain[1]=0.0;
+  rx->eq_gain[2]=0.0;
+  rx->eq_gain[3]=0.0;
+  rx->eq_gain[4]=0.0;
+
   receiverRestoreState(rx);
 
   //
@@ -1084,15 +1116,7 @@ RECEIVER *create_receiver(int id, int pixels, int width, int height) {
   SetRXAPanelBinaural(rx->id, rx->binaural);
   SetRXAPanelRun(rx->id, 1);
 
-  //
-  // enable_rx_equalizer and rx_equalizer should be part of rx
-  //
-  if (enable_rx_equalizer) {
-    SetRXAGrphEQ(rx->id, rx_equalizer);
-    SetRXAEQRun(rx->id, 1);
-  } else {
-    SetRXAEQRun(rx->id, 0);
-  }
+  receiver_set_equalizer(rx);
 
   receiver_mode_changed(rx);  // this will call receiver_filter_changed() as well
   int result;
@@ -1375,7 +1399,7 @@ static void process_rx_buffer(RECEIVER *rx) {
 
 #endif
 
-    if (rx == active_receiver) {
+    if (rx == active_receiver && !pre_mox) {
       //
       // Note the "Mute Radio" checkbox in the RX menu mutes the
       // audio in the HPSDR data stream *only*, local audio is
@@ -1384,18 +1408,18 @@ static void process_rx_buffer(RECEIVER *rx) {
       switch (protocol) {
       case ORIGINAL_PROTOCOL:
         if (rx->mute_radio) {
-          old_protocol_audio_samples(rx, (short)0, (short)0);
+          old_protocol_audio_samples((short)0, (short)0);
         } else {
-          old_protocol_audio_samples(rx, left_audio_sample, right_audio_sample);
+          old_protocol_audio_samples(left_audio_sample, right_audio_sample);
         }
 
         break;
 
       case NEW_PROTOCOL:
         if (rx->mute_radio) {
-          new_protocol_audio_samples(rx, (short)0, (short)0);
+          new_protocol_audio_samples((short)0, (short)0);
         } else {
-          new_protocol_audio_samples(rx, left_audio_sample, right_audio_sample);
+          new_protocol_audio_samples(left_audio_sample, right_audio_sample);
         }
 
         break;
