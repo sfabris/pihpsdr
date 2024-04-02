@@ -138,29 +138,32 @@ int ps_calibration_timer(gpointer arg) {
       tx_att_min = 0;
       tx_att_max = 31;
     }
+
     GetPSInfo(transmitter->id, &info[0]);
     //
     // newcal is set to 1 if we have a new calibration value
     // (info[5] is the calibration counter)
     //
     int newcal = 0;
+
     if (info[5] !=  old5) {
       old5 = info[5];
       newcal = 1;
     }
+
     if (transmitter->auto_on) {
       switch (state) {
       case 0:
 
-         //
-         // A value of 165 means 0.7 dB too strong
-         // A value of 140 means 0.7 dB too weak
-         // So everything between 140 and 165 is accepted without changing the attenuation
-         //
-         if (newcal && ((info[4] > 165 && transmitter->attenuation < tx_att_max) || (info[4] < 140
-                        && transmitter->attenuation > tx_att_min))) {
-           int delta_att;
-           int new_att;
+        //
+        // A value of 165 means 0.7 dB too strong
+        // A value of 140 means 0.7 dB too weak
+        // So everything between 140 and 165 is accepted without changing the attenuation
+        //
+        if (newcal && ((info[4] > 165 && transmitter->attenuation < tx_att_max) || (info[4] < 140
+                       && transmitter->attenuation > tx_att_min))) {
+          int delta_att;
+          int new_att;
 
           if (info[4] > 275) {
             // If signal is very strong, increase attenuation by 15 dB
@@ -168,57 +171,60 @@ int ps_calibration_timer(gpointer arg) {
             // so the feedback level might be much stronger than indicated here
             delta_att = 15;
 
-             if (transmitter->attenuation < -15) { delta_att += 15; }
-           } else if (info[4] < 25) {
-             // If signal is very weak, decrease attenuation by 15 dB
-             delta_att = -15;
-           } else {
-             // calculate new delta, this mostly succeeds in one step
-             delta_att = (int) lround(20.0 * log10((double)info[4] / 152.293));
-           }
+            if (transmitter->attenuation < -15) { delta_att += 15; }
+          } else if (info[4] < 25) {
+            // If signal is very weak, decrease attenuation by 15 dB
+            delta_att = -15;
+          } else {
+            // calculate new delta, this mostly succeeds in one step
+            delta_att = (int) lround(20.0 * log10((double)info[4] / 152.293));
+          }
 
-           new_att = transmitter->attenuation + delta_att;
+          new_att = transmitter->attenuation + delta_att;
 
           // keep new value of attenuation in allowed range
           if (new_att < tx_att_min) { new_att = tx_att_min; }
 
-           if (new_att > tx_att_max) { new_att = tx_att_max; }
+          if (new_att > tx_att_max) { new_att = tx_att_max; }
 
-           // A "PS reset" is only necessary if the attenuation
-           // has actually changed. This prevents firing "reset"
-           // constantly if the SDR board does not have a TX attenuator
-           // (in this case, att will fast reach tx_att_max and stay there if the
-           // feedback level is too high).
-           // Actually, we first adjust the attenuation (state=0),
-           // then do a PS reset (state=1), and then restart PS (state=2).
-           if (transmitter->attenuation != new_att) {
-             SetPSControl(transmitter->id, 1, 0, 0, 0);
-             transmitter->attenuation = new_att;
-             schedule_transmit_specific();
-             state = 1;
-           }
-         }
+          // A "PS reset" is only necessary if the attenuation
+          // has actually changed. This prevents firing "reset"
+          // constantly if the SDR board does not have a TX attenuator
+          // (in this case, att will fast reach tx_att_max and stay there if the
+          // feedback level is too high).
+          // Actually, we first adjust the attenuation (state=0),
+          // then do a PS reset (state=1), and then restart PS (state=2).
+          if (transmitter->attenuation != new_att) {
+            SetPSControl(transmitter->id, 1, 0, 0, 0);
+            transmitter->attenuation = new_att;
+            schedule_transmit_specific();
+            state = 1;
+          }
+        }
 
-         break;
+        break;
 
-       case 1:
-         // Perform a PS reset and proceed to a PS restart
-         state = 2;
-         SetPSControl(transmitter->id, 1, 0, 0, 0);
-         break;
+      case 1:
+        // Perform a PS reset and proceed to a PS restart
+        state = 2;
+        SetPSControl(transmitter->id, 1, 0, 0, 0);
+        break;
 
-       case 2:
-         // Perform a PS restart and proceed to the calibration loop
-         state = 0;
-         if (transmitter->ps_oneshot) {
-           SetPSControl(transmitter->id, 0, 1, 0, 0);
-         } else {
-           SetPSControl(transmitter->id, 0, 0, 1, 0);
-         }
-         break;
+      case 2:
+        // Perform a PS restart and proceed to the calibration loop
+        state = 0;
+
+        if (transmitter->ps_oneshot) {
+          SetPSControl(transmitter->id, 0, 1, 0, 0);
+        } else {
+          SetPSControl(transmitter->id, 0, 0, 1, 0);
+        }
+
+        break;
       }
     }
   }
+
   return G_SOURCE_CONTINUE;
 }
 
@@ -340,7 +346,6 @@ static int info_thread(gpointer arg) {
   gtk_entry_set_text(GTK_ENTRY(tx_att), label);
   snprintf(label, 20, "%6.3f", pk);
   gtk_entry_set_text(GTK_ENTRY(get_pk), label);
-
   return G_SOURCE_CONTINUE;
 }
 
@@ -352,6 +357,7 @@ static void ps_off_on() {
   if (transmitter->puresignal) {
     SetPSControl(transmitter->id, 1, 0, 0, 0);
     usleep(100000);
+
     if (transmitter->ps_oneshot) {
       SetPSControl(transmitter->id, 0, 1, 0, 0);
     } else {
@@ -478,7 +484,6 @@ static void twotone_cb(GtkWidget *widget, gpointer data) {
 
 void ps_menu(GtkWidget *parent) {
   int i;
-
   dialog = gtk_dialog_new();
   g_signal_connect (dialog, "destroy", G_CALLBACK(close_cb), NULL);
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(parent));
@@ -573,21 +578,18 @@ void ps_menu(GtkWidget *parent) {
 
   my_combo_attach(GTK_GRID(grid), ps_ant_combo, col, row, 1, 1);
   g_signal_connect(ps_ant_combo, "changed", G_CALLBACK(ps_ant_cb), NULL);
-
   col++;
   GtkWidget *map_b = gtk_check_button_new_with_label("PS MAP");
   gtk_widget_set_name(map_b, "boldlabel");
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (map_b), transmitter->ps_map);
   gtk_grid_attach(GTK_GRID(grid), map_b, col, row, 1, 1);
   g_signal_connect(map_b, "toggled", G_CALLBACK(map_cb), NULL);
-
   col++;
   GtkWidget *tol_b = gtk_check_button_new_with_label("PS Relax Tolerance");
   gtk_widget_set_name(tol_b, "boldlabel");
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (tol_b), (transmitter->ps_ptol < 0.6));
   gtk_grid_attach(GTK_GRID(grid), tol_b, col, row, 2, 1);
   g_signal_connect(tol_b, "toggled", G_CALLBACK(tol_cb), NULL);
-
   col++;
   col++;
   GtkWidget *oneshot_b = gtk_check_button_new_with_label("OneShot");
@@ -595,14 +597,12 @@ void ps_menu(GtkWidget *parent) {
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (oneshot_b), transmitter->ps_oneshot);
   gtk_grid_attach(GTK_GRID(grid), oneshot_b, col, row, 1, 1);
   g_signal_connect(tol_b, "toggled", G_CALLBACK(oneshot_cb), NULL);
-
   row++;
   col = 0;
   feedback_l = gtk_label_new("Feedback Lvl");
   gtk_widget_set_name(feedback_l, "boldlabel");
   gtk_widget_show(feedback_l);
   gtk_grid_attach(GTK_GRID(grid), feedback_l, col, row, 1, 1);
-
   col++;
   correcting_l = gtk_label_new("Correcting");
   gtk_widget_set_name(correcting_l, "boldlabel");
@@ -690,11 +690,13 @@ void ps_menu(GtkWidget *parent) {
   tx_att = gtk_entry_new();
   gtk_grid_attach(GTK_GRID(grid), tx_att, col, row, 1, 1);
   gtk_entry_set_width_chars(GTK_ENTRY(tx_att), 10);
+
   if (device == DEVICE_HERMES_LITE2 || device == NEW_DEVICE_HERMES_LITE2) {
     tx_att_spin = gtk_spin_button_new_with_range(-29.0, 31.0, 1.0);
   } else {
     tx_att_spin = gtk_spin_button_new_with_range(  0.0, 31.0, 1.0);
   }
+
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(tx_att_spin), (double) transmitter->attenuation);
   gtk_grid_attach(GTK_GRID(grid), tx_att_spin, col, row, 1, 1);
   g_signal_connect(tx_att_spin, "value-changed", G_CALLBACK(att_spin_cb), NULL);

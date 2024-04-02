@@ -297,13 +297,13 @@ void InitialiseFIFOSizes(void) {
   //
   // For Version < 10, the defaults given above are used
   //
-  if((Version >= 10) && (Version <= 12)) {
+  if ((Version >= 10) && (Version <= 12)) {
     t_print("loading new FIFO sizes for updated firmware <= 12\n");
     DMAFIFODepths[0] = 16384;       //  eRXDDCDMA,           selects RX
     DMAFIFODepths[1] = 2048;        //  eTXDUCDMA,           selects TX
     DMAFIFODepths[2] = 256;         //  eMicCodecDMA, selects mic samples
     DMAFIFODepths[3] = 1024;        //  eSpkCodecDMA selects speaker samples
-  } else if(Version >= 13) {
+  } else if (Version >= 13) {
     t_print("loading new FIFO sizes for updated firmware V13+\n");
     DMAFIFODepths[0] = 16384;       //  eRXDDCDMA,           selects RX
     DMAFIFODepths[1] = 4096;        //  eTXDUCDMA,           selects TX

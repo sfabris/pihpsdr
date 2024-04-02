@@ -98,7 +98,7 @@ bool GPPSEnabled;                                   // NOT CURRENTLY USED - trie
 uint32_t GTXDACCtrl;                                // TX DAC current setting & atten
 uint32_t GRXADCCtrl;                                // RX1 & 2 attenuations
 bool GAlexRXOut;                                    // P1 RX output bit (NOT USED)
-uint32_t GAlexTXFiltRegister;                       // 16 bit used of 32 
+uint32_t GAlexTXFiltRegister;                       // 16 bit used of 32
 uint32_t GAlexTXAntRegister;                        // 16 bit used of 32
 uint32_t GAlexRXRegister;                           // 32 bit RX register
 bool GRX2GroundDuringTX;                            // true if RX2 grounded while in TX
@@ -818,7 +818,7 @@ void SetAlexTXAnt(unsigned int Bits) {
     break;
   }
 
-  if(Register != GAlexTXAntRegister) {            // write back if changed
+  if (Register != GAlexTXAntRegister) {           // write back if changed
     GAlexTXAntRegister = Register;
     //        RegisterWrite(VADDRALEXSPIREG+VOFFSETALEXTXREG, Register);  // and write to it
   }
@@ -894,13 +894,14 @@ void SetAlexTXFilters(unsigned int Bits) {
       GAlexTXFiltRegister = Register;
       //        RegisterWrite(VADDRALEXSPIREG+VOFFSETALEXTXREG, Register);  // and write to it
     }
+
     Register = GAlexTXAntRegister;                      // copy original register
     Register &= 0x1F0F;                                 // turn off all affected bits
-    Register |= (Bits & 0x0F)<<4;                       // bits 3-0, moved up
-    Register |= (Bits & 0x1C)<<9;                       // bits 6-4, moved up
+    Register |= (Bits & 0x0F) << 4;                     // bits 3-0, moved up
+    Register |= (Bits & 0x1C) << 9;                     // bits 6-4, moved up
 
-    if(Register != GAlexTXAntRegister) {                // write back if changed
-        GAlexTXAntRegister = Register;
+    if (Register != GAlexTXAntRegister) {               // write back if changed
+      GAlexTXAntRegister = Register;
     }
   }
 }
@@ -960,11 +961,10 @@ void AlexManualTXFilters(unsigned int Bits, bool HasTXAntExplicitly) {
   if (GAlexManualFilterSelect) {
     uint32_t Register = Bits;                         // new setting
 
-    if(HasTXAntExplicitly && (Register != GAlexTXAntRegister)) {
+    if (HasTXAntExplicitly && (Register != GAlexTXAntRegister)) {
       GAlexTXAntRegister = Register;
       RegisterWrite(VADDRALEXSPIREG + VOFFSETALEXTXANTREG, Register);  // and write to it
-    }
-    else if(!HasTXAntExplicitly && (Register != GAlexTXFiltRegister)) {
+    } else if (!HasTXAntExplicitly && (Register != GAlexTXFiltRegister)) {
       GAlexTXFiltRegister = Register;
       RegisterWrite(VADDRALEXSPIREG + VOFFSETALEXTXFILTREG, Register); // and write to it
     }
@@ -1344,16 +1344,21 @@ void InitialiseCWKeyerRamp(bool Protocol2, uint32_t Length_us) {
   uint32_t Cntr;
   uint32_t Register;
 
-    // first find out if the length is OK and clip if not
-  if(Length_us < VMINCWRAMPDURATION)
-      Length_us = VMINCWRAMPDURATION;
-  if(Length_us > VMAXCWRAMPDURATION)
-      Length_us = VMAXCWRAMPDURATION;
+  // first find out if the length is OK and clip if not
+  if (Length_us < VMINCWRAMPDURATION) {
+    Length_us = VMINCWRAMPDURATION;
+  }
+
+  if (Length_us > VMAXCWRAMPDURATION) {
+    Length_us = VMAXCWRAMPDURATION;
+  }
+
   // now apply that ramp length
-  if((Length_us != GCWKeyerRampms) || (Protocol2 != GCWKeyerRamp_IsP2)) {
+  if ((Length_us != GCWKeyerRampms) || (Protocol2 != GCWKeyerRamp_IsP2)) {
     GCWKeyerRampms = Length_us;
     GCWKeyerRamp_IsP2 = Protocol2;
     t_print("calculating new CW ramp, length = %d us\n", Length_us);
+
     // work out required length in samples
     if (Protocol2) {
       SamplePeriod = 1000.0 / 192.0;
@@ -1371,7 +1376,7 @@ void InitialiseCWKeyerRamp(bool Protocol2, uint32_t Length_us) {
     for (Cntr = 1; Cntr < RampLength; Cntr++) {
       double Fraction = (double)Cntr / (double)RampLength; // fractional position in ramp
       RampSample[Cntr] = RampSample[Cntr - 1] + a0 + a1 * cos(2.0 * M_PI * Fraction)
-                        + a2 * cos(4.0 * M_PI * Fraction) + a3 * cos(6.0 * M_PI * Fraction);
+                         + a2 * cos(4.0 * M_PI * Fraction) + a3 * cos(6.0 * M_PI * Fraction);
     }
 
     LargestSample = RampSample[RampLength - 1];

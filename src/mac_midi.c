@@ -185,6 +185,7 @@ static void ReadMIDIdevice(const MIDIPacketList *pktlist, void *refCon, void *co
           break;
 
         case CMD_CTRL:
+
           //
           // When ignoring "controller pairs", all ControllerChange events
           // for controllers 32...63 are ignored

@@ -1631,7 +1631,6 @@ int process_action(void *data) {
     // attached to the radio.
     // In both cases, piHPSDR stays TX and the radio will induce the TX/RX transition by removing radio_ptt.
     //
-
     switch (a->mode) {
     case PRESSED:
       MIDI_cw_is_active = 1;         // disable "CW handled in radio"
@@ -1643,9 +1642,11 @@ int process_action(void *data) {
     case RELEASED:
       MIDI_cw_is_active = 0;         // enable "CW handled in radio", if it was selected
       schedule_transmit_specific();
+
       if (!radio_ptt) {
         mox_update(0);
       }
+
       break;
 
     default:
@@ -1661,7 +1662,9 @@ int process_action(void *data) {
     // value maps 1:1 to the speed, but we keep it within limits.
     //
     i = a->val;
+
     if (i >= 1 && i <= 60) { cw_keyer_speed = i; }
+
     keyer_update();
     g_idle_add(ext_vfo_update, NULL);
     break;

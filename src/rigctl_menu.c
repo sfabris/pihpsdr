@@ -230,13 +230,11 @@ void rigctl_menu(GtkWidget *parent) {
   gtk_widget_show(rigctl_debug_b);
   gtk_grid_attach(GTK_GRID(grid), rigctl_debug_b, 3, 1, 1, 1);
   g_signal_connect(rigctl_debug_b, "toggled", G_CALLBACK(rigctl_debug_cb), NULL);
-
   GtkWidget *autoreporting_b = gtk_check_button_new_with_label("Start clients AutoReporting");
   gtk_widget_set_name(autoreporting_b, "boldlabel");
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (autoreporting_b), rigctl_start_with_autoreporting);
   gtk_grid_attach(GTK_GRID(grid), autoreporting_b, 4, 1, 2, 1);
   g_signal_connect(autoreporting_b, "toggled", G_CALLBACK(autoreporting_cb), NULL);
-
 
   /* Put the Serial Port stuff here, one port per line */
 
@@ -289,7 +287,6 @@ void rigctl_menu(GtkWidget *parent) {
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (andromeda_b[i]), SerialPorts[i].andromeda);
     gtk_grid_attach(GTK_GRID(grid), andromeda_b[i], 5, row, 1, 1);
     g_signal_connect(andromeda_b[i], "toggled", G_CALLBACK(andromeda_cb), GINT_TO_POINTER(i));
-
   }
 
   gtk_container_add(GTK_CONTAINER(content), grid);

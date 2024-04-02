@@ -716,7 +716,6 @@ static void new_protocol_high_priority() {
   int txmode   = get_tx_mode();
   const BAND *txband = band_get_band(vfo[txvfo].band);
   const BAND *rxband = band_get_band(vfo[rxvfo].band);
-
   high_priority_buffer_to_radio[0] = high_priority_sequence >> 24;
   high_priority_buffer_to_radio[1] = high_priority_sequence >> 16;
   high_priority_buffer_to_radio[2] = high_priority_sequence >> 8;
@@ -735,10 +734,10 @@ static void new_protocol_high_priority() {
       // a foot-switch to extend the TX time in a rag-chew QSO
       //
       if (tune || CAT_cw_is_active
-               || MIDI_cw_is_active
-               || !cw_keyer_internal
-               || transmitter->twotone
-               || radio_ptt) {
+          || MIDI_cw_is_active
+          || !cw_keyer_internal
+          || transmitter->twotone
+          || radio_ptt) {
         high_priority_buffer_to_radio[4] |= 0x02;
       }
     } else {
@@ -818,7 +817,6 @@ static void new_protocol_high_priority() {
   if (vfo[txvfo].xit_enabled) { txfreq += vfo[txvfo].xit; }
 
   DUCfrequency = txfreq - vfo[txvfo].lo + frequency_calibration;
-
   phase = (unsigned long)(((double)DUCfrequency) * 34.952533333333333333333333333333);
 
   if (xmit && transmitter->puresignal) {
@@ -843,6 +841,7 @@ static void new_protocol_high_priority() {
   high_priority_buffer_to_radio[331] = phase >> 8;
   high_priority_buffer_to_radio[332] = phase;
   int power = 0;
+
   //
   // Fast "out-of-band" check. If out-of-band, set TX drive to zero.
   // This already happens during RX and is effective if the
@@ -852,6 +851,7 @@ static void new_protocol_high_priority() {
   if ((txfreq >= txband->frequencyMin && txfreq <= txband->frequencyMax) || tx_out_of_band_allowed) {
     power = transmitter->drive_level;
   }
+
   high_priority_buffer_to_radio[345] = power & 0xFF;
 
   //
@@ -960,12 +960,15 @@ static void new_protocol_high_priority() {
 
   if (!txband->disablePA  && pa_enabled) {
     local_pa_enable = 1;
+
     if (xmit) { alex0 |= ALEX_TX_RELAY; }
+
     alex1 |= ALEX_TX_RELAY;
   }
 
   if (transmitter->puresignal) {
     if (xmit) {alex0 |= ALEX_PS_BIT; }
+
     alex1 |= ALEX_PS_BIT;
   }
 
@@ -1258,7 +1261,6 @@ static void new_protocol_high_priority() {
   //  If receiving, let alex0 reflect the ANT1/2/3 setting for RX
   //  and alex1 that for TX. If transmitting, both reflect TX.
   //
-
   txant = transmitter->alex_antenna;
   // ASSUMPTION: receiver[0] is associated with the first ADC
   rxant = receiver[0]->alex_antenna;
@@ -1310,20 +1312,17 @@ static void new_protocol_high_priority() {
     alex1 |= ALEX_TX_ANTENNA_3;
     break;
   }
- 
+
   high_priority_buffer_to_radio[1432] = (alex0 >> 24) & 0xFF;
   high_priority_buffer_to_radio[1433] = (alex0 >> 16) & 0xFF;
   high_priority_buffer_to_radio[1434] = (alex0 >> 8) & 0xFF;
   high_priority_buffer_to_radio[1435] = alex0 & 0xFF;
-
   //t_print("ALEX0 bits:  %02X %02X %02X %02X\n",high_priority_buffer_to_radio[1432],high_priority_buffer_to_radio[1433],high_priority_buffer_to_radio[1434],high_priority_buffer_to_radio[1435]);
-
   high_priority_buffer_to_radio[1428] = (alex1 >> 24) & 0xFF;
   high_priority_buffer_to_radio[1429] = (alex1 >> 16) & 0xFF;
   high_priority_buffer_to_radio[1430] = (alex1 >> 8) & 0xFF;
   high_priority_buffer_to_radio[1431] = alex1 & 0xFF;
   //t_print("ALEX0 bits:  %02X %02X %02X %02X\n",high_priority_buffer_to_radio[1428],high_priority_buffer_to_radio[1429],high_priority_buffer_to_radio[1430],high_priority_buffer_to_radio[1431]);
-
   //
   // ADC step attenuator of ADC0 and ADC1
   //
@@ -1394,8 +1393,8 @@ static void new_protocol_transmit_specific() {
   transmit_specific_buffer[5] = 0; //  default no CW
 
   if ((txmode == modeCWU || txmode == modeCWL) && cw_keyer_internal
-                                               && !CAT_cw_is_active
-                                               && !MIDI_cw_is_active) {
+      && !CAT_cw_is_active
+      && !MIDI_cw_is_active) {
     //
     // Set this byte only if in CW, and if using "CW handled in radio"
     //
@@ -1809,11 +1808,11 @@ static gpointer new_protocol_rxaudio_thread(gpointer data) {
       double now;
       clock_gettime(CLOCK_MONOTONIC, &ts);
       now = ts.tv_sec + 1.0E-9 * ts.tv_nsec;
-      FIFO -= (now - last) * 48000.0; 
+      FIFO -= (now - last) * 48000.0;
       last = now;
 
       if (FIFO < 0.0) {
-       FIFO = 0.0;
+        FIFO = 0.0;
       }
 
       //
@@ -1824,24 +1823,26 @@ static gpointer new_protocol_rxaudio_thread(gpointer data) {
       if (FIFO > 500.0) {
         // Wait about 1000 usec before sending the next packet.
         ts.tv_nsec += 1000000;
+
         if (ts.tv_nsec > 999999999) {
           ts.tv_sec++;
           ts.tv_nsec -= 1000000000;
         }
+
         clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, NULL);
       } else if (FIFO > 250.0) {
         // Wait about 300 usec before sending the next packet.
         ts.tv_nsec += 300000;
+
         if (ts.tv_nsec > 999999999) {
           ts.tv_sec++;
           ts.tv_nsec -= 1000000000;
         }
+
         clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, NULL);
       }
 
       FIFO += 64.0;  // number of samples in THIS packet
-
-
       int rc = sendto(data_socket, audiobuffer, sizeof(audiobuffer), 0, (struct sockaddr*)&audio_addr, audio_addr_length);
 
       if (rc != sizeof(audiobuffer)) {
@@ -1909,24 +1910,27 @@ static gpointer new_protocol_txiq_thread(gpointer data) {
       last = now;
 
       if (FIFO < 0.0) {
-       //
-       // normally this occurs at the RX-TX transition
-       //
+        //
+        // normally this occurs at the RX-TX transition
+        //
         FIFO = 0.0;
       }
- 
+
       if (FIFO > 1250.0)  {
         //
         // Wait about 1000 usec before sending the next packet.
         // In reality, it takes a little longer before we resume work
         //
         ts.tv_nsec += 1000000;
+
         if (ts.tv_nsec > 999999999) {
           ts.tv_sec++;
           ts.tv_nsec -= 1000000000;
         }
+
         clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, NULL);
       }
+
       FIFO += 240.0;  // number of samples in THIS packet
 
       if (sendto(data_socket, iqbuffer, sizeof(iqbuffer), 0, (struct sockaddr * )&iq_addr, iq_addr_length) < 0) {
@@ -2477,17 +2481,18 @@ static void process_high_priority() {
   alex_reverse_power = rev_acc / 16;
   ADC0 = adc0_acc / 16;
   ADC1 = adc1_acc / 16;
-
   //
   // Stops CAT cw transmission if radio reports "CW action"
   //
   radio_cw = 0;
+
   if (device == NEW_DEVICE_ORION2 || device == NEW_DEVICE_SATURN) {
     //
     // These devices reflect a "keyer CW input" in bit 3 of byte59
     // and this is active-high (!)
     radio_cw = buffer[59] & 0x08;
   }
+
   if (radio_dash || radio_dot || radio_cw) {
     //
     // If currently a CAT or Keyer CW transmission is running,
@@ -2498,6 +2503,7 @@ static void process_high_priority() {
       MIDI_cw_is_active = 0;
       new_protocol_transmit_specific();
     }
+
     cw_key_hit = 1;
   }
 

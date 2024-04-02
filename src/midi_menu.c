@@ -666,22 +666,18 @@ void midi_menu(GtkWidget *parent) {
   newAction = gtk_button_new_with_label("    ");
   g_signal_connect(newAction, "button-press-event", G_CALLBACK(action_cb), NULL);
   gtk_grid_attach(GTK_GRID(grid), newAction, col, row, 3, 1);
-
   row++;
   clear_b = gtk_button_new_with_label("Delete All");
   gtk_grid_attach(GTK_GRID(grid), clear_b, 0, row, 1, 1);
   g_signal_connect(clear_b, "clicked", G_CALLBACK(clear_cb), NULL);
-
   delete_b = gtk_button_new_with_label("Delete");
   g_signal_connect(delete_b, "button-press-event", G_CALLBACK(delete_cb), NULL);
   gtk_grid_attach(GTK_GRID(grid), delete_b, 1, row, 1, 1);
-
   GtkWidget *ignore_b = gtk_check_button_new_with_label("Ignore Controller Pairs");
   gtk_widget_set_name(ignore_b, "boldlabel");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ignore_b), midiIgnoreCtrlPairs);
   gtk_grid_attach(GTK_GRID(grid), ignore_b, 3, row, 3, 1);
   g_signal_connect(ignore_b, "toggled", G_CALLBACK(ignore_cb), NULL);
-
   row++;
   col = 0;
   scrolled_window = gtk_scrolled_window_new (NULL, NULL);
@@ -1085,7 +1081,7 @@ void NewMidiConfigureEvent(enum MIDIevent event, int channel, int note, int val)
   // Sometimes a "heart beat" from a device might be useful. Therefore, we resert
   // channel=16 note=0 for this purpose and filter this out here
   //
-  if (event == MIDI_KEY && channel == 15 && note == 0) {
+  if (event == MIDI_NOTE && channel == 15 && note == 0) {
     return;
   }
 
@@ -1108,8 +1104,8 @@ void midiSaveState() {
   int entry;
   int i;
   entry = 0;
-
   SetPropI0("midiIgnoreCtrlPairs", midiIgnoreCtrlPairs);
+
   for (i = 0; i < n_midi_devices; i++) {
     if (midi_devices[i].active) {
       SetPropS1("mididevice[%d].name", entry, midi_devices[i].name);
@@ -1175,10 +1171,9 @@ void midiRestoreState() {
   int i, j;
   get_midi_devices();
   MidiReleaseCommands();
-
   //t_print("%s\n",__FUNCTION__);
-
   GetPropI0("midiIgnoreCtrlPairs", midiIgnoreCtrlPairs);
+
   //
   // Note this is too early to open the MIDI devices, since the
   // radio has not yet fully been configured. Therefore, only

@@ -638,7 +638,7 @@ void *duc_specific_thread(void *data) {
 
     if (ramplen != buffer[17]) {
       ramplen = buffer[17];
-      t_print("TX: CW ramp length %d msec\n",ramplen);
+      t_print("TX: CW ramp length %d msec\n", ramplen);
     }
 
     if (orion != buffer[50]) {
@@ -1195,7 +1195,8 @@ void *rx_thread(void *data) {
         if (rxptr >= NEWRTXLEN) { rxptr = 0; }
 
         if (myadc == 0) {
-          double fac = txatt0_dbl * txdrv_dbl * (IM3a + IM3b * (irsample * irsample + qrsample * qrsample) * txdrv_dbl * txdrv_dbl);
+          double fac = txatt0_dbl * txdrv_dbl * (IM3a + IM3b * (irsample * irsample + qrsample * qrsample) * txdrv_dbl *
+                                                 txdrv_dbl);
           i0sample += irsample * fac;
           q0sample += qrsample * fac;
         }
@@ -1390,19 +1391,22 @@ void *tx_thread(void * data) {
 
 #ifdef TXIQ_FIFO
     clock_gettime(CLOCK_MONOTONIC, &ts);
-    now = ts.tv_sec + 1.0E-9*ts.tv_nsec;
+    now = ts.tv_sec + 1.0E-9 * ts.tv_nsec;
     gap = now - last;
     FIFO -= (192000.0 * gap);
-    if (FIFO < 0.0) FIFO = 0.0;
+
+    if (FIFO < 0.0) { FIFO = 0.0; }
+
     if (gap > 0.25) {
       printf("TXIQ t=%8.3f gap=        Fill=%4d Seq=%6lu\n", now, (int) FIFO, seqnum);
     } else {
-      printf("TXIQ t=%8.3f gap=%7.2f Fill=%4d Seq=%6lu\n", now, gap*1000.0, (int) FIFO, seqnum);
+      printf("TXIQ t=%8.3f gap=%7.2f Fill=%4d Seq=%6lu\n", now, gap * 1000.0, (int) FIFO, seqnum);
     }
+
     last = now;
-    FIFO +=240;
+    FIFO += 240;
 #endif
-    
+
     if (txptr < 0) {
       txptr = NEWRTXLEN / 2;
     }
@@ -1410,7 +1414,6 @@ void *tx_thread(void * data) {
 #ifdef TXIQ_LEVEL
     lsum = 0;
 #endif
-
     p = buffer + 4;
     sum = 0.0;
 
@@ -1720,7 +1723,6 @@ void *mic_thread(void *data) {
   unsigned char *p;
   int yes = 1;
   struct timespec delay;
-
   sock = socket(AF_INET, SOCK_DGRAM, 0);
 
   if (sock < 0) {

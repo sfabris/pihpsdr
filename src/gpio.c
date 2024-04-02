@@ -1250,11 +1250,12 @@ int gpio_init() {
   // there is success.
   //
   if (chip == NULL) {
-    gpio_device="/dev/gpiochip4";        // works on RPI5
+    gpio_device = "/dev/gpiochip4";      // works on RPI5
     chip = gpiod_chip_open(gpio_device);
   }
+
   if (chip == NULL) {
-    gpio_device="/dev/gpiochip0";       // works on RPI4
+    gpio_device = "/dev/gpiochip0";     // works on RPI4
     chip = gpiod_chip_open(gpio_device);
   }
 
@@ -1391,9 +1392,9 @@ err:
   if (chip != NULL) {
     gpiod_chip_close(chip);
   }
+
   chip = NULL;
   gpio_device = NULL;
-
   return ret;
 #endif
 }

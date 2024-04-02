@@ -85,10 +85,8 @@ void recall_memory_slot(int index) {
   int id      = active_receiver->id;
   int b       = mem[index].bd;
   int oldmode = vfo[id].mode;
-
   const BAND *band = band_get_band(b);
   const BANDSTACK *bandstack = bandstack_get_bandstack(b);
-
   vfo[id].band           = b;
   vfo[id].bandstack      = bandstack->current_entry;
   vfo[id].frequency      = mem[index].frequency;
@@ -98,7 +96,7 @@ void recall_memory_slot(int index) {
   vfo[id].filter         = mem[index].filter;
   vfo[id].deviation      = mem[index].deviation;
   vfo[id].lo             = band->frequencyLO + band->errorLO;
-  
+
   if (can_transmit) {
     transmitter_set_ctcss(transmitter, mem[index].ctcss_enabled, mem[index].ctcss);
   }
@@ -123,7 +121,6 @@ void recall_memory_slot(int index) {
 
 void store_memory_slot(int index) {
   int id = active_receiver->id;
-
   //
   // Store current frequency, mode, and filter in slot #index
   //
@@ -139,5 +136,4 @@ void store_memory_slot(int index) {
     mem[index].ctcss_enabled = transmitter->ctcss_enabled;
     mem[index].ctcss = transmitter->ctcss;
   }
-
 }

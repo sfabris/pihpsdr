@@ -306,9 +306,9 @@ static gpointer old_protocol_txiq_thread(gpointer data) {
       last = now;
 
       if (FIFO < 0.0) {
-       FIFO = 0.0;
+        FIFO = 0.0;
       }
-     
+
       //
       // Depending on how we estimate the FIFO filling, wait
       // 2000usec, or 500 usec, or nothing before sending
@@ -320,18 +320,22 @@ static gpointer old_protocol_txiq_thread(gpointer data) {
       if (FIFO > 1500.0) {
         // Wait about 2000 usec before sending the next packet.
         ts.tv_nsec += 2000000;
+
         if (ts.tv_nsec > 999999999) {
           ts.tv_sec++;
           ts.tv_nsec -= 1000000000;
         }
+
         clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, NULL);
       } else if (FIFO > 300.0) {
         // Wait about 500 usec before sending the next packet.
         ts.tv_nsec += 500000;
+
         if (ts.tv_nsec > 999999999) {
           ts.tv_sec++;
           ts.tv_nsec -= 1000000000;
         }
+
         clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, NULL);
       }
 
@@ -1078,7 +1082,6 @@ static long long channel_freq(int chan) {
     if (vfo[vfonum].ctun) { freq += vfo[vfonum].offset; }
 
     if (vfo[vfonum].xit_enabled) { freq += vfo[vfonum].xit; }
-
   } else {
     //
     // determine RX frequency associated with VFO #vfonum
@@ -2148,7 +2151,6 @@ void ozy_send_buffer() {
       break;
 
     case 3: { // TX drive level, filters, etc.
-      
       int power = 0;
       //
       //  Set DUC frequency.
@@ -2156,6 +2158,7 @@ void ozy_send_buffer() {
       //
       long long DUCfrequency = channel_freq(-1);
       long long txfreq = DUCfrequency + vfo[txvfo].lo - frequency_calibration;
+
       //
       // Fast "out-of-band" check. If out-of-band, set TX drive to zero.
       // This already happens during RX and is effective if the
@@ -2204,6 +2207,7 @@ void ozy_send_buffer() {
         output_buffer[C2] |= 0x40;  // enable manual filter selection
         output_buffer[C3] &= 0x80;  // preserve ONLY "PA enable" bit and clear all filters including "6m LNA"
         output_buffer[C3] |= 0x20;  // bypass all RX filters
+
         //
         // For "manual" filter selection we also need to select the appropriate TX LPF
         //
@@ -2245,8 +2249,8 @@ void ozy_send_buffer() {
       }
 
       command = 4;
-      }
-      break;
+    }
+    break;
 
     case 4:
       output_buffer[C0] = 0x14;
@@ -2409,11 +2413,10 @@ void ozy_send_buffer() {
       output_buffer[C0] = 0x1E;
 
       if ((txmode == modeCWU || txmode == modeCWL) && !tune
-                                                   && !transmitter->twotone
-                                                   && cw_keyer_internal
-                                                   && !transmitter->twotone
-                                                   && !MIDI_cw_is_active
-                                                   && !CAT_cw_is_active) {
+          && !transmitter->twotone
+          && cw_keyer_internal
+          && !MIDI_cw_is_active
+          && !CAT_cw_is_active) {
         output_buffer[C1] |= 0x01;
       }
 
@@ -2520,10 +2523,10 @@ void ozy_send_buffer() {
       //    we must put the SDR into TX mode *here*.
       //
       if (tune || CAT_cw_is_active
-               || MIDI_cw_is_active
-               || !cw_keyer_internal
-               || transmitter->twotone
-               || radio_ptt) {
+          || MIDI_cw_is_active
+          || !cw_keyer_internal
+          || transmitter->twotone
+          || radio_ptt) {
         output_buffer[C0] |= 0x01;
       }
     } else {

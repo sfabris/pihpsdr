@@ -76,8 +76,8 @@ int cw_key_down = 0;
 int cw_not_ready = 1;
 
 double ctcss_frequencies[CTCSS_FREQUENCIES] = {
-   67.0,  71.9,  74.4,  77.0,  79.7,  82.5,  85.4,  88.5,  91.5,  94.8,
-   97.4, 100.0, 103.5, 107.2, 110.9, 114.8, 118.8, 123.0, 127.3, 131.8,
+  67.0,  71.9,  74.4,  77.0,  79.7,  82.5,  85.4,  88.5,  91.5,  94.8,
+  97.4, 100.0, 103.5, 107.2, 110.9, 114.8, 118.8, 123.0, 127.3, 131.8,
   136.5, 141.3, 146.2, 151.4, 156.7, 162.2, 167.9, 173.8, 179.9, 186.2,
   192.8, 203.5, 210.7, 218.1, 225.7, 233.6, 241.8, 250.3
 };
@@ -114,7 +114,7 @@ void transmitter_set_out_of_band(TRANSMITTER *tx) {
   tx->out_of_band = 1;
   g_idle_add(ext_vfo_update, NULL);
   tx->out_of_band_timer_id = gdk_threads_add_timeout_full(G_PRIORITY_HIGH_IDLE, 1000,
-                           clear_out_of_band_warning, tx, NULL);
+                             clear_out_of_band_warning, tx, NULL);
 }
 
 void transmitter_set_am_carrier_level(TRANSMITTER *tx) {
@@ -146,18 +146,17 @@ static void init_ramp(double *ramp, int width) {
   // that smoothly grow from zero to one.
   // (yes, the length of the ramp is width+1)
   //
-  for (int i=0; i<= width; i++) {
+  for (int i = 0; i <= width; i++) {
     double y = (double) i / ((double) width);           // between 0 and 1
     double y2 = y * 6.2831853071795864769252867665590;  // 2 Pi y
     double y4 = y * 12.566370614359172953850573533118;  // 4 Pi y
     double y6 = y * 18.849555921538759430775860299677;  // 6 Pi y
-
-    ramp[i]=2.787456445993031358885017421602787456445993031358885 * (
-        0.358750000000000000000000000000000000000000000000000    * y
-      - 0.0777137671623415735025882528171650378378063004186075  * sin(y2)
-      + 0.01124270518001148651871394904463441453411422937510584 * sin(y4)
-      - 0.00061964324510444584059352078539698924952082955408284 * sin(y6)
-    );
+    ramp[i] = 2.787456445993031358885017421602787456445993031358885 * (
+                0.358750000000000000000000000000000000000000000000000    * y
+                - 0.0777137671623415735025882528171650378378063004186075  * sin(y2)
+                + 0.01124270518001148651871394904463441453411422937510584 * sin(y4)
+                - 0.00061964324510444584059352078539698924952082955408284 * sin(y6)
+              );
   }
 }
 
@@ -232,9 +231,9 @@ void transmitterSaveState(const TRANSMITTER *tx) {
   SetPropI1("transmitter.%d.dialog_x",          tx->id,               tx->dialog_x);
   SetPropI1("transmitter.%d.dialog_y",          tx->id,               tx->dialog_y);
   SetPropI1("transmitter.%d.display_filled",    tx->id,               tx->display_filled);
-
   SetPropI1("transmitter.%d.eq_enable", tx->id,                    tx->eq_enable);
-  for (int i=0; i<5; i++) {
+
+  for (int i = 0; i < 5; i++) {
     SetPropF2("transmitter.%d.eq_freq[%d]", tx->id, i,             tx->eq_freq[i]);
     SetPropF2("transmitter.%d.eq_gain[%d]", tx->id, i,             tx->eq_gain[i]);
   }
@@ -285,14 +284,13 @@ static void transmitterRestoreState(TRANSMITTER *tx) {
   GetPropI1("transmitter.%d.dialog_x",          tx->id,               tx->dialog_x);
   GetPropI1("transmitter.%d.dialog_y",          tx->id,               tx->dialog_y);
   GetPropI1("transmitter.%d.display_filled",    tx->id,               tx->display_filled);
-
   GetPropI1("transmitter.%d.eq_enable", tx->id,                    tx->eq_enable);
-  for (int i=0; i<5; i++) {
+
+  for (int i = 0; i < 5; i++) {
     GetPropF2("transmitter.%d.eq_freq[%d]", tx->id, i,             tx->eq_freq[i]);
     GetPropF2("transmitter.%d.eq_gain[%d]", tx->id, i,             tx->eq_gain[i]);
     t_print("TX EQ i=%d F=%f G=%f\n", i,  tx->eq_freq[i], tx->eq_gain[i]);
   }
-
 }
 
 static double compute_power(double p) {
@@ -337,6 +335,7 @@ static gboolean update_display(gpointer data) {
       RECEIVER *rx_feedback = receiver[PS_RX_FEEDBACK];
       g_mutex_lock(&rx_feedback->display_mutex);
       GetPixels(rx_feedback->id, 0, rx_feedback->pixel_samples, &rc);
+
       if (rc) {
         int full  = rx_feedback->pixels;  // number of pixels in the feedback spectrum
         int width = tx->pixels;           // number of pixels to copy from the feedback spectrum
@@ -381,6 +380,7 @@ static gboolean update_display(gpointer data) {
           *tfp++ = *rfp++ + offset;
         }
       }
+
       g_mutex_unlock(&rx_feedback->display_mutex);
     } else {
       GetPixels(tx->id, 0, tx->pixel_samples, &rc);
@@ -809,19 +809,17 @@ TRANSMITTER *create_transmitter(int id, int width, int height) {
   tx->swr_protection = FALSE;
   tx->swr_alarm = 3.0;     // default value for SWR protection
   tx->alc = 0.0;
-
   tx->eq_enable = 0;
-  tx->eq_freq[0]=0.0;
-  tx->eq_freq[1]=200.0;
-  tx->eq_freq[2]=1000.0;
-  tx->eq_freq[3]=2000.0;
-  tx->eq_freq[4]=4000.0;
-  tx->eq_gain[0]=0.0;
-  tx->eq_gain[1]=0.0;
-  tx->eq_gain[2]=0.0;
-  tx->eq_gain[3]=0.0;
-  tx->eq_gain[4]=0.0;
-
+  tx->eq_freq[0] = 0.0;
+  tx->eq_freq[1] = 200.0;
+  tx->eq_freq[2] = 1000.0;
+  tx->eq_freq[3] = 2000.0;
+  tx->eq_freq[4] = 4000.0;
+  tx->eq_gain[0] = 0.0;
+  tx->eq_gain[1] = 0.0;
+  tx->eq_gain[2] = 0.0;
+  tx->eq_gain[3] = 0.0;
+  tx->eq_gain[4] = 0.0;
   transmitterRestoreState(tx);
   //
   // allocate buffers
@@ -833,12 +831,10 @@ TRANSMITTER *create_transmitter(int id, int width, int height) {
   tx->cw_sig_rf = g_new(double, tx->output_samples);
   tx->samples = 0;
   tx->pixel_samples = g_new(float, tx->pixels);
-
   g_mutex_init(&tx->cw_ramp_mutex);
   tx->cw_ramp_audio = NULL;
   tx->cw_ramp_rf    = NULL;
   tx_set_ramps(tx);
-
   t_print("create_transmitter: OpenChannel id=%d buffer_size=%d dsp_size=%d fft_size=%d sample_rate=%d dspRate=%d outputRate=%d\n",
           tx->id,
           tx->buffer_size,
@@ -863,9 +859,7 @@ TRANSMITTER *create_transmitter(int id, int width, int height) {
   SetTXABandpassRun(tx->id, 1);
   SetTXAFMEmphPosition(tx->id, pre_emphasize);
   SetTXACFIRRun(tx->id, SET(protocol == NEW_PROTOCOL)); // turned on if new protocol
-
   tx_set_equalizer(tx);
-
   transmitter_set_ctcss(tx, tx->ctcss_enabled, tx->ctcss);
   SetTXAAMSQRun(tx->id, 0);
   SetTXAosctrlRun(tx->id, 0);
@@ -1167,10 +1161,8 @@ static void full_tx_buffer(TRANSMITTER *tx) {
       // new protocol: already done in add_mic_sample
       // soapy       : no audio to radio
       //
-
       switch (protocol) {
-      case ORIGINAL_PROTOCOL:
-        {
+      case ORIGINAL_PROTOCOL: {
         //
         // An inspection of the IQ samples produced by WDSP when TUNEing shows
         // that the amplitude of the pulse is in I (in the range 0.0 - 1.0)
@@ -1180,7 +1172,9 @@ static void full_tx_buffer(TRANSMITTER *tx) {
         // Apply a minimum side tone volume for CAT CW messages.
         //
         int vol = cw_keyer_sidetone_volume;
+
         if (vol == 0 && CAT_cw_is_active) { vol = 12; }
+
         double sidevol = 64.0 * vol; // between 0.0 and 8128.0
 
         for (j = 0; j < tx->output_samples; j++) {
@@ -1189,9 +1183,8 @@ static void full_tx_buffer(TRANSMITTER *tx) {
           sidetone = sidevol * ramp * sine_generator(&p1radio, &p2radio, cw_keyer_sidetone_frequency);
           old_protocol_iq_samples(isample, 0, sidetone);
         }
-        }
-
-        break;
+      }
+      break;
 
       case NEW_PROTOCOL:
 
@@ -1295,7 +1288,6 @@ void add_mic_sample(TRANSMITTER *tx, float mic_sample) {
   //
   if ((txmode == modeCWL || txmode == modeCWU) && isTransmitting()) {
     int updown;
-    double val;
     float cwsample;
     //
     //  'piHPSDR' CW sets the variables cw_key_up and cw_key_down
@@ -1325,7 +1317,6 @@ void add_mic_sample(TRANSMITTER *tx, float mic_sample) {
       cw_key_down--;            // decrement key-up counter
       updown = 1;
     } else {
-
       if (cw_key_up > 0) {
         cw_key_up--;  // decrement key-down counter
       }
@@ -1336,46 +1327,47 @@ void add_mic_sample(TRANSMITTER *tx, float mic_sample) {
     //
     // Shape RF pulse and side tone.
     //
-    j=tx->ratio*tx->samples;  // pointer into cw_rf_sig
-    if (g_mutex_trylock(&tx->cw_ramp_mutex)) {
-      if (updown) {
+    j = tx->ratio * tx->samples; // pointer into cw_rf_sig
 
+    if (g_mutex_trylock(&tx->cw_ramp_mutex)) {
+      double val;
+
+      if (updown) {
         if (tx->cw_ramp_audio_ptr < tx->cw_ramp_audio_len) {
           tx->cw_ramp_audio_ptr++;
         }
 
         val = tx->cw_ramp_audio[tx->cw_ramp_audio_ptr];
 
-        for (i=0; i<tx->ratio; i++) {
+        for (i = 0; i < tx->ratio; i++) {
           if (tx->cw_ramp_rf_ptr < tx->cw_ramp_rf_len) {
             tx->cw_ramp_rf_ptr++;
           }
+
           tx->cw_sig_rf[j++] = tx->cw_ramp_rf[tx->cw_ramp_rf_ptr];
         }
-
       } else {
-
         if (tx->cw_ramp_audio_ptr > 0) {
           tx->cw_ramp_audio_ptr--;
         }
 
         val = tx->cw_ramp_audio[tx->cw_ramp_audio_ptr];
 
-        for (i=0; i<tx->ratio; i++) {
+        for (i = 0; i < tx->ratio; i++) {
           if (tx->cw_ramp_rf_ptr > 0) {
             tx->cw_ramp_rf_ptr--;
           }
+
           tx->cw_sig_rf[j++] = tx->cw_ramp_rf[tx->cw_ramp_rf_ptr];
         }
-
       }
-
 
       // Apply a minimum side tone volume for CAT CW messages.
       int vol = cw_keyer_sidetone_volume;
-      if (vol == 0 && CAT_cw_is_active) { vol = 12; }
-      cwsample = 0.00196 * vol * val * sine_generator(&p1local, &p2local, cw_keyer_sidetone_frequency);
 
+      if (vol == 0 && CAT_cw_is_active) { vol = 12; }
+
+      cwsample = 0.00196 * vol * val * sine_generator(&p1local, &p2local, cw_keyer_sidetone_frequency);
       g_mutex_unlock(&tx->cw_ramp_mutex);
     } else {
       //
@@ -1383,7 +1375,8 @@ void add_mic_sample(TRANSMITTER *tx, float mic_sample) {
       // Simply insert a "hard zero".
       //
       cwsample = 0.0;
-      for (i=0; i<tx->ratio; i++) {
+
+      for (i = 0; i < tx->ratio; i++) {
         tx->cw_sig_rf[j++] = 0.0;
       }
     }
@@ -1446,12 +1439,11 @@ void add_mic_sample(TRANSMITTER *tx, float mic_sample) {
 
     tx->cw_ramp_audio_ptr = 0;
     tx->cw_ramp_rf_ptr = 0;
-
     // insert "silence" in CW audio and TX IQ buffers
-
     j = tx->ratio * tx->samples;
-    for (i=0; i<tx->ratio; i++) {
-      tx->cw_sig_rf[j++]=0.0;
+
+    for (i = 0; i < tx->ratio; i++) {
+      tx->cw_sig_rf[j++] = 0.0;
     }
   }
 
@@ -1593,11 +1585,13 @@ void tx_set_ps(TRANSMITTER *tx, int state) {
     // if switching on: wait a while to get the feedback
     // streams flowing, then start PS engine
     usleep(100000);
+
     if (tx->ps_oneshot) {
       SetPSControl(tx->id, 0, 1, 0, 0);
     } else {
       SetPSControl(tx->id, 0, 0, 1, 0);
     }
+
     // Set PS 2.0 parameters
     SetPSIntsAndSpi(transmitter->id, transmitter->ps_ints, transmitter->ps_spi);
     SetPSStabilize(transmitter->id, transmitter->ps_stbl);
@@ -1620,6 +1614,7 @@ void tx_set_twotone(TRANSMITTER *tx, int state) {
   if (state == tx->twotone) { return; }
 
   tx->twotone = state;
+
   //
   // During a two-tone experiment, call a function periodically
   // (every 100 msec) that calibrates the TX attenuation value
@@ -1643,11 +1638,13 @@ void tx_set_twotone(TRANSMITTER *tx, int state) {
     SetTXAPostGenTTMag (tx->id, 0.49999, 0.49999);
     SetTXAPostGenMode(tx->id, 1);
     SetTXAPostGenRun(tx->id, 1);
+
     if (timer == 0) {
       timer = g_timeout_add((guint) 100, ps_calibration_timer, &timer);
     }
   } else {
     SetTXAPostGenRun(tx->id, 0);
+
     //
     // These radios show "tails" of the TX signal after a TX/RX transition,
     // so wait after the TwoTone signal has been removed, before
@@ -1731,16 +1728,17 @@ void tx_set_ramps(TRANSMITTER *tx) {
   g_mutex_lock(&tx->cw_ramp_mutex);
 
   if (tx->cw_ramp_audio) { g_free(tx->cw_ramp_audio); }
+
   tx->cw_ramp_audio_ptr = 0;
-  tx->cw_ramp_audio_len = 48*cw_ramp_width;
-  tx->cw_ramp_audio=g_new(double, tx->cw_ramp_audio_len+1);
+  tx->cw_ramp_audio_len = 48 * cw_ramp_width;
+  tx->cw_ramp_audio = g_new(double, tx->cw_ramp_audio_len + 1);
   init_ramp(tx->cw_ramp_audio, tx->cw_ramp_audio_len);
 
   if (tx->cw_ramp_rf) { g_free(tx->cw_ramp_rf); }
-  tx->cw_ramp_rf_ptr = 0;
-  tx->cw_ramp_rf_len = 48*tx->ratio*cw_ramp_width;
-  tx->cw_ramp_rf=g_new(double, tx->cw_ramp_rf_len+1);
-  init_ramp(tx->cw_ramp_rf, tx->cw_ramp_rf_len);
 
+  tx->cw_ramp_rf_ptr = 0;
+  tx->cw_ramp_rf_len = 48 * tx->ratio * cw_ramp_width;
+  tx->cw_ramp_rf = g_new(double, tx->cw_ramp_rf_len + 1);
+  init_ramp(tx->cw_ramp_rf, tx->cw_ramp_rf_len);
   g_mutex_unlock(&tx->cw_ramp_mutex);
 }

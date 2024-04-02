@@ -291,7 +291,7 @@ void saturn_register_init() {
   SetByteSwapping(true);                                            // h/w to generate NOT network byte order
   SetSpkrMute(false);
 
-  if(Version < 13) {
+  if (Version < 13) {
     SetTXAmplitudeScaling(VCONSTTXAMPLSCALEFACTOR);                 // for firmware version up to 1.2
   } else {
     SetTXAmplitudeScaling(VCONSTTXAMPLSCALEFACTOR_13);              // for  firmware version from 1.3 on
@@ -1279,7 +1279,6 @@ void saturn_handle_high_priority(bool FromNetwork, unsigned char *UDPInBuffer) {
   bool PAEnable;
   int DDCLoop = (FromNetwork) ? 6 : 4;
   int DDCOffset = (FromNetwork) ? 0 : 6;
-
   FPGAVersion = GetFirmwareVersion(&FPGASWID); // get version of FPGA code
 
   //t_print("high priority %sbuffer received\n", (FromNetwork)?"network ":"");
@@ -1349,9 +1348,8 @@ void saturn_handle_high_priority(bool FromNetwork, unsigned char *UDPInBuffer) {
   //
   // CAT port (if set)
   //
-  Word = ntohs(*(uint16_t *)(UDPInBuffer+1398));
+  Word = ntohs(*(uint16_t *)(UDPInBuffer + 1398));
   //t_print("CAT over TCP port = %x\n", Word);
-
   //
   // transverter, speaker mute, open collector, user outputs
   //
@@ -1369,38 +1367,33 @@ void saturn_handle_high_priority(bool FromNetwork, unsigned char *UDPInBuffer) {
   // if we don't have a new TX ant bit set, just write "old" word data (byte 1432) to both registers
   // this is to allow safe operation with legacy client apps
   // 1st read bytes and see if a TX ant bit is set
-  Word = ntohs(*(uint16_t *)(UDPInBuffer+1428));
+  Word = ntohs(*(uint16_t *)(UDPInBuffer + 1428));
   Word = (Word >> 8) & 0x0007;                          // new data TX ant bits. if not set, must be legacy client app
 
-  if((FPGAVersion >= 12) && (Word != 0))                // if new firmware && client app supports it
-  {
+  if ((FPGAVersion >= 12) && (Word != 0)) {             // if new firmware && client app supports it
     //t_print("new FPGA code, new client data\n");
-    Word = ntohs(*(uint16_t *)(UDPInBuffer+1428));      // copy word with TX ant settings to filt/TXant register
-    PAEnable = (bool)((Word >> 11)&1);
+    Word = ntohs(*(uint16_t *)(UDPInBuffer + 1428));    // copy word with TX ant settings to filt/TXant register
+    PAEnable = (bool)((Word >> 11) & 1);
     //t_print("new FPGA code, legacy client data, PA enable = %d\n", (int)PAEnable);
     AlexManualTXFilters(Word, true);
-    Word = ntohs(*(uint16_t *)(UDPInBuffer+1432));      // copy word with RX ant settings to filt/RXant register
+    Word = ntohs(*(uint16_t *)(UDPInBuffer + 1432));    // copy word with RX ant settings to filt/RXant register
     AlexManualTXFilters(Word, false);
-  }
-  else if(FPGAVersion >= 12)                            // new hardware but no client app support
-  {
+  } else if (FPGAVersion >= 12) {                       // new hardware but no client app support
     //t_print("new FPGA code, new client data\n");
-    Word = ntohs(*(uint16_t *)(UDPInBuffer+1432));      // copy word with TX/RX ant settings to both registers
-    PAEnable = (bool)((Word >> 11)&1);
+    Word = ntohs(*(uint16_t *)(UDPInBuffer + 1432));    // copy word with TX/RX ant settings to both registers
+    PAEnable = (bool)((Word >> 11) & 1);
     //t_print("new FPGA code, legacy client data, PA enable = %d\n", (int)PAEnable);
     AlexManualTXFilters(Word, true);
     AlexManualTXFilters(Word, false);
-  }
-  else                                                  // old FPGA hardware
-  {
+  } else {                                              // old FPGA hardware
     //t_print("old FPGA code\n");
-    Word = ntohs(*(uint16_t *)(UDPInBuffer+1432));      // copy word with TX/RX ant settings to original register
-    PAEnable = (bool)((Word >> 11)&1);
+    Word = ntohs(*(uint16_t *)(UDPInBuffer + 1432));    // copy word with TX/RX ant settings to original register
+    PAEnable = (bool)((Word >> 11) & 1);
     //t_print("new FPGA code, legacy client data, PA enable = %d\n", (int)PAEnable);
     AlexManualTXFilters(Word, false);
   }
-  SetPAEnabled(PAEnable); // activate PA if client app wants it
 
+  SetPAEnabled(PAEnable); // activate PA if client app wants it
   // RX filters
   Word = ntohs(*(uint16_t *)(UDPInBuffer + 1430));
   AlexManualRXFilters(Word, 2);
@@ -1650,12 +1643,12 @@ void saturn_handle_duc_specific(bool FromNetwork, unsigned char *UDPInBuffer) {
   CWHangDelay = ntohs(CWHangDelay);                       // convert from big endian
   SetCWPTTDelay(CWRFDelay);
   SetCWHangTime(CWHangDelay);
-  CWRampTime = *(uint8_t*)(UDPInBuffer+17);               // ramp transition time
-  if(CWRampTime != 0) {                                   // if ramp period supported by client app
+  CWRampTime = *(uint8_t*)(UDPInBuffer + 17);             // ramp transition time
+
+  if (CWRampTime != 0) {                                  // if ramp period supported by client app
     CWRampTime_us = 1000 * CWRampTime;
     InitialiseCWKeyerRamp(true, CWRampTime_us);         // create required ramp, P2
   }
-
 
   // mic and line in options
   Byte = *(uint8_t*)(UDPInBuffer + 50);                   // mic/line options

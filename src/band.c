@@ -412,7 +412,6 @@ void radio_change_region(int r) {
 }
 
 void bandSaveState() {
-
   for (int b = 0; b < BANDS + XVTRS; b++) {
     //
     // Skip non-assigned transverter bands
@@ -453,7 +452,6 @@ void bandSaveState() {
 }
 
 void bandRestoreState() {
-
   for (int b = 0; b < BANDS + XVTRS; b++) {
     //
     // For the "normal" (non-XVTR) bands, do not change the title,
@@ -467,7 +465,7 @@ void bandRestoreState() {
       GetPropI1("band.%d.errorLO", b,            bands[b].errorLO);
       GetPropI1("band.%d.gain", b,               bands[b].gain);
     }
-    
+
     GetPropI1("band.%d.frequencyMin", b,       bands[b].frequencyMin);
     GetPropI1("band.%d.frequencyMax", b,       bands[b].frequencyMax);
     GetPropI1("band.%d.disablePA", b,          bands[b].disablePA);
@@ -574,7 +572,6 @@ int get_band_from_frequency(long long f) {
     if (llabs(f - 20000000LL) <= 1000) { found = bandWWV; }
 
     if (llabs(f - 25000000LL) <= 1000) { found = bandWWV; }
-
   }
 
   return found;

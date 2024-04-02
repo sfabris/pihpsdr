@@ -167,10 +167,12 @@ static void modesettingsRestoreState() {
     mode_settings[i].snb = 0;
     mode_settings[i].en_rxeq = 0;
     mode_settings[i].en_txeq = 0;
+
     for (int j = 0; j < 5; j++) {
       mode_settings[i].txeq[j] = 0;
       mode_settings[i].rxeq[j] = 0;
     }
+
     mode_settings[i].compressor = 0;
     mode_settings[i].compressor_level = 0.0;
     GetPropI1("modeset.%d.filter", i,                mode_settings[i].filter);
@@ -294,8 +296,6 @@ static inline void vfo_adjust_band(int v, long long f) {
   int   b = vfo[v].band;
   const BAND *band;
   const BANDSTACK *bandstack;
-
-
   band = band_get_band(b);
 
   if ((f + 25000LL) >= band->frequencyMin && (f - 25000LL) <= band->frequencyMax) {
@@ -321,7 +321,6 @@ static inline void vfo_adjust_band(int v, long long f) {
   vfo[v].band = get_band_from_frequency(f);
   bandstack = bandstack_get_bandstack(vfo[v].band);
   vfo[v].bandstack = bandstack->current_entry;
-
 }
 
 void vfo_xvtr_changed() {
@@ -376,9 +375,11 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
   rx->anf              = mode_settings[m].anf;
   rx->snb              = mode_settings[m].snb;
   rx->eq_enable        = mode_settings[m].en_rxeq;
+
   for (int i = 0; i < 5; i++) {
     rx->eq_gain[i]       = mode_settings[m].rxeq[i];
   }
+
   vfo[id].step         = mode_settings[m].step;
 
   //
@@ -387,9 +388,11 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
   //
   if ((id == get_tx_vfo()) && can_transmit) {
     transmitter->eq_enable  = mode_settings[m].en_txeq;
+
     for (int i = 0; i < 5; i++) {
       transmitter->eq_gain[i]       = mode_settings[m].txeq[i];
     }
+
     transmitter_set_compressor_level(transmitter, mode_settings[m].compressor_level);
     transmitter_set_compressor      (transmitter, mode_settings[m].compressor      );
   }
@@ -411,10 +414,10 @@ void vfo_band_changed(int id, int b) {
   }
 
 #endif
-
   const BAND *band;
   BANDSTACK *bandstack;
   int   oldmode = vfo[id].mode;
+
   //
   // If the band is not equal to the current band, look at the frequency of the
   // new bandstack entry.
@@ -444,6 +447,7 @@ void vfo_band_changed(int id, int b) {
     if (vfo[id].bandstack >= bandstack->entries) {
       vfo[id].bandstack = 0;
     }
+
     if (id == 0) { bandstack->current_entry = vfo[id].bandstack; }
   } else {
     // new band - get band stack entry
@@ -461,6 +465,7 @@ void vfo_band_changed(int id, int b) {
   vfo[id].lo = band->frequencyLO + band->errorLO;
   vfo[id].filter = entry->filter;
   vfo[id].deviation = entry->deviation;
+
   //
   // Paranoia:
   // There should be no out-of-band frequencies in the
@@ -507,6 +512,7 @@ void vfo_bandstack_changed(int b) {
   vfo[id].mode = entry->mode;
   vfo[id].filter = entry->filter;
   vfo[id].deviation = entry->deviation;
+
   if (vfo[id].ctun) {
     vfo_adjust_band(id, vfo[id].ctun_frequency);
   } else {
@@ -628,21 +634,18 @@ void vfos_changed() {
   // but if the mode changed to/from CW, we also need a DUCspecific packet
   //
   schedule_transmit_specific();
-
   g_idle_add(ext_vfo_update, NULL);
 }
 
 void vfo_a_to_b() {
   CLIENT_MISSING;
   vfo[VFO_B] = vfo[VFO_A];
-
   vfos_changed();
 }
 
 void vfo_b_to_a() {
   CLIENT_MISSING;
   vfo[VFO_A] = vfo[VFO_B];
-
   vfos_changed();
 }
 
@@ -651,7 +654,6 @@ void vfo_a_swap_b() {
   struct  _vfo temp = vfo[VFO_A];
   vfo[VFO_A]        = vfo[VFO_B];
   vfo[VFO_B]        = temp;
-
   vfos_changed();
 }
 
@@ -2011,14 +2013,13 @@ void vfo_rit_incr(int id, int incr) {
 //
 void vfo_set_frequency(int v, long long f) {
   CLIENT_MISSING;
-
   //
   // Here we used to have call vfo_band_changed() for
   // frequency jumps from one band to another.
   // However, this involved saving/restoring
   // bandstacks, including setting the new mode
   // the new bandstack.
-  // This is proably an un-intended side effect 
+  // This is proably an un-intended side effect
   // if the frequency is changed, for example, by
   // a digi mode program via a CAT command.
   // Therefore, now e call vfo_adjust_band() which

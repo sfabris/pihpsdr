@@ -302,9 +302,9 @@ void receiverSaveState(RECEIVER *rx) {
   SetPropI1("receiver.%d.binaural", rx->id,                     rx->binaural);
   SetPropI1("receiver.%d.zoom", rx->id,                         rx->zoom);
   SetPropI1("receiver.%d.pan", rx->id,                          rx->pan);
-
   SetPropI1("receiver.%d.eq_enable", rx->id,                    rx->eq_enable);
-  for (int i=0; i<5; i++) {
+
+  for (int i = 0; i < 5; i++) {
     SetPropF2("receiver.%d.eq_freq[%d]", rx->id, i,             rx->eq_freq[i]);
     SetPropF2("receiver.%d.eq_gain[%d]", rx->id, i,             rx->eq_gain[i]);
   }
@@ -406,9 +406,9 @@ void receiverRestoreState(RECEIVER *rx) {
   GetPropI1("receiver.%d.binaural", rx->id,                     rx->binaural);
   GetPropI1("receiver.%d.zoom", rx->id,                         rx->zoom);
   GetPropI1("receiver.%d.pan", rx->id,                          rx->pan);
-
   GetPropI1("receiver.%d.eq_enable", rx->id,                    rx->eq_enable);
-  for (int i=0; i<5; i++) {
+
+  for (int i = 0; i < 5; i++) {
     GetPropF2("receiver.%d.eq_freq[%d]", rx->id, i,             rx->eq_freq[i]);
     GetPropF2("receiver.%d.eq_gain[%d]", rx->id, i,             rx->eq_gain[i]);
   }
@@ -988,19 +988,17 @@ RECEIVER *create_receiver(int id, int pixels, int width, int height) {
   rx->mute_radio = 0;
   rx->zoom = 1;
   rx->pan = 0;
-
   rx->eq_enable = 0;
-  rx->eq_freq[0]=0.0;
-  rx->eq_freq[1]=200.0;
-  rx->eq_freq[2]=1000.0;
-  rx->eq_freq[3]=2000.0;
-  rx->eq_freq[4]=4000.0;
-  rx->eq_gain[0]=0.0;
-  rx->eq_gain[1]=0.0;
-  rx->eq_gain[2]=0.0;
-  rx->eq_gain[3]=0.0;
-  rx->eq_gain[4]=0.0;
-
+  rx->eq_freq[0] = 0.0;
+  rx->eq_freq[1] = 200.0;
+  rx->eq_freq[2] = 1000.0;
+  rx->eq_freq[3] = 2000.0;
+  rx->eq_freq[4] = 4000.0;
+  rx->eq_gain[0] = 0.0;
+  rx->eq_gain[1] = 0.0;
+  rx->eq_gain[2] = 0.0;
+  rx->eq_gain[3] = 0.0;
+  rx->eq_gain[4] = 0.0;
   receiverRestoreState(rx);
 
   //
@@ -1115,9 +1113,7 @@ RECEIVER *create_receiver(int id, int pixels, int width, int height) {
   SetRXAPanelGain1(rx->id, amplitude);
   SetRXAPanelBinaural(rx->id, rx->binaural);
   SetRXAPanelRun(rx->id, 1);
-
   receiver_set_equalizer(rx);
-
   receiver_mode_changed(rx);  // this will call receiver_filter_changed() as well
   int result;
   XCreateAnalyzer(rx->id, &result, 262144, 1, 1, NULL);

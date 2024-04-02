@@ -83,10 +83,10 @@
 #include <netinet/if_ether.h>
 #include <fcntl.h>
 #ifdef __APPLE__
-#include <net/if_dl.h>
+  #include <net/if_dl.h>
 #else
-#include <sys/ioctl.h>
-#include <net/if.h>
+  #include <sys/ioctl.h>
+  #include <net/if.h>
 #endif
 #include <string.h>
 
@@ -148,12 +148,10 @@ int main(int argc, char **argv) {
   do_display = 1;
   do_burnip = 0;
   do_lookup = 0;
-
   hisip[0] = 0;
   hisip[1] = 0;
   hisip[2] = 0;
   hisip[3] = 0;
-
   //
   // Set "bogus" mac addr,
   // if MAC addr cannot be determined neither
@@ -165,11 +163,10 @@ int main(int argc, char **argv) {
   mymac[3] = 0x12;
   mymac[4] = 0x13;
   mymac[5] = 0x14;
-
   rbffile = NULL;
   i = 0;
 
-  if (argc <2) {
+  if (argc < 2) {
     printf("Usage: bootloader [-i <iface>]  [-s <addr>] [-f <file>r] \n");
     printf("<iface> is ethernet adapter to use\n");
     printf("<addr>  is ethernet addr to burn into the radio\n");
@@ -179,7 +176,6 @@ int main(int argc, char **argv) {
   }
 
   while (++i < argc) {
-
     if (!strcmp(argv[i], "-i") && i + 1 < argc) {
       dev = argv[++i];
       do_display = 0;
@@ -252,6 +248,7 @@ int main(int argc, char **argv) {
       }
 
 #ifdef __APPLE__
+
       //
       // BSD code (e.g. MacOS), need  to include net/if_dl.h
       //
@@ -280,23 +277,25 @@ int main(int argc, char **argv) {
           mymac[4] = mac[5];
           mymac[5] = mac[6];
         }
-
       }
-#endif
 
+#endif
       addr = addr->next;
     }
+
 #ifdef SIOCGIFHWADDR
     //
     // Alternate method to query the MAC address.
     // This works on RaspPi.
     //
     struct ifreq ifr;
-    int fd=socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
+    int fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
     strcpy(ifr.ifr_name, ifp->name);
+
     if (ioctl(fd, SIOCGIFHWADDR, &ifr) == 0) {
       memcpy(mymac, ifr.ifr_addr.sa_data, 6);
     }
+
 #endif
 
     if (have_addr) {
@@ -414,13 +413,13 @@ int main(int argc, char **argv) {
     printf("pcap_open_live(): %s\n", errbuf);
     exit(1);
   }
+
   //
   // On some systems, pcap_next() hangs when no packet arrives at all
   // To cope with these cases, set "nonblocking" mode and explicitly
   // wait 10 msec before when doing pcap_next
   //
   pcap_setnonblock(descr, 1, errbuf);
-
   state = STATE_QUERYMAC;
   timeout = 0;
 
@@ -503,10 +502,12 @@ int main(int argc, char **argv) {
     // all the above time outs are in units of 10 ms.
     //
     packet = pcap_next(descr, &hdr);
+
     if (packet == NULL) {
       usleep(10000);
       packet = pcap_next(descr, &hdr);
     }
+
     if (packet == NULL) { continue; } // Nothing arrived within 10 msec
 
     /*

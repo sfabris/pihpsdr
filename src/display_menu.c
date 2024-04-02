@@ -351,22 +351,18 @@ void display_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(grid), gradient_b, col + 1, row, 1, 1);
   g_signal_connect(gradient_b, "toggled", G_CALLBACK(gradient_cb), NULL);
   row++;
-
   GtkWidget *b_display_panadapter = gtk_check_button_new_with_label("Display Panadapter");
   gtk_widget_set_name (b_display_panadapter, "boldlabel");
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (b_display_panadapter), active_receiver->display_panadapter);
   gtk_widget_show(b_display_panadapter);
   gtk_grid_attach(GTK_GRID(grid), b_display_panadapter, col, row, 1, 1);
   g_signal_connect(b_display_panadapter, "toggled", G_CALLBACK(display_panadapter_cb), NULL);
-
   GtkWidget *b_display_waterfall = gtk_check_button_new_with_label("Display Waterfall");
   gtk_widget_set_name (b_display_waterfall, "boldlabel");
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (b_display_waterfall), active_receiver->display_waterfall);
   gtk_widget_show(b_display_waterfall);
-  gtk_grid_attach(GTK_GRID(grid), b_display_waterfall, col+1, row, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), b_display_waterfall, col + 1, row, 1, 1);
   g_signal_connect(b_display_waterfall, "toggled", G_CALLBACK(display_waterfall_cb), NULL);
-
-
   gtk_container_add(GTK_CONTAINER(content), grid);
   sub_menu = dialog;
 

@@ -317,8 +317,8 @@ double drive_digi_max = 100.0; // maximum drive in DIGU/DIGL
 gboolean display_warnings = TRUE;
 gboolean display_pacurr = TRUE;
 
-gint window_x_pos=0;
-gint window_y_pos=0;
+gint window_x_pos = 0;
+gint window_y_pos = 0;
 
 int rx_height;
 
@@ -1193,7 +1193,7 @@ void start_radio() {
     STRLCPY(p, "SoapySDR", 32);
     snprintf(version, 32, "%4.20s v%d.%d.%d",
              radio->info.soapy.driver_key,
-             (radio->software_version % 10000)/ 100,
+             (radio->software_version % 10000) / 100,
              (radio->software_version % 100) / 10,
              radio->software_version % 10);
     break;
@@ -1659,6 +1659,7 @@ static void rxtx(int state) {
     t_print("WARNING: rxtx called but no transmitter!");
     return;
   }
+
   pre_mox = state && !duplex;
 
   if (state) {
@@ -2421,6 +2422,7 @@ void radioRestoreState() {
   if ((window_x_pos < screen_width - 100) && (window_y_pos < screen_height - 100)) {
     gtk_window_move(GTK_WINDOW(top_window), window_x_pos, window_y_pos);
   }
+
 #ifdef CLIENT_SERVER
   GetPropI0("radio.hpsdr_server",                            hpsdr_server);
   GetPropI0("radio.hpsdr_server.listen_port",                listen_port);
@@ -2599,13 +2601,13 @@ void radioSaveState() {
 
     transmitterSaveState(transmitter);
   }
+
   //
   // Obtain window position and save in props file
   //
   gtk_window_get_position(GTK_WINDOW(top_window), &window_x_pos, &window_y_pos);
   SetPropI0("WindowPositionX",                               window_x_pos);
   SetPropI0("WindowPositionY",                               window_y_pos);
-
   //
   // What comes now is essentially copied from radioRestoreState,
   // with "GetProp" replaced by "SetProp".

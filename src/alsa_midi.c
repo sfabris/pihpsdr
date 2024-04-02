@@ -210,6 +210,7 @@ static void *midi_thread(void *arg) {
           break;
 
         case CMD_CTRL:
+
           //
           // When ignoring "controller pairs", all ControllerChange events
           // for controllers 32...63 are ignored
@@ -220,7 +221,7 @@ static void *midi_thread(void *arg) {
             } else {
               NewMidiEvent(MIDI_CTRL, chan, arg1, arg2);
             }
-          } 
+          }
 
           break;
 

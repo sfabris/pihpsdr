@@ -89,7 +89,7 @@ typedef struct _transmitter {
   double ps_ptol;
   double ps_moxdelay;
   double ps_loopdelay;
-  int    ps_oneshot;   
+  int    ps_oneshot;
 
   gboolean ctcss_enabled;
   int ctcss;

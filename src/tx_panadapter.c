@@ -116,9 +116,9 @@ void tx_panadapter_update(TRANSMITTER *tx) {
     cr = cairo_create (tx->panadapter_surface);
     cairo_set_source_rgba(cr, COLOUR_PAN_BACKGND);
     cairo_paint (cr);
-
     // filter
     filter_left = filter_right = 0.5 * my_width;
+
     if (txmode != modeCWU && txmode != modeCWL) {
       cairo_set_source_rgba(cr, COLOUR_PAN_FILTER);
       filter_left = (double)my_width / 2.0 + ((double)tx->filter_low / hz_per_pixel);
