@@ -1887,7 +1887,7 @@ void setTune(int state) {
     }
 
     if (state) {
-      if (transmitter->puresignal) {
+      if (transmitter->puresignal && ! transmitter->ps_oneshot) {
         //
         // DL1YCF:
         // Some users have reported that especially when having
@@ -1899,7 +1899,10 @@ void setTune(int state) {
         // "Restart" in the PS menu when tuning is complete.
         //
         // It is therefore suggested to to so implicitly when PS
-        // is enabled.
+        // is enabled. 
+        // Added April 2024: if in "OneShot" mode, this is probably
+        //                   not necessary and the PS reset also
+        //                   most likely not wanted here
         //
         // So before start tuning: Reset PS engine
         //
@@ -2004,17 +2007,13 @@ void setTune(int state) {
         break;
       }
 
-      if (transmitter->puresignal) {
+      if (transmitter->puresignal && !transmitter->ps_oneshot) {
         //
         // DL1YCF:
-        // Since we have done a "PS reset" when we started tuning,
+        // If we have done a "PS reset" when we started tuning,
         // resume PS engine now.
         //
-        if (transmitter->ps_oneshot) {
-          SetPSControl(transmitter->id, 0, 1, 0, 0);
-        } else {
-          SetPSControl(transmitter->id, 0, 0, 1, 0);
-        }
+        SetPSControl(transmitter->id, 0, 0, 1, 0);
       }
 
       tune = state;
@@ -2169,6 +2168,7 @@ void calcDriveLevel() {
 }
 
 void setDrive(double value) {
+  //t_print("%s: drive=%f\n", __FUNCTION__, value);
   if (!can_transmit) { return; }
 
   transmitter->drive = value;
