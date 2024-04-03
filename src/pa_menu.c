@@ -255,6 +255,26 @@ void pa_menu(GtkWidget *parent) {
     int bands = max_band();
     int b = 0;
 
+    if (tx_out_of_band_allowed) {
+      //
+      // If out-of-band TXing is allowed, we need a PA calibration value 
+      // for the "general" band. Note that if out-of-band TX is allowed
+      // while the menu is open, this will not appear (one has to close
+      // and re-open the menu).
+      //
+      BAND *band = band_get_band(bandGen);
+      GtkWidget *band_label = gtk_label_new(band->title);
+      gtk_widget_set_name(band_label, "boldlabel");
+      gtk_widget_show(band_label);
+      gtk_grid_attach(GTK_GRID(grid), band_label, (b / 6) * 2, (b % 6) + 1, 1, 1);
+      GtkWidget *pa_r = gtk_spin_button_new_with_range(38.8, 100.0, 0.1);
+      gtk_spin_button_set_value(GTK_SPIN_BUTTON(pa_r), (double)band->pa_calibration);
+      gtk_widget_show(pa_r);
+      gtk_grid_attach(GTK_GRID(grid), pa_r, ((b / 6) * 2) + 1, (b % 6) + 1, 1, 1);
+      g_signal_connect(pa_r, "value_changed", G_CALLBACK(pa_value_changed_cb), band);
+      b++;
+    }
+
     for (int i = 0; i <= bands; i++) {
       BAND *band = band_get_band(i);
       GtkWidget *band_label = gtk_label_new(band->title);
