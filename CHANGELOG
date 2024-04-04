@@ -1,6 +1,34 @@
 LIST OF RECENT PIHPSDR CHANGES
 ==============================
 
+April 2024:
+-----------
+
+- Added option for "one shot" PURESIGNAL calibration
+  (calibrating periodically is recommended though)
+
+- Independent equalizers for RX0, RX1, TX, and they
+  are four-channel now
+
+March 2024:
+-----------
+
+- updated "UDP packet scheduling", as to keep up when
+  there were delays.
+
+- worked on RigCtl CAT commands and their documentation
+  (new Appendix D in the manual)
+
+- implemented "variable width" ramp for CW RF and audio
+  pulses
+
+- made it work both with RPi4 and RPi5 GPIO
+
+February 2024:
+-------------
+
+- Changed TwoTone frequencies from 900/1700 to 700/1900 Hz
+
 January 2024:
 -------------
 

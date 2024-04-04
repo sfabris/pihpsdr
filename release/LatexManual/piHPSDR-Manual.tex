@@ -28,7 +28,7 @@ email: \texttt{dl1ycf@darc.de}
 \maketitle
 \textbf{Copyright Notice:}
 
-Copyright (C) 2023 Christoph van W\"ullen, DL1YCF.
+Copyright (C) 2023--2024 Christoph van W\"ullen, DL1YCF.
 
 This work is licensed under
 the Creative Commons licence CC BY-SA, version 4 or later, so it can be freely distributed.
@@ -54,9 +54,10 @@ to the code in his github account
 \texttt{https://github.com/dl1ycf/pihpsdr}
 
 where the \LaTeX\   ,,source code'' of this manual, together with all figures in .png format, can be found
-in the \texttt{release/LatexManual} directory. At this moment this code has significant developed compared
+in the \texttt{release/LatexManual} directory. At this moment this code has numerous additions/corrections
+ compared
 to the piHPSDR code in John Melton's master repository, but there is still hope that both versions can
-be merged in  the  future, although this  will  be hard  work.
+be merged in  the  future.
 
 If you think you can improve the manual, you are welcome.
 Simply fork the above repository and make a pull request, or (this is the recommended way) write an
@@ -939,7 +940,7 @@ preferences are stored in a file whose name derived from the MAC address of the 
 the colons by dashes and appending ,,.props''.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{The Main Menu: Radio-related menus}
+\chapter[Radio-related menus]{The Main Menu: Radio-related menus}
 \section{The \texttt{Radio} Menu}
 
 \begin{figure}[ht]
@@ -1541,7 +1542,7 @@ The TX spectrum scope then appears during transmitting in a small separate windo
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{The Main Menu: VFO-related menus}
+\chapter[VFO-related menus]{The Main Menu: VFO-related menus}
 
 In this chapter we discuss the menus from the second column
 of the main menu. These are all VFO-related menus.
@@ -1724,7 +1725,7 @@ in the memory slots.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{The Main Menu: RX-related menus}
+\chapter[RX-related menus]{The Main Menu: RX-related menus}
 
 The second column of tghe main menu contains menus which allow you to change
 receiver settings.
@@ -2006,7 +2007,7 @@ This is what \bltt{Diversity} is all about.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{The Main Menu: TX-related menus}
+\chapter[TX-related menus]{The Main Menu: TX-related menus}
 
 Note that for RX-only radios, only the \bltt{CW} menu will be shown here
 because there one can set the pitch of the CW side tone, which also affects
@@ -2370,9 +2371,12 @@ this box is changed.}
  a valid calibration, and when this happens during transmitting, a bad signal may
  be transmitted for a short amount of time. Checking \rett{OneShot} can help in such
  situations because the calibration, once obtained, is kept and not changed.
- 
  When a successful "one shot" PURESIGNAL calibration has been achieved, the \bltt{status}
  field in the menu becomes stable and reads \texttt{STAYON}.
+ 
+ However, if something changes (e.g. output power, or the finals get warm, etc.) the
+ calibration is probably no longer valid but still kept. So unless you have good reason,
+ do not use the \rett{OneShot} option.  
  
 \begin{figure}[ht]
 \center
@@ -2575,7 +2579,7 @@ for doing real QSOs.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{The Main Menu: menus for RX and TX}
+\chapter[Menus for RX and TX]{The Main Menu: menus for RX and TX}
 
 \section{The \texttt{DSP} (Signal Processing) Menu}
 
@@ -2808,7 +2812,7 @@ you enable the \texttt{N2ADR} filter board in the \bltt{Radio} menu.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{The Main Menu: controlling piHPSDR}
+\chapter[Controlling piHPSDR]{The Main Menu: controlling piHPSDR}
 
 In this chapter, the customization of the toolbar (at the bottom of the piHPSDR window),
 as well as how to configure GPIO and MIDI controllers, is described. Furthermore, in this
@@ -4058,7 +4062,7 @@ stored in the preferences file, the default action at program startup always is 
 namely \bltt{AG gain}.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{piHPSDR keyboard bindings}
+\chapter[Keyboard bindings]{piHPSDR keyboard bindings}
 
 There are a lot of keyboard bindings effective if you run piHPSDR. Most of them are
 standard key bindings of the GTK user interface. For example, when using a normal
@@ -4150,7 +4154,7 @@ such that the ANDROMEDA controller can update the corresponding LEDs.
 
 
 
-\section{Kenwood (two-letter) CAT commands supported by piHPSDR}
+\section[Kenwood CAT commands]{Kenwood (two-letter) CAT commands supported by piHPSDR}
 
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
@@ -4731,7 +4735,7 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: XIT disabl
 
 
 
-\section{Extended CAT commands supported by piHPSDR}    
+\section[Extended CAT commands]{Extended CAT commands supported by piHPSDR}    
 
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
@@ -6065,7 +6069,7 @@ are necessary to re-compile the program. Do not forget the ,,\texttt{make clean}
 most of the files need be recompiled after the compile time options have changed!
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{GPIO Lines for Controllers, CW, PTT}
+\chapter[RaspPi GPIO lines]{GPIO Lines for Controllers, CW, PTT}
 \label{sec:gpio}
 This section is only for piHPSDR running on RaspberryPi or similar systems with a GPIO (general purpose
 input/output) header. piHPSDR uses \texttt{libgpiod} to access the GPIO, so this may also apply to
