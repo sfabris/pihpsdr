@@ -2,7 +2,7 @@
 Standalone code for HPSDR,
 supporting both the old (P1) and new (P2) HPSDR protocols, as well as the SoapySDR framework.
 
-It runs on Linux (including RaspPi 3/4) and MacOS (using the "Homebrew" working environment).
+It runs on Linux (including RaspPi 3/4/5) and MacOS (using the "Homebrew" working environment).
 
 **Consult the Manual (Appendix J,  K, L) on how-to install and or compile piHPSDR
 on your machine (Appendix J: Raspberry PI binary installation, Appendix K: LINUX compile from
