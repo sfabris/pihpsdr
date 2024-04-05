@@ -74,6 +74,9 @@ extern bool client_enable_tx;
 extern bool ServerActive;
 extern bool MOXAsserted;
 
+#define FIRMWARE_MIN_VERSION  8               // Minimum FPGA software version that this software requires
+#define FIRMWARE_MAX_VERSION 13               // Maximum FPGA software version that this software is tested on
+
 #define SDRBOARDID 1                          // Hermes
 #define SDRSWVERSION 1                        // version of this software
 #define VDISCOVERYSIZE 60                     // discovery packet
@@ -318,7 +321,6 @@ bool is_already_running() {
   return (strstr(path, "pihpsdr") == NULL) ? false : true;
 }
 
-#define SATURNMINFPGAVERSION 8                          // Minimum version of gateware this pihpsdr works with
 #define SATURNPRODUCTID 1                               // Saturn, any version
 #define SATURNGOLDENCONFIGID 3                          // "golden" configuration id
 #define SATURNPRIMARYCONFIGID 4                         // "primary" configuration id
@@ -367,9 +369,11 @@ void saturn_discovery() {
         goodConfig = false;  // not all clocks are present
       }
 
-      if (Version < SATURNMINFPGAVERSION) {
-        t_print("Incompatible Saturn FPGA gateware version %d, "
-                "need %d or greater\n", Version, SATURNMINFPGAVERSION);
+      if (Version < FIRMWARE_MIN_VERSION || Version > FIRMWARE_MAX_VERSION) {
+        t_print("Incompatible Saturn FPGA firmware version %d, need %d ... %d\n",
+                 Version,
+                 FIRMWARE_MIN_VERSION,
+                 FIRMWARE_MAX_VERSION);
         discovered[devices].status = STATE_INCOMPATIBLE;
         goodConfig = false;
       }
