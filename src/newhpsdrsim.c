@@ -1,4 +1,3 @@
-#define TXIQ_FIFO
 /* Copyright (C)
 * 2019 - Christoph van Wüllen, DL1YCF
 *
@@ -17,6 +16,18 @@
 *
 */
 
+//
+// Some compile time options to be defined:
+//
+// TXIQ_FIFO:   monitors the TX FIFO filling
+// LOGFIRST:    dumps the TX IQ and audio samples to a file,
+// .............for the first three seconds after the first
+// .............RX/TX transition
+//
+
+//#define TXIQ_FIFO
+//#define LOGFIRST
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -34,6 +45,15 @@
 
 #define EXTERN extern
 #include "hpsdrsim.h"
+
+#ifdef LOGFIRST
+static int first_tx_i[576000];
+static int first_tx_q[576000];
+static int first_audio_l[144000];
+static int first_audio_r[144000];
+static int first_tx_count = -1;
+static int first_audio_count = -1;
+#endif
 
 #define NUMRECEIVERS 4
 
@@ -845,6 +865,16 @@ void *highprio_thread(void *data) {
         memset(isample, 0, sizeof(double)*NEWRTXLEN);
         memset(qsample, 0, sizeof(double)*NEWRTXLEN);
       }
+#ifdef LOGFIRST
+      if (ptt && first_tx_count < 0) {
+        first_tx_count = 0;
+        first_audio_count = 0;
+        memset(first_tx_i, 0, sizeof(int)*576000);
+        memset(first_tx_q, 0, sizeof(int)*576000);
+        memset(first_audio_l, 0, sizeof(int)*144000);
+        memset(first_audio_r, 0, sizeof(int)*144000);
+      }
+#endif
     }
 
     rc = (buffer[5] >> 0) & 0x01;
@@ -1328,12 +1358,9 @@ void *tx_thread(void * data) {
   int rc;
   int i;
   unsigned char *p;
-  int sample;
+  int samp1, samp2;
   double di, dq;
   double sum;
-#ifdef TXIQ_LEVEL
-  long lsum;
-#endif
 #ifdef TXIQ_FIFO
   double  FIFO = 0.0;
   double last = -9999.9;
@@ -1411,28 +1438,38 @@ void *tx_thread(void * data) {
       txptr = NEWRTXLEN / 2;
     }
 
-#ifdef TXIQ_LEVEL
-    lsum = 0;
-#endif
     p = buffer + 4;
     sum = 0.0;
 
     for (i = 0; i < 240; i++) {
       // process 240 TX iq samples
-      sample  = (int)((signed char) (*p++)) << 16;
-      sample |= (int)((((unsigned char)(*p++)) << 8) & 0xFF00);
-      sample |= (int)((unsigned char)(*p++) & 0xFF);
-      di = (double) sample / 8388608.0;
-#ifdef TXIQ_LEVEL
-      lsum = lsum + labs(sample);
+      samp1  = (int)((signed char) (*p++)) << 16;
+      samp1 |= (int)((((unsigned char)(*p++)) << 8) & 0xFF00);
+      samp1 |= (int)((unsigned char)(*p++) & 0xFF);
+      samp2  = (int)((signed char) (*p++)) << 16;
+      samp2 |= (int)((((unsigned char)(*p++)) << 8) & 0xFF00);
+      samp2 |= (int)((unsigned char)(*p++) & 0xFF);
+
+      di = (double) samp1 / 8388608.0;
+      dq = (double) samp2 / 8388608.0;
+
+#ifdef LOGFIRST
+      if (first_tx_count >= 0 && first_tx_count < 576000) {
+        first_tx_i[first_tx_count  ]=samp1;
+        first_tx_q[first_tx_count++]=samp2;
+        if (first_tx_count >= 576000 || !ptt) {
+          FILE *fp = fopen("FIRST.TX.IQ", "w");
+          if (fp) {
+            for (int j=0; j<576000; j++) {
+              fprintf(fp, "%d  %d\n", first_tx_i[j], first_tx_q[j]);
+            }
+            fclose(fp);
+          }
+          first_tx_count = 576000;
+        }
+      }
 #endif
-      sample  = (int)((signed char) (*p++)) << 16;
-      sample |= (int)((((unsigned char)(*p++)) << 8) & 0xFF00);
-      sample |= (int)((unsigned char)(*p++) & 0xFF);
-#ifdef TXIQ_LEVEL
-      lsum = lsum + labs(sample);
-#endif
-      dq = (double) sample / 8388608.0;
+
       //
       //      In P2, the output signal goes through a compensating
       //      FIR filter at the end, that reduces the amplitudef
@@ -1459,9 +1496,6 @@ void *tx_thread(void * data) {
     // and thus txlevel = txdrv_dbl^2
     //
     txlevel = sum * txdrv_dbl * txdrv_dbl * 0.0041667;
-#ifdef TXIQ_LEVEL
-    t_print("TXIQ-SUM=%ld\n", lsum);
-#endif
   }
 
   close(sock);
@@ -1640,8 +1674,9 @@ void *audio_thread(void *data) {
   socklen_t lenaddr = sizeof(addr);
   unsigned long seqnum, seqold;
   unsigned char buffer[260];
-#ifdef AUDIO_LEVEL
-  long lsum;
+#ifdef LOGFIRST
+  unsigned char *p;
+  int lsample, rsample;
 #endif
   int yes = 1;
   int rc;
@@ -1695,16 +1730,31 @@ void *audio_thread(void *data) {
       t_print("Audio thread: SEQ ERROR, old=%lu new=%lu\n", seqold, seqnum);
     }
 
-    // just skip the audio samples
-#ifdef AUDIO_LEVEL
-    lsum = 0;
-
-    for (int  i = 4; i < 260; i++) {
-      lsum = lsum + buffer[i] * buffer[i];
-    }
-
-    t_print("AUDIO sum=%ld\n", lsum);
+#ifdef LOGFIRST
+      p = buffer+4;
+      for (int i=0; i<64; i++) {
+        lsample  = (int)((signed char) (*p++)) << 8;
+        lsample |= (int)(((unsigned char)(*p++)) & 0xFF);
+        rsample  = (int)((signed char) (*p++)) << 8;
+        rsample |= (int)(((unsigned char)(*p++)) & 0xFF);
+        if (first_audio_count >= 0 && first_audio_count < 144000) {
+          first_audio_l[first_audio_count]=lsample;
+          first_audio_r[first_audio_count++]=rsample;
+          if (first_audio_count >= 144000 || !ptt) {
+            FILE *fp = fopen("FIRST.AUDIO", "w");
+            if (fp) {
+              for (int j=0; j<144000; j++) {
+                fprintf(fp, "%d  %d\n", first_audio_l[j], first_audio_r[j]);
+              }
+              fclose(fp);
+            }
+            first_audio_count = 144000;
+          }
+        }
+     }
 #endif
+
+    // just skip the audio samples
   }
 
   close (sock);
