@@ -289,6 +289,16 @@ static BANDSTACK_ENTRY bandstack_entries_xvtr_7[] = {
   {0LL, 0, 0LL, modeUSB, filterF6, 2500, 0, 0},
   {0LL, 0, 0LL, modeUSB, filterF6, 2500, 0, 0}
 };
+static BANDSTACK_ENTRY bandstack_entries_xvtr_8[] = {
+  {0LL, 0, 0LL, modeUSB, filterF6, 2500, 0, 0},
+  {0LL, 0, 0LL, modeUSB, filterF6, 2500, 0, 0},
+  {0LL, 0, 0LL, modeUSB, filterF6, 2500, 0, 0}
+};
+static BANDSTACK_ENTRY bandstack_entries_xvtr_9[] = {
+  {0LL, 0, 0LL, modeUSB, filterF6, 2500, 0, 0},
+  {0LL, 0, 0LL, modeUSB, filterF6, 2500, 0, 0},
+  {0LL, 0, 0LL, modeUSB, filterF6, 2500, 0, 0}
+};
 
 static BANDSTACK bandstack_xvtr_0 = {3, 0, bandstack_entries_xvtr_0};
 static BANDSTACK bandstack_xvtr_1 = {3, 0, bandstack_entries_xvtr_1};
@@ -298,6 +308,8 @@ static BANDSTACK bandstack_xvtr_4 = {3, 0, bandstack_entries_xvtr_4};
 static BANDSTACK bandstack_xvtr_5 = {3, 0, bandstack_entries_xvtr_5};
 static BANDSTACK bandstack_xvtr_6 = {3, 0, bandstack_entries_xvtr_6};
 static BANDSTACK bandstack_xvtr_7 = {3, 0, bandstack_entries_xvtr_7};
+static BANDSTACK bandstack_xvtr_8 = {3, 0, bandstack_entries_xvtr_8};
+static BANDSTACK bandstack_xvtr_9 = {3, 0, bandstack_entries_xvtr_9};
 
 static BAND bands[BANDS + XVTRS] = {
   {"136kHz", &bandstack136,     0, 0, 0, 0, 0, 0, 53.0,     135700LL,     137800LL, 0LL, 0LL, 0},
@@ -332,7 +344,9 @@ static BAND bands[BANDS + XVTRS] = {
   {"",       &bandstack_xvtr_4, 0, 0, 0, 0, 0, 0, 53.0,          0LL,          0LL, 0LL, 0LL, 1},
   {"",       &bandstack_xvtr_5, 0, 0, 0, 0, 0, 0, 53.0,          0LL,          0LL, 0LL, 0LL, 1},
   {"",       &bandstack_xvtr_6, 0, 0, 0, 0, 0, 0, 53.0,          0LL,          0LL, 0LL, 0LL, 1},
-  {"",       &bandstack_xvtr_7, 0, 0, 0, 0, 0, 0, 53.0,          0LL,          0LL, 0LL, 0LL, 1}
+  {"",       &bandstack_xvtr_7, 0, 0, 0, 0, 0, 0, 53.0,          0LL,          0LL, 0LL, 0LL, 1},
+  {"",       &bandstack_xvtr_8, 0, 0, 0, 0, 0, 0, 53.0,          0LL,          0LL, 0LL, 0LL, 1},
+  {"",       &bandstack_xvtr_9, 0, 0, 0, 0, 0, 0, 53.0,          0LL,          0LL, 0LL, 0LL, 1}
 };
 
 static CHANNEL band_channels_60m_UK[UK_CHANNEL_ENTRIES] = {
