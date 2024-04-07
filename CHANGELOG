@@ -4,6 +4,8 @@ LIST OF RECENT PIHPSDR CHANGES
 April 2024:
 -----------
 
+- Increased the number of transverter bands from 8 to 10
+
 - Added option for "one shot" PURESIGNAL calibration
   (calibrating periodically is recommended though)
 
