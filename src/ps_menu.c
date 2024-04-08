@@ -107,6 +107,29 @@ static void setpk_cb(GtkWidget *widget, gpointer data) {
   gtk_entry_set_text(GTK_ENTRY(set_pk), pk_text);
 }
 
+static void clear_fields() {
+  //
+  // This clears most of the text fields and puts
+  // the "Feedback" and "Correcting" string in black colour.
+  // This will not be re-coloured until a new valid calibration
+  // has taken place.
+  // This is called when disabling PS, but also when starting a two-tone experiment.
+  // In the latter case, the fields stay cleared until the first successful "new"
+  // calibration result is obtained.
+  //
+  gtk_label_set_markup(GTK_LABEL(feedback_l), "<span color='black'>Feedback Lvl</span>");
+  gtk_label_set_markup(GTK_LABEL(correcting_l), "<span color='black'>Correcting</span>");
+
+  for (int i = 0; i < INFO_SIZE; i++) {
+    if (entry[i] != NULL) {
+      gtk_entry_set_text(GTK_ENTRY(entry[i]), "");
+    }
+  }
+
+  gtk_entry_set_text(GTK_ENTRY(get_pk), "");
+  gtk_entry_set_text(GTK_ENTRY(tx_att), "");
+}
+
 //
 // This is periodically when starting  a
 // two-tone experiment. If running PURESIGNAL
@@ -117,12 +140,20 @@ static void setpk_cb(GtkWidget *widget, gpointer data) {
 //
 int ps_calibration_timer(gpointer arg) {
   guint *timer = (guint *)arg;
-  static int state = 1;
+  static int state = -1;
 
   if (!transmitter->twotone) {
-    state = 1;  // start next TwoTone with a PS restart
+    state = -1;
     *timer = 0;
     return G_SOURCE_REMOVE;
+  }
+
+  if (state < 0) {
+    //
+    // Initialized two-tone experiment
+    //
+    state = 1;          // start with PS reset
+    clear_fields();     // clear all data until the next calibration has been done
   }
 
   if (transmitter->puresignal) {
@@ -245,107 +276,111 @@ static int info_thread(gpointer arg) {
     return G_SOURCE_REMOVE;
   }
 
-  GetPSInfo(transmitter->id, &info[0]);
-  GetPSMaxTX(transmitter->id, &pk);
-  //
-  // Set newcall if there is a new calibration
-  // Set newcorr if "Correcting" status changed
-  //
-  newcal = 0;
-  newcorr = 0;
-
-  if (info[5] !=  old5) {
-    old5 = info[5];
-    newcal = 1;
-  }
-
-  if (info[14] != old14) {
-    old14 = info[14];
-    newcorr = 1;
-  }
-
-  if (newcal) {
-    if (info[4] > 181)  {
-      gtk_label_set_markup(GTK_LABEL(feedback_l), "<span color='blue'>Feedback Lvl</span>");
-    } else if (info[4] > 128)  {
-      gtk_label_set_markup(GTK_LABEL(feedback_l), "<span color='green'>Feedback Lvl</span>");
-    } else if (info[4] > 90)  {
-      gtk_label_set_markup(GTK_LABEL(feedback_l), "<span color='yellow'>Feedback Lvl</span>");
-    } else {
-      gtk_label_set_markup(GTK_LABEL(feedback_l), "<span color='red'>Feedback Lvl</span>");
-    }
-  }
-
-  if (newcorr) {
-    if (info[14] == 0) {
-      gtk_label_set_markup(GTK_LABEL(correcting_l), "<span color='red'>Correcting</span>");
-    } else {
-      gtk_label_set_markup(GTK_LABEL(correcting_l), "<span color='green'>Correcting</span>");
-    }
-  }
-
-  //
-  // Print PS status into the text boxes (if they exist)
-  //
-  for (int i = 0; i < INFO_SIZE; i++) {
-    if (entry[i] == NULL) { continue; }
-
-    snprintf(label, 20, "%d", info[i]);
-
+  if (transmitter->puresignal) {
+    GetPSInfo(transmitter->id, &info[0]);
+    GetPSMaxTX(transmitter->id, &pk);
     //
-    // Translate PS state variable into human-readable string
+    // Set newcal if there is a new calibration
+    // Set newcorr if "Correcting" status changed
     //
-    if (i == 15) {
-      switch (info[15]) {
-      case 0:
-        STRLCPY(label, "RESET", 20);
-        break;
+    newcal = 0;
+    newcorr = 0;
 
-      case 1:
-        STRLCPY(label, "WAIT", 20);
-        break;
+    if (info[5] !=  old5) {
+      old5 = info[5];
+      newcal = 1;
+    }
 
-      case 2:
-        STRLCPY(label, "MOXDELAY", 20);
-        break;
+    if (info[14] != old14) {
+      old14 = info[14];
+      newcorr = 1;
+    }
 
-      case 3:
-        STRLCPY(label, "SETUP", 20);
-        break;
-
-      case 4:
-        STRLCPY(label, "COLLECT", 20);
-        break;
-
-      case 5:
-        STRLCPY(label, "MOXCHECK", 20);
-        break;
-
-      case 6:
-        STRLCPY(label, "CALC", 20);
-        break;
-
-      case 7:
-        STRLCPY(label, "DELAY", 20);
-        break;
-
-      case 8:
-        STRLCPY(label, "STAYON", 20);
-        break;
-
-      case 9:
-        STRLCPY(label, "TURNON", 20);
-        break;
+    if (newcal) {
+      if (info[4] > 181)  {
+        gtk_label_set_markup(GTK_LABEL(feedback_l), "<span color='blue'>Feedback Lvl</span>");
+      } else if (info[4] > 128)  {
+        gtk_label_set_markup(GTK_LABEL(feedback_l), "<span color='green'>Feedback Lvl</span>");
+      } else if (info[4] > 90)  {
+        gtk_label_set_markup(GTK_LABEL(feedback_l), "<span color='yellow'>Feedback Lvl</span>");
+      } else {
+        gtk_label_set_markup(GTK_LABEL(feedback_l), "<span color='red'>Feedback Lvl</span>");
       }
     }
 
-    gtk_entry_set_text(GTK_ENTRY(entry[i]), label);
+    if (newcorr) {
+      if (info[14] == 0) {
+        gtk_label_set_markup(GTK_LABEL(correcting_l), "<span color='red'>Correcting</span>");
+      } else {
+        gtk_label_set_markup(GTK_LABEL(correcting_l), "<span color='green'>Correcting</span>");
+      }
+    }
+
+    //
+    // Print PS status into the text boxes (if they exist)
+    //
+    for (int i = 0; i < INFO_SIZE; i++) {
+      if (entry[i] == NULL) { continue; }
+
+      snprintf(label, 20, "%d", info[i]);
+
+      //
+      // Translate PS state variable into human-readable string
+      //
+      if (i == 15) {
+        switch (info[15]) {
+        case 0:
+          STRLCPY(label, "RESET", 20);
+          break;
+
+        case 1:
+          STRLCPY(label, "WAIT", 20);
+          break;
+
+        case 2:
+          STRLCPY(label, "MOXDELAY", 20);
+          break;
+
+        case 3:
+          STRLCPY(label, "SETUP", 20);
+          break;
+
+        case 4:
+          STRLCPY(label, "COLLECT", 20);
+          break;
+
+        case 5:
+          STRLCPY(label, "MOXCHECK", 20);
+          break;
+
+        case 6:
+          STRLCPY(label, "CALC", 20);
+          break;
+
+        case 7:
+          STRLCPY(label, "DELAY", 20);
+          break;
+
+        case 8:
+          STRLCPY(label, "STAYON", 20);
+          break;
+
+        case 9:
+          STRLCPY(label, "TURNON", 20);
+          break;
+        }
+      }
+
+      gtk_entry_set_text(GTK_ENTRY(entry[i]), label);
+    }
+
+    snprintf(label, 20, "%d", transmitter->attenuation);
+    gtk_entry_set_text(GTK_ENTRY(tx_att), label);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(tx_att_spin), (double) transmitter->attenuation);
+    snprintf(label, 20, "%6.3f", pk);
+    gtk_entry_set_text(GTK_ENTRY(get_pk), label);
   }
 
-  snprintf(label, 20, "%d", transmitter->attenuation);
-  gtk_entry_set_text(GTK_ENTRY(tx_att), label);
-  snprintf(label, 20, "%6.3f", pk);
-  gtk_entry_set_text(GTK_ENTRY(get_pk), label);
   return G_SOURCE_CONTINUE;
 }
 
@@ -392,18 +427,25 @@ static void ps_ant_cb(GtkWidget *widget, gpointer data) {
 static void enable_cb(GtkWidget *widget, gpointer data) {
   if (can_transmit) {
     int val = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
+    clear_fields();
     tx_set_ps(transmitter, val);
 
-    if (val && transmitter->auto_on) {
-      char label[16];
-      snprintf(label, 16, "%d", transmitter->attenuation);
-      gtk_entry_set_text(GTK_ENTRY(tx_att), label);
-      gtk_widget_show(tx_att);
-      gtk_widget_hide(tx_att_spin);
+    if (val) {
+      if ( transmitter->auto_on) {
+        char label[16];
+        snprintf(label, 16, "%d", transmitter->attenuation);
+        gtk_entry_set_text(GTK_ENTRY(tx_att), label);
+        gtk_widget_show(tx_att);
+        gtk_widget_hide(tx_att_spin);
+      } else {
+        gtk_spin_button_set_value(GTK_SPIN_BUTTON(tx_att_spin), (double) transmitter->attenuation);
+        gtk_widget_show(tx_att_spin);
+        gtk_widget_hide(tx_att);
+      }
     } else {
-      gtk_spin_button_set_value(GTK_SPIN_BUTTON(tx_att_spin), (double) transmitter->attenuation);
-      gtk_widget_show(tx_att_spin);
-      gtk_widget_hide(tx_att);
+      gtk_widget_hide(tx_att_spin);
+      gtk_widget_show(tx_att);
+      gtk_entry_set_text(GTK_ENTRY(tx_att), "");
     }
   }
 }
@@ -429,27 +471,33 @@ static void map_cb(GtkWidget *widget, gpointer data) {
 static void auto_cb(GtkWidget *widget, gpointer data) {
   transmitter->auto_on = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
 
-  if (transmitter->auto_on && transmitter->puresignal) {
-    //
-    // automatic attenuation switched on:
-    // hide spin-box for manual attenuation
-    // show text field for automatic attenuation
-    //
-    char label[16];
-    snprintf(label, 16, "%d", transmitter->attenuation);
-    gtk_entry_set_text(GTK_ENTRY(tx_att), label);
+  if (transmitter->puresignal) {
+    if (transmitter->auto_on) {
+      //
+      // automatic attenuation switched on:
+      // hide spin-box for manual attenuation
+      // show text field for automatic attenuation
+      //
+      char label[16];
+      snprintf(label, 16, "%d", transmitter->attenuation);
+      gtk_entry_set_text(GTK_ENTRY(tx_att), label);
+      gtk_widget_show(tx_att);
+      gtk_widget_hide(tx_att_spin);
+    } else {
+      //
+      // automatic attenuation switched off:
+      // show spin-box for manual attenuation
+      // hide text field for automatic attenuation
+      // set attenuation to value stored in spin button
+      //
+      gtk_spin_button_set_value(GTK_SPIN_BUTTON(tx_att_spin), (double) transmitter->attenuation);
+      gtk_widget_show(tx_att_spin);
+      gtk_widget_hide(tx_att);
+    }
+  } else {
     gtk_widget_show(tx_att);
     gtk_widget_hide(tx_att_spin);
-  } else {
-    //
-    // automatic attenuation switched off:
-    // show spin-box for manual attenuation
-    // hide text field for automatic attenuation
-    // set attenuation to value stored in spin button
-    //
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(tx_att_spin), (double) transmitter->attenuation);
-    gtk_widget_show(tx_att_spin);
-    gtk_widget_hide(tx_att);
+    gtk_entry_set_text(GTK_ENTRY(tx_att), "");
   }
 }
 
@@ -484,6 +532,7 @@ static void twotone_cb(GtkWidget *widget, gpointer data) {
 
 void ps_menu(GtkWidget *parent) {
   int i;
+  char text[16];
   dialog = gtk_dialog_new();
   g_signal_connect (dialog, "destroy", G_CALLBACK(close_cb), NULL);
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(parent));
@@ -613,27 +662,26 @@ void ps_menu(GtkWidget *parent) {
 
   for (i = 0; i < INFO_SIZE; i++) {
     int display = 1;
-    char label[16];
 
     switch (i) {
     case 4:
-      STRLCPY(label, "feedbk", 16);
+      STRLCPY(text, "feedbk", 16);
       break;
 
     case 5:
-      STRLCPY(label, "cor.cnt", 16);
+      STRLCPY(text, "cor.cnt", 16);
       break;
 
     case 6:
-      STRLCPY(label, "sln.chk", 16);
+      STRLCPY(text, "sln.chk", 16);
       break;
 
     case 13:
-      STRLCPY(label, "dg.cnt", 16);
+      STRLCPY(text, "dg.cnt", 16);
       break;
 
     case 15:
-      STRLCPY(label, "status", 16);
+      STRLCPY(text, "status", 16);
       break;
 
     default:
@@ -642,7 +690,7 @@ void ps_menu(GtkWidget *parent) {
     }
 
     if (display) {
-      GtkWidget *lbl = gtk_label_new(label);
+      GtkWidget *lbl = gtk_label_new(text);
       gtk_widget_set_name(lbl, "boldlabel");
       entry[i] = gtk_entry_new();
       gtk_entry_set_max_length(GTK_ENTRY(entry[i]), 10);
@@ -689,6 +737,8 @@ void ps_menu(GtkWidget *parent) {
   col++;
   tx_att = gtk_entry_new();
   gtk_grid_attach(GTK_GRID(grid), tx_att, col, row, 1, 1);
+  snprintf(text, 16, "%d", transmitter->attenuation);
+  gtk_entry_set_text(GTK_ENTRY(tx_att), text);
   gtk_entry_set_width_chars(GTK_ENTRY(tx_att), 10);
 
   if (device == DEVICE_HERMES_LITE2 || device == NEW_DEVICE_HERMES_LITE2) {
@@ -710,14 +760,18 @@ void ps_menu(GtkWidget *parent) {
   // If using auto-attenuattion, hide the
   // "manual attenuation" label and spin button
   //
-  if (transmitter->auto_on && transmitter->puresignal) {
-    char label[16];
-    snprintf(label, 16, "%d", transmitter->attenuation);
-    gtk_entry_set_text(GTK_ENTRY(tx_att), label);
-    gtk_widget_show(tx_att);
-    gtk_widget_hide(tx_att_spin);
+  if (transmitter->puresignal) {
+    if (transmitter->auto_on) {
+      gtk_widget_hide(tx_att_spin);
+      gtk_widget_show(tx_att);
+    } else {
+      gtk_widget_hide(tx_att);
+      gtk_widget_show(tx_att_spin);
+    }
   } else {
-    gtk_widget_show(tx_att_spin);
-    gtk_widget_hide(tx_att);
+    gtk_widget_hide(tx_att_spin);
+    gtk_widget_show(tx_att);
+    gtk_entry_set_text(GTK_ENTRY(tx_att), "");
   }
 }
+
