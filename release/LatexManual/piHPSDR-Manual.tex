@@ -1433,7 +1433,7 @@ For RX-only radios, the TX ALC setting will not be shown in the menu.
 \label{fig:XVTRMenu}
 \end{figure}
 
-The \bltt{XVTR} menu lets you define additional bands
+The \bltt{XVTR} menu lets you define up to ten additional bands
 that you can work on using transverters. The bands
 should normally be beyond the standard frequency range of
 the radio, otherwise the calculation of a band from
@@ -1511,7 +1511,17 @@ The LO (local oscillator) frequency is always chosen such that it is below the R
 and the difference between the RX frequency and the LO frequency is the frequency the radio
 is operating on. The name (here: QO100) can be chosen as one likes, but it cannot be left
 empty. Once the transverter band has been defined, it shows up in the \bltt{BAND} menu
-(see Chapter \ref{sec:bandmenu}), as shown in Fig. \ref{fig:QO100-BandMenu}.
+(see Chapter \ref{sec:bandmenu}), as shown in Fig. \ref{fig:QO100-BandMenu}. Note this is
+a screen shot from operation with an Adalm PLUTO, where the 70 Mhz (4 m) band is the lowest one.
+
+\begin{figure}[ht]
+\center
+\includegraphics[width=12cm]{QO100-Waterfall.png}
+\caption{Working QO100 with piHPSDR and the Pluto.}
+\label{fig:QO100-Waterfall}
+\end{figure}
+
+
 
 To make QO-100 Operation easy, the working frequencies, the CTUN mode etc. should be
 stored in the first bandstack entry of the QO100 and the 13 cm band. To this end,
@@ -1524,12 +1534,6 @@ swap the VFOs again. SAT mode will now ensure the 10.489 GHz Receive
  the bands. The complicated swapping was necessary since band stack entries will
  only be stored from VFO-A.
 
-\begin{figure}[ht]
-\center
-\includegraphics[width=12cm]{QO100-Waterfall.png}
-\caption{Working QO100 with piHPSDR and the Pluto.}
-\label{fig:QO100-Waterfall}
-\end{figure}
 
 Fig. \ref{fig:QO100-Waterfall} (a contribution from a ham using the Adalm Pluto for QO-100
 operation) gives an impression of how this actually works. 
@@ -2327,7 +2331,10 @@ The elements have the following function:
 will be highlighted as long as the two-tone signal is transmitted. In the lower sideband
 modes (LSB, DIGL, CWL), an RF two-tone signal with frequencies 700 and 1900 Hz 
 \textit{below} the dial frequency are transmitted, in all other modes the two
-RF frequencies are 700 and 1900 Hz \textit{above} the dial frequency. 
+RF frequencies are 700 and 1900 Hz \textit{above} the dial frequency. The same two-tone
+experiment can be started/stopped via the toolbar, or by a GPIO- or MIDI-monitored
+push button. At the beginning of a two-tone experiment, the diagnostic fields
+are cleared and re-populated once a valid calibration has been obtained.
 
 \rett{Auto Attenuate}. This enables/disables automatic adjustment of the RF input
 attenuator to give the feedback level the correct strength. It is highly recommened
@@ -2341,7 +2348,9 @@ it has been stopped.
 
 \rett{MON}. With this button, it can be chosen whether the TX spectrum scope shows
 the signal sent to the PA (MON button not highlighted) or whether the feedback signal
-from the antenna is shown (MON button highlighted).
+from the antenna is shown (MON button highlighted). Note that feedback data is only
+available if PURESIGNAL is enabled. Without PS being enabled, the TX panadapter will
+show the TX signal as it leaves piHPSDR no matter if \rett{MON} is checked or not.
 
 \rett{PS Feedback ANT}. Here it must be specified which antenna jack is used for the
 PS feedback signal. It can be \rett{Internal} which means internal feedback
@@ -2403,15 +2412,14 @@ red if no good calibration could be made.
 \end{figure}
 
 \rett{TX ATT}. This element can occur both as a text field or as a spin button.
-If \rett{Auto Attenuate} is not enabled, it is a spin button with which
+If PURESIGNAL is enabled while \rett{Auto Attenuate} is not enabled, it is a spin button with which
 you can manually adjust the RF attenuation. For normal HPSDR radios, this is a value
 between 0 and 31, other radios such as the HermesLite have an extended range from
 -29 to 31. If the feedback level is too strong, this value must be increased, if it
 is too strong, it must be decreased. It is, however, recommended to enable \rett{Auto Attenuate}.
 In this case, the \rett{TX ATT} just shows the current attenuation.
-Note that this attenuation value is only effective if \texttt{PURESIGNAL} is enabled.
-If not, the RF input attenuators are set to maximum attenution while transmitting, if the
-PA is enabled.
+Note that if \texttt{PURESIGNAL} is not enabled, the RF input attenuators
+will automatically be set to maximum attenuation while transmitting with the PA enabled.
 
 \rett{SetPk}. This field shows the currently assumed value of the peak value of the TX DAC
 feedback signal. piHPSDR chooses is automatically, depending on the radio hardware.
