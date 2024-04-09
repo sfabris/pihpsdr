@@ -135,27 +135,40 @@ void update_noise() {
 
 static void nb_cb(GtkToggleButton *widget, gpointer data) {
   int val = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
+  int id  = active_receiver->id;
   active_receiver->nb = val;
-  mode_settings[vfo[active_receiver->id].mode].nb = val;
+
+  if (id == 0) {
+    mode_settings[vfo[id].mode].nb = val;
+  }
   update_noise();
 }
 
 static void nr_cb(GtkToggleButton *widget, gpointer data) {
   int val = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
+  int id  = active_receiver->id;
   active_receiver->nr = val;
-  mode_settings[vfo[active_receiver->id].mode].nr = val;
+  if (id == 0) {
+    mode_settings[vfo[id].mode].nr = val;
+  }
   update_noise();
 }
 
 static void anf_cb(GtkWidget *widget, gpointer data) {
+  int id  = active_receiver->id;
   active_receiver->anf = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
-  mode_settings[vfo[active_receiver->id].mode].anf = active_receiver->anf;
+  if (id == 0) {
+    mode_settings[vfo[id].mode].anf = active_receiver->anf;
+  }
   update_noise();
 }
 
 static void snb_cb(GtkWidget *widget, gpointer data) {
+  int id  = active_receiver->id;
   active_receiver->snb = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
-  mode_settings[vfo[active_receiver->id].mode].snb = active_receiver->snb;
+  if (id == 0) {
+    mode_settings[vfo[id].mode].snb = active_receiver->snb;
+  }
   update_noise();
 }
 

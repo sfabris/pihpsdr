@@ -1083,9 +1083,10 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //RESP      ZZACxx;
       //NOTE      x 0...16 encodes the step size:
       //NOTE      1 Hz (x=0), 10 Hz (x=1), 25 Hz (x=2), 50 Hz (x=3)
-      //NOTE      100 Hz (x=4), 250 Hz (x=5), 500 Hz (x=6), 1000 Hz (x=7)
-      //NOTE      5000 Hz (x=8), 6250 Hz (x=9), 9 kHz (x=10), 10 kHz (x=11)
-      //NOTE      12.5 kHz (x=12), 100 kHz (x=13), 250 kHz (x=14)
+      //NOTE      100 Hz (x=4), 250 Hz (x=5), 500 Hz (x=6)
+      //NOTE      1000 Hz (x=7), 5000 Hz (x=8), 6250 Hz (x=9)
+      //NOTE      9 kHz (x=10), 10 kHz (x=11), 12.5 kHz (x=12)
+      //NOTE      100 kHz (x=13), 250 kHz (x=14)
       //NOTE      500 kHz (x=15), 1 MHz (x=16)
       //ENDDEF
       if (command[4] == ';') {
@@ -1362,7 +1363,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
     case 'P': //ZZBP
 
       //CATDEF    ZZBP
-      //DESCR     Move upn VFO-B frequency by selected step.
+      //DESCR     Move up VFO-B frequency by selected step.
       //SET       ZZBPxx;
       //NOTE      x 0...16 selects the size of the step, see ZZAC command.
       //ENDDEF
@@ -1370,15 +1371,18 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         int step_index = atoi(&command[4]);
         long long hz = (long long) vfo_get_step_from_index(step_index);
         vfo_id_move(VFO_B, hz, FALSE);
-      } else {
       }
 
       break;
 
     case 'S': //ZZBS
-
+    case 'T': //ZZBT
+ 
+      {
+      int v = VFO_A;
+      if (command[3] == 'T') { v = VFO_B; }
       //CATDEF    ZZBS
-      //DESCR     Set/Read VFO-B band
+      //DESCR     Set/Read VFO-A band
       //SET       ZZBSxxx;
       //NOTE      x 0...999 encodes the band:
       //NOTE      136 kHz (x=136), 472 kHz (x=472), 160m (x=160)
@@ -1386,10 +1390,15 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //NODE      20m (x=20), 17m (x=17), 15m (x=15), 12m (x=12)
       //NOTE      10m (x=10), 6m (x=6), Gen (x=888), WWV (x=999)
       //ENDDEF
+      //CATDEF    ZZBT
+      //DESCR     Set/Read VFO-B band
+      //SET       ZZBTxxx;
+      //NOTE      x 0...999 encodes the band, see ZZBS command.
+      //ENDDEF
       if (command[4] == ';') {
         int b;
 
-        switch (vfo[VFO_A].band) {
+        switch (vfo[v].band) {
         case band136:
           b = 136;
           break;
@@ -1455,7 +1464,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
           break;
         }
 
-        snprintf(reply, 256, "ZZBS%03d;", b);
+        snprintf(reply, 256, "ZZB%c%03d;", 'S'+v, b);
         send_resp(client->fd, reply) ;
       } else if (command[7] == ';') {
         int band = band20;
@@ -1523,7 +1532,8 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
           break;
         }
 
-        vfo_band_changed(VFO_A, band);
+        vfo_band_changed(v, band);
+      }
       }
 
       break;
@@ -1597,7 +1607,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'P': //ZZCP
 
-      //DO NOT DOCUMENT, CAN THIS BE REMOVED?
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       // set/read compander
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZCP%d;", 0);
@@ -1617,7 +1627,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
     switch (command[3]) {
     case 'B': //ZZDB
 
-      //DO NOT DOCUMENT, CAN THIS BE REMOVED?
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       // set/read RX Reference
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZDB%d;", 0); // currently always 0
@@ -1628,7 +1638,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'C': //ZZDC
 
-      //DO NOT DOCUMENT, CAN THIS BE REMOVED?
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       // set/get diversity gain
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZDC%04d;", (int)div_gain);
@@ -1639,7 +1649,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'D': //ZZDD
 
-      //DO NOT DOCUMENT, CAN THIS BE REMOVED?
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       // set/get diversity phase
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZDD%04d;", (int)div_phase);
@@ -1648,7 +1658,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'M': //ZZDM
 
-      //DO NOT DOCUMENT, CAN THIS BE REMOVED?
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       // set/read Display Mode
       if (command[4] == ';') {
         int v = 0;
@@ -1667,7 +1677,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'N': //ZZDN
 
-      //DO NOT DOCUMENT, CAN THIS BE REMOVED?
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       // set/read waterfall low
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZDN%+4d;", receiver[0]->waterfall_low);
@@ -1678,7 +1688,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'O': //ZZDO
 
-      //DO NOT DOCUMENT, CAN THIS BE REMOVED?
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       // set/read waterfall high
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZDO%+4d;", receiver[0]->waterfall_high);
@@ -1689,7 +1699,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'P': //ZZDP
 
-      //DO NOT DOCUMENT, CAN THIS BE REMOVED?
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       // set/read panadapter high
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZDP%+4d;", receiver[0]->panadapter_high);
@@ -1700,7 +1710,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'Q': //ZZDQ
 
-      //DO NOT DOCUMENT, CAN THIS BE REMOVED?
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       // set/read panadapter low
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZDQ%+4d;", receiver[0]->panadapter_low);
@@ -1711,7 +1721,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'R': //ZZDR
 
-      //DO NOT DOCUMENT, CAN THIS BE REMOVED?
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       // set/read panadapter step
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZDR%2d;", receiver[0]->panadapter_step);
@@ -1731,7 +1741,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
     switch (command[3]) {
     case 'R': //ZZER
 
-      //DO NOT DOCUMENT, CAN THIS BE REMOVED?
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       // set/read rx equalizer
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZER%d;", receiver[0]->eq_enable);
@@ -1744,7 +1754,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'T': //ZZET
 
-      //DO NOT DOCUMENT, CAN THIS BE REMOVED?
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       // set/read tx equalizer
       if (can_transmit) {
         if (command[4] == ';') {
@@ -1818,14 +1828,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'D': //ZZFD
 
-      //CATDEF    ZZFD
-      //DESCR     Set/Read VFO-A FM deviation
-      //SET       ZZFDx;
-      //READ      ZZFD;
-      //RESP      ZZFDx;
-      //NOTE      x=0: Deviation 2500 Hz, x=1: 5000 Hz
-      //NOTE      Setting the deviation has no effect when the VFO-A mode is not FM.
-      //ENDDEF
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZFD%d;", vfo[VFO_A].deviation == 2500 ? 0 : 1);
         send_resp(client->fd, reply) ;
@@ -1850,8 +1853,9 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //SET       ZZFHxxxxx;
       //READ      ZZFH;
       //RESP      ZZFHxxxxxx;
-      //NOTE      x -9999 ... 9999. Must contain - sign if negative.
-      //NOTE      In LSB, the filter-high affecte the low audio frequencies
+      //NOTE      If setting, this switches to the Var1 filter first.
+      //NOTE      x -9999 ... 9999. Must start with  minus sign if negative.
+      //NOTE      In LSB, the filter high water affects the low audio frequencies
       //ENDDEF
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZFH%05d;", receiver[0]->filter_high);
@@ -1877,13 +1881,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'I': //ZZFI
 
-      //CATDEF    ZZFI
-      //DESCR     Set/Read RX0 filter
-      //SET       ZZFIxx;
-      //READ      ZZFI;
-      //RESP      ZZFIxx;
-      //NOTE      x = 0...11 encodes the filter which also depends on the mode.
-      //ENDDEF
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZFI%02d;", vfo[VFO_A].filter);
         send_resp(client->fd, reply) ;
@@ -1896,13 +1894,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'J': //ZZFJ
 
-      //CATDEF    ZZFJ
-      //DESCR     Set/Read RX1 filter
-      //SET       ZZFJxx;
-      //READ      ZZFJ;
-      //RESP      ZZFJxx;
-      //NOTE      x = 0...11 encodes the filter which also depends on the mode.
-      //ENDDEF
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZFJ%02d;", vfo[VFO_B].filter);
         send_resp(client->fd, reply) ;
@@ -1920,8 +1912,9 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //SET       ZZFLxxxxx;
       //READ      ZZFL;
       //RESP      ZZFLxxxxxx;
-      //NOTE      x -9999 ... 9999. Must contain - sign if negative.
-      //NOTE      In LSB, the filter-low affecte the high audio frequencies
+      //NOTE      If setting, this switches to the Var1 filter first.
+      //NOTE      x -9999 ... 9999. Must start with minus sign if negative.
+      //NOTE      In LSB, the filter-low affects the high audio frequencies
       //ENDDEF
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZFL%05d;", receiver[0]->filter_low);
@@ -2169,9 +2162,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //SET       ZZMEx;
       //READ      ZZME;
       //RESP      ZZMEx;
-      //NOTE      Modes: LSB (x=0), USB (x=1), DSB (x=3), CWL (x=4)
-      //NOTE      CWU (x=5), FMN (x=6), AM (x=7), DIGU (x=7)
-      //NOTE      SPEC (x=8), DIGL (x=9), SAM (x=10), DRM (x=11)
+      //NOTE      x encodes the mode (see ZZMD command)
       //ENDDEF
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZMD%02d;", vfo[VFO_B].mode);
@@ -2203,11 +2194,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'L': //ZZML
 
-      //CATDEF    ZZML
-      //DESCR     Read the list of modes  with their indices
-      //READ      ZZML;
-      //RESP      ZZML LSB00: USB01: DSB02: CWL03: CWU04: FMN05:  AM06:DIGU07:SPEC08:DIGL09: SAM10: DRM11;
-      //ENDDEF
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZML LSB00: USB01: DSB02: CWL03: CWU04: FMN05:  AM06:DIGU07:SPEC08:DIGL09: SAM10: DRM11;");
         send_resp(client->fd, reply);
@@ -2217,16 +2204,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'N': //ZZMN
 
-      //CATDEF    ZZML
-      //DESCR     Read the list of filter names  with their indices
-      //READ      ZZML;
-      //RESP      ZZML .....
-      //NOTE      The response contains groups of 15 characters each,
-      //NOTE      where the first 5 characters are the filter name,
-      //NOTE      and then comes the filter high- and low-water mark
-      //NOTE      as a 5-digit number, possibly containing a minus
-      //NOTE      sign and blanks.
-      //ENDDEF
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[6] == ';') {
         int mode = atoi(&command[4]) - 1;
         const FILTER *f = filters[mode];
@@ -2246,7 +2224,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'O': //ZZMO
 
-      //DO NOT DOCUMENT, CAN THIS BE REMOVED?
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       // set/read MON status
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZMO%d;", 0);
@@ -2257,8 +2235,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'R': //ZZMR
 
-      //DO NOT DOCUMENT, CAN THIS BE REMOVED?
-      // set/read RX Meter mode
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZMR%d;", smeter + 1);
         send_resp(client->fd, reply);
@@ -2270,7 +2247,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'T': //ZZMT
 
-      //DO NOT DOCUMENT, CAN THIS BE REMOVED?
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZMT%02d;", 1); // forward power
         send_resp(client->fd, reply);
@@ -2290,7 +2267,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
     switch (command[3]) {
     case 'A': //ZZNA
 
-      // set/read RX1 NB1
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZNA%d;", (receiver[0]->nb == 1));
         send_resp(client->fd, reply);
@@ -2304,7 +2281,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'B': //ZZNB
 
-      // set/read RX1 NB2
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZNB%d;", (receiver[0]->nb == 2));
         send_resp(client->fd, reply);
@@ -2318,7 +2295,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'C': //ZZNC
 
-      // set/read RX2 NB1
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (receivers == 2) {
         if (command[4] == ';') {
           snprintf(reply, 256, "ZZNC%d;", (receiver[1]->nb == 1));
@@ -2336,7 +2313,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'D': //ZZND
 
-      // set/read RX2 NB2
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (receivers == 2) {
         if (command[4] == ';') {
           snprintf(reply, 256, "ZZND%d;", (receiver[1]->nb == 2));
@@ -2354,7 +2331,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'N': //ZZNN
 
-      // set/read RX1 SNB status
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZNN%d;", receiver[0]->snb);
         send_resp(client->fd, reply);
@@ -2367,7 +2344,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'O': //ZZNO
 
-      // set/read RX2 SNB status
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (receivers == 2) {
         if (command[4] == ';') {
           snprintf(reply, 256, "ZZNO%d;", receiver[1]->snb);
@@ -2384,7 +2361,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'R': //ZZNR
 
-      // set/read RX1 NR
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (receivers == 2) {
         if (command[4] == ';') {
           snprintf(reply, 256, "ZZNR%d;", (receiver[0]->nr == 1));
@@ -2400,7 +2377,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'S': //ZZNS
 
-      // set/read RX1 NR2
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZNS%d;", (receiver[0]->nr == 2));
         send_resp(client->fd, reply);
@@ -2414,7 +2391,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'T': //ZZNT
 
-      // set/read RX1 ANF
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZNT%d;", receiver[0]->anf);
         send_resp(client->fd, reply);
@@ -2428,7 +2405,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'U': //ZZNU
 
-      // set/read RX2 ANF
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (receivers == 2) {
         if (command[4] == ';') {
           snprintf(reply, 256, "ZZNU%d;", receiver[1]->anf);
@@ -2446,7 +2423,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'V': //ZZNV
 
-      // set/read RX2 NR
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (receivers == 2) {
         if (command[4] == ';') {
           snprintf(reply, 256, "ZZNV%d;", (receiver[1]->nr == 1));
@@ -2464,7 +2441,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'W': //ZZNW
 
-      // set/read RX2 NR2
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (receivers == 2) {
         if (command[4] == ';') {
           snprintf(reply, 256, "ZZNW%d;", (receiver[1]->nr == 2));
@@ -2495,8 +2472,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
     switch (command[3]) {
     case 'A': //ZZPA
 
-      //DO NOT DOCUMENT, CAN THIS BE REMOVED?
-      // set/read preamp setting
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
         int a = adc[receiver[0]->adc].attenuation;
 
@@ -2548,8 +2524,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'Y': // ZZPY
 
-      //DO NOT DOCUMENT, CAN THIS BE REMOVED?
-      // set/read Zoom
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZPY%d;", receiver[0]->zoom);
         send_resp(client->fd, reply);
@@ -2575,7 +2550,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
     switch (command[3]) {
     case 'C': //ZZRC
 
-      // clear RIT frequency
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
         schedule_action(RIT_CLEAR, PRESSED, 0);
       }
@@ -2583,8 +2558,9 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       break;
 
     case 'D': //ZZRD
+
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
-        // decrement RIT frequency
         if (vfo[VFO_A].mode == modeCWL || vfo[VFO_A].mode == modeCWU) {
           vfo_rit_incr(VFO_A, -10);
         } else {
@@ -2599,7 +2575,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'F': //ZZRF
 
-      // set/read RIT frequency
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZRF%+5lld;", vfo[VFO_A].rit);
         send_resp(client->fd, reply);
@@ -2612,7 +2588,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'M': //ZZRM
 
-      // read meter value. Ignore P1 value.
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[5] == ';') {
         snprintf(reply, 256, "ZZRM%d%20d;", smeter, (int)receiver[0]->meter);
         send_resp(client->fd, reply);
@@ -2622,7 +2598,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'S': //ZZRS
 
-      // set/read RX2 enable
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZRS%d;", receivers == 2);
         send_resp(client->fd, reply);
@@ -2640,7 +2616,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'T': //ZZRT
 
-      // set/read RIT enable
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZRT%d;", vfo[VFO_A].rit_enabled);
         send_resp(client->fd, reply);
@@ -2652,7 +2628,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'U': //ZZRU
 
-      // increments RIT Frequency
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
         if (vfo[VFO_A].mode == modeCWL || vfo[VFO_A].mode == modeCWU) {
           vfo_rit_incr(VFO_A, 10);
@@ -2676,7 +2652,11 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
     switch (command[3]) {
     case 'A': //ZZSA
 
-      // move VFO A down one step
+      //CATDEF    ZZSA
+      //DESCR     Move down VFO-A frequency one step
+      //SET       ZZSA;
+      //NOTE      VFO-A frequency moved down by the current step size
+      //ENDDEF
       if (command[4] == ';') {
         vfo_id_step(VFO_A, -1);
       }
@@ -2685,7 +2665,11 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'B': //ZZSB
 
-      // move VFO A up one step
+      //CATDEF    ZZSB
+      //DESCR     Move up VFO-A frequency one step
+      //SET       ZZSB;
+      //NOTE      VFO-A frequency moved up by the current step size
+      //ENDDEF
       if (command[4] == ';') {
         vfo_id_step(VFO_A, 1);
       }
@@ -2694,7 +2678,11 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'G': //ZZSG
 
-      // move VFO B down 1 step
+      //CATDEF    ZZSG
+      //DESCR     Move down VFO-B frequency one step
+      //SET       ZZSG;
+      //NOTE      VFO-B frequency moved down by the current step size
+      //ENDDEF
       if (command[4] == ';') {
         vfo_id_step(VFO_B, -1);
       }
@@ -2703,7 +2691,11 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'H': //ZZSH
 
-      // move VFO B up 1 step
+      //CATDEF    ZZSH
+      //DESCR     Move up VFO-B frequency one step
+      //SET       ZZSG;
+      //NOTE      VFO-B frequency moved up by the current step size
+      //ENDDEF
       if (command[4] == ';') {
         vfo_id_step(VFO_B, 1);
       }
@@ -2712,7 +2704,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'M': //ZZSM
 
-      // reads the S Meter (in dB)
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[5] == ';') {
         int v = atoi(&command[4]);
 
@@ -2731,7 +2723,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'P': //ZZSP
 
-      // set/read split
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZSP%d;", split);
         send_resp(client->fd, reply) ;
@@ -2744,7 +2736,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'W': //ZZSW
 
-      // set/read split
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZSW%d;", split);
         send_resp(client->fd, reply) ;
@@ -2766,7 +2758,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
     switch (command[3]) {
     case 'U': //ZZTU
 
-      // sets or reads TUN status
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZTU%d;", tune);
         send_resp(client->fd, reply) ;
@@ -2778,7 +2770,13 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'X': //ZZTX
 
-      // sets or reads MOX status
+      //CATDEF    ZZTX
+      //DESCR     Get/Set MOX status
+      //SET       ZZTXx;
+      //READ      ZZTX;
+      //RESP      ZZTXx;
+      //NOTE      x=1: MOX on, x=0: off.
+      //ENDDEF
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZTX%d;", mox);
         send_resp(client->fd, reply) ;
@@ -2802,12 +2800,18 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
   case 'V': //ZZVx
     switch (command[3]) {
     case 'L': //ZZVL
-      // set/get VFO Lock
+
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       locked = command[4] == '1';
       g_idle_add(ext_vfo_update, NULL);
       break;
 
     case 'S': { //ZZVS
+      //CATDEF    ZZVS
+      //DESCR     Swap VFO A and B
+      //SET       ZZVS;
+      //NOTE      The contents (frequencies, CTUN mode, filters, etc.) of VFO A and B are exchanged.
+      //ENDDEF
       int i = atoi(&command[4]);
 
       if (i == 0) {
@@ -2834,13 +2838,14 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
   case 'X': //ZZXx
     switch (command[3]) {
     case 'C': //ZZXC
-      // clear transmitter XIT
+
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       schedule_action(XIT_CLEAR, PRESSED, 0);
       break;
 
     case 'F': //ZZXF
 
-      // set/read XIT
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZXT%+05lld;", vfo[get_tx_vfo()].xit);
         send_resp(client->fd, reply) ;
@@ -2852,8 +2857,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'N': //ZZXN
 
-      //DO NOT DOCUMENT, CAN THIS BE REMOVED?
-      // read combined RX1 status
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
         int status = ((receiver[0]->agc) & 0x03);
         int a = adc[receiver[0]->adc].attenuation;
@@ -2894,8 +2898,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'O': //ZZXO
 
-      //DO NOT DOCUMENT, CAN THIS BE REMOVED?
-      // read combined RX2 status
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (receivers == 2) {
         if (command[4] == ';') {
           int status = ((receiver[1]->agc) & 0x03);
@@ -2940,7 +2943,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'S': //ZZXS
 
-      /// set/read XIT enable
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZXS%d;", vfo[get_tx_vfo()].xit_enabled);
         send_resp(client->fd, reply);
@@ -2954,8 +2957,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'V': //ZZXV
 
-      //DO NOT DOCUMENT, CAN THIS BE REMOVED?
-      // read combined VFO status
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
         int status = 0;
 
@@ -3006,7 +3008,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
     switch (command[3]) {
     case 'R': //ZZYR
 
-      // switch receivers
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[5] == ';') {
         int v = atoi(&command[4]);
 
@@ -3778,7 +3780,7 @@ int parse_cmd(void *data) {
 
     case 'N': //DN
       //CATDEF    DN
-      //DESCR     VFO-A down  onw step
+      //DESCR     VFO-A down  one step
       //SET       DN;
       //ENDDEF
       vfo_id_step(VFO_A, -1);
@@ -3923,7 +3925,7 @@ int parse_cmd(void *data) {
       //SET       FWxxxx;
       //READ      FW;
       //RESP      FWxxxx;
-      //NOTE      When setting, this switches to the Var1 filter
+      //NOTE      When setting, this switches to the Var1 filter and sets its  width to x.
       //NOTE      Only valid for CW, FM, AM. Use SH/SL for LSB, USB, DIGL, DIGU.
       //NOTE      For AM, 8kHz filter width (x=0) or  16 kHz (x$\ne$0)
       //NOTE      For FM, 2.5kHz deviation (x=0) or 5 kHz (x$\ne$=0)
@@ -4121,7 +4123,7 @@ int parse_cmd(void *data) {
 
     case 'S': //IS
 
-      //DO NOT DOCUMENT, CAN THIS BE REMOVED?
+      //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[2] == ';') {
         STRLCPY(reply, "IS 0000;", 256);
         send_resp(client->fd, reply);

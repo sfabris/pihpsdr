@@ -2454,16 +2454,20 @@ static void *client_thread(void* arg) {
       }
 
       // cppcheck-suppress uninitStructMember
-      RECEIVER *rx = receiver[noise_command.id];
+      int id = noise_command.id;
+      RECEIVER *rx = receiver[id];
       // cppcheck-suppress uninitvar
       rx->nb = noise_command.nb;
-      mode_settings[vfo[rx->id].mode].nb = rx->nb;
       rx->nr = noise_command.nr;
-      mode_settings[vfo[rx->id].mode].nr = rx->nr;
       rx->snb = noise_command.snb;
-      mode_settings[vfo[rx->id].mode].snb = rx->snb;
       rx->anf = noise_command.anf;
-      mode_settings[vfo[rx->id].mode].anf = rx->anf;
+
+      if (id == 0) {
+        mode_settings[vfo[id].mode].nb = rx->nb;
+        mode_settings[vfo[id].mode].nr = rx->nr;
+        mode_settings[vfo[id].mode].snb = rx->snb;
+        mode_settings[vfo[id].mode].anf = rx->anf;
+      }
       g_idle_add(ext_vfo_update, NULL);
     }
     break;
@@ -2937,17 +2941,22 @@ static int remote_command(void *data) {
 
   case CMD_RESP_RX_NOISE: {
     const NOISE_COMMAND *noise_command = (NOISE_COMMAND *)data;
-    int r = noise_command->id;
-    CHECK_RX(r);
-    RECEIVER *rx = receiver[r];
+    int id = noise_command->id;
+    CHECK_RX(id);
+    RECEIVER *rx = receiver[id];
+
     rx->nb = noise_command->nb;
-    mode_settings[vfo[rx->id].mode].nb = rx->nb;
     rx->nr = noise_command->nr;
-    mode_settings[vfo[rx->id].mode].nr = rx->nr;
     rx->anf = noise_command->anf;
-    mode_settings[vfo[rx->id].mode].anf = rx->anf;
     rx->snb = noise_command->snb;
-    mode_settings[vfo[rx->id].mode].snb = rx->snb;
+
+    if (id == 0) {
+      mode_settings[vfo[id].mode].nb = rx->nb;
+      mode_settings[vfo[id].mode].nr = rx->nr;
+      mode_settings[vfo[id].mode].anf = rx->anf;
+      mode_settings[vfo[id].mode].snb = rx->snb;
+    }
+
     set_noise();
     send_noise(client->socket, rx->id, rx->nb, rx->nr, rx->anf, rx->snb);
   }

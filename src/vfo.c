@@ -58,6 +58,8 @@
 #include "ext.h"
 #include "filter.h"
 #include "actions.h"
+#include "noise_menu.h"
+#include "equalizer_menu.h"
 #include "message.h"
 
 static int my_width;
@@ -111,8 +113,8 @@ static void modesettingsSaveState() {
     SetPropI1("modeset.%d.nb", i,                    mode_settings[i].nb);
     SetPropI1("modeset.%d.anf", i,                   mode_settings[i].anf);
     SetPropI1("modeset.%d.snb", i,                   mode_settings[i].snb);
+    SetPropI1("modeset.%d.agc", i,                   mode_settings[i].agc);
     SetPropI1("modeset.%d.en_txeq", i,               mode_settings[i].en_txeq);
-    SetPropI1("modeset.%d.en_rxeq", i,               mode_settings[i].en_rxeq);
     SetPropI1("modeset.%d.en_rxeq", i,               mode_settings[i].en_rxeq);
     SetPropI1("modeset.%d.step", i,                  mode_settings[i].step);
     SetPropF1("modeset.%d.compressor_level", i,      mode_settings[i].compressor_level);
@@ -135,18 +137,21 @@ static void modesettingsRestoreState() {
     case modeLSB:
     case modeUSB:
     case modeDSB:
+      mode_settings[i].agc = AGC_MEDIUM;
       mode_settings[i].filter = filterF5; //  2700 Hz
       mode_settings[i].step   = 100;
       break;
 
     case modeDIGL:
     case modeDIGU:
+      mode_settings[i].agc = AGC_FAST;
       mode_settings[i].filter = filterF6; //  1000 Hz
       mode_settings[i].step   = 50;
       break;
 
     case modeCWL:
     case modeCWU:
+      mode_settings[i].agc = AGC_FAST;
       mode_settings[i].filter = filterF4; //   500 Hz
       mode_settings[i].step   = 25;
       break;
@@ -156,6 +161,7 @@ static void modesettingsRestoreState() {
     case modeSPEC:
     case modeDRM:
     case modeFMN:  // nowhere used for FM
+      mode_settings[i].agc = AGC_MEDIUM;
       mode_settings[i].filter = filterF3; //  8000 Hz
       mode_settings[i].step   = 100;
       break;
@@ -180,6 +186,7 @@ static void modesettingsRestoreState() {
     GetPropI1("modeset.%d.nb", i,                    mode_settings[i].nb);
     GetPropI1("modeset.%d.anf", i,                   mode_settings[i].anf);
     GetPropI1("modeset.%d.snb", i,                   mode_settings[i].snb);
+    GetPropI1("modeset.%d.agc", i,                   mode_settings[i].agc);
     GetPropI1("modeset.%d.en_txeq", i,               mode_settings[i].en_txeq);
     GetPropI1("modeset.%d.en_rxeq", i,               mode_settings[i].en_rxeq);
     GetPropI1("modeset.%d.step", i,                  mode_settings[i].step);
@@ -374,6 +381,7 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
   rx->nb               = mode_settings[m].nb;
   rx->anf              = mode_settings[m].anf;
   rx->snb              = mode_settings[m].snb;
+  rx->agc              = mode_settings[m].agc;
   rx->eq_enable        = mode_settings[m].en_rxeq;
 
   for (int i = 0; i < 5; i++) {
@@ -400,8 +408,9 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
   //
   // make changes effective and put them on the VFO display
   //
-  g_idle_add(ext_update_noise, NULL);
-  g_idle_add(ext_update_eq, NULL);
+  set_agc(rx, rx->agc);
+  update_noise();
+  update_eq();
   g_idle_add(ext_vfo_update, NULL);
 }
 
@@ -595,7 +604,9 @@ void vfo_id_filter_changed(int id, int f) {
 
 #endif
   // store changed filter in the mode settings
-  mode_settings[vfo[id].mode].filter = f;
+  if (id == 0) {
+    mode_settings[vfo[id].mode].filter = f;
+  }
   vfo[id].filter = f;
 
   //
@@ -708,7 +719,9 @@ void vfo_set_step_from_index(int id, int index) {
   int step = steps[index];
   int m = vfo[id].mode;
   vfo[id].step = step;
-  mode_settings[m].step = step;
+  if (id == 0) {
+    mode_settings[m].step = step;
+  }
 }
 
 void vfo_step(int steps) {

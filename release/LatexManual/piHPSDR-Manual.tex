@@ -1693,18 +1693,37 @@ The \bltt{Mode} menu lets you change the mode of the active receiver, so you can
 say, from LSB to CWU or DIGU. The mode menu simply lists the available modes, the current
 one is highlighted (Fig. \ref{fig:ModeMenu}).
 
-\textbf{Settings stored with the mode.} Many settings such as filter choices, noise reduction
+\subsection{Settings stored with the mode.}
+ Many settings such as filter choices, noise reduction
 and equalizer settings, and TX compressor settings
- are only reasonable with a specific mode in mind. Therefore, these settings are stored with
- the mode. If you later switch back to this mode, the settings that were effective the last
- time you used that mode are restored. This is the main reason why the USB and DIGU modes
- are separate (although technically they are the same), the same applies for LSB and DIGL.
- For digital operation, you will normally choose DIGU and have no noise reduction, no TX
- compressore, and no equalizer. For voice operation (USB/LSB) you may then have the
- noise reduction, equalizer and TX compressor settings as you like it. Then you can easily
- switch between DIGU and USB/LSB and have the correct settings automatically. The same applies
- to CWL/CWU where you will normally use different settings compared to both USB/LSB and DIGU.
+ are only reasonable with a specific mode in mind. For example, one might wish to use
+ different VFO step sizes for different modes, and get the stepsize chosen for that
+ mode automatically if one switches to that mode. Likewise, one often has specific settings
+ for equalizers and TX compression that are valid for voice modes but not for digital mosed.
+ 
+ To this end, the settings given below are stored in the mode specific settings whenever
+ they are changed for RX0/VFOA or for the transmitter. When changing modes later, these
+ settings are restored. Note that settings changed for RX1/VFOB are not stored, but 
+ stored settings are applied when the mode of RX1/VFOB is changed.
+ 
+List of settings stored for each mode:
 
+\begin{center}
+\begin{tabular}{l|l}
+\toprule
+VFO step size & \\\hline
+Filter & pre-defined filter, Var1, or Var2\\\hline
+Noise reduction & NR off/NR1/NR2 \\\hline
+Noise blanker & NB off/NB1/ NB2 \\\hline
+Automatic notch filter & ANF on/off \\\hline
+Spectral  noise blanker & SNB on/off \\\hline
+AGC characteristic & slow/medium/fast etc. \\\hline
+RX equalizer & on/off and channel gains \\\hline
+TX equalizer & on/off and channel gains \\\hline
+TX compressor & on/off and compression level \\
+\bottomrule
+\end{tabular}
+\end{center}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The \texttt{Memory}  menu}
 \label{sec:memmenu}
@@ -4138,8 +4157,8 @@ using CAT commands. piHPDSR is supported by hamlib, the radio model name is ,,\t
 In the SDR community, there exist a heavily extended TS-2000 CAT command set known as the ,,PowerSDR CAT
 command set''. In contrast to the two-letter commands characteristic for the original (TS-2000) CAT
 command set, the extended commands have four letters and begin with two 'Z'.
-A small subset of the externded commmands  is implemented in piHPSDR. This set has been extended somewhat
-to support the  ANDROMEDA open-source radio controller developed by Laurence Barker G8NJJ, see
+A small subset of the externded commmands  has been implemented in piHPSDR. This set has later been extended
+somewhat to support the  ANDROMEDA open-source radio controller developed by Laurence Barker G8NJJ, see
 
 \texttt{https://github.com/laurencebarker/Andromeda\_front\_panel}
 
@@ -4247,7 +4266,7 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ = 0: CTCSS of
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
-$\phantom{\Big|}$\textbf{\large DN} & VFO-A down  onw step \\\cline{1-2}
+$\phantom{\Big|}$\textbf{\large DN} & VFO-A down  one step \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {DN;} \\\hline
 \bottomrule
 \end{tabular}
@@ -4308,10 +4327,10 @@ $\phantom{\Big|}$\textbf{\large FW} & Set/Read VFO-A filter width (CW, AM, FM) \
 $\phantom{\Big|}${\large Set} & {FWp$_1$p$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {FW;} \\\hline
 $\phantom{\Big|}${\large Response} & {FWp$_1$p$_1$p$_1$p$_1$;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{When setting, this switches to the Var1 filter} \\
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{When setting, this switches to the Var1 filter and sets its width to $p_1$.} \\
  & \multicolumn{1}{|p{11cm}|}{Only valid for CW, FM, AM. Use SH/SL for LSB, USB, DIGL, DIGU.} \\
- & \multicolumn{1}{|p{11cm}|}{For AM, p$_1$=0 translates to 8kHz filter width, p$_1$$\ne$=0 to 16kHz.} \\
- & \multicolumn{1}{|p{11cm}|}{For FM, p$_1$=0 translates to 2.5kHz deviation, p$_1$$\ne$=0 to 5 kHz.} \\
+ & \multicolumn{1}{|p{11cm}|}{For AM, 8kHz filter width (p$_1$=0) or  16 kHz (p$_1$$\ne$0)} \\
+ & \multicolumn{1}{|p{11cm}|}{For FM, 2.5kHz deviation (p$_1$=0) or 5 kHz (p$_1$$\ne$=0)} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -4387,7 +4406,7 @@ $\phantom{\Big|}${\large Read} & {KY;} \\\hline
 $\phantom{\Big|}${\large Response} & {KYp$_1$;} \\\hline
 $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{When setting (sending), p$_1$ must be p$_4$ space.} \\
  & \multicolumn{1}{|p{11cm}|}{When reading, p$_1$=1 indicates buffer space is available, p$_1$=0  buffer full} \\
- & \multicolumn{1}{|p{11cm}|}{p$_2$ is p$_4$ string of up to 24 characters NOT containing ';'} \\
+ & \multicolumn{1}{|p{11cm}|}{p$_2$: string of up to 24 characters NOT containing ';'} \\
  & \multicolumn{1}{|p{11cm}|}{trailing blanks are ignored in p$_2$, but if it is completely blank it causes an inter-word space.} \\
 \bottomrule
 \end{tabular}
@@ -4413,7 +4432,8 @@ $\phantom{\Big|}$\textbf{\large MD} & Set/Read VFO-A modes \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {MDp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {MD;} \\\hline
 $\phantom{\Big|}${\large Response} & {MDp$_1$;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{Modes: LSB (p$_1$=1), USB (p$_1$=2), CWU (p$_1$=3), FMN (p$_1$=4),} \\
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{Kenwood-stype  mode  list:} \\
+ & \multicolumn{1}{|p{11cm}|}{LSB (p$_1$=1), USB (p$_1$=2), CWU (p$_1$=3), FMN (p$_1$=4),} \\
  & \multicolumn{1}{|p{11cm}|}{AM (p$_1$=5), DIGL (p$_1$=6), CWL (p$_1$=7), DIGU (p$_1$=9)} \\
 \bottomrule
 \end{tabular}
@@ -4593,12 +4613,12 @@ $\phantom{\Big|}${\large Set} & {RX;} \\\hline
 $\phantom{\Big|}$\textbf{\large SA} & Set/Read SAT mode \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {SAp$_1$p$_2$p$_3$p$_4$p$_5$p$_6$p$_7$ssssssss;} \\\hline
 $\phantom{\Big|}${\large Read} & {SA;} \\\hline
-$\phantom{\Big|}${\large Response} & {SAp$_1$p$_2$p$_3$p$_4$p$_5$p$_6$p$_7$ssssssss;} \\\hline
+$\phantom{\Big|}${\large Response} & {SAp$_1$p$_2$p$_3$sp$_5$p$_6$p$_7$p$_8$p$_8$p$_8$p$_8$p$_8$p$_8$p$_8$p$_8$;} \\\hline
 $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: neither SAT nor RSAT, p$_1$=1: SAT or RSAT} \\
- & \multicolumn{1}{|p{11cm}|}{p$_2$,p$_3$,p$_4$ always zero} \\
+ & \multicolumn{1}{|p{11cm}|}{p$_2$,p$_3$,s always zero} \\
  & \multicolumn{1}{|p{11cm}|}{p$_6$ = 1 indicates SAT mode (TRACE)} \\
  & \multicolumn{1}{|p{11cm}|}{p$_7$ = 1 indicates RSAT mode (TRACE REV)} \\
- & \multicolumn{1}{|p{11cm}|}{s = eight-character label, here "SAT     "} \\
+ & \multicolumn{1}{|p{11cm}|}{p$_8$ = eight-character label, here "SAT     "} \\
  & \multicolumn{1}{|p{11cm}|}{when setting, p$_6$ == p$_7$ == 1 is illegal} \\
  & \multicolumn{1}{|p{11cm}|}{when setting, s is ignored} \\
 \bottomrule
@@ -4627,9 +4647,9 @@ $\phantom{\Big|}${\large Read} & {SH;} \\\hline
 $\phantom{\Big|}${\large Response} & {SHp$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{When setting, the Var1 filter is activated} \\
  & \multicolumn{1}{|p{11cm}|}{p$_1$ = 0...11 encodes filter high water mark in Hz:} \\
- & \multicolumn{1}{|p{11cm}|}{1400 (p$_1$=0), 1600 (p$_1$=1), 1800 (p$_1$=2), 2000 (p$_1$=3), 2200 (p$_1$=4),} \\
- & \multicolumn{1}{|p{11cm}|}{2400 (p$_1$=5), 2600 (p$_1$=6), 2800 (p$_1$=7), 3000 (p$_1$=8), 3400 (p$_1$=9),} \\
- & \multicolumn{1}{|p{11cm}|}{4000 (p$_1$=10), 5000 (p$_1$=11)} \\
+ & \multicolumn{1}{|p{11cm}|}{1400 (p$_1$=0), 1600 (p$_1$=1), 1800 (p$_1$=2), 2000 (p$_1$=3)} \\
+ & \multicolumn{1}{|p{11cm}|}{2200 (p$_1$=4), 2400 (p$_1$=5), 2600 (p$_1$=6), 2800 (p$_1$=7)} \\
+ & \multicolumn{1}{|p{11cm}|}{3000 (p$_1$=8), 3400 (p$_1$=9), 4000 (p$_1$=10), 5000 (p$_1$=11)} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -4643,9 +4663,9 @@ $\phantom{\Big|}${\large Read} & {SL;} \\\hline
 $\phantom{\Big|}${\large Response} & {SLp$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{When setting, the Var1 filter is activated} \\
  & \multicolumn{1}{|p{11cm}|}{p$_1$ = 0...11 encodes filter low water mark in Hz:} \\
- & \multicolumn{1}{|p{11cm}|}{10 (p$_1$=0), 50 (p$_1$=1), 100 (p$_1$=2), 200 (p$_1$=3), 300 (p$_1$=4),} \\
- & \multicolumn{1}{|p{11cm}|}{400 (p$_1$=5), 500 (p$_1$=6), 600 (p$_1$=7), 700 (p$_1$=8), 800 (p$_1$=9),} \\
- & \multicolumn{1}{|p{11cm}|}{900 (p$_1$=10), 1000 (p$_1$=11)} \\
+ & \multicolumn{1}{|p{11cm}|}{10 (p$_1$=0), 50 (p$_1$=1), 100 (p$_1$=2), 200 (p$_1$=3)} \\
+ & \multicolumn{1}{|p{11cm}|}{300 (p$_1$=4), 400 (p$_1$=5), 500 (p$_1$=6), 600 (p$_1$=7)} \\
+ & \multicolumn{1}{|p{11cm}|}{700 (p$_1$=8), 800 (p$_1$=9), 900 (p$_1$=10), 1000 (p$_1$=11)} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -4657,7 +4677,7 @@ $\phantom{\Big|}$\textbf{\large SM} & Read S-meter \\\cline{1-2}
 $\phantom{\Big|}${\large Read} & {SMp$_1$;} \\\hline
 $\phantom{\Big|}${\large Response} & {SMp$_1$p$_2$p$_2$p$_2$p$_2$;} \\\hline
 $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: read RX0, p$_1$=1: RX1} \\
- & \multicolumn{1}{|p{11cm}|}{p$_2$ : -127...-19 dBm mapped to 0 - 30} \\
+ & \multicolumn{1}{|p{11cm}|}{p$_2$ : 0 ... 30 mapped to -127...-19 dBm} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -4712,7 +4732,8 @@ $\phantom{\Big|}$\textbf{\large VG} & Set/Read VOX threshold \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {VGp$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {VG;} \\\hline
 $\phantom{\Big|}${\large Response} & {VGp$_1$p$_1$p$_1$;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ is in the range 0-9, mapped to 0.0-1.0} \\
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ is in the range 0-9, mapped to an amplitude} \\
+ & \multicolumn{1}{|p{11cm}|}{threshold 0.0-1.0} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -4741,8 +4762,6 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: XIT disabl
 \end{tabular}
 \end{center}
 
-
-
 \section[Extended CAT commands]{Extended CAT commands supported by piHPSDR}    
 
 \begin{center}
@@ -4758,15 +4777,15 @@ $\phantom{\Big|}${\large Set} & {\#S;} \\\hline
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZAC} & Set/read VFO-A step size \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZACxx;} \\\hline
+$\phantom{\Big|}${\large Set} & {ZZACp$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZAC;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZACxx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x 0...16 encodes the step size:} \\
- & \multicolumn{1}{|p{11cm}|}{1 Hz (x=0), 10 Hz (x=1), 25 Hz (x=2), 50 Hz (x=3)} \\
- & \multicolumn{1}{|p{11cm}|}{100 Hz (x=4), 250 Hz (x=5), 500 Hz (x=6), 1000 Hz (x=7)} \\
- & \multicolumn{1}{|p{11cm}|}{5000 Hz (x=8), 6250 Hz (x=9), 9 kHz (x=10), 10 kHz (x=11)} \\
- & \multicolumn{1}{|p{11cm}|}{12.5 kHz (x=12), 100 kHz (x=13), 250 kHz (x=14)} \\
- & \multicolumn{1}{|p{11cm}|}{500 kHz (x=15), 1 MHz (x=16)} \\
+$\phantom{\Big|}${\large Response} & {ZZACp$_1$p$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ 0...16 encodes the step size:} \\
+ & \multicolumn{1}{|p{11cm}|}{1 Hz (p$_1$=0), 10 Hz (p$_1$=1), 25 Hz (p$_1$=2), 50 Hz (p$_1$=3)} \\
+ & \multicolumn{1}{|p{11cm}|}{100 Hz (p$_1$=4), 250 Hz (p$_1$=5), 500 Hz (p$_1$=6), 1000 Hz (p$_1$=7)} \\
+ & \multicolumn{1}{|p{11cm}|}{5000 Hz (p$_1$=8), 6250 Hz (p$_1$=9), 9 kHz (p$_1$=10), 10 kHz (p$_1$=11)} \\
+ & \multicolumn{1}{|p{11cm}|}{12.5 kHz (p$_1$=12), 100 kHz (p$_1$=13), 250 kHz (p$_1$=14)} \\
+ & \multicolumn{1}{|p{11cm}|}{500 kHz (p$_1$=15), 1 MHz (p$_1$=16)} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -4775,8 +4794,8 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x 0...16 encodes th
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZAD} & Move down VFO-A frequency by a selected step \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZACxx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x encodes the step size, see ZZAC command.} \\
+$\phantom{\Big|}${\large Set} & {ZZACp$_1$p$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ encodes the step size, see ZZAC command.} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -4785,8 +4804,8 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x encodes the step 
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZAE} & Move down VFO-A frequency by several steps \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZAExx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{VFO-A frequency moved down by x (0...99) times the current step size} \\
+$\phantom{\Big|}${\large Set} & {ZZAEp$_1$p$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{VFO-A frequency moved down by p$_1$ (0...99) times the current step size} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -4795,8 +4814,8 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{VFO-A frequency mov
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZAF} & Move up VFO-A frequency by several steps \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZAFxx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{VFO-A frequency moved up by x (0...99) times the current step size} \\
+$\phantom{\Big|}${\large Set} & {ZZAFp$_1$p$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{VFO-A frequency moved up by p$_1$ (0...99) times the current step size} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -4805,10 +4824,10 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{VFO-A frequency mov
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZAG} & Set/Read RX0 volume (AF slider) \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZAGxxx;} \\\hline
+$\phantom{\Big|}${\large Set} & {ZZAGp$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZAG;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZAGxxx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x = 0...100, mapped logarithmically to -40 ... 0 dB.} \\
+$\phantom{\Big|}${\large Response} & {ZZAGp$_1$p$_1$p$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ = 0...100, mapped logarithmically to -40 ... 0 dB.} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -4817,10 +4836,10 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x = 0...100, mapped
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZAI} & Set/Read auto-reporting \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZAIx;} \\\hline
+$\phantom{\Big|}${\large Set} & {ZZAIp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZAI;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZAIx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x=0: auto-reporting disabled, x=1: enabled} \\
+$\phantom{\Big|}${\large Response} & {ZZAIp$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: auto-reporting disabled, p$_1$=1: enabled} \\
  & \multicolumn{1}{|p{11cm}|}{Auto-reporting is affected for the client that sends this command.} \\
 \bottomrule
 \end{tabular}
@@ -4830,10 +4849,10 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x=0: auto-reporting
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZAR} & Set/Read RX0 AGC gain \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZARxxxx;} \\\hline
+$\phantom{\Big|}${\large Set} & {ZZARp$_1$p$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZAR;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZARxxxx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x -20...120, must contain + or - sign.} \\
+$\phantom{\Big|}${\large Response} & {ZZARp$_1$p$_1$p$_1$p$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ -20...120, must contain + or - sign.} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -4842,10 +4861,10 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x -20...120, must c
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZAS} & Set/Read RX1 AGC gain \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZASxxxx;} \\\hline
+$\phantom{\Big|}${\large Set} & {ZZASp$_1$p$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZAS;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZASxxxx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x -20...120, must contain + or - sign.} \\
+$\phantom{\Big|}${\large Response} & {ZZASp$_1$p$_1$p$_1$p$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ -20...120, must contain + or - sign.} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -4854,8 +4873,8 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x -20...120, must c
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZAU} & Move up VFO-A frequency by selected step \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZAUxx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x 0...16 selects the size of the step, see ZZAC command.} \\
+$\phantom{\Big|}${\large Set} & {ZZAUp$_1$p$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ 0...16 selects the size of the step, see ZZAC command.} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -4894,8 +4913,8 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{Wraps from lowest t
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZBE} & Move down VFO-B frequency by multiple steps \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZBExx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{VFO-B frequency moves down by x (0..99) times the current step size} \\
+$\phantom{\Big|}${\large Set} & {ZZBEp$_1$p$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{VFO-B frequency moves down by p$_1$ (0..99) times the current step size} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -4904,8 +4923,8 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{VFO-B frequency mov
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZBF} & Move up VFO-B frequency by multiple steps \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZBFxx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{VFO-B frequency moves up by x (0...99) times the current step size} \\
+$\phantom{\Big|}${\large Set} & {ZZBFp$_1$p$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{VFO-B frequency moves up by p$_1$ (0...99) times the current step size} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -4914,8 +4933,8 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{VFO-B frequency mov
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZBM} & Move down VFO-B frequency by selected step. \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZBMxx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x 0...16 selects the size of the step, see ZZAC command.} \\
+$\phantom{\Big|}${\large Set} & {ZZBMp$_1$p$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ 0...16 selects the size of the step, see ZZAC command.} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -4923,9 +4942,9 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x 0...16 selects th
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
-$\phantom{\Big|}$\textbf{\large ZZBP} & Move upn VFO-B frequency by selected step. \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZBPxx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x 0...16 selects the size of the step, see ZZAC command.} \\
+$\phantom{\Big|}$\textbf{\large ZZBP} & Move up VFO-B frequency by selected step. \\\cline{1-2}
+$\phantom{\Big|}${\large Set} & {ZZBPp$_1$p$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ 0...16 selects the size of the step, see ZZAC command.} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -4933,12 +4952,12 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x 0...16 selects th
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
-$\phantom{\Big|}$\textbf{\large ZZBS} & Set/Read VFO-B band \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZBSxxx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x 0...999 encodes the band:} \\
- & \multicolumn{1}{|p{11cm}|}{136 kHz (x=136), 472 kHz (x=472), 160m (x=160)} \\
- & \multicolumn{1}{|p{11cm}|}{80m (x=80), 60m (x=60), 40m (x=40), 30m (x=30)} \\
- & \multicolumn{1}{|p{11cm}|}{10m (x=10), 6m (x=6), Gen (x=888), WWV (x=999)} \\
+$\phantom{\Big|}$\textbf{\large ZZBS} & Set/Read VFO-A band \\\cline{1-2}
+$\phantom{\Big|}${\large Set} & {ZZBSp$_1$p$_1$p$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ 0...999 encodes the band:} \\
+ & \multicolumn{1}{|p{11cm}|}{136 kHz (p$_1$=136), 472 kHz (p$_1$=472), 160p$_{15}$ (p$_1$=160)} \\
+ & \multicolumn{1}{|p{11cm}|}{80p$_{15}$ (p$_1$=80), 60p$_{15}$ (p$_1$=60), 40p$_{15}$ (p$_1$=40), 30p$_{15}$ (p$_1$=30)} \\
+ & \multicolumn{1}{|p{11cm}|}{10p$_{15}$ (p$_1$=10), 6p$_{15}$ (p$_1$=6), Gen (p$_1$=888), WWV (p$_1$=999)} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -4957,10 +4976,10 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{Wraps from highest 
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZCN} & Set/Read VFO-A CTUN status \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZCNx;} \\\hline
+$\phantom{\Big|}${\large Set} & {ZZCNp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZCN;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZCNx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x=0: CTUN disabled, x=1: enabled} \\
+$\phantom{\Big|}${\large Response} & {ZZCNp$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: CTUN disabled, p$_1$=1: enabled} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -4969,10 +4988,10 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x=0: CTUN disabled,
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZCO} & Set/Read VFO-B CTUN status \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZCOx;} \\\hline
+$\phantom{\Big|}${\large Set} & {ZZCOp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZCO;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZCOx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x=0: CTUN disabled, x=1: enabled} \\
+$\phantom{\Big|}${\large Response} & {ZZCOp$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: CTUN disabled, p$_1$=1: enabled} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -4981,10 +5000,10 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x=0: CTUN disabled,
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZFA} & Set/Read VFO-A frequency \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZFAxxxxxxxxxxx;} \\\hline
+$\phantom{\Big|}${\large Set} & {ZZFAp$_1$p$_1$p$_1$p$_1$p$_1$p$_1$p$_1$p$_1$p$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZFA;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZFAxxxxxxxxxxx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x in Hz, left-padded with zeroes} \\
+$\phantom{\Big|}${\large Response} & {ZZFAp$_1$p$_1$p$_1$p$_1$p$_1$p$_1$p$_1$p$_1$p$_1$p$_1$p$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ in Hz, left-padded with zeroes} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -4993,23 +5012,10 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x in Hz, left-padde
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZFB} & Set/Read VFO-B frequency \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZFBxxxxxxxxxxx;} \\\hline
+$\phantom{\Big|}${\large Set} & {ZZFBp$_1$p$_1$p$_1$p$_1$p$_1$p$_1$p$_1$p$_1$p$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZFB;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZFBxxxxxxxxxxx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x in Hz, left-padded with zeroes} \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\begin{center}
-\begin{tabular}{|p{2cm}|p{11cm}|}
-\toprule
-$\phantom{\Big|}$\textbf{\large ZZFD} & Set/Read VFO-A FM deviation \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZFDx;} \\\hline
-$\phantom{\Big|}${\large Read} & {ZZFD;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZFDx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x=0: Deviation 2500 Hz, x=1: 5000 Hz} \\
- & \multicolumn{1}{|p{11cm}|}{Setting the deviation has no effect when the VFO-A mode is not FM.} \\
+$\phantom{\Big|}${\large Response} & {ZZFBp$_1$p$_1$p$_1$p$_1$p$_1$p$_1$p$_1$p$_1$p$_1$p$_1$p$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ in Hz, left-padded with zeroes} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -5018,10 +5024,10 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x=0: Deviation 2500
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZFH} & Set/Read RX0 filter high water \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZFHxxxxx;} \\\hline
+$\phantom{\Big|}${\large Set} & {ZZFHp$_1$p$_1$p$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZFH;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZFHxxxxxx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x -9999 ... 9999. Must contain - sign if negative.} \\
+$\phantom{\Big|}${\large Response} & {ZZFHp$_1$p$_1$p$_1$p$_1$p$_1$p$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ -9999 ... 9999. Must contain - sign if negative.} \\
  & \multicolumn{1}{|p{11cm}|}{In LSB, the filter-high affecte the low audio frequencies} \\
 \bottomrule
 \end{tabular}
@@ -5030,35 +5036,11 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x -9999 ... 9999. M
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
-$\phantom{\Big|}$\textbf{\large ZZFI} & Set/Read RX0 filter \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZFIxx;} \\\hline
-$\phantom{\Big|}${\large Read} & {ZZFI;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZFIxx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x = 0...11 encodes the filter which also depends on the mode.} \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\begin{center}
-\begin{tabular}{|p{2cm}|p{11cm}|}
-\toprule
-$\phantom{\Big|}$\textbf{\large ZZFJ} & Set/Read RX1 filter \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZFJxx;} \\\hline
-$\phantom{\Big|}${\large Read} & {ZZFJ;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZFJxx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x = 0...11 encodes the filter which also depends on the mode.} \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-\begin{center}
-\begin{tabular}{|p{2cm}|p{11cm}|}
-\toprule
 $\phantom{\Big|}$\textbf{\large ZZFL} & Set/Read RX0 filter low water \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZFLxxxxx;} \\\hline
+$\phantom{\Big|}${\large Set} & {ZZFLp$_1$p$_1$p$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZFL;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZFLxxxxxx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x -9999 ... 9999. Must contain - sign if negative.} \\
+$\phantom{\Big|}${\large Response} & {ZZFLp$_1$p$_1$p$_1$p$_1$p$_1$p$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ -9999 ... 9999. Must contain - sign if negative.} \\
  & \multicolumn{1}{|p{11cm}|}{In LSB, the filter-low affecte the high audio frequencies} \\
 \bottomrule
 \end{tabular}
@@ -5068,10 +5050,10 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x -9999 ... 9999. M
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZGT} & Set/Read RX0 AGC \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZGTx;} \\\hline
+$\phantom{\Big|}${\large Set} & {ZZGTp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZGT;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZGTx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x=0: AGC OFF, x=1: LONG, x=2: SLOW, x=3: MEDIUM, x=4: FAST} \\
+$\phantom{\Big|}${\large Response} & {ZZGTp$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: AGC OFF, p$_1$=1: LONG, p$_1$=2: SLOW, p$_1$=3: MEDIUM, p$_1$=4: FAST} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -5080,10 +5062,10 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x=0: AGC OFF, x=1: 
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZGU} & Set/Read RX1 AGC \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZGUx;} \\\hline
+$\phantom{\Big|}${\large Set} & {ZZGUp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZGU;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZGUx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x=0: AGC OFF, x=1: LONG, x=2: SLOW, x=3: MEDIUM, x=4: FAST} \\
+$\phantom{\Big|}${\large Response} & {ZZGUp$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: AGC OFF, p$_1$=1: LONG, p$_1$=2: SLOW, p$_1$=3: MEDIUM, p$_1$=4: FAST} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -5092,10 +5074,10 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x=0: AGC OFF, x=1: 
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZLA} & Set/Read RX0 volume (AF slider) \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZLAxxx;} \\\hline
+$\phantom{\Big|}${\large Set} & {ZZLAp$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZLA;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZLAxxx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x = 0...100, mapped logarithmically to -40 ... 0 dB.} \\
+$\phantom{\Big|}${\large Response} & {ZZLAp$_1$p$_1$p$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ = 0...100, mapped logarithmically to -40 ... 0 dB.} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -5104,10 +5086,10 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x = 0...100, mapped
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZLC} & Set/Read RX1 volume (AF slider) \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZLCxxx;} \\\hline
+$\phantom{\Big|}${\large Set} & {ZZLCp$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZLC;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZLCxxx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x = 0...100, mapped logarithmically to -40 ... 0 dB.} \\
+$\phantom{\Big|}${\large Response} & {ZZLCp$_1$p$_1$p$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ = 0...100, mapped logarithmically to -40 ... 0 dB.} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -5116,10 +5098,10 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x = 0...100, mapped
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZLI} & Set/Read PURESIGNAL status \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZLIx;} \\\hline
+$\phantom{\Big|}${\large Set} & {ZZLIp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZLI;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZLIx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x=0: PURESIGNAL disabled, x=1: enabled.} \\
+$\phantom{\Big|}${\large Response} & {ZZLIp$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: PURESIGNAL disabled, p$_1$=1: enabled.} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -5128,10 +5110,10 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x=0: PURESIGNAL dis
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZMA} & Mute/Unmute RX0 \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZMAx;} \\\hline
+$\phantom{\Big|}${\large Set} & {ZZMAp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZMA;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZMAx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x=0: RX0 not muted, x=1: muted} \\
+$\phantom{\Big|}${\large Response} & {ZZMAp$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: RX0 not muted, p$_1$=1: muted} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -5140,10 +5122,10 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x=0: RX0 not muted,
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZMB} & Mute/Unmute RX1 \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZMBx;} \\\hline
+$\phantom{\Big|}${\large Set} & {ZZMBp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZMB;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZMBx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x=0: RX1 not muted, x=1: muted} \\
+$\phantom{\Big|}${\large Response} & {ZZMBp$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: RX1 not muted, p$_1$=1: muted} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -5152,12 +5134,12 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{x=0: RX1 not muted,
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZMD} & Set/Read VFO-A modes \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZMDxx;} \\\hline
+$\phantom{\Big|}${\large Set} & {ZZMDp$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZMD;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZMDxx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{Modes: LSB (x=0), USB (x=1), DSB (x=3), CWL (x=4)} \\
- & \multicolumn{1}{|p{11cm}|}{CWU (x=5), FMN (x=6), AM (x=7), DIGU (x=7)} \\
- & \multicolumn{1}{|p{11cm}|}{SPEC (x=8), DIGL (x=9), SAM (x=10), DRM (x=11)} \\
+$\phantom{\Big|}${\large Response} & {ZZMDp$_1$p$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{Modes: LSB (p$_1$=0), USB (p$_1$=1), DSB (p$_1$=3), CWL (p$_1$=4)} \\
+ & \multicolumn{1}{|p{11cm}|}{CWU (p$_1$=5), FMN (p$_1$=6), AM (p$_1$=7), DIGU (p$_1$=7)} \\
+ & \multicolumn{1}{|p{11cm}|}{SPEC (p$_1$=8), DIGL (p$_1$=9), SAM (p$_1$=10), DRM (p$_1$=11)} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -5166,12 +5148,12 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{Modes: LSB (x=0), U
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZME} & Set/Read VFO-B modes \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZMEx;} \\\hline
+$\phantom{\Big|}${\large Set} & {ZZMEp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZME;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZMEx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{Modes: LSB (x=0), USB (x=1), DSB (x=3), CWL (x=4)} \\
- & \multicolumn{1}{|p{11cm}|}{CWU (x=5), FMN (x=6), AM (x=7), DIGU (x=7)} \\
- & \multicolumn{1}{|p{11cm}|}{SPEC (x=8), DIGL (x=9), SAM (x=10), DRM (x=11)} \\
+$\phantom{\Big|}${\large Response} & {ZZMEp$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{Modes: LSB (p$_1$=0), USB (p$_1$=1), DSB (p$_1$=3), CWL (p$_1$=4)} \\
+ & \multicolumn{1}{|p{11cm}|}{CWU (p$_1$=5), FMN (p$_1$=6), AM (p$_1$=7), DIGU (p$_1$=7)} \\
+ & \multicolumn{1}{|p{11cm}|}{SPEC (p$_1$=8), DIGL (p$_1$=9), SAM (p$_1$=10), DRM (p$_1$=11)} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -5180,9 +5162,9 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{Modes: LSB (x=0), U
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZMG} & Set/Read Mic gain (Mic gain slider) \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZMGxxx;} \\\hline
+$\phantom{\Big|}${\large Set} & {ZZMGp$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZMG;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZMGxxx;} \\\hline
+$\phantom{\Big|}${\large Response} & {ZZMGp$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{xxx 0-70 mapped to -12 ... +50 dB} \\
 \bottomrule
 \end{tabular}
@@ -5191,9 +5173,9 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{xxx 0-70 mapped to 
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
-$\phantom{\Big|}$\textbf{\large ZZML} & Read the list of modes  with their indices \\\cline{1-2}
-$\phantom{\Big|}${\large Read} & {ZZML;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZML LSB00: USB01: DSB02: CWL03: CWU04: FMN05:  AM06:DIGU07:SPEC08:DIGL09: SAM10: DRM11;} \\\hline
+$\phantom{\Big|}$\textbf{\large ZZSA} & Move down VFO-A frequency one step \\\cline{1-2}
+$\phantom{\Big|}${\large Set} & {ZZSA;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{VFO-A frequency moved down by the current step size} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -5201,14 +5183,51 @@ $\phantom{\Big|}${\large Response} & {ZZML LSB00: USB01: DSB02: CWL03: CWU04: FM
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
-$\phantom{\Big|}$\textbf{\large ZZML} & Read the list of filter names  with their indices \\\cline{1-2}
-$\phantom{\Big|}${\large Read} & {ZZML;} \\\hline
-$\phantom{\Big|}${\large Response} & {ZZML .....} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{The response contains groups of 15 characters each,} \\
- & \multicolumn{1}{|p{11cm}|}{where the first 5 characters are the filter name,} \\
- & \multicolumn{1}{|p{11cm}|}{and then comes the filter high- and low-water mark} \\
- & \multicolumn{1}{|p{11cm}|}{as a 5-digit number, possibly containing a minus} \\
- & \multicolumn{1}{|p{11cm}|}{sign and blanks.} \\
+$\phantom{\Big|}$\textbf{\large ZZSB} & Move up VFO-A frequency one step \\\cline{1-2}
+$\phantom{\Big|}${\large Set} & {ZZSB;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{VFO-A frequency moved up by the current step size} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{|p{2cm}|p{11cm}|}
+\toprule
+$\phantom{\Big|}$\textbf{\large ZZSG} & Move down VFO-B frequency one step \\\cline{1-2}
+$\phantom{\Big|}${\large Set} & {ZZSG;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{VFO-B frequency moved down by the current step size} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{|p{2cm}|p{11cm}|}
+\toprule
+$\phantom{\Big|}$\textbf{\large ZZSH} & Move up VFO-B frequency one step \\\cline{1-2}
+$\phantom{\Big|}${\large Set} & {ZZSG;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{VFO-B frequency moved up by the current step size} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{|p{2cm}|p{11cm}|}
+\toprule
+$\phantom{\Big|}$\textbf{\large ZZTX} & Get/Set MOX status \\\cline{1-2}
+$\phantom{\Big|}${\large Set} & {ZZTXp$_1$;} \\\hline
+$\phantom{\Big|}${\large Read} & {ZZTX;} \\\hline
+$\phantom{\Big|}${\large Response} & {ZZTXp$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=1: MOX on, p$_1$=0: off.} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{|p{2cm}|p{11cm}|}
+\toprule
+$\phantom{\Big|}$\textbf{\large ZZVS} & Swap VFO A and B \\\cline{1-2}
+$\phantom{\Big|}${\large Set} & {ZZVS;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{The contents (frequencies, CTUN mode, filters, etc.) of VFO A and B are exchanged.} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -5217,8 +5236,8 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{The response contai
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZZD} & Move down frequency of active receiver \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZZDxx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{ANDROMEDA extension. x = number of steps.} \\
+$\phantom{\Big|}${\large Set} & {ZZZDp$_1$p$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{ANDROMEDA extension. p$_1$ = number of steps.} \\
  & \multicolumn{1}{|p{11cm}|}{The "VFO encoder divisor" is applied to the steps} \\
 \bottomrule
 \end{tabular}
@@ -5228,9 +5247,9 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{ANDROMEDA extension
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZZE} & Handle ANDROMEDA encoders \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZZExxx;} \\\hline
+$\phantom{\Big|}${\large Set} & {ZZZEp$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{ANDROMEDA extension.} \\
- & \multicolumn{1}{|p{11cm}|}{x encodes the encoder and the direction.} \\
+ & \multicolumn{1}{|p{11cm}|}{p$_1$ encodes the encoder and the direction.} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -5239,9 +5258,9 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{ANDROMEDA extension
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZZI} & ANDROMEDA reports \\\cline{1-2}
-$\phantom{\Big|}${\large Response} & {ZZZIxxy;} \\\hline
+$\phantom{\Big|}${\large Response} & {ZZZIp$_1$p$_1$p$_2$;} \\\hline
 $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{Automatic generated response for ANDROMEDA controller.} \\
- & \multicolumn{1}{|p{11cm}|}{xx encodes the type of information and y the value.} \\
+ & \multicolumn{1}{|p{11cm}|}{xx encodes the type of information and p$_2$ the value.} \\
  & \multicolumn{1}{|p{11cm}|}{For example ZZZI081; means "RIT is enabled".} \\
 \bottomrule
 \end{tabular}
@@ -5251,9 +5270,9 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{Automatic generated
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZZP} & Handle ANDROMEDA push-buttons \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZZPxxx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{ANDROMEDA extension. x = number of steps.} \\
- & \multicolumn{1}{|p{11cm}|}{x encodes the button and the press/release status} \\
+$\phantom{\Big|}${\large Set} & {ZZZPp$_1$p$_1$p$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{ANDROMEDA extension. p$_1$ = number of steps.} \\
+ & \multicolumn{1}{|p{11cm}|}{p$_1$ encodes the button and the press/release status} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -5262,7 +5281,7 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{ANDROMEDA extension
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZZS} & Log ANDROMEDA version \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZZSxxyzabc;} \\\hline
+$\phantom{\Big|}${\large Set} & {ZZZSp$_1$p$_1$p$_2$p$_3$p$_4$p$_5$p$_6$;} \\\hline
 $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{ANDROMEDA extension.} \\
  & \multicolumn{1}{|p{11cm}|}{The ANDROMEDA hardware (yz) and software (abc) version} \\
  & \multicolumn{1}{|p{11cm}|}{is logged in piHPSDR's log file.} \\
@@ -5274,8 +5293,8 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{ANDROMEDA extension
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
 $\phantom{\Big|}$\textbf{\large ZZZU} & Move up frequency of active receiver \\\cline{1-2}
-$\phantom{\Big|}${\large Set} & {ZZZUxx;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{ANDROMEDA extension. x = number of steps.} \\
+$\phantom{\Big|}${\large Set} & {ZZZUp$_1$p$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{ANDROMEDA extension. p$_1$ = number of steps.} \\
  & \multicolumn{1}{|p{11cm}|}{The "VFO encoder divisor" is applied to the steps} \\
 \bottomrule
 \end{tabular}

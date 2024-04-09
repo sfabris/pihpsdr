@@ -447,12 +447,17 @@ int process_action(void *data) {
 
   case ANF:
     if (a->mode == PRESSED) {
+      int id = active_receiver->id;
       if (active_receiver->anf == 0) {
         active_receiver->anf = 1;
-        mode_settings[vfo[active_receiver->id].mode].anf = 1;
+        if (id == 0) {
+          mode_settings[vfo[id].mode].anf = 1;
+        }
       } else {
         active_receiver->anf = 0;
-        mode_settings[vfo[active_receiver->id].mode].anf = 0;
+        if (id == 0) {
+          mode_settings[vfo[id].mode].anf = 0;
+        }
       }
 
       SetRXAANFRun(active_receiver->id, active_receiver->anf);
@@ -1050,11 +1055,14 @@ int process_action(void *data) {
 
   case NB:
     if (a->mode == PRESSED) {
+      int id = active_receiver->id;
       active_receiver->nb++;
 
       if (active_receiver->nb > 2) { active_receiver->nb = 0; }
 
-      mode_settings[vfo[active_receiver->id].mode].nb = active_receiver->nb;
+      if (id == 0) {
+        mode_settings[vfo[id].mode].nb = active_receiver->nb;
+      }
       update_noise();
     }
 
@@ -1062,6 +1070,7 @@ int process_action(void *data) {
 
   case NR:
     if (a->mode == PRESSED) {
+      int id = active_receiver->id;
       active_receiver->nr++;
 #ifdef EXTNR
 
@@ -1072,7 +1081,9 @@ int process_action(void *data) {
       if (active_receiver->nr > 2) { active_receiver->nr = 0; }
 
 #endif
-      mode_settings[vfo[active_receiver->id].mode].nr = active_receiver->nr;
+      if (id == 0) {
+        mode_settings[vfo[id].mode].nr = active_receiver->nr;
+      }
       update_noise();
     }
 
@@ -1387,12 +1398,17 @@ int process_action(void *data) {
 
   case SNB:
     if (a->mode == PRESSED) {
+      int id = active_receiver->id;
       if (active_receiver->snb == 0) {
         active_receiver->snb = 1;
-        mode_settings[vfo[active_receiver->id].mode].snb = 1;
+        if (id == 0) {
+          mode_settings[vfo[id].mode].snb = 1;
+        }
       } else {
         active_receiver->snb = 0;
-        mode_settings[vfo[active_receiver->id].mode].snb = 0;
+        if (id == 0) {
+          mode_settings[vfo[id].mode].snb = 0;
+        }
       }
 
       update_noise();

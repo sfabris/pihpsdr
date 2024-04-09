@@ -84,6 +84,7 @@ struct _mode_settings {
   int nr;                   // Noise reduction (0..2 or 0..4)
   int anf;                  // Automatic notch filter
   int snb;                  // Spectral noise blanker
+  int agc;                  // AGC characteristics (slow/medium/fast etc.)
   int en_txeq;              // TX equalizer on/off
   int en_rxeq;              // RX equalizer on/off
   double txeq[5];           // TX equalizer settings

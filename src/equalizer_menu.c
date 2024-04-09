@@ -89,6 +89,8 @@ static void enable_cb (GtkWidget *widget, gpointer data) {
   case 1:
     if (eqid < receivers) {
       receiver[eqid]->eq_enable = val;
+    }
+    if (eqid == 0) {
       m = vfo[eqid].mode;
       mode_settings[m].en_rxeq = val;
     }
@@ -119,6 +121,8 @@ static void scale_changed_cb (GtkWidget *widget, gpointer data) {
   case 1:
     if (eqid < receivers) {
       receiver[eqid]->eq_gain[i] = val;
+    }
+    if (eqid == 0) {
       m = vfo[eqid].mode;
       mode_settings[m].rxeq[i] = val;
     }
