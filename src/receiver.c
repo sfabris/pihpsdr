@@ -661,48 +661,59 @@ void set_filter(RECEIVER *rx) {
 }
 
 void set_agc(RECEIVER *rx, int agc) {
-  SetRXAAGCMode(rx->id, agc);
-  SetRXAAGCSlope(rx->id, rx->agc_slope);
-  SetRXAAGCTop(rx->id, rx->agc_gain);
+
+  int id = rx->id;
+
+  SetRXAAGCMode(id, agc);
+  SetRXAAGCSlope(id, rx->agc_slope);
+  SetRXAAGCTop(id, rx->agc_gain);
 
   switch (agc) {
   case AGC_OFF:
     break;
 
   case AGC_LONG:
-    SetRXAAGCAttack(rx->id, 2);
-    SetRXAAGCHang(rx->id, 2000);
-    SetRXAAGCDecay(rx->id, 2000);
-    SetRXAAGCHangThreshold(rx->id, (int)rx->agc_hang_threshold);
+    SetRXAAGCAttack(id, 2);
+    SetRXAAGCHang(id, 2000);
+    SetRXAAGCDecay(id, 2000);
+    SetRXAAGCHangThreshold(id, (int)rx->agc_hang_threshold);
     break;
 
   case AGC_SLOW:
-    SetRXAAGCAttack(rx->id, 2);
-    SetRXAAGCHang(rx->id, 1000);
-    SetRXAAGCDecay(rx->id, 500);
-    SetRXAAGCHangThreshold(rx->id, (int)rx->agc_hang_threshold);
+    SetRXAAGCAttack(id, 2);
+    SetRXAAGCHang(id, 1000);
+    SetRXAAGCDecay(id, 500);
+    SetRXAAGCHangThreshold(id, (int)rx->agc_hang_threshold);
     break;
 
   case AGC_MEDIUM:
-    SetRXAAGCAttack(rx->id, 2);
-    SetRXAAGCHang(rx->id, 0);
-    SetRXAAGCDecay(rx->id, 250);
-    SetRXAAGCHangThreshold(rx->id, 100);
+    SetRXAAGCAttack(id, 2);
+    SetRXAAGCHang(id, 0);
+    SetRXAAGCDecay(id, 250);
+    SetRXAAGCHangThreshold(id, 100);
     break;
 
   case AGC_FAST:
-    SetRXAAGCAttack(rx->id, 2);
-    SetRXAAGCHang(rx->id, 0);
-    SetRXAAGCDecay(rx->id, 50);
-    SetRXAAGCHangThreshold(rx->id, 100);
+    SetRXAAGCAttack(id, 2);
+    SetRXAAGCHang(id, 0);
+    SetRXAAGCDecay(id, 50);
+    SetRXAAGCHangThreshold(id, 100);
     break;
   }
 
   //
   // Recalculate the "panadapter" AGC line positions.
   //
-  GetRXAAGCHangLevel(rx->id, &rx->agc_hang);
-  GetRXAAGCThresh(rx->id, &rx->agc_thresh, 4096.0, (double)rx->sample_rate);
+  GetRXAAGCHangLevel(id, &rx->agc_hang);
+  GetRXAAGCThresh(id, &rx->agc_thresh, 4096.0, (double)rx->sample_rate);
+
+  //
+  // Update mode settings, if this is RX0
+  //
+  if (id == 0) {
+    int m=vfo[id].mode;
+    mode_settings[m].agc = agc;
+  }
 }
 
 void set_offset(RECEIVER *rx, long long offset) {

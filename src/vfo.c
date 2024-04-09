@@ -650,13 +650,21 @@ void vfos_changed() {
 
 void vfo_a_to_b() {
   CLIENT_MISSING;
+  int oldmode=vfo[VFO_B].mode;
   vfo[VFO_B] = vfo[VFO_A];
+  if (vfo[VFO_B].mode != oldmode && receivers > 1) {
+    vfo_apply_mode_settings(receiver[1]);
+  }
   vfos_changed();
 }
 
 void vfo_b_to_a() {
   CLIENT_MISSING;
+  int oldmode=vfo[VFO_A].mode;
   vfo[VFO_A] = vfo[VFO_B];
+  if (vfo[VFO_A].mode != oldmode) {
+    vfo_apply_mode_settings(receiver[0]);
+  }
   vfos_changed();
 }
 
@@ -665,6 +673,12 @@ void vfo_a_swap_b() {
   struct  _vfo temp = vfo[VFO_A];
   vfo[VFO_A]        = vfo[VFO_B];
   vfo[VFO_B]        = temp;
+  if (vfo[VFO_A].mode != vfo[VFO_B].mode) {
+    vfo_apply_mode_settings(receiver[0]);
+    if (receivers > 1) {
+      vfo_apply_mode_settings(receiver[1]);
+    }
+  }
   vfos_changed();
 }
 
