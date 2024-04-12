@@ -1,6 +1,12 @@
 #!/bin/sh
 ################################################################
 #
+# NOTE THIS IS OBSOLETE NOW:
+# pre-compiled binaries make more problems than they solve,
+# therefore this has now been removed.
+#
+################################################################
+#
 # A script to install pihpsdr from pre-compiled binaries.
 # This script does not assume that THISDIR is writeable.
 # A target directory $HOME/pihpsdr.release is created (if

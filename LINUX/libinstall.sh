@@ -2,8 +2,8 @@
 
 ################################################################
 #
-# A script to clone wdsp from github and to compile and 
-# install it. This is a prerequisite for compiling pihpsdr
+# A script to setup everything that needs be done on a 
+# 'virgin' RaspPi.
 #
 ################################################################
 
@@ -18,6 +18,14 @@
 SCRIPTFILE=`realpath $0`
 THISDIR=`dirname $SCRIPTFILE`
 TARGET=`dirname $THISDIR`
+PIHPSDR=$TARGET/release/pihpsdr
+
+RASPI=`cat /proc/cpuinfo | grep Model | grep -c Raspberry`
+
+echo "Script file abs.     position  is " $SCRIPTFILE
+echo "Pihpsdr main         directory is " $TARGET
+echo "Icons and Udev rules directory is " $PIHPSDR
+echo "RaspberryPi           detected is " $RASPI
 
 ################################################################
 #
@@ -25,6 +33,8 @@ TARGET=`dirname $THISDIR`
 # (many of them should already be there)
 #
 ################################################################
+
+echo "... installing LOTS OF compiles/libraries/helpers"
 
 # ------------------------------------
 # Install standard tools and compilers
@@ -83,6 +93,8 @@ sudo apt-get install --yes librtlsdr-dev
 #
 ################################################################
 
+echo "... installing SoapySDR core"
+
 cd $THISDIR
 yes | rm -r SoapySDR
 git clone https://github.com/pothosware/SoapySDR.git
@@ -105,6 +117,7 @@ sudo ldconfig
 # CURRENTLY DISABLED: apt get libiio-dev also works (give v0.23)
 #
 ################################################################
+#echo "... installing libiio with old API"
 #
 #cd $THISDIR
 #yes | rm -r libiio
@@ -125,6 +138,8 @@ sudo ldconfig
 #
 ################################################################
 
+echo "... installing SoapySDR AdalmPluto libraries"
+
 cd $THISDIR
 yes | rm -rf SoapyPlutoSDR
 git clone https://github.com/pothosware/SoapyPlutoSDR
@@ -143,6 +158,8 @@ sudo ldconfig
 #
 ################################################################
 
+echo "... installing SoapySDR RTL-stick libraries"
+
 cd $THISDIR
 yes | rm -rf SoapyRTLSDR
 git clone https://github.com/pothosware/SoapyRTLSDR
@@ -160,6 +177,8 @@ sudo ldconfig
 # g) create desktop icons, start scripts, etc.  for pihpsdr
 #
 ################################################################
+
+echo "... creating Desktop Icons"
 
 rm -f $HOME/Desktop/pihpsdr.desktop
 rm -f $HOME/.local/share/applications/pihpsdr.desktop
@@ -186,16 +205,24 @@ cp $TARGET/pihpsdr.desktop $HOME/Desktop
 mkdir -p $HOME/.local/share/applications
 cp $TARGET/pihpsdr.desktop $HOME/.local/share/applications
 
-cp $TARGET/release/pihpsdr/hpsdr.png $TARGET
-cp $TARGET/release/pihpsdr/hpsdr_icon.png $TARGET
+cp $PIHPSDR/hpsdr.png $TARGET
+cp $PIHPSDR/hpsdr_icon.png $TARGET
+
 
 ################################################################
 #
-# h) default GPIO lines to input + pullup
+# h) RaspPi only:
+#    default GPIO lines to input + pullup(NO LONGER NEEDED)
+#    copy XDMA rules
 #
 ################################################################
+
+if [ $RASPI -eq 0 ]; then
+
+echo "...Final RaspPi Setup."
 
 if test -f "/boot/config.txt"; then
+  echo "... putting GPIO stuff into /boot/config.txt"
   if grep -q "gpio=4-13,16-27=ip,pu" /boot/config.txt; then
     echo "/boot/config.txt already contains gpio setup."
   else
@@ -208,3 +235,32 @@ gpio=4-13,16-27=ip,pu
 EGPIO
   fi
 fi
+
+if test -f "/boot/firmware/config.txt"; then  
+  echo "... putting GPIO stuff into /boot/firmware/config.txt"
+  if grep -q "gpio=4-13,16-27=ip,pu" /boot/firmware/config.txt; then
+    echo "/boot/firmware/config.txt already contains gpio setup."
+  else
+    echo "/boot/firmware/config.txt does not contain gpio setup - adding it."
+    echo "Please reboot system for this to take effect."
+    cat <<EGPIO | sudo tee -a /boot/firmware/config.txt > /dev/null
+[all]
+# setup GPIO for pihpsdr controllers
+gpio=4-13,16-27=ip,pu
+EGPIO
+  fi
+fi
+
+echo "...copying XDMA udev rules"
+sudo cp $PIHPSDR/60-xdma.rules $PIHPSDR/xdma-udev-command.sh /etc/udev/rules.d/
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+
+fi
+
+################################################################
+#
+# ALL DONE.
+#
+################################################################
+

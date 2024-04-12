@@ -68,11 +68,11 @@ email to the author: \texttt{dl1ycf@darc.de}
 \chapter{Introduction}
 piHPSDR is a program that can operate with software defined radios (SDRs). As a graphical user interface,
 it uses the GTK-3 toolkit, while the actual signal processing is done by Warren Pratt's WDSP library. Thus,
-piHPSDR organizes the transfer of digitized radio frequency (RF) data between the radio hardware and the
+piHPSDR organizes the transfer of digitized radio (IF) data between the radio hardware and the
 WDSP library, the
 transfer of audio data (either from a microphone or to a headphone), as well as the processing of user
 input (either by mouse/touch-screen, keyboard, or external "knobs and buttons"),
- and the graphical display of the RF data. piHPSDR is intended
+ and the graphical display of the IF data. piHPSDR is intended
 to run on different variants of Unix. It runs on all sorts of Linux systems, including a Raspberry Pi (hence
 the name piHPSDR), but equally well on Linux desktop or laptop computers, and on Apple Macintosh (Mac OSX)
 computers which have a Unix variant under the hood. The present author is not aware of piHPSDR running
@@ -102,13 +102,10 @@ the code. A lot of extensions and improvements have been added by myself, theref
 to the version of piHPSDR that can be found on my github account \texttt{https://github.com/dl1ycf/pihpsdr}.
 
 Because piHPSDR can be used on many different types of computers, and because operating systems change
-rather quickly over time, I generally do not recommend to do a ,,binary installation'' although such
-a bundle is provided in the repository (for the RapsberryPi only) and the process is decribed in Appendix
- \ref{sec:installbinary}.
- Instead, my personal recommendation is to build piHPSDR
-from the sources, only this procedure guarantees compatibility of the final program with your
-operating system. Shell scripts for a semi-automatic installation have been provided,
-and the procedure is described in Appendix \ref{sec:installsources} for Linux (including RaspPi)
+rather quickly over time, I no longer offer a ,,binary installation'', that is, a \texttt{tar} file
+containing pre-compiled binaries. Is therefore necessary to build piHPSDR on the target system
+from the sources. To make this easy for non-nerds, Sshell scripts for a semi-automatic installation
+have been provided, and the procedure is described in Appendix \ref{sec:installsources} for Linux (including RaspPi)
 computers and in Appendix \ref{sec:installmacosx} for Mac OSX.
 This manual starts in its first chapter with the first invocation of a freshly compiled piHPSDR.
 
@@ -134,10 +131,10 @@ managed switch with a built-in DHCP server, and to connect both the computer and
 cable to the switch. If the computer has both a RJ45 jack for an ethernet cable, and a WiFi interface, my
 personal recommendation is to use WiFi to connect the computer to the internet, and use a single direct
 cable plugged
-into the RJ45 jacks of the computer and of the radio. This is a little bit tricky since both the computer
-and the radio have to be set to a fixed IP address (e.g. computer: 192.168.1.50, radio: 192.168.1.51) with
-the same netmask. However, once this has been done, this is the safest connection with no perturbations from
-elsewhere.
+into the RJ45 jacks of the computer and of the radio. It is a little tricky how both the computer
+and the radio obtain their IP address in this case, one such possibility is decribed in Appendix
+\ref{sec:dhcp}. An alternative to setting up a DHCP server as described there is to ,,burn'' a fixed
+IP address into the radio, as described in the radio manuals.
 
 \begin{figure}
 \center
@@ -178,8 +175,9 @@ It is possible that the \rett{Start} button is deactivated and shows another tex
 this point means that the radio is already in use (connected by another SDR application), while
 \rett{Incompatible} denotes that the radio is not compatible with this version of piHPSDR. This
 is only the case if piHPDSR runs natively on the CM4 module inside the new Anan Saturn/G2
-radios and the FPGA firmware is known to be too old for direct (XDMA) data transfer between the CM4
-module and the FPGA. Updating the FPGA firmware to the latest version
+radios and the FPGA firmware is known to be too old (or too new) 
+for direct (XDMA) data transfer between the CM4
+module and the FPGA. Updating both piHPSDR and the FPGA firmware to the latest version
 should help in this case.
 
 If more than one radio is available, or a radio can be connected via more than one network interface,
@@ -1724,6 +1722,9 @@ TX compressor & on/off and compression level \\
 \bottomrule
 \end{tabular}
 \end{center}
+
+Mode settings are not only restored if a mode is explicitly changed, but also if the mode changes
+because one has copied/swapped VFOs, changed the band or the band stack, or recalled a memory slot.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The \texttt{Memory}  menu}
 \label{sec:memmenu}
@@ -6261,140 +6262,140 @@ The other buttons (SSH, VNC, etc) need not be changed and can be set according t
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter[RaspPi: binary piHPDSR installation]{Binary installation of piHPSDR (RaspPi only)}
-\label{sec:installbinary}
-
-\textit{This procedure has been tested on a Pi 4B, with a fresh and plain vanilla operating
-system (32-bit ,,BullsEye'', released May 3rd 2023, Kernel version 6.1) obtained from} \\
-\texttt{https://www.raspberrypi.com/software/operating-systems/} \\
-\textit{It also works with the current
-version (32-bit ,,BookWorm'', released Oct 10 2023, Kernel version 6.1). Although there are reports
-that piHPSDR does not work as smoothly with the new ,,WayLand'' window manager as it used to work
-with X11,
-I personally cannot confirm this.}
-
-For new-bees, an easy binary-only installation is provided. This binary has the following
-properties:
-
-\begin{itemize}
-\item{It runs on a 32-bit Raspberry Pi OS, currently the "bullseye" version.}
-\item{It has the GPIO, MIDI, SATURN options activated, and it uses the ALSA audio
-module.  So it does \textit{not} use PulseAudio
-which means you cannot send RX audio to HDMI monitors. See
-Appendix \ref{sec:compiletime} for a detailed description of the compile time options. If you want
-another set of options, you have to compile from the sources.}
-\end{itemize}
-
-The following \textit{caveat} applies both to the binary installation and the compilation from
-the source code: If you want to use the Controller2 or the G2 frontpanel controller,
- the Raspberry Pi I2C interface
-must be enabled, as described in Appendix \ref{sec:i2c}.
-
-\begin{center}
-\fbox{
-\parbox{\textwidth - 1cm}{
-\begin{center}
-\textbf{\color{red} -------------- If the program does not start  --------------}
-\end{center}
-Binary installation means that the exectuable program has been compiled and linked on my
-machine, while it is intended to run on your machine. Because Linux heavily uses so-called
-shared libraries, the program can only run if the shared libraries that the executable
-depends on are present (and can be found) on your machine, and that the version numbers
-of the libraries are compatible. If piHPSDR does not start, and instead you find in the
-log file (for binary installations: in the directory \texttt{pihpsdr.release}
- in your home directory) a message
-stating a missing library, then you \textit{have to} jump to the next appendix and compile
-from the sources, simply because the operating system on your RaspPi is too different
-from the operation system on my machine at the time I produced the binary.
-}
-}
-\end{center}
-
-
-Before you shout at me, because your most-wanted compile time option is deactivated in the
-binary installation, let me explain that I want to satisfy the maximum number of people but
-with minimum complexity in the installation process. Things such as using SoapySDR devices,
-or using PulseAudio, involve heavy installation work (special libraries, etc. etc.) that make
-the installation more complicated. So the decision was to offer a binary installation on
-\textit{as is} basis, and refer to compilation from the sources
- (explained in Appendix \ref{sec:installsources})
-for every feature beyond.
-
-\begin{center}
-\fbox{
-\parbox{\textwidth - 1cm}{
-\begin{center}
-\textbf{\color{red} ----- Administrator privileges on RaspPi systems -----}
-\end{center}
- The installation procedure depends on that you can execute ,,sudo'' commands
- in a terminal window.
-On a RaspBerry Pi this should not be a problem, since
-the user account that you created during installation
-will have administrator privileges by default.
-}
-}
-\end{center}
-Probably the easiest way do download the binary installation file \texttt{pihpsdr.tar} is to clone
-the complete repository (as you would also do it for an installation from source code) since the
-binary installation file is contained therein. So open a terminal window. If you do so, you get
-a prompt and are in your home directory. It is assumed that no directory named \texttt{pihpsdr}
-exists. If it does, and if you are a new-bee, then this is likely a left-over from some previous
-attempt to install the program and then it should be deleted.
-
-again assuming that no file or directory named \texttt{JUNK} exists (if so, just replace this
-name by another one). But look, if you are a new-bee, then most likely these last two commands
-are not necessary since why should a \texttt{pihpsdr} directory exist at top level in your
-home directory?
-
-The binary installation
-is then done via the following commands, which have to be typed in exactly as given here:
-
-\grtt{git clone https://github.com/dl1ycf/pihpsdr} \\
-\grtt{cd pihpsdr} \\
-\grtt{git checkout RELEASE-2.2-DL1YCF} \\
-\grtt{cd release} \\
-\grtt{tar xvf pihpsdr.tar} \\
-\grtt{pihpsdr/install.sh} \\
-
-\begin{center}
-\fbox{
-\parbox{\textwidth - 1cm}{
-\begin{center}
-\textbf{\color{red} ----- Release and Development version -----}
-\end{center}
- You can leave out the command starting with \texttt{git checkout}, then you
-will get the latest (development) version. Because this is updated very frequently, it contains errors
-from time to time which will are normally corrected very quickly, but you could simply fall into this pit.
- Checking out the \texttt{RELEASE-2.2-DL1YCF}
-release version is safer since this is more stable, and will only be updated for simple bug fixes.
-New features will be included and accumulated in the development branch until eventually a new
-release (with version 2.3) is made in the future.
-}
-}
-\end{center}
-
-
-\begin{figure}[ht]
-\center
-\includegraphics[width=9cm]{piDontAsk.png}
-\caption{Suppress being asked options when clicking the piHPSDR desktop icon.}
-\label{fig:piDontAsk}
-\end{figure}
-
-The last command  (\texttt{install.sh}) takes some time (depending on the speed of your internet connection),
-since a lot of software need be installed that piHPSDR depends on. At the end, a piHPSDR desktop
-icon should appear. In principle, you can start piHPSDR now by double-clicking the icon.
-However (at least on my test system) I get always asked \textit{how} I want to
-start the program (right away, in a terminal window, etc.).
-To get rid of this question, open the file manager
-and go to
-\texttt{Edit}$\to$\texttt{Preferences} (Fig. \ref{fig:piDontAsk}). Activate the check
-box where it is indicated by the red arrow and that's it.
-
-
-\textbf{Note:} Immediately after running the install script, the piHPSDR desktop icon
-looks quite generic and does not show the HPSDR logo. Log out and then log in again
-and the logo is there.
+%%\chapter[RaspPi: binary piHPDSR installation]{Binary installation of piHPSDR (RaspPi only)}
+%%\label{sec:installbinary}
+%%
+%%\textit{This procedure has been tested on a Pi 4B, with a fresh and plain vanilla operating
+%%system (32-bit ,,BullsEye'', released May 3rd 2023, Kernel version 6.1) obtained from} \\
+%%\texttt{https://www.raspberrypi.com/software/operating-systems/} \\
+%%\textit{It also works with the current
+%%version (32-bit ,,BookWorm'', released Oct 10 2023, Kernel version 6.1). Although there are reports
+%%that piHPSDR does not work as smoothly with the new ,,WayLand'' window manager as it used to work
+%%with X11,
+%%I personally cannot confirm this.}
+%%
+%%For new-bees, an easy binary-only installation is provided. This binary has the following
+%%properties:
+%%
+%%\begin{itemize}
+%%\item{It runs on a 32-bit Raspberry Pi OS, currently the "bullseye" version.}
+%%\item{It has the GPIO, MIDI, SATURN options activated, and it uses the ALSA audio
+%%module.  So it does \textit{not} use PulseAudio
+%%which means you cannot send RX audio to HDMI monitors. See
+%%Appendix \ref{sec:compiletime} for a detailed description of the compile time options. If you want
+%%another set of options, you have to compile from the sources.}
+%%\end{itemize}
+%%
+%%The following \textit{caveat} applies both to the binary installation and the compilation from
+%%the source code: If you want to use the Controller2 or the G2 frontpanel controller,
+%% the Raspberry Pi I2C interface
+%%must be enabled, as described in Appendix \ref{sec:i2c}.
+%%
+%%\begin{center}
+%%\fbox{
+%%\parbox{\textwidth - 1cm}{
+%%\begin{center}
+%%\textbf{\color{red} -------------- If the program does not start  --------------}
+%%\end{center}
+%%Binary installation means that the exectuable program has been compiled and linked on my
+%%machine, while it is intended to run on your machine. Because Linux heavily uses so-called
+%%shared libraries, the program can only run if the shared libraries that the executable
+%%depends on are present (and can be found) on your machine, and that the version numbers
+%%of the libraries are compatible. If piHPSDR does not start, and instead you find in the
+%%log file (for binary installations: in the directory \texttt{pihpsdr.release}
+%% in your home directory) a message
+%%stating a missing library, then you \textit{have to} jump to the next appendix and compile
+%%from the sources, simply because the operating system on your RaspPi is too different
+%%from the operation system on my machine at the time I produced the binary.
+%%}
+%%}
+%%\end{center}
+%%
+%%
+%%Before you shout at me, because your most-wanted compile time option is deactivated in the
+%%binary installation, let me explain that I want to satisfy the maximum number of people but
+%%with minimum complexity in the installation process. Things such as using SoapySDR devices,
+%%or using PulseAudio, involve heavy installation work (special libraries, etc. etc.) that make
+%%the installation more complicated. So the decision was to offer a binary installation on
+%%\textit{as is} basis, and refer to compilation from the sources
+%% (explained in Appendix \ref{sec:installsources})
+%%for every feature beyond.
+%%
+%%\begin{center}
+%%\fbox{
+%%\parbox{\textwidth - 1cm}{
+%%\begin{center}
+%%\textbf{\color{red} ----- Administrator privileges on RaspPi systems -----}
+%%\end{center}
+%% The installation procedure depends on that you can execute ,,sudo'' commands
+%% in a terminal window.
+%%On a RaspBerry Pi this should not be a problem, since
+%%the user account that you created during installation
+%%will have administrator privileges by default.
+%%}
+%%}
+%%\end{center}
+%%Probably the easiest way do download the binary installation file \texttt{pihpsdr.tar} is to clone
+%%the complete repository (as you would also do it for an installation from source code) since the
+%%binary installation file is contained therein. So open a terminal window. If you do so, you get
+%%a prompt and are in your home directory. It is assumed that no directory named \texttt{pihpsdr}
+%%exists. If it does, and if you are a new-bee, then this is likely a left-over from some previous
+%%attempt to install the program and then it should be deleted.
+%%
+%%again assuming that no file or directory named \texttt{JUNK} exists (if so, just replace this
+%%name by another one). But look, if you are a new-bee, then most likely these last two commands
+%%are not necessary since why should a \texttt{pihpsdr} directory exist at top level in your
+%%home directory?
+%%
+%%The binary installation
+%%is then done via the following commands, which have to be typed in exactly as given here:
+%%
+%%\grtt{git clone https://github.com/dl1ycf/pihpsdr} \\
+%%\grtt{cd pihpsdr} \\
+%%\grtt{git checkout RELEASE-2.2-DL1YCF} \\
+%%\grtt{cd release} \\
+%%\grtt{tar xvf pihpsdr.tar} \\
+%%\grtt{pihpsdr/install.sh} \\
+%%
+%%\begin{center}
+%%\fbox{
+%%\parbox{\textwidth - 1cm}{
+%%\begin{center}
+%%\textbf{\color{red} ----- Release and Development version -----}
+%%\end{center}
+%% You can leave out the command starting with \texttt{git checkout}, then you
+%%will get the latest (development) version. Because this is updated very frequently, it contains errors
+%%from time to time which will are normally corrected very quickly, but you could simply fall into this pit.
+%% Checking out the \texttt{RELEASE-2.2-DL1YCF}
+%%release version is safer since this is more stable, and will only be updated for simple bug fixes.
+%%New features will be included and accumulated in the development branch until eventually a new
+%%release (with version 2.3) is made in the future.
+%%}
+%%}
+%%\end{center}
+%%
+%%
+%%\begin{figure}[ht]
+%%\center
+%%\includegraphics[width=9cm]{piDontAsk.png}
+%%\caption{Suppress being asked options when clicking the piHPSDR desktop icon.}
+%%\label{fig:piDontAsk}
+%%\end{figure}
+%%
+%%The last command  (\texttt{install.sh}) takes some time (depending on the speed of your internet connection),
+%%since a lot of software need be installed that piHPSDR depends on. At the end, a piHPSDR desktop
+%%icon should appear. In principle, you can start piHPSDR now by double-clicking the icon.
+%%However (at least on my test system) I get always asked \textit{how} I want to
+%%start the program (right away, in a terminal window, etc.).
+%%To get rid of this question, open the file manager
+%%and go to
+%%\texttt{Edit}$\to$\texttt{Preferences} (Fig. \ref{fig:piDontAsk}). Activate the check
+%%box where it is indicated by the red arrow and that's it.
+%%
+%%
+%%\textbf{Note:} Immediately after running the install script, the piHPSDR desktop icon
+%%looks quite generic and does not show the HPSDR logo. Log out and then log in again
+%%and the logo is there.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -6408,7 +6409,8 @@ system (32-bit ,,BullsEye'', released May 3rd 2023, Kernel version 6.1) obtained
 \textit{It has also been tested on a Pi 5B with the ,,BookWorm'' (64 bit version) operating system.}
 
 \textbf{General Remarks.}
-Installation from the sources is the preferred way of installing piHPSDR, for the following reasons
+Installation from the sources has number of benefits compared to using binaries that have
+been compiled elsewhere:
 
 \begin{itemize}
 \item{You get binaries that exactly ,,fit'' to your operating system, it is not important which version
@@ -6417,9 +6419,6 @@ of the operating system you use.}
 which of the two variants you run.}
 \item{For all the compile time options (see Appendix \ref{sec:compiletime}) you can individually choose
 whether you want to activate or deactivate this option.}
-\item{This implies that if you want to use SoapySDR devices (like the Adalm Pluto or RTL SDR sticks), or
-if you want to use PulseAudio as the backend for local RX audio, you \textit{have to} compile from
-the sources, since these compile time options are not activated in the binary installation package.}
 \end{itemize}
 
 The following \textit{caveat} applies both to the binary installation and the compilation from
@@ -6524,9 +6523,25 @@ and want to re-compile later, this sequence is the safest way to create a new bi
 namely go to the pihpsdr
 directory and recompile by executing ,,make''.
 
-At this stage, double-clicking the piHPSDR desktop icon should start the program. See
-the end of Appendix \ref{sec:installbinary} how to get rid of a window popping up
-and asking you how to execute the program. You have just compiled the program with 
+\begin{figure}[ht]
+\center
+\includegraphics[width=9cm]{piDontAsk.png}
+\caption{Suppress being asked options when clicking the piHPSDR desktop icon.}
+\label{fig:piDontAsk}
+\end{figure}
+
+At this stage, double-clicking the piHPSDR desktop icon should start the program. 
+With the default settings of the Raspi desktop, usually a window pops up that
+asks you whether you want to start the program directly (of course you want).
+To get rid of this question, open the file manager
+and go to
+\texttt{Edit}$\to$\texttt{Preferences} (Fig. \ref{fig:piDontAsk}). Activate the check
+box where it is indicated by the red arrow and that's it.
+Immediately after running the install script, the piHPSDR desktop icon
+looks quite generic and does not show the HPSDR logo. Log out and then log in again
+and the logo is there.
+
+Proceeding as described above,  you  just compiled the program with 
 the default compile-time options (see Appendix \ref{sec:compiletime}), namely
 \texttt{MIDI}, \texttt{GPIO}, and \texttt{SATURN}, and with \texttt{PulseAudio}
 as audio module. If you want, for example, use SoapySDR hardware such as the AdalmPluto
@@ -6535,6 +6550,7 @@ Appendix \ref{sec:compiletime}.
 
 
 \textbf{Checking the SoapySDR installation.}
+
 If you do not plan to use SoapySDR devices, you need not compile with \texttt{SOAPYSDR}
 enabled and can skip the rest of this section.
 
@@ -6542,13 +6558,16 @@ The installation of the SoapySDR core and the modules for the Adalm Pluto and fo
 sticks is the most complicated task performed by the \texttt{libinstall.sh} command.
 Although I tried hard to let everything be done auto-magically, you may want to check
 if everything went well. If not, and if you do not plan to activate the SOAPYSDR compile time
-option, you can simply ignore this. To check the SoapySDR installation, open a new terminal
+option, you can simply ignore this. 
+
+\clearpage
+To check the SoapySDR installation, open a new terminal
 window and just type the command (be careful to use the correct capitalization!)
 
 \grtt{SoapySDRUtil -info}
 
 On my test system, this command produced the following output:
-\clearpage
+
 \begin{tiny}
 \begin{verbatim}
 ######################################################
@@ -6592,6 +6611,34 @@ The best way out of such a problem is to re-install Linux (on a RaspPi, simply u
 I think in the near future, the standard repositories will also advance to SoaySDR version 0.8, and then
 the installation procedure \texttt{libinstall.sh} no longer needs to download and compile SoapySDR and all
 its modules, they can simply be taken from the distro.
+
+\clearpage
+To verify that a given hardware (e.g. an RTL stick, or an Adalm Pluto) is properly detected by the
+SoapySDR library, type in the command
+
+\grtt{SoapySDRUtil -info}
+
+On my test system (with an Adalm Pluto attached), the output is
+
+\begin{small}
+\begin{verbatim}
+######################################################
+##     Soapy SDR -- the SDR abstraction library     ##
+######################################################
+
+Found device 0
+  device = PlutoSDR
+  driver = plutosdr
+  label = PlutoSDR #0 ip:pluto.local
+  uri = ip:pluto.local
+\end{verbatim}
+\end{small}
+
+and this shows that the SoapySDR library has recognized the Pluto. Note then name \texttt{pluto.local}
+is hard-wired into piHPSDR, so if the Pluto shows up with some other name, it is possible that
+piHPSDR must be updated accordingly. There is no way for piHPDSR to connect
+to a SoapySDR device that has not been recognized by the SoapySDR library. If such a problem arises, this
+stems from missing, corrupt, or outdated SoapySDR libraries which are not part of piHPSDR.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -6714,55 +6761,6 @@ procedure works in this case as well and does no harm. In addition to
  command is found. This is the reason why you have to open a new terminal window to make this test,
  since in the originally opened window the update of the command search path is not yet effective.
 
-If you want to use SoapySDR, please check the Soapy installation.
-Open a new terminal window and simply
-type the command (be careful to use the correct capitalization!)
-
-\grtt{SoapySDRUtil -info}
-
-On my test system, this command produced the following output:
-
-\begin{tiny}
-\begin{verbatim}
-######################################################
-##     Soapy SDR -- the SDR abstraction library     ##
-######################################################
-
-Lib Version: v0.8.1-release
-API Version: v0.8.0
-ABI Version: v0.8
-Install root: /usr/local
-Search path:  /usr/local/lib/SoapySDR/modules0.8
-Module found: /usr/local/lib/SoapySDR/modules0.8/libHackRFSupport.so   (0.3.3)
-Module found: /usr/local/lib/SoapySDR/modules0.8/libLMS7Support.so     (20.10.0)
-Module found: /usr/local/lib/SoapySDR/modules0.8/libPlutoSDRSupport.so (0.2.1)
-Module found: /usr/local/lib/SoapySDR/modules0.8/libRedPitaya.so       (0.1.1)
-Module found: /usr/local/lib/SoapySDR/modules0.8/libairspySupport.so   (0.2.0)
-Module found: /usr/local/lib/SoapySDR/modules0.8/libairspyhfSupport.so (0.2.0)
-Module found: /usr/local/lib/SoapySDR/modules0.8/librtlsdrSupport.so   (0.3.2)
-Available factories... airspy, airspyhf, hackrf, lime, plutosdr, redpitaya, rtlsdr
-Available converters...
- -  CF32 -> [CF32, CS16, CS8, CU16, CU8]
- -  CS16 -> [CF32, CS16, CS8, CU16, CU8]
- -  CS32 -> [CS32]
- -   CS8 -> [CF32, CS16, CS8, CU16, CU8]
- -  CU16 -> [CF32, CS16, CS8]
- -   CU8 -> [CF32, CS16, CS8]
- -   F32 -> [F32, S16, S8, U16, U8]
- -   S16 -> [F32, S16, S8, U16, U8]
- -   S32 -> [S32]
- -    S8 -> [F32, S16, S8, U16, U8]
- -   U16 -> [F32, S16, S8]
- -    U8 -> [F32, S16, S8]
-\end{verbatim}
-\end{tiny}
-
-In contrast to the RaspPi
-installation, SoapySDR is already at version 0.8 in the \texttt{HomeBrew} repository so
-the modules can very simply be installed and need not be compiled from the sources.
-I have added (as you can see) support for quite a few SoapySDR radios, and most
-likely even more SoapySDR modules are available in the \texttt{HomeBrew} repository.
-
 If anything went wrong with the SoapySDR installation, you can safely ignore this is
 you do not plan to compile piHPSDR with the SOAPYSDR option. You also do not need
 to manually disable the GPIO option since on MacOS, the GPIO and SATURN options
@@ -6818,9 +6816,90 @@ helpful for other projects.
 }
 \end{center}
 
+\clearpage
+\textbf{Checking the SoapySDR installation.}
+
+If you want to use SoapySDR, please check the Soapy installation.
+Open a new terminal window and simply
+type the command (be careful to use the correct capitalization!)
+
+\grtt{SoapySDRUtil -info}
+
+On my test system, this command produced the following output:
+
+\begin{tiny}
+\begin{verbatim}
+######################################################
+##     Soapy SDR -- the SDR abstraction library     ##
+######################################################
+
+Lib Version: v0.8.1-release
+API Version: v0.8.0
+ABI Version: v0.8
+Install root: /usr/local
+Search path:  /usr/local/lib/SoapySDR/modules0.8
+Module found: /usr/local/lib/SoapySDR/modules0.8/libHackRFSupport.so   (0.3.3)
+Module found: /usr/local/lib/SoapySDR/modules0.8/libLMS7Support.so     (20.10.0)
+Module found: /usr/local/lib/SoapySDR/modules0.8/libPlutoSDRSupport.so (0.2.1)
+Module found: /usr/local/lib/SoapySDR/modules0.8/libRedPitaya.so       (0.1.1)
+Module found: /usr/local/lib/SoapySDR/modules0.8/libairspySupport.so   (0.2.0)
+Module found: /usr/local/lib/SoapySDR/modules0.8/libairspyhfSupport.so (0.2.0)
+Module found: /usr/local/lib/SoapySDR/modules0.8/librtlsdrSupport.so   (0.3.2)
+Available factories... airspy, airspyhf, hackrf, lime, plutosdr, redpitaya, rtlsdr
+Available converters...
+ -  CF32 -> [CF32, CS16, CS8, CU16, CU8]
+ -  CS16 -> [CF32, CS16, CS8, CU16, CU8]
+ -  CS32 -> [CS32]
+ -   CS8 -> [CF32, CS16, CS8, CU16, CU8]
+ -  CU16 -> [CF32, CS16, CS8]
+ -   CU8 -> [CF32, CS16, CS8]
+ -   F32 -> [F32, S16, S8, U16, U8]
+ -   S16 -> [F32, S16, S8, U16, U8]
+ -   S32 -> [S32]
+ -    S8 -> [F32, S16, S8, U16, U8]
+ -   U16 -> [F32, S16, S8]
+ -    U8 -> [F32, S16, S8]
+\end{verbatim}
+\end{tiny}
+
+In contrast to the RaspPi
+installation, SoapySDR is already at version 0.8 in the \texttt{HomeBrew} repository so
+the modules can very simply be installed and need not be compiled from the sources.
+I have added (as you can see) support for quite a few SoapySDR radios, and most
+likely even more SoapySDR modules are available in the \texttt{HomeBrew} repository.
+
+\clearpage
+To verify that a given hardware (e.g. an RTL stick, or an Adalm Pluto) is properly detected by the
+SoapySDR library, type in the command
+
+\grtt{SoapySDRUtil -info}
+
+On my Macintosh (with an Adalm Pluto attached), the output is
+
+\begin{small}
+\begin{verbatim}
+######################################################
+##     Soapy SDR -- the SDR abstraction library     ##
+######################################################
+
+WARNING: Unknown parameter '0' in <context>
+WARNING: Unknown parameter '23' in <context>
+WARNING: Unknown parameter 'v0.23' in <context>
+Found device 0
+  device = plutosdr
+  driver = plutosdr
+  uri = usb:20.14.5
+\end{verbatim}
+\end{small}
+
+and this shows that the SoapySDR library has recognized the Pluto. 
+There is no way for piHPDSR to connect
+to a SoapySDR device that has not been recognized by the SoapySDR library. If such a problem arises, this
+stems from missing, corrupt, or outdated SoapySDR libraries which are not part of piHPSDR.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter[Connecting the RaspPi and the Radio]{Connecting the RaspPi and the Radio}
+\label{sec:dhcp}
 \textit{This section does \textbf{not} apply to the new Saturn/G2 radios, where the internal RaspPi
 is directly connected to the radio via an XDMA interface. On the other hand, this  section
 \textbf{does} apply if you run piHPSDR on a LINUX desktop or laptop computer, at least if you run a
