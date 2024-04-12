@@ -80,7 +80,7 @@ extern void schedule_general(void);
 extern void schedule_receive_specific(void);
 extern void schedule_transmit_specific(void);
 
-extern void new_protocol_init(int pixels);
+extern void new_protocol_init(void);
 
 extern void filter_board_changed(void);
 extern void pa_changed(void);

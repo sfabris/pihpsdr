@@ -80,7 +80,7 @@ static int rxid[MAX_DDC];
 
 int data_socket = -1;
 
-static volatile int running;
+static volatile int P2running;
 
 static struct sockaddr_in base_addr;
 static int base_addr_length;
@@ -252,7 +252,6 @@ static pthread_mutex_t general_mutex = PTHREAD_MUTEX_INITIALIZER;
 static int radio_dash = 0;
 static int radio_dot = 0;
 
-static void new_protocol_start(void);
 static void new_protocol_high_priority(void);
 static void new_protocol_general(void);
 static void new_protocol_receive_specific(void);
@@ -272,10 +271,8 @@ static void  process_mic_data(const unsigned char *buffer);
 
 //
 // Obtain a free buffer. If no one is available allocate
-// 5 new ones. Note these buffer "live" as long as the
-// program lives. They are never released. Measurements show
-// that in typical runs, only a handful of buffers is ever
-// allocated.
+// 5 new ones. The buffers are *never* released to the
+// operating system, but marked free upon a protocol restart.
 //
 static mybuffer *get_my_buffer() {
   int i;
@@ -431,24 +428,30 @@ void update_action_table() {
   }
 }
 
-void new_protocol_init(int pixels) {
+void new_protocol_init() {
   int i;
 
   //
-  // This is allocated once and forever
+  // This function initializes the P2 engine and does everything that
+  // is only done once. Actions needed for a normal P2 restart are
+  // then done in new_protocol_menu_start()
   //
-  if (TXIQRINGBUF == NULL) {
-    TXIQRINGBUF = g_new(unsigned char, TXIQRINGBUFLEN);
+
+  //
+  // These are allocated once and forever
+  //
+  if (TXIQRINGBUF != NULL) {
+    t_print("%s: WARNING: TXIQRINGBUF non-NULL\n" , __FUNCTION__);
+    g_free(TXIQRINGBUF);
   }
 
-  if (RXAUDIORINGBUF == NULL) {
-    RXAUDIORINGBUF = g_new(unsigned char, RXAUDIORINGBUFLEN);
+  if (RXAUDIORINGBUF != NULL) {
+    t_print("%s: WARNING: RXAUDIO_RINGGBUF non-NULL\n" , __FUNCTION__);
+    g_free(RXAUDIORINGBUF);
   }
 
-  memset(rxcase, 0, sizeof(rxcase));
-  memset(rxid, 0, sizeof(rxid));
-  memset(ddc_sequence, 0, sizeof(ddc_sequence));
-  update_action_table();
+  TXIQRINGBUF = g_new(unsigned char, TXIQRINGBUFLEN);
+  RXAUDIORINGBUF = g_new(unsigned char, RXAUDIORINGBUFLEN);
 
   if (transmitter->local_microphone) {
     if (audio_open_input() != 0) {
@@ -459,8 +462,7 @@ void new_protocol_init(int pixels) {
 
   //
   // Initialize semaphores for the never-finishing threads
-  // (HighPrio, Mic, rxIQ)
-  // and spawn the threads.
+  // (HighPrio, Mic, rxIQ) and spawn these threads.
   //
 #ifdef __APPLE__
   high_priority_sem_ready = apple_sem(0);
@@ -481,7 +483,7 @@ void new_protocol_init(int pixels) {
   }
 
 #endif
-  running = 1;
+
   high_priority_thread_id = g_thread_new( "P2 HP", high_priority_thread, NULL);
   mic_line_thread_id = g_thread_new( "P2 MIC", mic_line_thread, NULL);
 
@@ -492,17 +494,11 @@ void new_protocol_init(int pixels) {
   }
 
   //
-  // start RX audio and TXIQ sending threads
+  // Setup communication (this is also done *once*)
+  // In XDMA mode, just call saturn_init(), in network mode, establish
+  // data socket and port addresses.
+  // Some QoS stuff included here, and the buffer length for incoming UDP packets
   //
-#ifdef __APPLE__
-  txiq_sem = apple_sem(0);
-  rxaudio_sem = apple_sem(0);
-#else
-  (void)sem_init(&txiq_sem, 0, 0); // check return value!
-  (void)sem_init(&rxaudio_sem, 0, 0); // check return value!
-#endif
-  new_protocol_rxaudio_thread_id = g_thread_new( "P2 SPKR", new_protocol_rxaudio_thread, NULL);
-  new_protocol_txiq_thread_id = g_thread_new( "P2 TXIQ", new_protocol_txiq_thread, NULL);
 
   if (have_saturn_xdma) {
 #ifdef SATURN
@@ -621,11 +617,13 @@ void new_protocol_init(int pixels) {
       data_addr_length[i] = radio->info.network.address_length;
       data_addr[i].sin_port = htons(RX_IQ_TO_HOST_PORT_0 + i);
     }
-
-    new_protocol_thread_id = g_thread_new( "P2 main", new_protocol_thread, NULL);
   }
 
-  new_protocol_start();
+  //
+  // This does all the work which has to be done both at startup and upon each restart
+  //
+
+  new_protocol_menu_start();
 }
 
 static void new_protocol_general() {
@@ -720,7 +718,7 @@ static void new_protocol_high_priority() {
   high_priority_buffer_to_radio[1] = high_priority_sequence >> 16;
   high_priority_buffer_to_radio[2] = high_priority_sequence >> 8;
   high_priority_buffer_to_radio[3] = high_priority_sequence;
-  high_priority_buffer_to_radio[4] = running;
+  high_priority_buffer_to_radio[4] = P2running;
 
   if (xmit) {
     if (txmode == modeCWU || txmode == modeCWL) {
@@ -1627,16 +1625,6 @@ static void new_protocol_receive_specific() {
   pthread_mutex_unlock(&rx_spec_mutex);
 }
 
-static void new_protocol_start() {
-  new_protocol_general();
-  usleep(50000);                    // let FPGA digest the port numbers
-  new_protocol_high_priority();
-  usleep(50000);                    // let FPGA digest the "run" command
-  new_protocol_transmit_specific();
-  new_protocol_receive_specific();
-  new_protocol_timer_thread_id = g_thread_new( "P2 task", new_protocol_timer_thread, NULL);
-}
-
 //
 // Function available to e.g. rigctl to stop the protocol
 //
@@ -1644,13 +1632,13 @@ void new_protocol_menu_stop() {
   fd_set fds;
   struct timeval tv;
   char *buffer;
-  running = 0;
+  P2running = 0;
   //
-  // Wait 50 msec so we know that the TX IQ and RX audio
+  // Wait 100 msec so we know that the TX IQ and RX audio
   // threads block on the semaphore. Then, post the semaphores
-  // such that the threads can check "running" and terminate
+  // such that the threads can read "P2running" and terminate
   //
-  usleep(50000);
+  usleep(100000);
 #ifdef __APPLE__
   sem_post(txiq_sem);
   sem_post(rxaudio_sem);
@@ -1731,7 +1719,7 @@ void new_protocol_menu_start() {
     }
   }
 
-  running = 1;
+  P2running = 1;
 #ifdef __APPLE__
   txiq_sem = apple_sem(0);
   rxaudio_sem = apple_sem(0);
@@ -1746,7 +1734,14 @@ void new_protocol_menu_start() {
     new_protocol_thread_id = g_thread_new( "P2 main", new_protocol_thread, NULL);
   }
 
-  new_protocol_start();
+  new_protocol_general();
+  usleep(50000);                    // let FPGA digest the port numbers
+  new_protocol_high_priority();
+  usleep(50000);                    // let FPGA digest the "run" command
+  new_protocol_transmit_specific();
+  new_protocol_receive_specific();
+  new_protocol_timer_thread_id = g_thread_new( "P2 task", new_protocol_timer_thread, NULL);
+
 }
 
 static gpointer new_protocol_rxaudio_thread(gpointer data) {
@@ -1760,14 +1755,14 @@ static gpointer new_protocol_rxaudio_thread(gpointer data) {
   // After sending a packet in network mode, wait a little bit before
   // attempting to send the next one.
   //
-  while (running) {
+  while (P2running) {
 #ifdef __APPLE__
     sem_wait(rxaudio_sem);
 #else
     sem_wait(&rxaudio_sem);
 #endif
 
-    if (!running) { break; }
+    if (!P2running) { break; }
 
     nptr = rxaudio_outptr + 256;
 
@@ -1866,14 +1861,14 @@ static gpointer new_protocol_txiq_thread(gpointer data) {
   // after sending a packet, there is a delay of 1000 usec before
   // sending the next one.
   //
-  while (running) {
+  while (P2running) {
 #ifdef __APPLE__
     sem_wait(txiq_sem);
 #else
     sem_wait(&txiq_sem);
 #endif
 
-    if (!running) { break; }
+    if (!P2running) { break; }
 
     iqbuffer[0] = tx_iq_sequence >> 24;
     iqbuffer[1] = tx_iq_sequence >> 16;
@@ -1953,7 +1948,7 @@ static gpointer new_protocol_thread(gpointer data) {
   // DDC-IQ and Microphone packets since they eventually get stuck in WDSP
   // (fexchange calls).
   //
-  while (running) {
+  while (P2running) {
     int ddc;
     short sourceport;
     int bytesread;
@@ -1963,7 +1958,7 @@ static gpointer new_protocol_thread(gpointer data) {
     buffer = mybuf->buffer;
     bytesread = recvfrom(data_socket, buffer, NET_BUFFER_SIZE, 0, (struct sockaddr*)&addr, &length);
 
-    if (!running) {
+    if (!P2running) {
       //
       // When leaving piHPSDR, it may happen that the protocol has been stopped while
       // we were doing "recvfrom". In this case, we want to let the main
@@ -2096,7 +2091,7 @@ void saturn_post_high_priority(mybuffer *buffer) {
 }
 
 void saturn_post_micaudio(int bytesread, mybuffer *mybuf) {
-  if (!running) {
+  if (!P2running) {
     mybuf->free = 1;
     return;
   }
@@ -2135,7 +2130,7 @@ void saturn_post_iq_data(int ddc, mybuffer *mybuf) {
     return;
   }
 
-  if (!running) {
+  if (!P2running) {
     mybuf->free = 1;
     return;
   }
@@ -2763,7 +2758,7 @@ void* new_protocol_timer_thread(void* arg) {
   int cycling = 0;
   usleep(100000);                               // wait for things to settle down
 
-  while (running) {
+  while (P2running) {
     cycling++;
 
     switch (cycling) {

@@ -896,11 +896,11 @@ static void create_visual() {
 
     switch (protocol) {
     case ORIGINAL_PROTOCOL:
-      old_protocol_init(0, my_width, receiver[0]->sample_rate);
+      old_protocol_init(receiver[0]->sample_rate);
       break;
 
     case NEW_PROTOCOL:
-      new_protocol_init(my_width);
+      new_protocol_init();
       break;
 #ifdef SOAPYSDR
 

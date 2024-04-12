@@ -22,7 +22,7 @@
 extern void old_protocol_stop(void);
 extern void old_protocol_run(void);
 
-extern void old_protocol_init(int rx, int pixels, int rate);
+extern void old_protocol_init(int rate);
 extern void old_protocol_set_mic_sample_rate(int rate);
 
 extern void old_protocol_audio_samples(short left_audio_sample, short right_audio_sample);

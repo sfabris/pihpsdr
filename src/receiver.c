@@ -1014,7 +1014,9 @@ RECEIVER *create_receiver(int id, int pixels, int width, int height) {
 
   //
   // If this is the second receiver in P1, over-write sample rate
-  // with that of the first  receiver.
+  // with that of the first  receiver. Different sample rates in 
+  // the props file may arise due to illegal hand editing or
+  // firmware downgrade from P2 to P1.
   //
   if (protocol == ORIGINAL_PROTOCOL && id == 1) {
     rx->sample_rate = receiver[0]->sample_rate;

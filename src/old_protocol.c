@@ -124,7 +124,7 @@ static struct sockaddr_in data_addr;
 
 static unsigned char control_in[5] = {0x00, 0x00, 0x00, 0x00, 0x00};
 
-static volatile int running = 0;
+static volatile int P1running = 0;
 
 static uint32_t last_seq_num = -0xffffffff;
 static int tx_fifo_flag = 0;
@@ -270,7 +270,7 @@ static gpointer old_protocol_txiq_thread(gpointer data) {
 
     if (nptr >= TXRINGBUFLEN) { nptr = 0; }
 
-    if (!running || txring_drain) {
+    if (!P1running || txring_drain) {
       txring_outptr = nptr;
       continue;
     }
@@ -410,7 +410,7 @@ void old_protocol_set_mic_sample_rate(int rate) {
 // old_protocol_stop and old_protocol_run just send start/stop packets
 // but do not shut down the communication
 //
-void old_protocol_init(int rx, int pixels, int rate) {
+void old_protocol_init(int rate) {
   int i;
   t_print("old_protocol_init: num_hpsdr_receivers=%d\n", how_many_receivers());
 
@@ -449,7 +449,7 @@ void old_protocol_init(int rx, int pixels, int rate) {
 #ifdef USBOZY
     t_print("old_protocol_init: initialise ozy on USB\n");
     ozy_initialise();
-    running = 1;
+    P1running = 1;
     start_usb_receive_threads();
 #endif
   } else {
@@ -512,7 +512,7 @@ static gpointer ozy_i2c_thread(gpointer arg) {
   cycle = 0;
 
   for (;;) {
-    if (running) {
+    if (P1running) {
       switch (cycle) {
       case 0:
         ozy_i2c_readpwr(I2C_PENNY_ALC);
@@ -579,7 +579,7 @@ static gpointer ozy_ep6_rx_thread(gpointer arg) {
     //
     // If the protocol has been stopped, just swallow all incoming packets
     //
-    if (!running) { continue; }
+    if (!P1running) { continue; }
 
     //t_print("%s: read %d bytes\n",__FUNCTION__,bytes);
     //dump_buffer(ep6_inbuffer,bytes,__FUNCTION__);
@@ -887,7 +887,7 @@ static gpointer receive_thread(gpointer arg) {
       //
       // If the protocol has been stopped, just swallow all incoming packets
       //
-      if (bytes_read <= 0 || !running) {
+      if (bytes_read <= 0 || !P1running) {
         continue;
       }
 
@@ -2703,7 +2703,7 @@ static void metis_start_stop(int command) {
   int i;
   unsigned char buffer[1032];
   t_print("%s: %d\n", __FUNCTION__, command);
-  running = command;
+  P1running = command;
 
   if (device == DEVICE_OZY) { return; }
 
