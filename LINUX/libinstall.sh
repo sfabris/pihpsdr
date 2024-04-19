@@ -22,10 +22,17 @@ PIHPSDR=$TARGET/release/pihpsdr
 
 RASPI=`cat /proc/cpuinfo | grep Model | grep -c Raspberry`
 
-echo "Script file abs.     position  is " $SCRIPTFILE
-echo "Pihpsdr main         directory is " $TARGET
-echo "Icons and Udev rules directory is " $PIHPSDR
-echo "RaspberryPi           detected is " $RASPI
+echo
+echo "=============================================================="
+echo "Script file absolute position  is " $SCRIPTFILE
+echo "Pihpsdr target       directory is " $TARGET
+echo "Icons and Udev rules  copied from " $PIHPSDR
+
+if [ $RASPI -ne 0 ]; then
+echo "This computer is a Raspberry Pi!"
+fi
+echo "=============================================================="
+echo
 
 ################################################################
 #
@@ -34,7 +41,11 @@ echo "RaspberryPi           detected is " $RASPI
 #
 ################################################################
 
+echo "=============================================================="
+echo
 echo "... installing LOTS OF compiles/libraries/helpers"
+echo
+echo "=============================================================="
 
 # ------------------------------------
 # Install standard tools and compilers
@@ -93,7 +104,11 @@ sudo apt-get install --yes librtlsdr-dev
 #
 ################################################################
 
+echo "=============================================================="
+echo
 echo "... installing SoapySDR core"
+echo
+echo "=============================================================="
 
 cd $THISDIR
 yes | rm -r SoapySDR
@@ -138,7 +153,11 @@ sudo ldconfig
 #
 ################################################################
 
+echo "=============================================================="
+echo
 echo "... installing SoapySDR AdalmPluto libraries"
+echo
+echo "=============================================================="
 
 cd $THISDIR
 yes | rm -rf SoapyPlutoSDR
@@ -158,7 +177,11 @@ sudo ldconfig
 #
 ################################################################
 
+echo "=============================================================="
+echo
 echo "... installing SoapySDR RTL-stick libraries"
+echo
+echo "=============================================================="
 
 cd $THISDIR
 yes | rm -rf SoapyRTLSDR
@@ -178,7 +201,11 @@ sudo ldconfig
 #
 ################################################################
 
+echo "=============================================================="
+echo
 echo "... creating Desktop Icons"
+echo
+echo "=============================================================="
 
 rm -f $HOME/Desktop/pihpsdr.desktop
 rm -f $HOME/.local/share/applications/pihpsdr.desktop
@@ -217,17 +244,20 @@ cp $PIHPSDR/hpsdr_icon.png $TARGET
 #
 ################################################################
 
-if [ $RASPI -eq 0 ]; then
+if [ $RASPI -ne 0 ]; then
 
-echo "...Final RaspPi Setup."
+echo "=============================================================="
+echo
+echo "... Final RaspPi Setup."
+echo
 
 if test -f "/boot/config.txt"; then
   echo "... putting GPIO stuff into /boot/config.txt"
   if grep -q "gpio=4-13,16-27=ip,pu" /boot/config.txt; then
-    echo "/boot/config.txt already contains gpio setup."
+    echo "!!! /boot/config.txt already contains gpio setup."
   else
-    echo "/boot/config.txt does not contain gpio setup - adding it."
-    echo "Please reboot system for this to take effect."
+    echo "... /boot/config.txt does not contain gpio setup - adding it."
+    echo "... Please reboot system for this to take effect."
     cat <<EGPIO | sudo tee -a /boot/config.txt > /dev/null
 [all]
 # setup GPIO for pihpsdr controllers
@@ -239,10 +269,10 @@ fi
 if test -f "/boot/firmware/config.txt"; then  
   echo "... putting GPIO stuff into /boot/firmware/config.txt"
   if grep -q "gpio=4-13,16-27=ip,pu" /boot/firmware/config.txt; then
-    echo "/boot/firmware/config.txt already contains gpio setup."
+    echo "!!! /boot/firmware/config.txt already contains gpio setup."
   else
-    echo "/boot/firmware/config.txt does not contain gpio setup - adding it."
-    echo "Please reboot system for this to take effect."
+    echo "... /boot/firmware/config.txt does not contain gpio setup - adding it."
+    echo "... Please reboot system for this to take effect."
     cat <<EGPIO | sudo tee -a /boot/firmware/config.txt > /dev/null
 [all]
 # setup GPIO for pihpsdr controllers
@@ -251,11 +281,13 @@ EGPIO
   fi
 fi
 
-echo "...copying XDMA udev rules"
+echo " ...copying XDMA udev rules"
 sudo cp $PIHPSDR/60-xdma.rules $PIHPSDR/xdma-udev-command.sh /etc/udev/rules.d/
 sudo udevadm control --reload-rules
 sudo udevadm trigger
 
+echo
+echo "=============================================================="
 fi
 
 ################################################################
