@@ -69,25 +69,30 @@ int n_output_devices = 0;
 //
 // If we go TX in CW mode, cw_audio_write() is called. If it is called for
 // the first time with a non-zero sidetone volume,
-// the ring buffer is cleared and only 256 (stereo) samples of silence
-// are put into it. During the TX phase, the buffer filling remains low
-// which we need for small CW sidetone latencies. If we then go to RX again
-// a "low water mark" condition is detected in the first call to audio_write()
-// and half a buffer length of silence is inserted again.
+// the ring buffer is cleared and only few (stereo) samples of silence
+// are put into it. This is probably the minimum amount necessary to avoid
+// audio underruns which manifest themselves as ugly cracks in the side ton.
+// During the TX phase, the buffer filling is kept between two rather low
+// water marks to ensure the small CW sidetone latency is kept.
+// If we then go to RX again a "low water mark" condition is detected in the
+// first call to audio_write() and half a buffer length of silence is inserted
+// again.
+// Of course, a small portaudio audio buffer size (128 sample) helps 
+// keeping the latency small. With the CW low/high water marks of 128/256
+// I have achieved a latency of slightly less than 15 msec on my
+// old 2013 iMac.
 //
-// Experiments indicate that we can indeed keep the ring buffer about half full
+// Experiments indicate that we can indeed keep the ring buffer about half filling
 // during RX and quite empty during CW-TX.
 //
-// If the sidetone volume is zero, the audio buffers are left unchanged
 //
 
-#define MY_AUDIO_BUFFER_SIZE 256
+#define MY_AUDIO_BUFFER_SIZE  128
 #define MY_RING_BUFFER_SIZE  9600
-#define MY_RING_LOW_WATER    1000
-#define MY_RING_HIGH_WATER   8600
-#define MY_CW_LOW_WATER      512
-#define MY_CW_HIGH_WATER     768
-#define MY_CW_MID_WATER      640
+#define MY_RING_LOW_WATER     512
+#define MY_RING_HIGH_WATER   9000
+#define MY_CW_LOW_WATER       128
+#define MY_CW_HIGH_WATER      256
 
 //
 // Ring buffer for "local microphone" samples stored locally here.
@@ -97,6 +102,8 @@ int n_output_devices = 0;
 static          float  *mic_ring_buffer = NULL;
 static volatile int     mic_ring_outpt = 0;
 static volatile int     mic_ring_inpt = 0;
+
+static int cwmode = 0;  // used to detect TRX transitions in CW
 
 //
 // AUDIO_GET_CARDS
@@ -583,6 +590,7 @@ int audio_write (RECEIVER *rx, float left, float right) {
 
   g_mutex_lock(&rx->local_audio_mutex);
 
+  cwmode = 0;
   if (rx->playstream != NULL && buffer != NULL) {
     int avail = rx->local_audio_buffer_inpt - rx->local_audio_buffer_outpt;
 
@@ -679,18 +687,20 @@ int cw_audio_write(RECEIVER *rx, float sample) {
 
     if (avail < 0) { avail += MY_RING_BUFFER_SIZE; }
 
-    if (avail >  MY_RING_LOW_WATER) {
+    if (cwmode == 0) {
       //
       // First time producing CW audio after RX/TX transition:
-      // empty audio buffer and insert *a little bit of* silence
+      // discard audio buffer and insert *a little bit of* silence
+      // (currently, 128 samples = 2.6 msec)
       //
-      bzero(rx->local_audio_buffer, 2 * MY_CW_MID_WATER * sizeof(float));
+      bzero(rx->local_audio_buffer, 2 * MY_CW_LOW_WATER * sizeof(float));
       MEMORY_BARRIER;
-      rx->local_audio_buffer_inpt = MY_CW_MID_WATER;
+      rx->local_audio_buffer_inpt = MY_CW_LOW_WATER;
       MEMORY_BARRIER;
       rx->local_audio_buffer_outpt = 0;
-      avail = MY_CW_MID_WATER;
+      avail = MY_CW_LOW_WATER;
       count = 0;
+      cwmode = 1;
     }
 
     if (sample != 0.0) { count = 0; }
@@ -700,17 +710,20 @@ int cw_audio_write(RECEIVER *rx, float sample) {
 
       //
       // We arrive here if we have seen 16 zero samples in a row.
-      // First look how many samples there are in the ring buffer
       //
-      if (avail > MY_CW_HIGH_WATER) { adjust = 2; } // too full: skip one sample
+      if (avail > MY_CW_HIGH_WATER) { adjust = 2; } // full: we are above high water mark
 
-      if (avail < MY_CW_LOW_WATER ) { adjust = 1; } // too empty: insert one sample
+      if (avail < MY_CW_LOW_WATER ) { adjust = 1; } // low: we are below low water mark
     }
 
     switch (adjust) {
     case 0:
       //
-      // default case: put sample into ring buffer
+      // default case:
+      //               put sample into ring buffer.
+      //               since the side tone is mono put it into 
+      //               both the left and right channel with the
+      //               same phase.
       //
       oldpt = rx->local_audio_buffer_inpt;
       newpt = oldpt + 1;
@@ -732,8 +745,8 @@ int cw_audio_write(RECEIVER *rx, float sample) {
 
     case 1:
       //
-      // buffer becomes too empty, and we just saw 16 samples of silence:
-      // insert two samples of silence. No check on "buffer full" necessary.
+      // we just saw 16 samples of silence and buffer filling is low:
+      // insert one extra silence sample
       //
       oldpt = rx->local_audio_buffer_inpt;
       rx->local_audio_buffer[2 * oldpt] = 0.0;
@@ -754,8 +767,8 @@ int cw_audio_write(RECEIVER *rx, float sample) {
 
     case 2:
       //
-      // buffer becomes too full, and we just saw
-      // 16 samples of silence: just skip the last "silent" sample
+      // we just saw 16 samples of silence and buffer filling is high:
+      // just skip the current "silent" sample, that is, do nothing.
       //
       break;
     }

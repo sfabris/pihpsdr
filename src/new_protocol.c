@@ -56,6 +56,7 @@
 #include "vox.h"
 #include "ext.h"
 #include "iambic.h"
+#include "rigctl.h"
 #include "message.h"
 #ifdef SATURN
   #include "saturnmain.h"
@@ -108,16 +109,16 @@ static GThread *new_protocol_rxaudio_thread_id;
 static GThread *new_protocol_txiq_thread_id;
 static GThread *new_protocol_timer_thread_id;
 
-static long high_priority_sequence = 0;
-static long general_sequence = 0;
-static long rx_specific_sequence = 0;
-static long tx_specific_sequence = 0;
-static long ddc_sequence[MAX_DDC];
+static unsigned long high_priority_sequence = 0;
+static unsigned long general_sequence = 0;
+static unsigned long rx_specific_sequence = 0;
+static unsigned long tx_specific_sequence = 0;
+static unsigned long ddc_sequence[MAX_DDC];
 
-static long tx_iq_sequence = 0;
+static unsigned long tx_iq_sequence = 0;
 
-static long highprio_rcvd_sequence = 0;
-static long micsamples_sequence = 0;
+static unsigned long highprio_rcvd_sequence = 0;
+static unsigned long micsamples_sequence = 0;
 
 #ifdef __APPLE__
   static sem_t *high_priority_sem_ready;
@@ -139,7 +140,7 @@ static GThread *high_priority_thread_id;
 static GThread *mic_line_thread_id;
 static GThread *iq_thread_id[MAX_DDC];
 
-static long audio_sequence = 0;
+static unsigned long audio_sequence = 0;
 
 // Use this to determine the source port of messages received
 static struct sockaddr_in addr;
@@ -633,10 +634,10 @@ static void new_protocol_general() {
   int txvfo = get_tx_vfo();
   band = band_get_band(vfo[txvfo].band);
   memset(general_buffer, 0, sizeof(general_buffer));
-  general_buffer[0] = general_sequence >> 24;
-  general_buffer[1] = general_sequence >> 16;
-  general_buffer[2] = general_sequence >> 8;
-  general_buffer[3] = general_sequence;
+  general_buffer[0] = (general_sequence >> 24) & 0xFF;
+  general_buffer[1] = (general_sequence >> 16) & 0xFF;
+  general_buffer[2] = (general_sequence >>  8) & 0xFF;
+  general_buffer[3] = (general_sequence      ) & 0xFF;
   // use defaults apart from
   general_buffer[37] = 0x08; //  phase word (not frequency)
   general_buffer[38] = 0x01; //  enable hardware timer
@@ -714,10 +715,10 @@ static void new_protocol_high_priority() {
   int txmode   = get_tx_mode();
   const BAND *txband = band_get_band(vfo[txvfo].band);
   const BAND *rxband = band_get_band(vfo[rxvfo].band);
-  high_priority_buffer_to_radio[0] = high_priority_sequence >> 24;
-  high_priority_buffer_to_radio[1] = high_priority_sequence >> 16;
-  high_priority_buffer_to_radio[2] = high_priority_sequence >> 8;
-  high_priority_buffer_to_radio[3] = high_priority_sequence;
+  high_priority_buffer_to_radio[0] = (high_priority_sequence >> 24) & 0xFF;
+  high_priority_buffer_to_radio[1] = (high_priority_sequence >> 16) & 0xFF;
+  high_priority_buffer_to_radio[2] = (high_priority_sequence >>  8) & 0xFF;
+  high_priority_buffer_to_radio[3] = (high_priority_sequence      ) & 0xFF;
   high_priority_buffer_to_radio[4] = P2running;
 
   if (xmit) {
@@ -770,14 +771,14 @@ static void new_protocol_high_priority() {
     // The "obscure" constant 34.952533333333333333333333333333 is 4294967296/122880000
     //
     phase = (unsigned long)(((double)DDCfrequency[0]) * 34.952533333333333333333333333333);
-    high_priority_buffer_to_radio[9] = phase >> 24;
-    high_priority_buffer_to_radio[10] = phase >> 16;
-    high_priority_buffer_to_radio[11] = phase >> 8;
-    high_priority_buffer_to_radio[12] = phase;
-    high_priority_buffer_to_radio[13] = phase >> 24;
-    high_priority_buffer_to_radio[14] = phase >> 16;
-    high_priority_buffer_to_radio[15] = phase >> 8;
-    high_priority_buffer_to_radio[16] = phase;
+    high_priority_buffer_to_radio[ 9] = (phase >> 24) & 0xFF;
+    high_priority_buffer_to_radio[10] = (phase >> 16) & 0xFF;
+    high_priority_buffer_to_radio[11] = (phase >>  8) & 0xFF;
+    high_priority_buffer_to_radio[12] = (phase      ) & 0xFF;
+    high_priority_buffer_to_radio[13] = (phase >> 24) & 0xFF;
+    high_priority_buffer_to_radio[14] = (phase >> 16) & 0xFF;
+    high_priority_buffer_to_radio[15] = (phase >>  8) & 0xFF;
+    high_priority_buffer_to_radio[16] = (phase      ) & 0xFF;
   } else {
     //
     // Set frequencies for all receivers
@@ -790,17 +791,17 @@ static void new_protocol_high_priority() {
         device == NEW_DEVICE_ORION2 || device == NEW_DEVICE_SATURN) { ddc = 2; }
 
     phase = (unsigned long)(((double)DDCfrequency[0]) * 34.952533333333333333333333333333);
-    high_priority_buffer_to_radio[9 + (ddc * 4)] = phase >> 24;
-    high_priority_buffer_to_radio[10 + (ddc * 4)] = phase >> 16;
-    high_priority_buffer_to_radio[11 + (ddc * 4)] = phase >> 8;
-    high_priority_buffer_to_radio[12 + (ddc * 4)] = phase;
+    high_priority_buffer_to_radio[ 9 + (ddc * 4)] = (phase >> 24) & 0xFF;
+    high_priority_buffer_to_radio[10 + (ddc * 4)] = (phase >> 16) & 0xFF;
+    high_priority_buffer_to_radio[11 + (ddc * 4)] = (phase >>  8) & 0xFF;
+    high_priority_buffer_to_radio[12 + (ddc * 4)] = (phase      ) & 0xFF;
 
     if (receivers > 1) {
       phase = (unsigned long)(((double)DDCfrequency[1]) * 34.952533333333333333333333333333);
-      high_priority_buffer_to_radio[13 + (ddc * 4)] = phase >> 24;
-      high_priority_buffer_to_radio[14 + (ddc * 4)] = phase >> 16;
-      high_priority_buffer_to_radio[15 + (ddc * 4)] = phase >> 8;
-      high_priority_buffer_to_radio[16 + (ddc * 4)] = phase;
+      high_priority_buffer_to_radio[13 + (ddc * 4)] = (phase >> 24) & 0xFF;
+      high_priority_buffer_to_radio[14 + (ddc * 4)] = (phase >> 16) & 0xFF;
+      high_priority_buffer_to_radio[15 + (ddc * 4)] = (phase >>  8) & 0xFF;
+      high_priority_buffer_to_radio[16 + (ddc * 4)] = (phase      ) & 0xFF;
     }
   }
 
@@ -821,23 +822,23 @@ static void new_protocol_high_priority() {
     //
     // Set DDC0 and DDC1 (synchronized) to the transmit frequency
     //
-    high_priority_buffer_to_radio[9] = phase >> 24;
-    high_priority_buffer_to_radio[10] = phase >> 16;
-    high_priority_buffer_to_radio[11] = phase >> 8;
-    high_priority_buffer_to_radio[12] = phase;
-    high_priority_buffer_to_radio[13] = phase >> 24;
-    high_priority_buffer_to_radio[14] = phase >> 16;
-    high_priority_buffer_to_radio[15] = phase >> 8;
-    high_priority_buffer_to_radio[16] = phase;
+    high_priority_buffer_to_radio[ 9] = (phase >> 24) & 0xFF;
+    high_priority_buffer_to_radio[10] = (phase >> 16) & 0xFF;
+    high_priority_buffer_to_radio[11] = (phase >>  8) & 0xFF;
+    high_priority_buffer_to_radio[12] = (phase      ) & 0xFF;
+    high_priority_buffer_to_radio[13] = (phase >> 24) & 0xFF;
+    high_priority_buffer_to_radio[14] = (phase >> 16) & 0xFF;
+    high_priority_buffer_to_radio[15] = (phase >>  8) & 0xFF;
+    high_priority_buffer_to_radio[16] = (phase      ) & 0xFF;
   }
 
   //
   // DUC frequency and drive level
   //
-  high_priority_buffer_to_radio[329] = phase >> 24;
-  high_priority_buffer_to_radio[330] = phase >> 16;
-  high_priority_buffer_to_radio[331] = phase >> 8;
-  high_priority_buffer_to_radio[332] = phase;
+  high_priority_buffer_to_radio[329] = (phase >> 24) & 0xFF;
+  high_priority_buffer_to_radio[330] = (phase >> 16) & 0xFF;
+  high_priority_buffer_to_radio[331] = (phase >>  8) & 0xFF;
+  high_priority_buffer_to_radio[332] = (phase      ) & 0xFF;
   int power = 0;
 
   //
@@ -851,6 +852,12 @@ static void new_protocol_high_priority() {
   }
 
   high_priority_buffer_to_radio[345] = power & 0xFF;
+
+  //
+  // RigCtl CAT port
+  //
+  high_priority_buffer_to_radio[1398] = (rigctl_port >> 8) & 0xFF;
+  high_priority_buffer_to_radio[1399] = (rigctl_port     ) & 0xFF;
 
   //
   // band specific OpenCollector outputs
@@ -1313,13 +1320,13 @@ static void new_protocol_high_priority() {
 
   high_priority_buffer_to_radio[1432] = (alex0 >> 24) & 0xFF;
   high_priority_buffer_to_radio[1433] = (alex0 >> 16) & 0xFF;
-  high_priority_buffer_to_radio[1434] = (alex0 >> 8) & 0xFF;
-  high_priority_buffer_to_radio[1435] = alex0 & 0xFF;
+  high_priority_buffer_to_radio[1434] = (alex0 >>  8) & 0xFF;
+  high_priority_buffer_to_radio[1435] = (alex0      ) & 0xFF;
   //t_print("ALEX0 bits:  %02X %02X %02X %02X\n",high_priority_buffer_to_radio[1432],high_priority_buffer_to_radio[1433],high_priority_buffer_to_radio[1434],high_priority_buffer_to_radio[1435]);
   high_priority_buffer_to_radio[1428] = (alex1 >> 24) & 0xFF;
   high_priority_buffer_to_radio[1429] = (alex1 >> 16) & 0xFF;
-  high_priority_buffer_to_radio[1430] = (alex1 >> 8) & 0xFF;
-  high_priority_buffer_to_radio[1431] = alex1 & 0xFF;
+  high_priority_buffer_to_radio[1430] = (alex1 >>  8) & 0xFF;
+  high_priority_buffer_to_radio[1431] = (alex1      ) & 0xFF;
   //t_print("ALEX0 bits:  %02X %02X %02X %02X\n",high_priority_buffer_to_radio[1428],high_priority_buffer_to_radio[1429],high_priority_buffer_to_radio[1430],high_priority_buffer_to_radio[1431]);
   //
   // ADC step attenuator of ADC0 and ADC1
@@ -1383,10 +1390,10 @@ static void new_protocol_transmit_specific() {
   pthread_mutex_lock(&tx_spec_mutex);
   int txmode = get_tx_mode();
   memset(transmit_specific_buffer, 0, sizeof(transmit_specific_buffer));
-  transmit_specific_buffer[0] = tx_specific_sequence >> 24;
-  transmit_specific_buffer[1] = tx_specific_sequence >> 16;
-  transmit_specific_buffer[2] = tx_specific_sequence >> 8;
-  transmit_specific_buffer[3] = tx_specific_sequence;
+  transmit_specific_buffer[0] = (tx_specific_sequence >> 24) & 0xFF;
+  transmit_specific_buffer[1] = (tx_specific_sequence >> 16) & 0xFF;
+  transmit_specific_buffer[2] = (tx_specific_sequence >>  8) & 0xFF;
+  transmit_specific_buffer[3] = (tx_specific_sequence      ) & 0xFF;
   transmit_specific_buffer[4] = 1; // 1 DAC
   transmit_specific_buffer[5] = 0; //  default no CW
 
@@ -1432,13 +1439,13 @@ static void new_protocol_transmit_specific() {
 
   if (rfdelay > rfmax) { rfdelay = rfmax; }
 
-  transmit_specific_buffer[6] = cw_keyer_sidetone_volume & 0x7F;
-  transmit_specific_buffer[7] = cw_keyer_sidetone_frequency >> 8;
-  transmit_specific_buffer[8] = cw_keyer_sidetone_frequency;
-  transmit_specific_buffer[9] = cw_keyer_speed;
+  transmit_specific_buffer[ 6] = cw_keyer_sidetone_volume & 0x7F;
+  transmit_specific_buffer[ 7] = (cw_keyer_sidetone_frequency >> 8) & 0xFF;
+  transmit_specific_buffer[ 8] = (cw_keyer_sidetone_frequency     ) & 0xFF;
+  transmit_specific_buffer[ 9] = cw_keyer_speed;
   transmit_specific_buffer[10] = cw_keyer_weight;
-  transmit_specific_buffer[11] = cw_keyer_hang_time >> 8;
-  transmit_specific_buffer[12] = cw_keyer_hang_time;
+  transmit_specific_buffer[11] = (cw_keyer_hang_time >> 8) & 0xFF;
+  transmit_specific_buffer[12] = (cw_keyer_hang_time     ) & 0xFF;
   transmit_specific_buffer[13] = rfdelay;
   transmit_specific_buffer[14] = 0;
   transmit_specific_buffer[15] = 0;   // should be 192: TX sample rate 192k
@@ -1519,10 +1526,10 @@ static void new_protocol_receive_specific() {
   pthread_mutex_lock(&rx_spec_mutex);
   memset(receive_specific_buffer, 0, sizeof(receive_specific_buffer));
   xmit = isTransmitting();
-  receive_specific_buffer[0] = rx_specific_sequence >> 24;
-  receive_specific_buffer[1] = rx_specific_sequence >> 16;
-  receive_specific_buffer[2] = rx_specific_sequence >> 8;
-  receive_specific_buffer[3] = rx_specific_sequence;
+  receive_specific_buffer[0] = (rx_specific_sequence >> 24) & 0xFF;
+  receive_specific_buffer[1] = (rx_specific_sequence >> 16) & 0xFF;
+  receive_specific_buffer[2] = (rx_specific_sequence >>  8) & 0xFF;
+  receive_specific_buffer[3] = (rx_specific_sequence      ) & 0xFF;
   receive_specific_buffer[4] = n_adc; // number of ADCs
 
   for (i = 0; i < receivers; i++) {
@@ -1552,7 +1559,7 @@ static void new_protocol_receive_specific() {
 
     receive_specific_buffer[17 + (ddc * 6)] = receiver[i]->adc;
     receive_specific_buffer[18 + (ddc * 6)] = ((receiver[i]->sample_rate / 1000) >> 8) & 0xFF;
-    receive_specific_buffer[19 + (ddc * 6)] = (receiver[i]->sample_rate / 1000) & 0xFF;
+    receive_specific_buffer[19 + (ddc * 6)] = ((receiver[i]->sample_rate / 1000)     ) & 0xFF;
     receive_specific_buffer[22 + (ddc * 6)] = 24;
   }
 
@@ -1590,11 +1597,11 @@ static void new_protocol_receive_specific() {
     receive_specific_buffer[6] |= (receiver[0]->random) << 1;                      // random DDC1: take value from RX1
     receive_specific_buffer[17] = 0;                                               // ADC0 associated with DDC0
     receive_specific_buffer[18] = ((receiver[0]->sample_rate / 1000) >> 8) & 0xFF; // sample rate MSB
-    receive_specific_buffer[19] = (receiver[0]->sample_rate / 1000) & 0xFF;        // sample rate LSB
+    receive_specific_buffer[19] = ((receiver[0]->sample_rate / 1000)     ) & 0xFF; // sample rate LSB
     receive_specific_buffer[22] = 24;                                              // bits per sample
     receive_specific_buffer[23] = 1;                                               // ADC1 associated with DDC1
     receive_specific_buffer[24] = ((receiver[0]->sample_rate / 1000) >> 8) & 0xFF; // sample rate MSB
-    receive_specific_buffer[25] = (receiver[0]->sample_rate / 1000) & 0xFF;;       // sample rate LSB
+    receive_specific_buffer[25] = ((receiver[0]->sample_rate / 1000)     ) & 0xFF; // sample rate LSB
     receive_specific_buffer[26] = 24;                                              // bits per sample
     receive_specific_buffer[1363] = 0x02;                                          // sync DDC1 to DDC0
     receive_specific_buffer[7] = 1;                                                // enable  DDC0 but disable all others
@@ -1769,14 +1776,15 @@ static gpointer new_protocol_rxaudio_thread(gpointer data) {
     if (nptr >= RXAUDIORINGBUFLEN) { nptr = 0; }
 
     if (rxaudio_drain) {
+      // remove data from buffer but do not send
       rxaudio_outptr = nptr;
       continue;
     }
 
-    audiobuffer[0] = audio_sequence >> 24;
-    audiobuffer[1] = audio_sequence >> 16;
-    audiobuffer[2] = audio_sequence >> 8;
-    audiobuffer[3] = audio_sequence;
+    audiobuffer[0] = (audio_sequence >> 24) & 0xFF;
+    audiobuffer[1] = (audio_sequence >> 16) & 0xFF;
+    audiobuffer[2] = (audio_sequence >>  8) & 0xFF;
+    audiobuffer[3] = (audio_sequence      ) & 0xFF;
     audio_sequence++;
     memcpy(&audiobuffer[4], &RXAUDIORINGBUF[rxaudio_outptr], 256);
     MEMORY_BARRIER;
@@ -1870,10 +1878,10 @@ static gpointer new_protocol_txiq_thread(gpointer data) {
 
     if (!P2running) { break; }
 
-    iqbuffer[0] = tx_iq_sequence >> 24;
-    iqbuffer[1] = tx_iq_sequence >> 16;
-    iqbuffer[2] = tx_iq_sequence >> 8;
-    iqbuffer[3] = tx_iq_sequence;
+    iqbuffer[0] = (tx_iq_sequence >> 24) & 0xFF;
+    iqbuffer[1] = (tx_iq_sequence >> 16) & 0xFF;
+    iqbuffer[2] = (tx_iq_sequence >>  8) & 0xFF;
+    iqbuffer[3] = (tx_iq_sequence      ) & 0xFF;
     tx_iq_sequence++;
     nptr = txiq_outptr + 1440;
 
@@ -2601,21 +2609,22 @@ void new_protocol_cw_audio_samples(short left_audio_sample, short right_audio_sa
     if (!rxaudio_flag) {
       //
       // First time we arrive here after a RX->TX(CW) transition:
-      // set the "drain" flag, wait 5 msec, clear it
-      // This should drain the audio ring buffer, to achieve
-      // minimum latency for the CW side tone.
+      // set the "drain" flag, wait until buffer is drained,
+      // then clear the flag.
+      // This is done to start CW TX with an "empty" buffer in order
+      // to minimize CW side tone latency (17 msec measured on my ANAN-7000).
       //
       rxaudio_drain = 1;
-      usleep(5000);
+      while (rxaudio_inptr != rxaudio_outptr) usleep(1000);
       rxaudio_drain = 0;
       rxaudio_flag = 1;
     }
 
     int iptr = rxaudio_inptr + 4 * rxaudio_count;
-    RXAUDIORINGBUF[iptr++] = left_audio_sample >> 8;
-    RXAUDIORINGBUF[iptr++] = left_audio_sample;
-    RXAUDIORINGBUF[iptr++] = right_audio_sample >> 8;
-    RXAUDIORINGBUF[iptr++] = right_audio_sample;
+    RXAUDIORINGBUF[iptr++] = (left_audio_sample  >> 8) & 0xFF;
+    RXAUDIORINGBUF[iptr++] = (left_audio_sample      ) & 0xFF;
+    RXAUDIORINGBUF[iptr++] = (right_audio_sample >> 8) & 0xFF;
+    RXAUDIORINGBUF[iptr++] = (right_audio_sample     ) & 0xFF;
     rxaudio_count++;
 
     if (rxaudio_count >= 64) {
@@ -2661,20 +2670,18 @@ void new_protocol_audio_samples(short left_audio_sample, short right_audio_sampl
   if (rxaudio_flag) {
     //
     // First time we arrive here after a TX(CW)->RX transition:
-    // set the "drain" flag, wait 5 msec, clear it
-    // This should drain the audio ring buffer.
+    // no need to drain the audio buffer since it should not
+    // be overly full, and low latency does not matter that
+    // much when RX-ing.
     //
-    rxaudio_drain = 1;
-    usleep(5000);
-    rxaudio_drain = 0;
     rxaudio_flag = 0;
   }
 
   int iptr = rxaudio_inptr + 4 * rxaudio_count;
-  RXAUDIORINGBUF[iptr++] = left_audio_sample >> 8;
-  RXAUDIORINGBUF[iptr++] = left_audio_sample;
-  RXAUDIORINGBUF[iptr++] = right_audio_sample >> 8;
-  RXAUDIORINGBUF[iptr++] = right_audio_sample;
+  RXAUDIORINGBUF[iptr++] = (left_audio_sample  >> 8) & 0xFF;
+  RXAUDIORINGBUF[iptr++] = (left_audio_sample      ) & 0xFF;
+  RXAUDIORINGBUF[iptr++] = (right_audio_sample >> 8) & 0xFF;
+  RXAUDIORINGBUF[iptr++] = (right_audio_sample     ) & 0xFF;
   rxaudio_count++;
 
   if (rxaudio_count >= 64) {
@@ -2707,12 +2714,12 @@ void new_protocol_iq_samples(int isample, int qsample) {
   }
 
   int iptr = txiq_inptr + 6 * txiq_count;
-  TXIQRINGBUF[iptr++] = isample >> 16;
-  TXIQRINGBUF[iptr++] = isample >> 8;
-  TXIQRINGBUF[iptr++] = isample;
-  TXIQRINGBUF[iptr++] = qsample >> 16;
-  TXIQRINGBUF[iptr++] = qsample >> 8;
-  TXIQRINGBUF[iptr++] = qsample;
+  TXIQRINGBUF[iptr++] = (isample >> 16) & 0xFF;
+  TXIQRINGBUF[iptr++] = (isample >>  8) & 0xFF;
+  TXIQRINGBUF[iptr++] = (isample      ) & 0xFF;
+  TXIQRINGBUF[iptr++] = (qsample >> 16) & 0xFF;
+  TXIQRINGBUF[iptr++] = (qsample >>  8) & 0xFF;
+  TXIQRINGBUF[iptr++] = (qsample      ) & 0xFF;
   txiq_count++;
 
   if (txiq_count >= 240) {
