@@ -139,7 +139,17 @@ void transmitter_set_compressor(TRANSMITTER *tx, int state) {
   SetTXACompressorRun(tx->id, tx->compressor);
 }
 
-static void init_ramp(double *ramp, int width) {
+static void init_audio_ramp(double *ramp, int width) {
+  //
+  // This is for the sidetone, we use a raised cosine ramp
+  //
+  for (int i = 0; i <= width; i++) {
+    double y = (double) i * 3.1415926535897932 / ((double) width);  // between 0 and Pi
+    ramp[i] = 0.5 * (1.0 - cos(y));
+  }
+}
+
+static void init_rf_ramp(double *ramp, int width) {
   //
   // Calculate a "Blackman-Harris-Ramp"
   // Output: ramp[0] ... ramp[width] contain numbers
@@ -1727,18 +1737,24 @@ void tx_set_ramps(TRANSMITTER *tx) {
   //
   g_mutex_lock(&tx->cw_ramp_mutex);
 
+  //
+  // For the side tone, a RaisedCosine profile with a width of 5 msec
+  // seems to be standard, and has less latency than a 8 msec BH RF profile
+  //
   if (tx->cw_ramp_audio) { g_free(tx->cw_ramp_audio); }
-
   tx->cw_ramp_audio_ptr = 0;
-  tx->cw_ramp_audio_len = 48 * cw_ramp_width;
+  tx->cw_ramp_audio_len = 240;
   tx->cw_ramp_audio = g_new(double, tx->cw_ramp_audio_len + 1);
-  init_ramp(tx->cw_ramp_audio, tx->cw_ramp_audio_len);
+  init_audio_ramp(tx->cw_ramp_audio, tx->cw_ramp_audio_len);
 
+  //
+  // For the RF pulse envelope, use a BlackmanHarris ramp with a
+  // user-specified width
+  //
   if (tx->cw_ramp_rf) { g_free(tx->cw_ramp_rf); }
-
   tx->cw_ramp_rf_ptr = 0;
   tx->cw_ramp_rf_len = 48 * tx->ratio * cw_ramp_width;
   tx->cw_ramp_rf = g_new(double, tx->cw_ramp_rf_len + 1);
-  init_ramp(tx->cw_ramp_rf, tx->cw_ramp_rf_len);
+  init_rf_ramp(tx->cw_ramp_rf, tx->cw_ramp_rf_len);
   g_mutex_unlock(&tx->cw_ramp_mutex);
 }
