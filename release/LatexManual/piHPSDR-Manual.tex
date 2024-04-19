@@ -102,13 +102,16 @@ the code. A lot of extensions and improvements have been added by myself, theref
 to the version of piHPSDR that can be found on my github account \texttt{https://github.com/dl1ycf/pihpsdr}.
 
 Because piHPSDR can be used on many different types of computers, and because operating systems change
-rather quickly over time, I no longer offer a ,,binary installation'', that is, a \texttt{tar} file
-containing pre-compiled binaries. Is therefore necessary to build piHPSDR on the target system
-from the sources. To make this easy for non-nerds, Sshell scripts for a semi-automatic installation
-have been provided, and the procedure is described in Appendix \ref{sec:installsources} for Linux (including RaspPi)
-computers and in Appendix \ref{sec:installmacosx} for Mac OSX.
-This manual starts in its first chapter with the first invocation of a freshly compiled piHPSDR.
+rather quickly over time, I do no longer offer a ,,binary installation'', that is, archive
+containing pre-compiled binaries. It is therefore necessary to build piHPSDR \textit{on the target system}
+from the sources. I know this sounds daunting to non-LINUX-nerds. But I have put much effort into making
+the installation/compilation procedure semi-automatic and easy-to-use for non-nerds.
+To this end, I provide so-called shell scripts which do all the work behind the scene.
+The procedure is described in some detail in Appendix \ref{sec:installsources} for Linux (including RaspPi)
+computers and in Appendix \ref{sec:installmacosx} for Mac OSX. Several ,,absolute beginners'' have meanwhile
+successfully downloaded and installed piHPSDR from the sources, so you will manage to do so as well.
 
+This manual starts in its first chapter with the first invocation of a freshly compiled piHPSDR.
 Within this manual, we shall use a typewriter font in red color if we refer to a text or a button within
 a menu of within the VFO bar. piHPSDR menus and commands are indicated through a typewriter font
 printed in blue. The author hopes that this improves readability. In some cases, if the name of a command
@@ -132,7 +135,8 @@ cable to the switch. If the computer has both a RJ45 jack for an ethernet cable,
 personal recommendation is to use WiFi to connect the computer to the internet, and use a single direct
 cable plugged
 into the RJ45 jacks of the computer and of the radio. It is a little tricky how both the computer
-and the radio obtain their IP address in this case, one such possibility is decribed in Appendix
+and the radio obtain their IP (\textit{internet protocol}) address in this case,
+ one such possibility is decribed in Appendix
 \ref{sec:dhcp}. An alternative to setting up a DHCP server as described there is to ,,burn'' a fixed
 IP address into the radio, as described in the radio manuals.
 
@@ -144,7 +148,7 @@ IP address into the radio, as described in the radio manuals.
 \end{figure}
 
 If the piHPSDR program is started for the first time, it opens a window that looks like Fig. \ref{fig:Planning}.
-Besides stating a version number and when piHPSDR was built, the list of optional features is
+Besides stating a version number and the date piHPSDR was built, the list of optional features is
 documented (compile-time options,
 in this case  GPIO, MIDI, SATURN) as well as the audio module used (here: ALSA) for attaching headphones
 or microphones to the host computer running piHPSDR. Information about compile-time options and the 
@@ -159,9 +163,9 @@ On the contrary, on CPUs with
 complex instruction sets, more planning is necessary: on my other Mac mini with a 3 GHz x86 processor, it
 takes 16 minutes! But note
 this has only to be done once, in subsequent starts of piHPSDR, the wisdom will simply be read from
-the file created during the \textit{wisdom plans}. These plans contain, for a large number of dimensions,
-the fasted way how to perform FFTs (fast Fourier transformations) on the given CPU.
-When the wisdom is secured, piHPSDR tries to detect a radio on the network. If everything went well with
+the file created during the \textit{planning}. These plans contain, for a large number of dimensions,
+the fastest way to perform FFTs (\textit{fast Fourier transformations}) on the given CPU.
+When this ,,wisdom'' is secured, piHPSDR tries to detect a radio on the network. If everything went well with
 the network connection, you then see a screen with a discovery menu (Fig. \ref{fig:Start}).
 
 \begin{figure}
@@ -220,10 +224,10 @@ Sometimes piHPSDR needs to know the IP address of the radio. This is, for exampl
 \texttt{STEMlab} discovery
 described above. In such a case the IP address in numerical form (xxx.xxx.xxx.xxx) can be entered in the box
 with the label \rett{Radio IP Addr:}. If a legal IP address is contained in this box, protocol-1 and
-protocol-2 discoveries
-will also send to the IP address specified, in addition to the standard broadcast discovery packets which
+protocol-2 discovery queries
+will also sent to the IP address specified, in addition to the standard broadcast discovery packets which
 can only reach
-radios on the same network segment. With a known IP address,  one can
+radios on the same network segment. With a known IP address (and if supported by the radio),  one can
 connect to radios which are not on the same subnet as the computer, in principle you can connect to any
 radio on the world
 provided it is on the internet. However, the original HPSDR standard states that a broadcast packet must be
@@ -238,27 +242,28 @@ was not yet ready when piHPSDR was started. Simply press \rett{Discover} to star
 The combo-box (pop-down menu) to the left of the \rett{Discover} button lets you choose which type of GPIO
 controller you
 have attached to the computer. This menu is only available if piHPSDR has been compiled with the
-\texttt{GPIO} option, which
-is not the case on desktop/laptop computers. The menu lets you choose between
+\texttt{GPIO} option, which makes sense on a Raspberry Pi but is not possible on most LINUX desktop/laptop
+or Macintosh computers. The menu lets you choose between
 
 \begin{itemize}[font=\texttt, left=80pt]
 \item[No Controller]{Choose this if no GPIO controller is wired to your Raspberry Pi. This is the default
 when you first start piHPSDR.}
-\item[Contoller1]{Choose this if you have the original piHPSDR controller, called the Controller1 in the rest
+\item[Contoller1]{Choose this if you have the original piHPSDR controller put to the market by ApacheLabs
+(or a clone thereof), called the Controller1 in the rest
 of this manual.}
 \item[Controller2 V1]{This option is valid for some early prototypes of the "version 2" controller with
 single encoders. This special case is not covered in this manual.}
-\item[Controller2 V2]{Choose this if you have a "version 2" piHPSDR controller with double encoders
-on a single shaft.
+\item[Controller2 V2]{Choose this if you have a "version 2" piHPSDR controller from ApacheLabs (with double encoders
+on a single shaft), or a clone thereof.
 This controller is denoted Controller2 in the rest of this manual.}
 \item[G2 Front Panel]{Choose this if you have an ANAN G2 radio with a built-in controller.}
 \end{itemize}
 
 \textbf{Attention.} Be sure to choose a controller only if such a controller is actually connected to your
-Raspberry Pi. If
-you choose, for example, a controller which uses an I2C expander for the switches, but no I2C interface is
-present on
-your Raspberry Pi, the program my hang when trying to open the I2C connection.
+Raspberry Pi. Unexpected things can happen if you chose one type of controller here but have totally different
+hardware connected to the GPIO. For example, if you have a so-called ,,audio hat'' attached to the RaspPi
+GPIO, then it is safest to choose \texttt{No Controller} to avoid piHPSDR using GPIO lines actually used
+by the audio hat.
 
 All settings (protocols, controller, IP address) made in this menu are stored in the global (radio-
 indepentend) settings
@@ -298,45 +303,50 @@ piHPSDR window, stacked vertically, and both including a spectrum scope
 (the green-coloured noise floor) and a waterfall. The waterfall area
 is completely black in the above picture since there was no RF signal.
 piHPSDR can be switched between having one or two receivers in the
-\texttt{Radio} menu. If there are two receivers (called RX1 and RX2),
+\texttt{Radio} menu. If there are two receivers (called RX0 and RX1),
  one of the two is the \textit{active receiver}. If you look closely
  at the above picture, you will note that the spectrum scope of
- the lower (RX2) panel is shaded, while it is in bright colour for RX1.
- This indicates that RX1 is currently the active receiver. By simply
+ the lower (RX1) panel is shaded, while it is in bright colour for RX0.
+ This indicates that RX0 is currently the active receiver. By simply
  clicking into the panel of the other (inactive) receiver, either with
  a mouse or on a touch screen, the formely inactive receiver becomes
  active.
+ 
+ \textbf{Note:} In this manual (and in the  piHPSDR menus), the two
+ receivers are consistently denoted RX0 and RX1.
+Be aware that other sources use RX1/RX2, which might
+ cause some confusion.
 
  Many conventional rigs with two independent receivers discriminate
  between the \textit{main} and the \textit{sub} receiver. It is important that
  this is \textbf{not} the case for piHPSDR. In piHPDSR, both  receivers are
  largely equivalent. For example, if you start transmitting in
  normal (non-split) mode, the TX frequency matches the frequency
- of the active receiver, no matter whether this is RX1 or RX2.
+ of the active receiver, no matter whether this is RX0 or RX1.
  Likewise, in split mode, the TX frequency matches the frequency
  of the non-active receiver. Most of the receiver-specific controls,
  for example adjusting the AF volume or the AGC gain, refer to the
  current active receiver. If piHPSDR runs with two receivers,
- RX1 is always controlled by VFO-A while RX2 is controlled by VFO-B.
+ RX0 is always controlled by VFO-A while RX1 is controlled by VFO-B.
  The VFO settings not only include the frequency but also the
  current mode (e.g. LSB or CWU), the filter setting, the band and
  bandstack setting, whether RIT is enabled or not, and the RIT
  offset. So changing the RIT value only changes it for the active
- receiver. If you want  to change the RIT value for RX2 while RX1 is
- the active receiver, you have to make RX2 active, change the RIT
- value and then make RX1 active again.
+ receiver. If you want  to change the RIT value for RX1 while RX0 is
+ the active receiver, you have to make RX1 active, change the RIT
+ value and then make RX0 active again.
 
- RX1 and RX2 are largely independent. They can receive on different
+ RX0 and RX1 are largely independent. They can receive on different
  bands. They can receive from different antennas provided the radio
  has two RF frontend with two analog-to-digital converter4s (ADC,
  as most modern radios do. In this case, one usually
- assigns the first ADC (ADC0) to RX1 and the second ADC (ADC1) to
- RX2. This can be done in the \bltt{RX} menu.
+ assigns the first ADC (ADC0) to RX0 and the second ADC (ADC1) to
+ RX1. This can be done in the \bltt{RX} menu.
 
  By default, if there are two receivers, they are vertically stacked,
- with RX1 in the upper part and RX2 in the lower part of the display.
+ with RX0 in the upper part and RX1 in the lower part of the display.
  This can be changed in the \bltt{Screen} menu to horizontal stacking,
- where RX1 is  in the left half and RX2 in the right half of  the
+ where RX0 is  in the left half and RX1 in the right half of  the
  display. Changing the stacking trades vertical against horizontal
  resolution, of course.
 
@@ -1068,7 +1078,7 @@ For  protocol 1, TxInhibit is signalled for most radios by the Hermes IO1 bit be
 cleared (the Hermes IO2 bit is used for Anan-7000/8000). For protocol 2, for most
 radios the IO4 bit is used (Anan-7000/8000/G2 use the IO5 bit). 
 If the \rett{Enable TxInhibit Input} box is checked, ,,TX Inhibit'' will be drawn
-in the top left corner of the RX1 panadapter if signalled. If TxInhibit is signalled
+in the top left corner of the RX0 panadapter if signalled. If TxInhibit is signalled
 while piHPSDR is transmitting, it will induce a TX/RX transition, and any RX/TX
 transition is suppressed while TxInhibit is active. Some radios (e.g. Anan-7000) have
 a RCA jack with an active-low input, and the TxInhibit bit follows that input.
@@ -1836,7 +1846,7 @@ If running two receivers, it depends on the audio output module whether
 it is possible to use the \textit{same} audio output device as local audio output
 for both receivers. With PulseAudio, this is possible which gives you an additional
 bonus:
-Choose the same output device for RX1 and RX2 and activate only
+Choose the same output device for RX0 and RX1 and activate only
 the left channel for the first and only the right channel for the second receiver.
 With this setup,
 one gets the audio output of the first receiver on the left ear and the audio output of
@@ -2620,7 +2630,7 @@ for doing real QSOs.
 
 The \bltt{DSP} menu sets parameters related to DSP (digital signal processing)
 within the WDSP library.
-Filter characteristics can be specified separately for the RX1 (and RX2, if
+Filter characteristics can be specified separately for the RX0 (and RX1, if
 running two receivers) and TX (if the radio does have a transmitter)
 filters. In addition, enabling/disabling binaural receiver audio
 is done here.  Most users will
@@ -2795,7 +2805,7 @@ there is no such firmware update.
 \end{center}
 
 \textbf{Transverter operation.} Newer radios (Anan-7000, 8000, and Saturn/G2) have a
-switchable low-power TX output. This is enabled if \rett{Xvtr} is selected as the RX antenna of RX1.
+switchable low-power TX output. This is enabled if \rett{Xvtr} is selected as the RX antenna of RX0.
 The connector used for low-power TX output can also be used for receiving.
 
 
@@ -3429,9 +3439,9 @@ associated with that VFO, such as mode, filter, CTUN, and RIT settings.}
 
 \action{AF Gain}{AFGAIN}{PE}{Change the AF gain (headphone volume) of the active receiver.}
 
-\action{AF Gain RX1}{AFGAIN1}{PE}{Change the AF gain (headphone volume) of the RX1 receiver.}
+\action{AF Gain RX1}{AFGAIN1}{PE}{Change the AF gain (headphone volume) of the RX0 receiver.}
 
-\action{AF Gain RX2}{AFGAIN2}{PE}{Change the AF gain (headphone volume) of the RX2 receiver.}
+\action{AF Gain RX2}{AFGAIN2}{PE}{Change the AF gain (headphone volume) of the RX1 receiver.}
 
 \action{AGC Menu}{AGC}{B}{Opens the \texttt{AGC} menu.}
 
@@ -3858,14 +3868,14 @@ instead. Small SDR radios
 using the AD9866 chip (HermesLite, RadioBerry) and radios connected via the SoapySDR library usually do have
 an RF gain control.}
 
-\action{RF Gain RX1}{RFGAIN1}{PE}{Set the gain of the RF front end of RX1. Only effective for radios that
+\action{RF Gain RX1}{RFGAIN1}{PE}{Set the gain of the RF front end of RX0. Only effective for radios that
 have such a
 gain control. Most HPSDR radios do not have RF  gain, they have a step attenuator in the RF front end
 instead. Small SDR radios
 using the AD9866 chip (HermesLite, RadioBerry) and radios connected via the SoapySDR library usually do have
 an RF gain control.}
 
-\action{RF Gain RX2}{RFGAIN2}{PE}{Set the gain of the RF front end of RX2. Only effective for radios that
+\action{RF Gain RX2}{RFGAIN2}{PE}{Set the gain of the RF front end of RX1. Only effective for radios that
 have such a
 gain control. Most HPSDR radios do not have RF  gain, they have a step attenuator in the RF front end
 instead. Small SDR radios
@@ -3901,10 +3911,10 @@ on the toolbar, or on a GPIO or MIDI console), there is an auto-repeat such that
 every 250 msec until
 the RIT+ button is released.}
 
-\action{RIT RX1}{RIT1}{E}{Change the RIT value of RX1 in the range -9999 to 9999 Hz. If a zero value is set,
+\action{RIT RX1}{RIT1}{E}{Change the RIT value of VFO-A in the range -9999 to 9999 Hz. If a zero value is set,
 RIT is automatically disabled, if a non-zero value ist set, RIT is enabled.}
 
-\action{RIT RX2}{RIT2}{E}{Change the RIT value of RX2 in the range -9999 to 9999 Hz. If a zero value is set,
+\action{RIT RX2}{RIT2}{E}{Change the RIT value of VFO-B in the range -9999 to 9999 Hz. If a zero value is set,
 RIT is automatically disabled, if a non-zero value ist set, RIT is enabled.}
 
 \action{RIT Step}{RITST}{B}{Cycle through the possible values (1 Hz, 10 Hz, 100 Hz) of the RIT step.}
@@ -3914,9 +3924,9 @@ change it to Off. In RSAT mode
 all VFO frequency \textit{changes} applied to one of the two VFOs will be applied to the other VFO with the
 sign reversed.}
 
-\action{RX1}{RX1}{B}{Make the first receiver the active one, if piHPDSR is running two receivers.}
+\action{RX1}{RX1}{B}{Make the first receiver (RX0) the active one, if piHPDSR is running two receivers.}
 
-\action{RX2}{RX2}{B}{Make the second receiver the active one, if piHPDSR is running two receivers.}
+\action{RX2}{RX2}{B}{Make the second receiver (RX1) the active one, if piHPDSR is running two receivers.}
 
 \action{SAT}{SAT}{B}{If the SAT mode is either Off or RSAT, change it to SAT. If the SAT mode  is SAT,
 change it to Off. In SAT mode
@@ -3930,10 +3940,10 @@ all VFO frequency \textit{changes} applied to one of the two VFOs will be applie
 automatically enabled (disbled) if
 the resulting value  is non-zero (zero).}
 
-\action{Squelch RX1}{SQUELCH1}{PE}{Change the squelch threshold value of RX1. Squelch is automatically
+\action{Squelch RX1}{SQUELCH1}{PE}{Change the squelch threshold value of RX0. Squelch is automatically
 enabled (disbled) if  the resulting value  is non-zero (zero).}
 
-\action{Squelch RX2}{SQUELCH2}{PE}{Change the squelch threshold value of RX2. Squelch is automatically
+\action{Squelch RX2}{SQUELCH2}{PE}{Change the squelch threshold value of RX1. Squelch is automatically
 enabled (disbled) if the resulting value  is non-zero (zero).}
 
 \action{Swap RX}{SWAPRX}{B}{Make the inactive receiver the active one. This action is only effective if
@@ -4274,7 +4284,6 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{Parameters may be g
 \end{tabular}
 \end{center}
 
-
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
@@ -4330,7 +4339,7 @@ $\phantom{\Big|}$\textbf{\large FW} & Set/Read VFO-A filter width (CW, AM, FM) \
 $\phantom{\Big|}${\large Set} & {FWp$_1$p$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {FW;} \\\hline
 $\phantom{\Big|}${\large Response} & {FWp$_1$p$_1$p$_1$p$_1$;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{When setting, this switches to the Var1 filter and sets its width to $p_1$.} \\
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{When setting, this switches to the Var1 filter and sets its  width to p$_1$.} \\
  & \multicolumn{1}{|p{11cm}|}{Only valid for CW, FM, AM. Use SH/SL for LSB, USB, DIGL, DIGU.} \\
  & \multicolumn{1}{|p{11cm}|}{For AM, 8kHz filter width (p$_1$=0) or  16 kHz (p$_1$$\ne$0)} \\
  & \multicolumn{1}{|p{11cm}|}{For FM, 2.5kHz deviation (p$_1$=0) or 5 kHz (p$_1$$\ne$=0)} \\
@@ -4776,6 +4785,7 @@ $\phantom{\Big|}${\large Set} & {\#S;} \\\hline
 \end{tabular}
 \end{center}
 
+
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
@@ -4785,9 +4795,10 @@ $\phantom{\Big|}${\large Read} & {ZZAC;} \\\hline
 $\phantom{\Big|}${\large Response} & {ZZACp$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ 0...16 encodes the step size:} \\
  & \multicolumn{1}{|p{11cm}|}{1 Hz (p$_1$=0), 10 Hz (p$_1$=1), 25 Hz (p$_1$=2), 50 Hz (p$_1$=3)} \\
- & \multicolumn{1}{|p{11cm}|}{100 Hz (p$_1$=4), 250 Hz (p$_1$=5), 500 Hz (p$_1$=6), 1000 Hz (p$_1$=7)} \\
- & \multicolumn{1}{|p{11cm}|}{5000 Hz (p$_1$=8), 6250 Hz (p$_1$=9), 9 kHz (p$_1$=10), 10 kHz (p$_1$=11)} \\
- & \multicolumn{1}{|p{11cm}|}{12.5 kHz (p$_1$=12), 100 kHz (p$_1$=13), 250 kHz (p$_1$=14)} \\
+ & \multicolumn{1}{|p{11cm}|}{100 Hz (p$_1$=4), 250 Hz (p$_1$=5), 500 Hz (p$_1$=6)} \\
+ & \multicolumn{1}{|p{11cm}|}{1000 Hz (p$_1$=7), 5000 Hz (p$_1$=8), 6250 Hz (p$_1$=9)} \\
+ & \multicolumn{1}{|p{11cm}|}{9 kHz (p$_1$=10), 10 kHz (p$_1$=11), 12.5 kHz (p$_1$=12)} \\
+ & \multicolumn{1}{|p{11cm}|}{100 kHz (p$_1$=13), 250 kHz (p$_1$=14)} \\
  & \multicolumn{1}{|p{11cm}|}{500 kHz (p$_1$=15), 1 MHz (p$_1$=16)} \\
 \bottomrule
 \end{tabular}
@@ -4968,6 +4979,16 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ 0...999 encod
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
+$\phantom{\Big|}$\textbf{\large ZZBT} & Set/Read VFO-B band \\\cline{1-2}
+$\phantom{\Big|}${\large Set} & {ZZBTp$_1$p$_1$p$_1$;} \\\hline
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ 0...999 encodes the band, see ZZBS command.} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tabular}{|p{2cm}|p{11cm}|}
+\toprule
 $\phantom{\Big|}$\textbf{\large ZZBU} & Move VFO-A one band up \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {ZZBU;} \\\hline
 $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{Wraps from highest to lowest band.} \\
@@ -5030,8 +5051,9 @@ $\phantom{\Big|}$\textbf{\large ZZFH} & Set/Read RX0 filter high water \\\cline{
 $\phantom{\Big|}${\large Set} & {ZZFHp$_1$p$_1$p$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZFH;} \\\hline
 $\phantom{\Big|}${\large Response} & {ZZFHp$_1$p$_1$p$_1$p$_1$p$_1$p$_1$;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ -9999 ... 9999. Must contain - sign if negative.} \\
- & \multicolumn{1}{|p{11cm}|}{In LSB, the filter-high affecte the low audio frequencies} \\
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{If setting, this switches to the Var1 filter first.} \\
+ & \multicolumn{1}{|p{11cm}|}{p$_1$ -9999 ... 9999. Must start with  minus sign if negative.} \\
+ & \multicolumn{1}{|p{11cm}|}{In LSB, the filter high water affects the low audio frequencies} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -5043,8 +5065,9 @@ $\phantom{\Big|}$\textbf{\large ZZFL} & Set/Read RX0 filter low water \\\cline{1
 $\phantom{\Big|}${\large Set} & {ZZFLp$_1$p$_1$p$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZFL;} \\\hline
 $\phantom{\Big|}${\large Response} & {ZZFLp$_1$p$_1$p$_1$p$_1$p$_1$p$_1$;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ -9999 ... 9999. Must contain - sign if negative.} \\
- & \multicolumn{1}{|p{11cm}|}{In LSB, the filter-low affecte the high audio frequencies} \\
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{If setting, this switches to the Var1 filter first.} \\
+ & \multicolumn{1}{|p{11cm}|}{p$_1$ -9999 ... 9999. Must start with minus sign if negative.} \\
+ & \multicolumn{1}{|p{11cm}|}{In LSB, the filter-low affects the high audio frequencies} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -5154,9 +5177,7 @@ $\phantom{\Big|}$\textbf{\large ZZME} & Set/Read VFO-B modes \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {ZZMEp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZME;} \\\hline
 $\phantom{\Big|}${\large Response} & {ZZMEp$_1$;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{Modes: LSB (p$_1$=0), USB (p$_1$=1), DSB (p$_1$=3), CWL (p$_1$=4)} \\
- & \multicolumn{1}{|p{11cm}|}{CWU (p$_1$=5), FMN (p$_1$=6), AM (p$_1$=7), DIGU (p$_1$=7)} \\
- & \multicolumn{1}{|p{11cm}|}{SPEC (p$_1$=8), DIGL (p$_1$=9), SAM (p$_1$=10), DRM (p$_1$=11)} \\
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ encodes the mode (see ZZMD command)} \\
 \bottomrule
 \end{tabular}
 \end{center}
