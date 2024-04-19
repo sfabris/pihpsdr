@@ -70,7 +70,7 @@
 #include <arpa/inet.h> //inet_addr
 #include <netinet/tcp.h>
 
-int rigctl_port_base = 19090;
+unsigned int rigctl_port = 19090;
 int rigctl_enable = 0;
 int rigctl_start_with_autoreporting = 0;
 
@@ -3782,6 +3782,7 @@ int parse_cmd(void *data) {
       //CATDEF    DN
       //DESCR     VFO-A down  one step
       //SET       DN;
+      //NOTE      Parameters may be given, but are ignored.
       //ENDDEF
       vfo_id_step(VFO_A, -1);
       break;
@@ -5890,5 +5891,5 @@ void launch_rigctl () {
   // Start auto reporter
   //
   g_timeout_add(250, auto_reporter, NULL);
-  rigctl_server_thread_id = g_thread_new( "rigctl server", rigctl_server, GINT_TO_POINTER(rigctl_port_base));
+  rigctl_server_thread_id = g_thread_new( "rigctl server", rigctl_server, GINT_TO_POINTER(rigctl_port));
 }

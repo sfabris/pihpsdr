@@ -51,7 +51,7 @@ extern int cat_control;
 int set_alc(gpointer);
 extern int rigctl_busy;
 
-extern int rigctl_port_base;
+extern unsigned int rigctl_port;
 extern int rigctl_enable;
 extern int rigctl_start_with_autoreporting;
 

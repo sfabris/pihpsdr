@@ -3,6 +3,9 @@ LIST OF RECENT PIHPSDR CHANGES
 
 April 2024:
 -----------
+
+- removed installation procedure for pre-compiled binaries
+
 - Included AGC characteristic (slow/med/fast) in settings
   "stored by the mode", described the "mode specific 
   settings" more consistently in the manual.

@@ -59,7 +59,7 @@ static void autoreporting_cb(GtkWidget *widget, gpointer data) {
   rigctl_start_with_autoreporting = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 }
 static void rigctl_value_changed_cb(GtkWidget *widget, gpointer data) {
-  rigctl_port_base = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
+  rigctl_port = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
 }
 
 static void rigctl_debug_cb(GtkWidget *widget, gpointer data) {
@@ -214,7 +214,7 @@ void rigctl_menu(GtkWidget *parent) {
   gtk_widget_show(rigctl_port_label);
   gtk_grid_attach(GTK_GRID(grid), rigctl_port_label, 0, 1, 1, 1);
   GtkWidget *rigctl_port_spinner = gtk_spin_button_new_with_range(18000, 21000, 1);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(rigctl_port_spinner), (double)19090);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(rigctl_port_spinner), (double)rigctl_port);
   gtk_widget_show(rigctl_port_spinner);
   gtk_grid_attach(GTK_GRID(grid), rigctl_port_spinner, 1, 1, 1, 1);
   g_signal_connect(rigctl_port_spinner, "value_changed", G_CALLBACK(rigctl_value_changed_cb), NULL);
