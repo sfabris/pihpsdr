@@ -303,50 +303,45 @@ piHPSDR window, stacked vertically, and both including a spectrum scope
 (the green-coloured noise floor) and a waterfall. The waterfall area
 is completely black in the above picture since there was no RF signal.
 piHPSDR can be switched between having one or two receivers in the
-\texttt{Radio} menu. If there are two receivers (called RX0 and RX1),
+\texttt{Radio} menu. If there are two receivers (called RX1 and RX2),
  one of the two is the \textit{active receiver}. If you look closely
  at the above picture, you will note that the spectrum scope of
- the lower (RX1) panel is shaded, while it is in bright colour for RX0.
- This indicates that RX0 is currently the active receiver. By simply
+ the lower (RX2) panel is shaded, while it is in bright colour for RX1.
+ This indicates that RX1 is currently the active receiver. By simply
  clicking into the panel of the other (inactive) receiver, either with
  a mouse or on a touch screen, the formely inactive receiver becomes
  active.
  
- \textbf{Note:} In this manual (and in the  piHPSDR menus), the two
- receivers are consistently denoted RX0 and RX1.
-Be aware that other sources use RX1/RX2, which might
- cause some confusion.
-
  Many conventional rigs with two independent receivers discriminate
  between the \textit{main} and the \textit{sub} receiver. It is important that
  this is \textbf{not} the case for piHPSDR. In piHPDSR, both  receivers are
  largely equivalent. For example, if you start transmitting in
  normal (non-split) mode, the TX frequency matches the frequency
- of the active receiver, no matter whether this is RX0 or RX1.
+ of the active receiver, no matter whether this is RX1 or RX2.
  Likewise, in split mode, the TX frequency matches the frequency
  of the non-active receiver. Most of the receiver-specific controls,
  for example adjusting the AF volume or the AGC gain, refer to the
  current active receiver. If piHPSDR runs with two receivers,
- RX0 is always controlled by VFO-A while RX1 is controlled by VFO-B.
+ RX1 is always controlled by VFO-A while RX2 is controlled by VFO-B.
  The VFO settings not only include the frequency but also the
  current mode (e.g. LSB or CWU), the filter setting, the band and
  bandstack setting, whether RIT is enabled or not, and the RIT
  offset. So changing the RIT value only changes it for the active
- receiver. If you want  to change the RIT value for RX1 while RX0 is
- the active receiver, you have to make RX1 active, change the RIT
- value and then make RX0 active again.
+ receiver. If you want  to change the RIT value for RX2 while RX1 is
+ the active receiver, you have to make RX2 active, change the RIT
+ value and then make RX1 active again.
 
- RX0 and RX1 are largely independent. They can receive on different
+ RX1 and RX2 are largely independent. They can receive on different
  bands. They can receive from different antennas provided the radio
  has two RF frontend with two analog-to-digital converter4s (ADC,
  as most modern radios do. In this case, one usually
- assigns the first ADC (ADC0) to RX0 and the second ADC (ADC1) to
- RX1. This can be done in the \bltt{RX} menu.
+ assigns the first ADC (ADC0) to RX1 and the second ADC (ADC1) to
+ RX2. This can be done in the \bltt{RX} menu.
 
  By default, if there are two receivers, they are vertically stacked,
- with RX0 in the upper part and RX1 in the lower part of the display.
+ with RX1 in the upper part and RX2 in the lower part of the display.
  This can be changed in the \bltt{Screen} menu to horizontal stacking,
- where RX0 is  in the left half and RX1 in the right half of  the
+ where RX1 is  in the left half and RX2 in the right half of  the
  display. Changing the stacking trades vertical against horizontal
  resolution, of course.
 
@@ -1078,7 +1073,7 @@ For  protocol 1, TxInhibit is signalled for most radios by the Hermes IO1 bit be
 cleared (the Hermes IO2 bit is used for Anan-7000/8000). For protocol 2, for most
 radios the IO4 bit is used (Anan-7000/8000/G2 use the IO5 bit). 
 If the \rett{Enable TxInhibit Input} box is checked, ,,TX Inhibit'' will be drawn
-in the top left corner of the RX0 panadapter if signalled. If TxInhibit is signalled
+in the top left corner of the RX1 panadapter if signalled. If TxInhibit is signalled
 while piHPSDR is transmitting, it will induce a TX/RX transition, and any RX/TX
 transition is suppressed while TxInhibit is active. Some radios (e.g. Anan-7000) have
 a RCA jack with an active-low input, and the TxInhibit bit follows that input.
@@ -1710,9 +1705,9 @@ and equalizer settings, and TX compressor settings
  for equalizers and TX compression that are valid for voice modes but not for digital mosed.
  
  To this end, the settings given below are stored in the mode specific settings whenever
- they are changed for RX0/VFOA or for the transmitter. When changing modes later, these
- settings are restored. Note that settings changed for RX1/VFOB are not stored, but 
- stored settings are applied when the mode of RX1/VFOB is changed.
+ they are changed for RX1/VFOA or for the transmitter. When changing modes later, these
+ settings are restored. Note that settings changed for RX2/VFOB are not stored, but 
+ stored settings are applied when the mode of RX2/VFOB is changed.
  
 List of settings stored for each mode:
 
@@ -1846,7 +1841,7 @@ If running two receivers, it depends on the audio output module whether
 it is possible to use the \textit{same} audio output device as local audio output
 for both receivers. With PulseAudio, this is possible which gives you an additional
 bonus:
-Choose the same output device for RX0 and RX1 and activate only
+Choose the same output device for RX1 and RX2 and activate only
 the left channel for the first and only the right channel for the second receiver.
 With this setup,
 one gets the audio output of the first receiver on the left ear and the audio output of
@@ -2630,7 +2625,7 @@ for doing real QSOs.
 
 The \bltt{DSP} menu sets parameters related to DSP (digital signal processing)
 within the WDSP library.
-Filter characteristics can be specified separately for the RX0 (and RX1, if
+Filter characteristics can be specified separately for the RX1 (and RX2, if
 running two receivers) and TX (if the radio does have a transmitter)
 filters. In addition, enabling/disabling binaural receiver audio
 is done here.  Most users will
@@ -2694,7 +2689,7 @@ is shown in Fig. \ref{fig:EqualizerMenu}.
 
 With the combo-box at the top right one can select if one
 wants to change the equalizer settings for the receivers
-RX0 or RX1, or for the transmitter. The equalizers are
+RX1 or RX2, or for the transmitter. The equalizers are
 four-channel equalizers where the gain set with the sliders
 applies to the corner frequencies displayed at the left margin.
 Between two corner frequencies, the gain is interpolated
@@ -2702,7 +2697,7 @@ Between two corner frequencies, the gain is interpolated
 applies an additional, frequency-independent gain.
 
 The \rett{Enable} checkbox enables/disables the equalizer
-(either for RX0, for RX1, or for TX). 
+(either for RX1, for RX2, or for TX). 
 If the equalizer of the active receiver 
 is enabled, the EQ indicator in the
 VFO bar, upon receiving, turns yellow and reads \rett{RxEQ}.
@@ -2718,13 +2713,13 @@ settings upon going back to LSB. This also applies to other
 modes such as CWU/CWL, where the TX equalizer has no meaning
 anyway, and where the RX equalizer is normally not needed 
 because CW filters usually are narrow. The corner frequencies
-can (in principle) be different for RX0, RX1, and TX. 
+can (in principle) be different for RX1, RX2, and TX. 
 There is currently
 no GUI to change them, but they can be changed by hand-editing
 the radio settings (props file), which is ,,nerds only'' and
 will not be discussed in the manual.
 
-If the radio currently runs only a single receiver, RX1 cannot
+If the radio currently runs only a single receiver, RX2 cannot
 be selected with the top right combo-box. Likewise, if the
 radio does not have transmitter, the TX settings cannot be
 selected.
@@ -2805,7 +2800,7 @@ there is no such firmware update.
 \end{center}
 
 \textbf{Transverter operation.} Newer radios (Anan-7000, 8000, and Saturn/G2) have a
-switchable low-power TX output. This is enabled if \rett{Xvtr} is selected as the RX antenna of RX0.
+switchable low-power TX output. This is enabled if \rett{Xvtr} is selected as the RX antenna of RX1.
 The connector used for low-power TX output can also be used for receiving.
 
 
@@ -3439,9 +3434,9 @@ associated with that VFO, such as mode, filter, CTUN, and RIT settings.}
 
 \action{AF Gain}{AFGAIN}{PE}{Change the AF gain (headphone volume) of the active receiver.}
 
-\action{AF Gain RX1}{AFGAIN1}{PE}{Change the AF gain (headphone volume) of the RX0 receiver.}
+\action{AF Gain RX1}{AFGAIN1}{PE}{Change the AF gain (headphone volume) of the RX1 receiver.}
 
-\action{AF Gain RX2}{AFGAIN2}{PE}{Change the AF gain (headphone volume) of the RX1 receiver.}
+\action{AF Gain RX2}{AFGAIN2}{PE}{Change the AF gain (headphone volume) of the RX2 receiver.}
 
 \action{AGC Menu}{AGC}{B}{Opens the \texttt{AGC} menu.}
 
@@ -3868,14 +3863,14 @@ instead. Small SDR radios
 using the AD9866 chip (HermesLite, RadioBerry) and radios connected via the SoapySDR library usually do have
 an RF gain control.}
 
-\action{RF Gain RX1}{RFGAIN1}{PE}{Set the gain of the RF front end of RX0. Only effective for radios that
+\action{RF Gain RX1}{RFGAIN1}{PE}{Set the gain of the RF front end of RX1. Only effective for radios that
 have such a
 gain control. Most HPSDR radios do not have RF  gain, they have a step attenuator in the RF front end
 instead. Small SDR radios
 using the AD9866 chip (HermesLite, RadioBerry) and radios connected via the SoapySDR library usually do have
 an RF gain control.}
 
-\action{RF Gain RX2}{RFGAIN2}{PE}{Set the gain of the RF front end of RX1. Only effective for radios that
+\action{RF Gain RX2}{RFGAIN2}{PE}{Set the gain of the RF front end of RX2. Only effective for radios that
 have such a
 gain control. Most HPSDR radios do not have RF  gain, they have a step attenuator in the RF front end
 instead. Small SDR radios
@@ -3924,9 +3919,9 @@ change it to Off. In RSAT mode
 all VFO frequency \textit{changes} applied to one of the two VFOs will be applied to the other VFO with the
 sign reversed.}
 
-\action{RX1}{RX1}{B}{Make the first receiver (RX0) the active one, if piHPDSR is running two receivers.}
+\action{RX1}{RX1}{B}{Make the first receiver the active one, if piHPDSR is running two receivers.}
 
-\action{RX2}{RX2}{B}{Make the second receiver (RX1) the active one, if piHPDSR is running two receivers.}
+\action{RX2}{RX2}{B}{Make the second receiver the active one, if piHPDSR is running two receivers.}
 
 \action{SAT}{SAT}{B}{If the SAT mode is either Off or RSAT, change it to SAT. If the SAT mode  is SAT,
 change it to Off. In SAT mode
@@ -3940,10 +3935,10 @@ all VFO frequency \textit{changes} applied to one of the two VFOs will be applie
 automatically enabled (disbled) if
 the resulting value  is non-zero (zero).}
 
-\action{Squelch RX1}{SQUELCH1}{PE}{Change the squelch threshold value of RX0. Squelch is automatically
+\action{Squelch RX1}{SQUELCH1}{PE}{Change the squelch threshold value of RX1. Squelch is automatically
 enabled (disbled) if  the resulting value  is non-zero (zero).}
 
-\action{Squelch RX2}{SQUELCH2}{PE}{Change the squelch threshold value of RX1. Squelch is automatically
+\action{Squelch RX2}{SQUELCH2}{PE}{Change the squelch threshold value of RX2. Squelch is automatically
 enabled (disbled) if the resulting value  is non-zero (zero).}
 
 \action{Swap RX}{SWAPRX}{B}{Make the inactive receiver the active one. This action is only effective if
@@ -4201,7 +4196,7 @@ $\phantom{\Big|}$\textbf{\large AG} & Sets/Reads audio volume (AF slider) \\\cli
 $\phantom{\Big|}${\large Set} & {AGp$_1$p$_2$p$_2$p$_2$;} \\\hline
 $\phantom{\Big|}${\large Read} & {AGp$_1$;} \\\hline
 $\phantom{\Big|}${\large Response} & {AGp$_1$p$_2$p$_2$p$_2$;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0 sets RX0 volume, p$_1$=1 RX1} \\
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0 sets RX1 audio volume, p$_1$=1 sets RX2 audio volume.} \\
  & \multicolumn{1}{|p{11cm}|}{p$_2$ is 0...255 and mapped logarithmically to the volume -40...0 dB} \\
 \bottomrule
 \end{tabular}
@@ -4315,7 +4310,7 @@ $\phantom{\Big|}$\textbf{\large FR} & Set/Read active receiver \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {FRp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {FR;} \\\hline
 $\phantom{\Big|}${\large Response} & {FRp$_1$;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ = 0 (RX0) or 1 (RX1)} \\
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ = 0 (RX1) or 1 (RX2)} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -4350,7 +4345,7 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{When setting, this 
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
-$\phantom{\Big|}$\textbf{\large GT} & Set/Read RX0 AGC \\\cline{1-2}
+$\phantom{\Big|}$\textbf{\large GT} & Set/Read RX1 AGC \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {GTp$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {GT;} \\\hline
 $\phantom{\Big|}${\large Response} & {GTp$_1$p$_1$p$_1$;} \\\hline
@@ -4466,7 +4461,7 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ 0-100 mapped 
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
-$\phantom{\Big|}$\textbf{\large NB} & Set/Read RX0 noise blanker \\\cline{1-2}
+$\phantom{\Big|}$\textbf{\large NB} & Set/Read RX1 noise blanker \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {NBp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {NB;} \\\hline
 $\phantom{\Big|}${\large Response} & {NBp$_1$;} \\\hline
@@ -4478,7 +4473,7 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: NB off, p$
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
-$\phantom{\Big|}$\textbf{\large NR} & Set/Read RX0 noise reduction \\\cline{1-2}
+$\phantom{\Big|}$\textbf{\large NR} & Set/Read RX1 noise reduction \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {NRp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {NR;} \\\hline
 $\phantom{\Big|}${\large Response} & {NRp$_1$;} \\\hline
@@ -4490,7 +4485,7 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: NR off, p$
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
-$\phantom{\Big|}$\textbf{\large NT} & Set/Read RX0 auto notch filter \\\cline{1-2}
+$\phantom{\Big|}$\textbf{\large NT} & Set/Read RX1 auto notch filter \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {NTp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {NT;} \\\hline
 $\phantom{\Big|}${\large Response} & {NTp$_1$;} \\\hline
@@ -4502,12 +4497,12 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: Automatic 
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
-$\phantom{\Big|}$\textbf{\large PA} & Set/Read RX0 preamp status \\\cline{1-2}
+$\phantom{\Big|}$\textbf{\large PA} & Set/Read RX1 preamp status \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {PAp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {PA;} \\\hline
 $\phantom{\Big|}${\large Response} & {PAp$_1$;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{Applies to RX0} \\
- & \multicolumn{1}{|p{11cm}|}{p$_1$=0: RX0 preamp off, p$_1$=1: on} \\
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{Applies to RX1} \\
+ & \multicolumn{1}{|p{11cm}|}{p$_1$=0: RX1 preamp off, p$_1$=1: on} \\
  & \multicolumn{1}{|p{11cm}|}{newer HPSDR radios do not have p$_4$ switchable preamp} \\
 \bottomrule
 \end{tabular}
@@ -4555,7 +4550,7 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ = 0: Power on
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
-$\phantom{\Big|}$\textbf{\large RA} & Set/Read RX0 attenuator or RX0 gain \\\cline{1-2}
+$\phantom{\Big|}$\textbf{\large RA} & Set/Read RX1 attenuator or RX1 gain \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {RAp$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {RA;} \\\hline
 $\phantom{\Big|}${\large Response} & {RAp$_1$p$_1$p$_2$p$_2$;} \\\hline
@@ -4688,7 +4683,7 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{When setting, the V
 $\phantom{\Big|}$\textbf{\large SM} & Read S-meter \\\cline{1-2}
 $\phantom{\Big|}${\large Read} & {SMp$_1$;} \\\hline
 $\phantom{\Big|}${\large Response} & {SMp$_1$p$_2$p$_2$p$_2$p$_2$;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: read RX0, p$_1$=1: RX1} \\
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: read RX1, p$_1$=1: read RX2} \\
  & \multicolumn{1}{|p{11cm}|}{p$_2$ : 0 ... 30 mapped to -127...-19 dBm} \\
 \bottomrule
 \end{tabular}
@@ -4701,7 +4696,7 @@ $\phantom{\Big|}$\textbf{\large SQ} & Set/Read squelch level (Squelch slider) \\
 $\phantom{\Big|}${\large Set} & {SQp$_1$p$_2$p$_2$p$_2$;} \\\hline
 $\phantom{\Big|}${\large Read} & {SQp$_1$;} \\\hline
 $\phantom{\Big|}${\large Response} & {SQp$_1$p$_2$p$_2$p$_2$} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: read/set RX0 squelch, p$_1$=1: RX1} \\
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: read/set RX1 squelch, p$_1$=1: RX2} \\
  & \multicolumn{1}{|p{11cm}|}{p$_2$ : 0-255 mapped to 0-100} \\
 \bottomrule
 \end{tabular}
@@ -4837,7 +4832,7 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{VFO-A frequency mov
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
-$\phantom{\Big|}$\textbf{\large ZZAG} & Set/Read RX0 volume (AF slider) \\\cline{1-2}
+$\phantom{\Big|}$\textbf{\large ZZAG} & Set/Read RX1 volume (AF slider) \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {ZZAGp$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZAG;} \\\hline
 $\phantom{\Big|}${\large Response} & {ZZAGp$_1$p$_1$p$_1$;} \\\hline
@@ -4862,7 +4857,7 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: auto-repor
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
-$\phantom{\Big|}$\textbf{\large ZZAR} & Set/Read RX0 AGC gain \\\cline{1-2}
+$\phantom{\Big|}$\textbf{\large ZZAR} & Set/Read RX1 AGC gain \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {ZZARp$_1$p$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZAR;} \\\hline
 $\phantom{\Big|}${\large Response} & {ZZARp$_1$p$_1$p$_1$p$_1$;} \\\hline
@@ -4874,7 +4869,7 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ -20...120, mu
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
-$\phantom{\Big|}$\textbf{\large ZZAS} & Set/Read RX1 AGC gain \\\cline{1-2}
+$\phantom{\Big|}$\textbf{\large ZZAS} & Set/Read RX2 AGC gain \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {ZZASp$_1$p$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZAS;} \\\hline
 $\phantom{\Big|}${\large Response} & {ZZASp$_1$p$_1$p$_1$p$_1$;} \\\hline
@@ -5047,7 +5042,7 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ in Hz, left-p
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
-$\phantom{\Big|}$\textbf{\large ZZFH} & Set/Read RX0 filter high water \\\cline{1-2}
+$\phantom{\Big|}$\textbf{\large ZZFH} & Set/Read RX1 filter high water \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {ZZFHp$_1$p$_1$p$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZFH;} \\\hline
 $\phantom{\Big|}${\large Response} & {ZZFHp$_1$p$_1$p$_1$p$_1$p$_1$p$_1$;} \\\hline
@@ -5061,7 +5056,7 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{If setting, this sw
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
-$\phantom{\Big|}$\textbf{\large ZZFL} & Set/Read RX0 filter low water \\\cline{1-2}
+$\phantom{\Big|}$\textbf{\large ZZFL} & Set/Read RX1 filter low water \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {ZZFLp$_1$p$_1$p$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZFL;} \\\hline
 $\phantom{\Big|}${\large Response} & {ZZFLp$_1$p$_1$p$_1$p$_1$p$_1$p$_1$;} \\\hline
@@ -5075,7 +5070,7 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{If setting, this sw
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
-$\phantom{\Big|}$\textbf{\large ZZGT} & Set/Read RX0 AGC \\\cline{1-2}
+$\phantom{\Big|}$\textbf{\large ZZGT} & Set/Read RX1 AGC \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {ZZGTp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZGT;} \\\hline
 $\phantom{\Big|}${\large Response} & {ZZGTp$_1$;} \\\hline
@@ -5087,7 +5082,7 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: AGC OFF, p
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
-$\phantom{\Big|}$\textbf{\large ZZGU} & Set/Read RX1 AGC \\\cline{1-2}
+$\phantom{\Big|}$\textbf{\large ZZGU} & Set/Read RX2 AGC \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {ZZGUp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZGU;} \\\hline
 $\phantom{\Big|}${\large Response} & {ZZGUp$_1$;} \\\hline
@@ -5099,7 +5094,7 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: AGC OFF, p
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
-$\phantom{\Big|}$\textbf{\large ZZLA} & Set/Read RX0 volume (AF slider) \\\cline{1-2}
+$\phantom{\Big|}$\textbf{\large ZZLA} & Set/Read RX1 volume (AF slider) \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {ZZLAp$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZLA;} \\\hline
 $\phantom{\Big|}${\large Response} & {ZZLAp$_1$p$_1$p$_1$;} \\\hline
@@ -5111,7 +5106,7 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ = 0...100, ma
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
-$\phantom{\Big|}$\textbf{\large ZZLC} & Set/Read RX1 volume (AF slider) \\\cline{1-2}
+$\phantom{\Big|}$\textbf{\large ZZLC} & Set/Read RX2 volume (AF slider) \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {ZZLCp$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZLC;} \\\hline
 $\phantom{\Big|}${\large Response} & {ZZLCp$_1$p$_1$p$_1$;} \\\hline
@@ -5135,11 +5130,11 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: PURESIGNAL
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
-$\phantom{\Big|}$\textbf{\large ZZMA} & Mute/Unmute RX0 \\\cline{1-2}
+$\phantom{\Big|}$\textbf{\large ZZMA} & Mute/Unmute RX1 \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {ZZMAp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZMA;} \\\hline
 $\phantom{\Big|}${\large Response} & {ZZMAp$_1$;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: RX0 not muted, p$_1$=1: muted} \\
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: RX1 not muted, p$_1$=1: muted} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -5147,11 +5142,11 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: RX0 not mu
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
 \toprule
-$\phantom{\Big|}$\textbf{\large ZZMB} & Mute/Unmute RX1 \\\cline{1-2}
+$\phantom{\Big|}$\textbf{\large ZZMB} & Mute/Unmute RX2 \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {ZZMBp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZMB;} \\\hline
 $\phantom{\Big|}${\large Response} & {ZZMBp$_1$;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: RX1 not muted, p$_1$=1: muted} \\
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: RX2 not muted, p$_1$=1: muted} \\
 \bottomrule
 \end{tabular}
 \end{center}

@@ -143,7 +143,7 @@ void rx_panadapter_update(RECEIVER *rx) {
     soffset += (double)(12 * rx->alex_attenuation - 18 * rx->preamp - 18 * rx->dither);
   }
 
-  // In diversity mode, the RX1 frequency tracks the RX0 frequency
+  // In diversity mode, the RX2 frequency tracks the RX1 frequency
   if (diversity_enabled && rx->id == 1) {
     frequency = vfo[0].frequency;
     vfoband = vfo[0].band;

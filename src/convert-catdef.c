@@ -17,7 +17,7 @@ void replacexy(char *str, int flag) {
   // Replaces x -> P$_1$
   //          y -> P$_2$
   //
-  // etc. (order is: xyzabcdefghikmnop)
+  // etc. (order is: xyzsbcdefghikmnop)  (letter a replaced by s!)
   //
   // If flag == 1, replace unconditionally
   // If flag == 0, replace if the replaced letter is NOT either preceeded or followed

@@ -154,8 +154,8 @@ int hl2_audio_codec = 0;
 //
 // if anan10E is set, we have a limited-capacity HERMES board
 // with 2 RX channels max, and the PureSignal TX DAC feedback
-// is hard-coded to RX1, while for the PureSignal RX feedback
-// one must use RX0. This is the case for Anan-10E and Anan-100B
+// is hard-coded to RX2, while for the PureSignal RX feedback
+// one must use RX1. This is the case for Anan-10E and Anan-100B
 // radios.
 //
 int anan10E = 0;
@@ -330,15 +330,15 @@ void radio_stop() {
     CloseChannel(transmitter->id);
   }
 
-  t_print("radio_stop: RX0: stop display update\n");
+  t_print("radio_stop: RX1: stop display update\n");
   set_displaying(receiver[0], 0);
-  t_print("radio_stop: RX0: CloseChannel: %d\n", receiver[0]->id);
+  t_print("radio_stop: RX1: CloseChannel: %d\n", receiver[0]->id);
   CloseChannel(receiver[0]->id);
 
   if (RECEIVERS == 2) {
-    t_print("radio_stop: RX1: stop display update\n");
+    t_print("radio_stop: RX2: stop display update\n");
     set_displaying(receiver[1], 0);
-    t_print("radio_stop: RX1: CloseChannel: %d\n", receiver[1]->id);
+    t_print("radio_stop: RX2: CloseChannel: %d\n", receiver[1]->id);
     CloseChannel(receiver[1]->id);
   }
 }
@@ -1585,7 +1585,7 @@ void radio_change_receivers(int r) {
     receivers = 2;
 
     //
-    // Make sure RX1 shares the sample rate  with RX0 when running P1.
+    // Make sure RX2 shares the sample rate  with RX1 when running P1.
     //
     if (protocol == ORIGINAL_PROTOCOL && receiver[1]->sample_rate != receiver[0]->sample_rate) {
       receiver_change_sample_rate(receiver[1], receiver[0]->sample_rate);

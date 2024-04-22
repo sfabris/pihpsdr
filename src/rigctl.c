@@ -123,7 +123,7 @@ static gpointer rigctl_client (gpointer data);
 static guint auto_timer = 0;
 
 //
-// This macro handles cases where RX1 is referred to but might not
+// This macro handles cases where RX2 is referred to but might not
 // exist. These macros lead to an action only  if the RX exists.
 // RXCHECK_ERR sets an error flag if RX is non-exisiting.
 // RXCHECK     just silently ignores the command
@@ -1150,7 +1150,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
     case 'G': //ZZAG
 
       //CATDEF    ZZAG
-      //DESCR     Set/Read RX0 volume (AF slider)
+      //DESCR     Set/Read RX1 volume (AF slider)
       //SET       ZZAGxxx;
       //READ      ZZAG;
       //RESP      ZZAGxxx;
@@ -1203,7 +1203,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
     case 'R': //ZZAR
 
       //CATDEF    ZZAR
-      //DESCR     Set/Read RX0 AGC gain
+      //DESCR     Set/Read RX1 AGC gain
       //SET       ZZARxxxx;
       //READ      ZZAR;
       //RESP      ZZARxxxx;
@@ -1223,7 +1223,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
     case 'S': //ZZAS
 
       //CATDEF    ZZAS
-      //DESCR     Set/Read RX1 AGC gain
+      //DESCR     Set/Read RX2 AGC gain
       //SET       ZZASxxxx;
       //READ      ZZAS;
       //RESP      ZZASxxxx;
@@ -1849,7 +1849,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
     case 'H': //ZZFH
 
       //CATDEF    ZZFH
-      //DESCR     Set/Read RX0 filter high water
+      //DESCR     Set/Read RX1 filter high water
       //SET       ZZFHxxxxx;
       //READ      ZZFH;
       //RESP      ZZFHxxxxxx;
@@ -1908,7 +1908,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
     case 'L': //ZZFL
 
       //CATDEF    ZZFL
-      //DESCR     Set/Read RX0 filter low water
+      //DESCR     Set/Read RX1 filter low water
       //SET       ZZFLxxxxx;
       //READ      ZZFL;
       //RESP      ZZFLxxxxxx;
@@ -1950,7 +1950,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
     case 'T': //ZZGT
 
       //CATDEF    ZZGT
-      //DESCR     Set/Read RX0 AGC
+      //DESCR     Set/Read RX1 AGC
       //SET       ZZGTx;
       //READ      ZZGT;
       //RESP      ZZGTx;
@@ -1971,7 +1971,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'U': //ZZGU
       //CATDEF    ZZGU
-      //DESCR     Set/Read RX1 AGC
+      //DESCR     Set/Read RX2 AGC
       //SET       ZZGUx;
       //READ      ZZGU;
       //RESP      ZZGUx;
@@ -2011,7 +2011,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
     case 'A': //ZZLA
 
       //CATDEF    ZZLA
-      //DESCR     Set/Read RX0 volume (AF slider)
+      //DESCR     Set/Read RX1 volume (AF slider)
       //SET       ZZLAxxx;
       //READ      ZZLA;
       //RESP      ZZLAxxx;
@@ -2038,7 +2038,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'C': //ZZLC
       //CATDEF    ZZLC
-      //DESCR     Set/Read RX1 volume (AF slider)
+      //DESCR     Set/Read RX2 volume (AF slider)
       //SET       ZZLCxxx;
       //READ      ZZLC;
       //RESP      ZZLCxxx;
@@ -2100,11 +2100,11 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
     case 'A':  //ZZMA
 
       //CATDEF    ZZMA
-      //DESCR     Mute/Unmute RX0
+      //DESCR     Mute/Unmute RX1
       //SET       ZZMAx;
       //READ      ZZMA;
       //RESP      ZZMAx;
-      //NOTE      x=0: RX0 not muted, x=1: muted
+      //NOTE      x=0: RX1 not muted, x=1: muted
       //ENDDEF
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZMA%d;", receiver[0]->mute_radio);
@@ -2118,11 +2118,11 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
     case 'B': //ZZMB
       //CATDEF    ZZMB
-      //DESCR     Mute/Unmute RX1
+      //DESCR     Mute/Unmute RX2
       //SET       ZZMBx;
       //READ      ZZMB;
       //RESP      ZZMBx;
-      //NOTE      x=0: RX1 not muted, x=1: muted
+      //NOTE      x=0: RX2 not muted, x=1: muted
       //ENDDEF
       RXCHECK(1,
       if (command[4] == ';') {
@@ -3580,7 +3580,7 @@ int parse_cmd(void *data) {
       //SET       AGxyyy;
       //READ      AGx;
       //RESP      AGxyyy;
-      //NOTE      x=0 sets RX0 volume, x=1 RX1
+      //NOTE      x=0 sets RX1 audio volume, x=1 sets RX2 audio volume.
       //NOTE      y is 0...255 and mapped logarithmically to the volume -40...0 dB
       //ENDDEF
       if (command[3] == ';') {
@@ -3882,7 +3882,7 @@ int parse_cmd(void *data) {
       //SET       FRx;
       //READ      FR;
       //RESP      FRx;
-      //NOTE      x = 0 (RX0) or 1 (RX1)
+      //NOTE      x = 0 (RX1) or 1 (RX2)
       //ENDDEF
       if (command[2] == ';') {
         snprintf(reply, 256, "FR%d;", active_receiver->id);
@@ -4035,7 +4035,7 @@ int parse_cmd(void *data) {
     case 'T': //GT
 
       //CATDEF    GT
-      //DESCR     Set/Read RX0 AGC
+      //DESCR     Set/Read RX1 AGC
       //SET       GTxxx;
       //READ      GT;
       //RESP      GTxxx;
@@ -4416,7 +4416,7 @@ int parse_cmd(void *data) {
     case 'B': //NB
 
       //CATDEF    NB
-      //DESCR     Set/Read RX0 noise blanker
+      //DESCR     Set/Read RX1 noise blanker
       //SET       NBx;
       //READ      NB;
       //RESP      NBx;
@@ -4440,7 +4440,7 @@ int parse_cmd(void *data) {
     case 'R': //NR
 
       //CATDEF    NR
-      //DESCR     Set/Read RX0 noise reduction
+      //DESCR     Set/Read RX1 noise reduction
       //SET       NRx;
       //READ      NR;
       //RESP      NRx;
@@ -4459,7 +4459,7 @@ int parse_cmd(void *data) {
     case 'T': //NT
 
       //CATDEF    NT
-      //DESCR     Set/Read RX0 auto notch filter
+      //DESCR     Set/Read RX1 auto notch filter
       //SET       NTx;
       //READ      NT;
       //RESP      NTx;
@@ -4511,12 +4511,12 @@ int parse_cmd(void *data) {
     case 'A': //PA
 
       //CATDEF    PA
-      //DESCR     Set/Read RX0 preamp status
+      //DESCR     Set/Read RX1 preamp status
       //SET       PAx;
       //READ      PA;
       //RESP      PAx;
-      //NOTE      Applies to RX0
-      //NOTE      x=0: RX0 preamp off, x=1: on
+      //NOTE      Applies to RX1
+      //NOTE      x=0: RX1 preamp off, x=1: on
       //NOTE      newer HPSDR radios do not have a switchable preamp
       //ENDDEF
       if (command[2] == ';') {
@@ -4663,7 +4663,7 @@ int parse_cmd(void *data) {
     case 'A': //RA
 
       //CATDEF    RA
-      //DESCR     Set/Read RX0 attenuator or RX0 gain
+      //DESCR     Set/Read RX1 attenuator or RX1 gain
       //SET       RAxx;
       //READ      RA;
       //RESP      RAxxyy;
@@ -5190,7 +5190,7 @@ int parse_cmd(void *data) {
       //DESCR     Read S-meter
       //READ      SMx;
       //RESP      SMxyyyy;
-      //NOTE      x=0: read RX0, x=1: RX1
+      //NOTE      x=0: read RX1, x=1: read RX2
       //NOTE      y : 0 ... 30 mapped to -127...-19 dBm
       //ENDDEF
       if (command[3] == ';') {
@@ -5214,7 +5214,7 @@ int parse_cmd(void *data) {
       //SET       SQxyyy;
       //READ      SQx;
       //RESP      SQxyyy
-      //NOTE      x=0: read/set RX0 squelch, x=1: RX1
+      //NOTE      x=0: read/set RX1 squelch, x=1: RX2
       //NOTE      y : 0-255 mapped to 0-100
       //ENDDEF
       if (command[3] == ';') {

@@ -161,7 +161,7 @@ static void get_info(char *driver) {
   }
 
   double bandwidth = SoapySDRDevice_getBandwidth(sdr, SOAPY_SDR_RX, 0);
-  t_print("RX0: bandwidth selected: %f\n", bandwidth);
+  t_print("RX1: bandwidth selected: %f\n", bandwidth);
 
   if (tx_channels > 0) {
     bandwidth = SoapySDRDevice_getBandwidth(sdr, SOAPY_SDR_TX, 0);

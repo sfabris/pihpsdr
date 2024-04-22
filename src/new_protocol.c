@@ -746,7 +746,7 @@ static void new_protocol_high_priority() {
   }
 
   //
-  //  Set DDC frequencies for RX1 and RX0
+  //  Set DDC frequencies for RX1 and RX2
   //
   for (int id = 0; id < 2; id++) {
     DDCfrequency[id] = vfo[id].frequency - vfo[id].lo;

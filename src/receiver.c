@@ -708,7 +708,7 @@ void set_agc(RECEIVER *rx, int agc) {
   GetRXAAGCThresh(id, &rx->agc_thresh, 4096.0, (double)rx->sample_rate);
 
   //
-  // Update mode settings, if this is RX0
+  // Update mode settings, if this is RX1
   //
   if (id == 0) {
     int m=vfo[id].mode;
