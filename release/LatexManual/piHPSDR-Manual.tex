@@ -1839,7 +1839,7 @@ digital modes.
 
 If running two receivers, it depends on the audio output module whether
 it is possible to use the \textit{same} audio output device as local audio output
-for both receivers. With PulseAudio, this is possible which gives you an additional
+for both receivers. With PulseAudio (and PipeWire), this is possible which gives you an additional
 bonus:
 Choose the same output device for RX1 and RX2 and activate only
 the left channel for the first and only the right channel for the second receiver.
@@ -5648,13 +5648,15 @@ In this section, we will cover four different scenarios, namely
 \item{piHPSDR and digimode program running on the same LINUX computer
 (including RaspPi) using PulseAudio or PipeWire. {\color{red} In the most recent Linux distributions,
  PulseAudio has been abandoned and is replaced by
-PipeWire. From the user's perspective the difference is marginal.}}
+PipeWire. From the user's perspective the difference is marginal.
+The manual covers both cases separately but they are essentially the same.}}
 \item{piHPSDR and digimode program running on the same MacOS computer.}
 \end{itemize}
 
 
  
-\textbf{\color{red}Running piHPSDR and Digi on different computers}. \\
+\section[piHPSDR and Digi on different computers]{Running piHPSDR and Digi on different computers}
+
 This typically is the situation if piHPSDR is running on a computer with a very small
 screen, such as it is the case if you are using a piHPSDR controller or the G2 frontpanel.
 This situation also occurs if you want to run the DigiMode program on a Windows computer,
@@ -5682,7 +5684,7 @@ running the digimode program, you need two USB-to-serial interfaces and must con
 via a null modem. Then use the serial port both in piHPSDR (\bltt{RigCtl} menu) and the
 digimode program.
 
-\textbf{\color{red}Running piHPSDR and Digi on the same computer}. \\
+\section[piHPSDR and Digi on same computer]{Running piHPSDR and Digi on the same computer}
 In this case it is strongly recommended that the audio never goes analog, but is
 exchanged (transferred to and from)
 as digital data between piHPSDR and the digimode program. To this end, you need
@@ -5717,8 +5719,9 @@ ALSA is active. If compiling from the sources you get the PulseAudio module if y
 do not change the Makefile (see Appendix \ref{sec:compiletime}).
 
 
-\textbf{\color{red}Virtual audio cables. ALSA case (Linux only).} \\
-The command for creating the two virtual cables (put everything in one line) is
+\subsection[ALSA: virtual audio cables]{Virtual audio cables in ALSA}
+Using the ALSA sound library,
+the command for creating the two virtual cables (put everything in one line) is
 
 \texttt{sudo modprobe snd-aloop index=5,6 id=RXcable,TXcable\\
 enable=1,1 pcm\_substreams=2,2}
@@ -5813,8 +5816,7 @@ the PTT method (TRX transition controlled by CAT commands). Checking \rett{Data/
 takes care WSJTX switches piHPSDR to DIGU mode, and using \rett{Fake It} for the Split
 Operation method is just my personal preference.
 
-\clearpage
-\textbf{\color{red}Virtual audio cables, PulseAudio case (Linux).}\\
+\subsection[PulseAudio: NullSink modules]{PulseAudio: Null-Sink modules as virtual audio cables}
 There are no explicit loopback devices with PulseAudio since they are not needed.
 For \textit{every} PulseAudio output device, there is a corresponding ,,Monitor'' device
 which can be used for sound input, and where the data sent to the primary (output) device
@@ -5897,7 +5899,7 @@ the machine or restarting PulseAudio, the devices can be made permanent but you 
 search the internet on how to do this. My recommendation is to include such command in a
 shell script that is automatically executed when you start the computer.
 
-The necessary configuration for piHPSDR and WSJTX is not almost evident. The
+The necessary configuration for piHPSDR and WSJTX is  almost evident. The
 piHPSDR settings are shown in Fig. \ref{fig:rx_settings_pa_audio} (\bltt{RX} menu)
 and in Fig. \ref{fig:tx_settings_pa_audio} (\bltt{TX} menu): RXcable has been selected
 for local RX audio output, while the Monitor of TXcable is chosen as the local
@@ -5911,6 +5913,7 @@ microphone.
 \end{figure}
 
 \begin{figure}[ht]
+\label{fig:pa2}
 \center
 \includegraphics[width=12cm]{tx_settings_pa_audio.png}
 \caption{TX menu settings with PulseAudio}
@@ -5958,9 +5961,60 @@ commands.
 }
 \end{center}
 
-\clearpage
+\subsection[PipeWire: NullSink modules]{PipeWire: Null-Sink modules as virtual audio cables}
+The PipeWire case is very similar to the PulseAudio case, so we concentrate
+on the differences only. Creating the null-sink modules (,,cables'') is
+done in the same way as described in the previous chapter, except that
+the command now is \texttt{pactl} instead of \texttt{pacmd}:
 
-\textbf{\color{red}Using ,,loopback'' in MacOS}\\
+\texttt{pactl load-module module-null-sink sink\_name=RXcable rate=48000 \\
+sink\_properties="device.description=RXcable"
+}
+
+\texttt{pactl load-module module-null-sink sink\_name=TXcable rate=48000 \\
+sink\_properties="device.description=TXcable"
+}
+
+\texttt{pactl set-sink-volume RXcable 89\%}
+
+\texttt{pactl set-sink-volume TXcable 89\%}
+
+For some unknown reason, the volume of these devices is 3 dB too high on my
+RaspPi test system, so the last two commands ajust this.
+To check the available input (sources) and output (sinks) device, the command
+now reads \texttt{pactl list sources} or \texttt{pactl list sinks}. The numbering
+of the sinks and sources is now somewhat arbitrary, for example, when listing the
+sinks I get
+\begin{verbatim}
+Sink #65
+	State: SUSPENDED
+	Name: alsa_output.platform-107c706400.hdmi.hdmi-stereo
+	Description: Built-in Audio Digital Stereo (HDMI)
+	Driver: PipeWire
+
+...
+
+Sink #76
+	State: SUSPENDED
+	Name: RXcable
+	Description: RXcable
+...
+	Properties:
+		node.name = "RXcable"
+		device.description = "RXcable"
+		audio.rate = "48000"
+\end{verbatim}
+The configuration (see Figs. \ref{fig:rx_settings_pa_audio}--\ref{fig:wstx_settings_pa_audio}) is then the same
+as with PulseAudio. For {\color{red} \textbf{Fldigi}}, one has to specify a default PipeWire input and output device, which is
+then used by Fldigi (there is no device chooser in the GUI for PulseAudio). The commands to make TXcable the default output, and RXcable the default
+input device are, in the PipeWire case
+
+\begin{verbatim}
+pactl set-default-sink TXcable
+pactl set-default-source RXcable
+\end{verbatim}
+
+\subsection[MacOS: LoopBack]{Using the ,,loopback'' program with MacOS}
 The standard audio option for MacOS is PORTAUDIO which has no built-in virtual
 audio cables. In this case
 the easist, most flexible, and (from my side) most recommended option is
