@@ -414,6 +414,7 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
     if ((meter_type == POWER) || (vox_enabled)) {
       double offset = ((double)METER_WIDTH - 100.0) / 2.0;
       double peak = vox_get_peak();
+      if (peak > 1.0) peak = 1.0;
       peak = peak * 100.0;
       cairo_set_source_rgba(cr, COLOUR_OK);
       cairo_rectangle(cr, offset, 0.0, peak, 5.0);
@@ -476,6 +477,7 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
       cairo_line_to(cr, 5.0 + 100.0, Y1 - 10);
       cairo_stroke(cr);
       double peak = vox_get_peak();
+      if (peak > 1.0) peak = 1.0;
       peak = peak * 100.0;
       cairo_set_source_rgba(cr, COLOUR_OK);
       cairo_rectangle(cr, 5.0, Y1 - 10, peak, 5);
