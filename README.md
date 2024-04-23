@@ -4,12 +4,13 @@ supporting both the old (P1) and new (P2) HPSDR protocols, as well as the SoapyS
 
 It runs on Linux (including RaspPi 3/4/5) and MacOS (using the "Homebrew" working environment).
 
-**
-Consult the Manual (Appendix J,  K) on how-to compile piHPSDR on your machine
+***
+Consult the Manual (release/piHPSDR-Manual.pdf) on how to compile piHPSDR on your machine
 
 -Appendix J: LINUX compile from sources (including RaspPi)
+
 -Appendix K: MacOS compile from sources
-**
+***
 
 Latest features:
 
