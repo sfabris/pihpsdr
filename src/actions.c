@@ -215,8 +215,9 @@ ACTION_TABLE ActionTable[] = {
   {TUNE_MEMORY,         "Tune\nMem",            "TUNM",         MIDI_KEY   | CONTROLLER_SWITCH},
   {DRIVE,               "TX Drive",             "TXDRV",        MIDI_KNOB  | MIDI_WHEEL | CONTROLLER_ENCODER},
   {TWO_TONE,            "Two-Tone",             "2TONE",        MIDI_KEY   | CONTROLLER_SWITCH},
+  {MENU_TX,             "TX\nMenu",             "TX",           MIDI_KEY   | CONTROLLER_SWITCH},
   {VFO,                 "VFO",                  "VFO",          MIDI_WHEEL | CONTROLLER_ENCODER},
-  {MENU_FREQUENCY,      "VFO\nMenu",           "FREQ",         MIDI_KEY   | CONTROLLER_SWITCH},
+  {MENU_FREQUENCY,      "VFO\nMenu",            "FREQ",         MIDI_KEY   | CONTROLLER_SWITCH},
   {VFO_STEP_MINUS,      "VFO Step -",           "STEP-",        MIDI_KEY   | CONTROLLER_SWITCH},
   {VFO_STEP_PLUS,       "VFO Step +",           "STEP+",        MIDI_KEY   | CONTROLLER_SWITCH},
   {VFOA,                "VFO A",                "VFOA",         MIDI_WHEEL | CONTROLLER_ENCODER},
@@ -970,6 +971,13 @@ int process_action(void *data) {
   case MENU_PS:
     if (a->mode == PRESSED) {
       start_ps();
+    }
+
+    break;
+
+  case MENU_TX:
+    if (a->mode == PRESSED) {
+      start_tx();
     }
 
     break;
