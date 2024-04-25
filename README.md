@@ -18,6 +18,7 @@ Consult the Manual (**link given above**) on how to compile/install piHPSDR on y
 Latest features:
 
 - in-depth manual (**link given above**)
+- repository shrinked quite a bit by removing some binary files (much better now if you use WLAN)
 - automatic installation procedures for compilation from the sources, for Linux (including RaspPi) and MacOS
   (Appendix J, K).
 - dynamic screen resizing in the "Screen" menu, including transitions
