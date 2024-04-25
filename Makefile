@@ -666,22 +666,6 @@ clean:
 
 #############################################################################
 #
-# "make release" is for maintainers and not for end-users.
-# If this results in an error for end users, this is a feature not a bug.
-# Remove pihpsdr and libwdsp.so from release/pihpsdr since these might
-# be left-overs.
-#
-#############################################################################
-
-.PHONY:	release
-release: $(PROGRAM)
-	rm -f release/pihpsdr/pihpsdr
-	rm -f release/pihpsdr/libwdsp.so
-	cp $(PROGRAM) release/pihpsdr
-	cd release; tar cvf pihpsdr-$(GIT_VERSION).tar pihpsdr
-
-#############################################################################
-#
 # hpsdrsim is a cool program that emulates an SDR board with UDP and TCP
 # facilities. It even feeds back the TX signal and distorts it, so that
 # you can test PureSignal.
@@ -714,23 +698,15 @@ bootloader:	src/bootloader.c
 
 #############################################################################
 #
-# We do not do package building because piHPSDR is preferably built from
-# the sources on the target machine. Take the following  lines as a hint
-# to package bundlers.
+# Re-create the manual PDF from the manual LaTeX sources. This creates
+# the PDF version of the manual in release/LaTexManual and DOES NOT over-
+# write the manual in release.
+# The PDF file in "release" is meant to be updated only once a year or so,
+# because including frequently changing binaries in a git repository tends
+# to blow up this repository. Instead, binaries should be re-created from
+# source code files.
 #
 #############################################################################
-
-#debian:
-#	mkdir -p pkg/pihpsdr/usr/local/bin
-#	mkdir -p pkg/pihpsdr/usr/local/lib
-#	mkdir -p pkg/pihpsdr/usr/share/pihpsdr
-#	mkdir -p pkg/pihpsdr/usr/share/applications
-#	cp $(PROGRAM) pkg/pihpsdr/usr/local/bin
-#	cp /usr/local/lib/libwdsp.so pkg/pihpsdr/usr/local/lib
-#	cp release/pihpsdr/hpsdr.png pkg/pihpsdr/usr/share/pihpsdr
-#	cp release/pihpsdr/hpsdr_icon.png pkg/pihpsdr/usr/share/pihpsdr
-#	cp release/pihpsdr/pihpsdr.desktop pkg/pihpsdr/usr/share/applications
-#	cd pkg; dpkg-deb --build pihpsdr
 
 #############################################################################
 #
@@ -806,8 +782,8 @@ src/actions.o: src/adc.h src/dac.h src/discovered.h src/radio_menu.h
 src/actions.o: src/new_menu.h src/new_protocol.h src/MacOS.h src/ps_menu.h
 src/actions.o: src/agc.h src/filter.h src/band.h src/bandstack.h
 src/actions.o: src/noise_menu.h src/client_server.h src/ext.h src/zoompan.h
-src/actions.o: src/gpio.h src/toolbar.h src/iambic.h src/message.h
-src/actions.o: src/mystring.h
+src/actions.o: src/gpio.h src/toolbar.h src/iambic.h src/store.h
+src/actions.o: src/message.h src/mystring.h
 src/agc_menu.o: src/new_menu.h src/agc_menu.h src/agc.h src/band.h
 src/agc_menu.o: src/bandstack.h src/radio.h src/adc.h src/dac.h
 src/agc_menu.o: src/discovered.h src/receiver.h src/transmitter.h src/vfo.h
@@ -932,7 +908,7 @@ src/meter_menu.o: src/transmitter.h
 src/midi2.o: src/MacOS.h src/receiver.h src/discovered.h src/adc.h src/dac.h
 src/midi2.o: src/transmitter.h src/radio.h src/main.h src/actions.h
 src/midi2.o: src/midi.h src/alsa_midi.h src/message.h
-src/midi3.o: src/actions.h src/midi.h
+src/midi3.o: src/actions.h src/message.h src/midi.h
 src/midi_menu.o: src/main.h src/discovered.h src/mode.h src/filter.h
 src/midi_menu.o: src/band.h src/bandstack.h src/receiver.h src/transmitter.h
 src/midi_menu.o: src/adc.h src/dac.h src/radio.h src/actions.h
@@ -963,8 +939,8 @@ src/new_protocol.o: src/bandstack.h src/new_protocol.h src/MacOS.h
 src/new_protocol.o: src/discovered.h src/mode.h src/filter.h src/radio.h
 src/new_protocol.o: src/adc.h src/dac.h src/transmitter.h src/vfo.h
 src/new_protocol.o: src/toolbar.h src/gpio.h src/vox.h src/ext.h
-src/new_protocol.o: src/client_server.h src/iambic.h src/message.h
-src/new_protocol.o: src/saturnmain.h src/saturnregisters.h
+src/new_protocol.o: src/client_server.h src/iambic.h src/rigctl.h
+src/new_protocol.o: src/message.h src/saturnmain.h src/saturnregisters.h
 src/newhpsdrsim.o: src/MacOS.h src/hpsdrsim.h
 src/noise_menu.o: src/new_menu.h src/noise_menu.h src/band.h src/bandstack.h
 src/noise_menu.o: src/filter.h src/mode.h src/radio.h src/adc.h src/dac.h
@@ -1116,9 +1092,9 @@ src/transmitter.o: src/property.h src/mystring.h src/radio.h src/adc.h
 src/transmitter.o: src/dac.h src/discovered.h src/transmitter.h src/vfo.h
 src/transmitter.o: src/vox.h src/toolbar.h src/gpio.h src/tx_panadapter.h
 src/transmitter.o: src/waterfall.h src/new_protocol.h src/MacOS.h
-src/transmitter.o: src/old_protocol.h src/soapy_protocol.h src/audio.h
-src/transmitter.o: src/ext.h src/client_server.h src/sliders.h src/actions.h
-src/transmitter.o: src/ozyio.h src/sintab.h src/message.h
+src/transmitter.o: src/old_protocol.h src/ps_menu.h src/soapy_protocol.h
+src/transmitter.o: src/audio.h src/ext.h src/client_server.h src/sliders.h
+src/transmitter.o: src/actions.h src/ozyio.h src/sintab.h src/message.h
 src/tx_menu.o: src/audio.h src/receiver.h src/new_menu.h src/radio.h
 src/tx_menu.o: src/adc.h src/dac.h src/discovered.h src/transmitter.h
 src/tx_menu.o: src/sliders.h src/actions.h src/ext.h src/client_server.h
@@ -1136,7 +1112,8 @@ src/vfo.o: src/mystring.h src/radio.h src/adc.h src/dac.h src/receiver.h
 src/vfo.o: src/transmitter.h src/new_protocol.h src/MacOS.h
 src/vfo.o: src/soapy_protocol.h src/vfo.h src/channel.h src/toolbar.h
 src/vfo.o: src/gpio.h src/new_menu.h src/rigctl.h src/client_server.h
-src/vfo.o: src/ext.h src/message.h src/actions.h
+src/vfo.o: src/ext.h src/actions.h src/noise_menu.h src/equalizer_menu.h
+src/vfo.o: src/message.h
 src/vfo_menu.o: src/new_menu.h src/band.h src/bandstack.h src/filter.h
 src/vfo_menu.o: src/mode.h src/radio.h src/adc.h src/dac.h src/discovered.h
 src/vfo_menu.o: src/receiver.h src/transmitter.h src/vfo.h src/ext.h
@@ -1150,7 +1127,8 @@ src/vox_menu.o: src/transmitter.h src/vfo.h src/mode.h src/vox_menu.h
 src/vox_menu.o: src/vox.h src/ext.h src/client_server.h src/message.h
 src/waterfall.o: src/radio.h src/adc.h src/dac.h src/discovered.h
 src/waterfall.o: src/receiver.h src/transmitter.h src/vfo.h src/mode.h
-src/waterfall.o: src/waterfall.h src/client_server.h
+src/waterfall.o: src/band.h src/bandstack.h src/waterfall.h
+src/waterfall.o: src/client_server.h
 src/xvtr_menu.o: src/new_menu.h src/band.h src/bandstack.h src/filter.h
 src/xvtr_menu.o: src/mode.h src/xvtr_menu.h src/radio.h src/adc.h src/dac.h
 src/xvtr_menu.o: src/discovered.h src/receiver.h src/transmitter.h src/vfo.h
