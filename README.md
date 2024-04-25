@@ -1,11 +1,17 @@
 # pihpsdr
+***
+**piHPSDR Manual:** https://github.com/dl1ycf/pihpsdr/releases/download/v2.3/piHPSDR-Manual.pdf
+
+**WDSP guide:** https://github.com/dl1ycf/pihpsdr/releases/download/v2.3/WDSP_Guide.pdf
+***
+
 Standalone code for HPSDR,
 supporting both the old (P1) and new (P2) HPSDR protocols, as well as the SoapySDR framework.
 
 It runs on Linux (including RaspPi 3/4/5) and MacOS (using the "Homebrew" working environment).
 
 ***
-Consult the Manual (release/piHPSDR-Manual.pdf) on how to compile piHPSDR on your machine
+Consult the Manual (**link given above**) on how to compile piHPSDR on your machine
 
 -Appendix J: LINUX compile from sources (including RaspPi)
 
