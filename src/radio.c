@@ -1681,7 +1681,10 @@ static void rxtx(int state) {
         SetChannelState(receiver[i]->id, 0, 1);
         set_displaying(receiver[i], 0);
         g_object_ref((gpointer)receiver[i]->panel);
-        g_object_ref((gpointer)receiver[i]->panadapter);
+
+        if (receiver[i]->panadapter != NULL) {
+          g_object_ref((gpointer)receiver[i]->panadapter);
+        }
 
         if (receiver[i]->waterfall != NULL) {
           g_object_ref((gpointer)receiver[i]->waterfall);
