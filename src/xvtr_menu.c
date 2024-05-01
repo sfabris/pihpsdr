@@ -213,7 +213,7 @@ void xvtr_menu(GtkWidget *parent) {
   // which can be applied immediately
   //
   for (i = BANDS; i < BANDS + XVTRS; i++) {
-    BAND *xvtr = band_get_band(i);
+    const BAND *xvtr = band_get_band(i);
     title[i] = gtk_entry_new();
     gtk_entry_set_width_chars(GTK_ENTRY(title[i]), 7);
     gtk_entry_set_text(GTK_ENTRY(title[i]), xvtr->title);

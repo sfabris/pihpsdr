@@ -86,10 +86,8 @@ tx_panadapter_draw_cb (GtkWidget *widget,
   return FALSE;
 }
 
-static gboolean
-tx_panadapter_button_press_event_cb (GtkWidget      *widget,
-                                     GdkEventButton *event,
-                                     gpointer        data) {
+// cppcheck-suppress constParameterCallback
+static gboolean tx_panadapter_button_press_event_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   switch (event->button) {
   case GDK_BUTTON_SECONDARY:
     g_idle_add(ext_start_tx, NULL);

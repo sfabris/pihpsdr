@@ -354,7 +354,6 @@ static gpointer old_protocol_txiq_thread(gpointer data) {
 }
 
 // This function is used in debug code
-// cppcheck-suppress unusedFunction
 void dump_buffer(unsigned char *buffer, int length, const char *who) {
   g_mutex_lock(&dump_mutex);
   t_print("%s: %s: %d\n", __FUNCTION__, who, length);
@@ -2751,7 +2750,6 @@ static void metis_start_stop(int command) {
 }
 
 static void metis_send_buffer(unsigned char* buffer, int length) {
-  int bytes_sent;
   //
   // Send using either the UDP or TCP socket. Do not use TCP for
   // packets that are not 1032 bytes long
@@ -2769,6 +2767,7 @@ static void metis_send_buffer(unsigned char* buffer, int length) {
       t_perror("sendto socket failed for TCP metis_send_data\n");
     }
   } else if (data_socket >= 0) {
+    int bytes_sent;
     //t_print("%s: sendto %d for %s:%d length=%d\n",__FUNCTION__,data_socket,inet_ntoa(data_addr.sin_addr),ntohs(data_addr.sin_port),length);
     bytes_sent = sendto(data_socket, buffer, length, 0, (struct sockaddr*)&data_addr, sizeof(data_addr));
 

@@ -91,10 +91,8 @@ static gboolean waterfall_motion_notify_event_cb (GtkWidget      *widget,
   return receiver_motion_notify_event(widget, event, data);
 }
 
-static gboolean
-waterfall_scroll_event_cb (GtkWidget      *widget,
-                           GdkEventScroll *event,
-                           gpointer        data) {
+// cppcheck-suppress constParameterCallback
+static gboolean waterfall_scroll_event_cb (GtkWidget *widget, GdkEventScroll *event, gpointer data) {
   return receiver_scroll_event(widget, event, data);
 }
 

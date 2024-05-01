@@ -639,8 +639,6 @@ endif
 ##############################################################################
 
 CPPOPTIONS= --inline-suppr --enable=all
-CPPOPTIONS += --suppress=unusedFunction
-CPPOPTIONS += --suppress=constParameterCallback
 CPPOPTIONS += --suppress=missingIncludeSystem
 CPPINCLUDES:=$(shell echo $(INCLUDES) | sed -e "s/-pthread / /" )
 

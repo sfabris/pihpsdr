@@ -101,6 +101,7 @@ static gboolean panadapter_motion_notify_event_cb(GtkWidget *widget, GdkEventMot
   return receiver_motion_notify_event(widget, event, data);
 }
 
+// cppcheck-suppress constParameterCallback
 static gboolean panadapter_scroll_event_cb(GtkWidget *widget, GdkEventScroll *event, gpointer data) {
   return receiver_scroll_event(widget, event, data);
 }

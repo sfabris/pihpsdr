@@ -118,6 +118,7 @@ static void start_level_thread() {
   t_print("level_thread: id=%p\n", level_thread_id);
 }
 
+// cppcheck-suppress constParameterCallback
 static void destroy_cb(GtkWidget *widget, gpointer data) {
   run_level = 0;
 }

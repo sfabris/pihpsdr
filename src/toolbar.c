@@ -119,6 +119,7 @@ void tune_update(int state) {
   g_idle_add(ext_vfo_update, NULL);
 }
 
+// cppcheck-suppress constParameterCallback
 static void toolbar_button_press_cb(GtkWidget *widget, GdkEventButton *event, gpointer data) {
   int i = GPOINTER_TO_INT(data);
 
@@ -138,6 +139,7 @@ static void toolbar_button_press_cb(GtkWidget *widget, GdkEventButton *event, gp
   }
 }
 
+// cppcheck-suppress constParameterCallback
 static void toolbar_button_released_cb(GtkWidget *widget, GdkEventButton *event, gpointer data) {
   int i = GPOINTER_TO_INT(data);
   //t_print("%s: %d action=%d\n",__FUNCTION__,i,toolbar_switches[i].switch_function);

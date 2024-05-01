@@ -172,7 +172,7 @@ void fft_menu(GtkWidget *parent) {
     g_signal_connect(w, "changed", G_CALLBACK(filter_type_cb), GINT_TO_POINTER(chan));
     //
     // The filter size must be a power of two and at least equal to the dsp size
-    // Apart from that, we allow values from 1024 ... 16384.
+    // Apart from that, we allow values from 1k ... 32k.
     //
     w = gtk_combo_box_text_new();
     s = 512;
@@ -190,7 +190,7 @@ void fft_menu(GtkWidget *parent) {
         j++;
       }
 
-      if (s >= 16384) { break; }
+      if (s >= 32768) { break; }
     }
 
     my_combo_attach(GTK_GRID(grid), w, col, 3, 1, 1);

@@ -81,10 +81,8 @@ meter_draw_cb (GtkWidget *widget, cairo_t   *cr, gpointer   data) {
   return FALSE;
 }
 
-static gboolean
-meter_press_event_cb (GtkWidget *widget,
-                      GdkEventButton *event,
-                      gpointer        data) {
+// cppcheck-suppress constParameterCallback
+static gboolean meter_press_event_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   start_meter();
   return TRUE;
 }
@@ -299,7 +297,7 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
       cairo_line_to(cr, cx, cx);
       cairo_stroke(cr);
       cairo_set_source_rgba(cr, COLOUR_METER);
-      snprintf(sf, 32, "%d dBm", (int)(max_rxlvl + 0.5));
+      snprintf(sf, 32, "%d dBm", (int)(max_rxlvl - 0.5)); // assume max_rxlvl < 0 in roundig
       cairo_move_to(cr, 80, cx - radius + 30);
       cairo_show_text(cr, sf);
     }
@@ -595,7 +593,7 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
       if (size >= 12) {
         cairo_set_source_rgba(cr, COLOUR_ATTN);
         cairo_set_font_size(cr, size);
-        snprintf(sf, 32, "%d dBm", (int)(max_rxlvl + 0.5));
+        snprintf(sf, 32, "%d dBm", (int)(max_rxlvl - 0.5));  // assume max_rxlvl < 0 in rounding
         cairo_move_to(cr, text_location, Y2);
         cairo_show_text(cr, sf);
       }

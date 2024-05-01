@@ -759,7 +759,7 @@ void vfo_id_step(int id, int steps) {
     if (vfo[id].ctun) {
       // CTUN offset is limited by half the sample rate
       // if "id" does not refer to a running RX, take the active receiver
-      RECEIVER *myrx;
+      const RECEIVER *myrx;
 
       if (id < receivers) {
         myrx = receiver[id];
@@ -866,7 +866,7 @@ void vfo_id_move(int id, long long hz, int round) {
   if (!locked) {
     if (vfo[id].ctun) {
       // don't let ctun go beyond end of passband
-      RECEIVER *myrx;
+      const RECEIVER *myrx;
 
       if (id < receivers) {
         myrx = receiver[id];
@@ -975,7 +975,7 @@ void vfo_id_move_to(int id, long long hz) {
 
 #endif
   // hz is the offset from the min displayed frequency
-  RECEIVER *myrx;
+  const RECEIVER *myrx;
 
   if (id < receivers) {
     myrx = receiver[id];
@@ -1068,10 +1068,8 @@ void vfo_id_move_to(int id, long long hz) {
   }
 }
 
-static gboolean
-vfo_scroll_event_cb (GtkWidget      *widget,
-                     GdkEventScroll *event,
-                     gpointer        data) {
+// cppcheck-suppress constParameterCallback
+static gboolean vfo_scroll_event_cb (GtkWidget *widget, GdkEventScroll *event, gpointer data) {
   if (event->direction == GDK_SCROLL_UP) {
     vfo_step(1);
   } else {
@@ -1855,10 +1853,8 @@ void vfo_update() {
   gtk_widget_queue_draw (vfo_panel);
 }
 
-static gboolean
-vfo_press_event_cb (GtkWidget *widget,
-                    GdkEventButton *event,
-                    gpointer        data) {
+// cppcheck-suppress constParameterCallback
+static gboolean vfo_press_event_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   int v;
 
   switch (event->button) {

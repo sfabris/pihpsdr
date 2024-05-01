@@ -93,6 +93,7 @@ static void* wisdom_thread(void *arg) {
   return NULL;
 }
 
+// cppcheck-suppress constParameterCallback
 gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data) {
   gboolean ret = TRUE;
 
@@ -232,6 +233,7 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data) {
   return ret;
 }
 
+// cppcheck-suppress constParameterCallback
 gboolean main_delete (GtkWidget *widget) {
   if (radio != NULL) {
     stop_program();

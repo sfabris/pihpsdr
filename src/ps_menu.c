@@ -267,24 +267,23 @@ int ps_calibration_timer(gpointer arg) {
 static int info_thread(gpointer arg) {
   int info[INFO_SIZE];
   double pk;
-  int newcal, newcorr;
-  gchar label[20];
-  static int old5 = 0;  // used to detect an increase of the calibration count
-  static int old14 = 0; // used to detect change of "Correcting" status
 
   if (!running) {
     return G_SOURCE_REMOVE;
   }
 
   if (transmitter->puresignal) {
+    gchar label[20];
+    static int old5 = 0;  // used to detect an increase of the calibration count
+    static int old14 = 0; // used to detect change of "Correcting" status
     GetPSInfo(transmitter->id, &info[0]);
     GetPSMaxTX(transmitter->id, &pk);
     //
     // Set newcal if there is a new calibration
     // Set newcorr if "Correcting" status changed
     //
-    newcal = 0;
-    newcorr = 0;
+    int newcal = 0;
+    int newcorr = 0;
 
     if (info[5] !=  old5) {
       old5 = info[5];

@@ -85,17 +85,20 @@ static gboolean close_cb () {
   return TRUE;
 }
 
+// cppcheck-suppress constParameterCallback
 static gboolean exit_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   stop_program();
   _exit(0);
 }
 
+// cppcheck-suppress constParameterCallback
 static gboolean reboot_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   stop_program();
   (void) system("reboot");
   _exit(0);
 }
 
+// cppcheck-suppress constParameterCallback
 static gboolean shutdown_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   stop_program();
   (void) system("shutdown -h -P now");

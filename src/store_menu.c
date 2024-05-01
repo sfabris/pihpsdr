@@ -54,7 +54,6 @@ static gboolean store_select_cb (GtkWidget *widget, GdkEventButton *event, gpoin
   char label_str[40];
   store_memory_slot(ind);
   int mode = mem[ind].mode;
-  int filter = mem[ind].filter;
 
   if (mode == modeFMN) {
     snprintf(label_str, 40, "M%d=%8.3f MHz (%s, %s)", ind,
@@ -62,6 +61,7 @@ static gboolean store_select_cb (GtkWidget *widget, GdkEventButton *event, gpoin
              mode_string[mode],
              mem[ind].deviation == 2500 ? "11k" : "16k");
   } else {
+    int filter = mem[ind].filter;
     snprintf(label_str, 40, "M%d=%8.3f MHz (%s, %s)", ind,
              mem[ind].ctun ? (double) mem[ind].ctun_frequency * 1E-6 : (double) mem[ind].frequency * 1E-6,
              mode_string[mode],
@@ -72,6 +72,7 @@ static gboolean store_select_cb (GtkWidget *widget, GdkEventButton *event, gpoin
   return FALSE;
 }
 
+// cppcheck-suppress constParameterCallback
 static gboolean recall_select_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   int ind = GPOINTER_TO_INT(data);
   recall_memory_slot(ind);
@@ -103,7 +104,6 @@ void store_menu(GtkWidget *parent) {
     char label_str[50];
     snprintf(label_str, 50, "Store M%d", ind);
     int mode = mem[ind].mode;
-    int filter = mem[ind].filter;
     b = gtk_button_new_with_label(label_str);
     g_signal_connect(b, "button-press-event", G_CALLBACK(store_select_cb), GINT_TO_POINTER(ind));
     gtk_grid_attach(GTK_GRID(grid), b, 0, ind + 1, 1, 1);
@@ -114,6 +114,7 @@ void store_menu(GtkWidget *parent) {
                mode_string[mode],
                mem[ind].deviation == 2500 ? "11k" : "16k");
     } else {
+      int filter = mem[ind].filter;
       snprintf(label_str, 50, "M%d=%8.3f MHz (%s, %s)", ind,
                mem[ind].ctun ? (double) mem[ind].ctun_frequency * 1E-6 : (double) mem[ind].frequency * 1E-6,
                mode_string[mode],

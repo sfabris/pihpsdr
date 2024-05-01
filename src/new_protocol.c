@@ -264,9 +264,9 @@ static gpointer new_protocol_timer_thread(gpointer data);
 static gpointer high_priority_thread(gpointer data);
 static gpointer mic_line_thread(gpointer data);
 static gpointer iq_thread(gpointer data);
-static void  process_iq_data(unsigned char *buffer, RECEIVER *rx);
-static void  process_ps_iq_data(unsigned char *buffer);
-static void process_div_iq_data(unsigned char *buffer);
+static void  process_iq_data(const unsigned char *buffer, RECEIVER *rx);
+static void  process_ps_iq_data(const unsigned char *buffer);
+static void process_div_iq_data(const unsigned char *buffer);
 static void  process_high_priority(void);
 static void  process_mic_data(const unsigned char *buffer);
 
@@ -2193,7 +2193,7 @@ static gpointer iq_thread(gpointer data) {
   long sequence;
   long expected_sequence = 0;
   volatile mybuffer *mybuf;
-  unsigned char *buffer;
+  const unsigned char *buffer;
   t_print("iq_thread: ddc=%d\n", ddc);
 
   //
@@ -2264,7 +2264,7 @@ static gpointer iq_thread(gpointer data) {
   return NULL;
 }
 
-static void process_iq_data(unsigned char *buffer, RECEIVER *rx) {
+static void process_iq_data(const unsigned char *buffer, RECEIVER *rx) {
   int b;
   int leftsample;
   int rightsample;
@@ -2305,7 +2305,7 @@ static void process_iq_data(unsigned char *buffer, RECEIVER *rx) {
 // This is the same as process_ps_iq_data except that add_div_iq_samples is called
 // at the end
 //
-static void process_div_iq_data(unsigned char*buffer) {
+static void process_div_iq_data(const unsigned char*buffer) {
   int b;
   int leftsample0;
   int rightsample0;
@@ -2360,7 +2360,7 @@ static void process_div_iq_data(unsigned char*buffer) {
   }
 }
 
-static void process_ps_iq_data(unsigned char *buffer) {
+static void process_ps_iq_data(const unsigned char *buffer) {
   int samplesperframe;
   int b;
   int leftsample0;
@@ -2743,6 +2743,7 @@ void new_protocol_iq_samples(int isample, int qsample) {
   }
 }
 
+// cppcheck-suppress constParameterCallback
 void* new_protocol_timer_thread(void* arg) {
   //
   // Periodically send HighPriority as well as General packets.

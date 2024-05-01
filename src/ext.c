@@ -41,6 +41,7 @@
 // once.
 //
 
+// cppcheck-suppress constParameterPointer
 int ext_start_radio(void *data) {
   start_radio();
   return G_SOURCE_REMOVE;
@@ -54,6 +55,7 @@ int ext_start_radio(void *data) {
 //
 static guint vfo_timeout = 0;
 
+// cppcheck-suppress constParameterCallback
 static int vfo_timeout_cb(void * data) {
   if (vfo_timeout > 0) {
     g_source_remove(vfo_timeout);
@@ -91,11 +93,13 @@ int ext_set_vox(void *data) {
   return G_SOURCE_REMOVE;
 }
 
+// cppcheck-suppress constParameterPointer
 int ext_sliders_update(void *data) {
   sliders_update();
   return G_SOURCE_REMOVE;
 }
 
+// cppcheck-suppress constParameterPointer
 int ext_start_band(void *data) {
   start_band();
   return G_SOURCE_REMOVE;
@@ -107,26 +111,31 @@ int ext_start_vfo(void *data) {
   return G_SOURCE_REMOVE;
 }
 
+// cppcheck-suppress constParameterPointer
 int ext_start_rx(void *data) {
   start_rx();
   return G_SOURCE_REMOVE;
 }
 
+// cppcheck-suppress constParameterPointer
 int ext_start_tx(void *data) {
   start_tx();
   return G_SOURCE_REMOVE;
 }
 
+// cppcheck-suppress constParameterPointer
 int ext_update_noise(void *data) {
   update_noise();
   return G_SOURCE_REMOVE;
 }
 
+// cppcheck-suppress constParameterPointer
 int ext_update_eq(void *data) {
   update_eq();
   return G_SOURCE_REMOVE;
 }
 
+// cppcheck-suppress constParameterPointer
 int ext_set_duplex(void *data) {
   setDuplex();
   return G_SOURCE_REMOVE;

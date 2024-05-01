@@ -108,6 +108,7 @@ static gboolean close_cb () {
 // This may help to recover from certain error conditions
 // Hitting this button automatically closes the menu window via cleanup()
 //
+// cppcheck-suppress constParameterCallback
 static gboolean restart_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   cleanup();
   protocol_restart();
@@ -125,6 +126,7 @@ static gboolean minimize_cb(GtkWidget *widget, GdkEventButton *event, gpointer d
 }
 
 #ifdef SATURN
+// cppcheck-suppress constParameterCallback
 static gboolean saturn_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   cleanup();
   saturn_menu(top_window);
@@ -150,6 +152,7 @@ static gboolean radio_cb (GtkWidget *widget, GdkEventButton *event, gpointer dat
   return TRUE;
 }
 
+// cppcheck-suppress constParameterCallback
 static gboolean rx_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   start_rx();
   return TRUE;
@@ -233,6 +236,7 @@ void start_meter() {
   meter_menu(top_window);
 }
 
+// cppcheck-suppress constParameterCallback
 static gboolean meter_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   start_meter();
   return TRUE;
@@ -278,36 +282,43 @@ void start_filter() {
   }
 }
 
+// cppcheck-suppress constParameterCallback
 static gboolean mode_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   start_mode();
   return TRUE;
 }
 
+// cppcheck-suppress constParameterCallback
 static gboolean filter_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   start_filter();
   return TRUE;
 }
 
+// cppcheck-suppress constParameterCallback
 static gboolean noise_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   start_noise();
   return TRUE;
 }
 
+// cppcheck-suppress constParameterCallback
 static gboolean vfo_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   start_vfo(active_receiver->id);
   return TRUE;
 }
 
+// cppcheck-suppress constParameterCallback
 static gboolean band_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   start_band();
   return TRUE;
 }
 
+// cppcheck-suppress constParameterCallback
 static gboolean bstk_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   start_bandstack();
   return TRUE;
 }
 
+// cppcheck-suppress constParameterCallback
 static gboolean store_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   start_store();
   return TRUE;
@@ -323,6 +334,7 @@ void start_noise() {
   }
 }
 
+// cppcheck-suppress constParameterCallback
 static gboolean agc_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   start_agc();
   return TRUE;
@@ -343,6 +355,7 @@ void start_vox() {
   vox_menu(top_window);
 }
 
+// cppcheck-suppress constParameterCallback
 static gboolean vox_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   start_vox();
   return TRUE;
@@ -353,6 +366,7 @@ void start_dsp() {
   fft_menu(top_window);
 }
 
+// cppcheck-suppress constParameterCallback
 static gboolean dsp_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   start_dsp();
   return TRUE;
@@ -369,6 +383,7 @@ static gboolean screen_cb (GtkWidget *widget, GdkEventButton *event, gpointer da
   return TRUE;
 }
 
+// cppcheck-suppress constParameterCallback
 static gboolean diversity_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   start_diversity();
   return TRUE;
@@ -402,6 +417,7 @@ void start_tx() {
   }
 }
 
+// cppcheck-suppress constParameterCallback
 static gboolean tx_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   start_tx();
   return TRUE;
@@ -415,6 +431,7 @@ void start_ps() {
   }
 }
 
+// cppcheck-suppress constParameterCallback
 static gboolean ps_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   start_ps();
   return TRUE;
@@ -426,6 +443,7 @@ void start_server() {
   server_menu(top_window);
 }
 
+// cppcheck-suppress constParameterCallback
 static gboolean server_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   start_server();
   return TRUE;
@@ -438,6 +456,7 @@ void start_midi() {
   midi_menu(top_window);
 }
 
+// cppcheck-suppress constParameterCallback
 static gboolean midi_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   start_midi();
   return TRUE;

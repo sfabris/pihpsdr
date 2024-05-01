@@ -69,6 +69,7 @@ void receiver_weak_notify(gpointer data, GObject  *obj) {
   t_print("%s: id=%d obj=%p\n", __FUNCTION__, rx->id, obj);
 }
 
+// cppcheck-suppress constParameterPointer
 gboolean receiver_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
   const RECEIVER *rx = (RECEIVER *)data;
 
@@ -107,6 +108,7 @@ void receiver_set_active(RECEIVER *rx) {
   set_alex_antennas();
 }
 
+// cppcheck-suppress constParameterPointer
 gboolean receiver_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
   RECEIVER *rx = (RECEIVER *)data;
 
@@ -207,6 +209,7 @@ gboolean receiver_motion_notify_event(GtkWidget *widget, GdkEventMotion *event, 
   return TRUE;
 }
 
+// cppcheck-suppress constParameterPointer
 gboolean receiver_scroll_event(GtkWidget *widget, const GdkEventScroll *event, gpointer data) {
   if (event->direction == GDK_SCROLL_UP) {
     vfo_step(1);

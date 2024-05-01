@@ -694,6 +694,7 @@ static gboolean hideall_cb  (GtkWidget *widget, GdkEventButton *event, gpointer 
   return TRUE;
 }
 
+// cppcheck-suppress constParameterCallback
 static gboolean menu_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   new_menu();
   return TRUE;
@@ -2275,7 +2276,7 @@ void radio_set_satmode(int mode) {
   sat_mode = mode;
 }
 
-void radio_set_rf_gain(RECEIVER *rx) {
+void radio_set_rf_gain(const RECEIVER *rx) {
 #ifdef SOAPYSDR
   soapy_protocol_set_gain_element(rx, radio->info.soapy.rx_gain[rx->adc], (int)adc[rx->adc].gain);
 #endif
@@ -2860,6 +2861,7 @@ int remote_start(void *data) {
 //
 ///////////////////////////////////////////////////////////////////////////////////////////
 
+// cppcheck-suppress constParameterCallback
 static gboolean eventbox_callback(GtkWidget *widget, GdkEvent *event, gpointer data) {
   //
   // data is the ComboBox that is contained in the EventBox

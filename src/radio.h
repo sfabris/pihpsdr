@@ -284,7 +284,7 @@ extern void calcDriveLevel(void);
 extern void calcTuneDriveLevel(void);
 extern void setSquelch(RECEIVER *rx);
 
-extern void radio_set_rf_gain(RECEIVER *rx);
+extern void radio_set_rf_gain(const RECEIVER *rx);
 
 extern void set_attenuation(int value);
 extern void set_alex_attenuation(int v);
