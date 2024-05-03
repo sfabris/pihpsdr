@@ -31,6 +31,7 @@
 //////////////////////////////////////////////////////////////
 
 #include "saturnregisters.h"
+#include "saturndrivers.h"
 #include "message.h"
 #include <stdlib.h>                     // for function min()
 #include <math.h>

@@ -266,7 +266,7 @@ void soapy_protocol_start_transmitter(TRANSMITTER *tx) {
   }
 }
 
-void soapy_protocol_stop_receiver(RECEIVER *rx) {
+void soapy_protocol_stop_receiver(const RECEIVER *rx) {
   // argument rx unused
   running = FALSE;
 
@@ -542,7 +542,7 @@ void soapy_protocol_set_gain(RECEIVER *rx) {
   }
 }
 
-void soapy_protocol_set_gain_element(RECEIVER *rx, char *name, int gain) {
+void soapy_protocol_set_gain_element(const RECEIVER *rx, char *name, int gain) {
   int rc;
   t_print("%s: adc=%d %s=%d\n", __FUNCTION__, rx->adc, name, gain);
   rc = SoapySDRDevice_setGainElement(soapy_device, SOAPY_SDR_RX, rx->adc, name, (double)gain);
