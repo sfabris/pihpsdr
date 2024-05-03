@@ -253,7 +253,7 @@ uint32_t DDCRegisters[VNUMDDC] = {
 #define VCWKEYERDELAY 0                                 // delay bits 7:0
 #define VCWKEYERHANG 8                                  // hang time is 17:8
 #define VCWKEYERRAMP 18                                 // ramp time
-#define VRAMPSIZE 2048                                  // max ramp length in words
+#define VRAMPSIZE 4096                                  // max ramp length in words
 
 //
 // Iambic config register defines
@@ -1321,8 +1321,9 @@ void SetRXDDCEnabled(bool IsEnabled) {
 }
 
 
-#define VMINCWRAMPDURATION 3000                     // 3ms min
-#define VMAXCWRAMPDURATION 10000                    // 10ms max
+#define VMINCWRAMPDURATION         3000             // 3ms min
+#define VMAXCWRAMPDURATION        10000             // 10ms max
+#define VMAXCWRAMPDURATIONV14PLUS 20000             // 20ms max, for firmware V1.4 and later
 
 //
 // InitialiseCWKeyerRamp(bool Protocol2, uint32_t Length_us)
@@ -1339,18 +1340,29 @@ void InitialiseCWKeyerRamp(bool Protocol2, uint32_t Length_us) {
   const double a3 = -0.01168;
   double LargestSample;
   double SamplePeriod;                     // sample period in us
-  uint32_t RampLength;                    // integer length in WORDS not bytes!
+  uint32_t RampLength;                     // integer length in WORDS not bytes!
   double RampSample[VRAMPSIZE];            // array samples
   uint32_t Cntr;
   uint32_t Register;
+  ESoftwareID ID;
+  unsigned int FPGAVersion = 0;
+  unsigned int MaxDuration;               // max ramp duration in microseconds
+
+  FPGAVersion = GetFirmwareVersion(&ID);
+
+  if (FPGAVersion >= 14) {
+    MaxDuration = VMAXCWRAMPDURATIONV14PLUS;        // get version dependent max length
+  } else {
+    MaxDuration = VMAXCWRAMPDURATION;
+  }
 
   // first find out if the length is OK and clip if not
   if (Length_us < VMINCWRAMPDURATION) {
     Length_us = VMINCWRAMPDURATION;
   }
 
-  if (Length_us > VMAXCWRAMPDURATION) {
-    Length_us = VMAXCWRAMPDURATION;
+  if (Length_us > MaxDuration) {
+    Length_us = MaxDuration;
   }
 
   // now apply that ramp length
@@ -1397,12 +1409,19 @@ void InitialiseCWKeyerRamp(bool Protocol2, uint32_t Length_us) {
 
     //
     // finally write the ramp length
+    // V14 onwards: this is in WORDS
     //
-    Register = GCWKeyerSetup;                    // get current settings
-    Register &= 0x8003FFFF;                      // strip out ramp bits
-    Register |= ((RampLength << 2) << VCWKEYERRAMP);        // byte end address
-    GCWKeyerSetup = Register;                    // store it back
-    RegisterWrite(VADDRKEYERCONFIGREG, Register);  // and write to it
+    Register = GCWKeyerSetup;                            // get current settings
+    Register &= 0x8003FFFF;                              // strip out ramp bits
+
+    if (FPGAVersion >= 14) {
+      Register |= (RampLength << VCWKEYERRAMP);          // word end address
+    } else {
+      Register |= ((RampLength << 2) << VCWKEYERRAMP);   // byte end address
+    }
+
+    GCWKeyerSetup = Register;                            // store it back
+    RegisterWrite(VADDRKEYERCONFIGREG, Register);        // and write to it
   }
 }
 
