@@ -201,7 +201,8 @@ endif
 ##############################################################################
 
 ifeq ($(STEMLAB), ON)
-STEMLAB_OPTIONS=-D STEMLAB_DISCOVERY `$(PKG_CONFIG) --cflags libcurl`
+STEMLAB_OPTIONS=-D STEMLAB_DISCOVERY
+STEMLAB_INCLUDE=`$(PKG_CONFIG) --cflags libcurl`
 STEMLAB_LIBS=`$(PKG_CONFIG) --libs libcurl`
 STEMLAB_SOURCES=src/stemlab_discovery.c
 STEMLAB_HEADERS=src/stemlab_discovery.h
@@ -254,6 +255,7 @@ endif
 
 ifeq ($(AUDIO), PULSE)
 AUDIO_OPTIONS=-DPULSEAUDIO
+AUDIO_INCLUDE=
 ifeq ($(UNAME_S), Linux)
   AUDIO_LIBS=-lpulse-simple -lpulse -lpulse-mainloop-glib
 endif
@@ -272,6 +274,7 @@ endif
 
 ifeq ($(AUDIO), ALSA)
 AUDIO_OPTIONS=-DALSA
+AUDIO_INCLUDE=
 AUDIO_LIBS=-lasound
 AUDIO_SOURCES=src/audio.c
 AUDIO_OBJS=src/audio.o
@@ -284,7 +287,8 @@ endif
 ##############################################################################
 
 ifeq ($(AUDIO), PORTAUDIO)
-AUDIO_OPTIONS=-DPORTAUDIO `$(PKG_CONFIG) --cflags portaudio-2.0`
+AUDIO_OPTIONS=-DPORTAUDIO
+AUDIO_INCLUDE=`$(PKG_CONFIG) --cflags portaudio-2.0`
 AUDIO_LIBS=`$(PKG_CONFIG) --libs portaudio-2.0`
 AUDIO_SOURCES=src/portaudio.c
 AUDIO_OBJS=src/portaudio.o
@@ -302,7 +306,7 @@ endif
 #
 ##############################################################################
 
-GTKINCLUDES=`$(PKG_CONFIG) --cflags gtk+-3.0`
+GTKINCLUDE=`$(PKG_CONFIG) --cflags gtk+-3.0`
 GTKLIBS=`$(PKG_CONFIG) --libs gtk+-3.0`
 
 ##############################################################################
@@ -334,8 +338,8 @@ OPTIONS=$(MIDI_OPTIONS) $(USBOZY_OPTIONS) \
 	$(AUDIO_OPTIONS) $(EXTNR_OPTIONS)\
 	-D GIT_DATE='"$(GIT_DATE)"' -D GIT_VERSION='"$(GIT_VERSION)"' -D GIT_COMMIT='"$(GIT_COMMIT)"'
 
-INCLUDES=$(GTKINCLUDES)
-COMPILE=$(CC) $(CFLAGS) $(WDSP_INCLUDE) $(OPTIONS) $(INCLUDES)
+INCLUDES=$(GTKINCLUDE) $(WDSP_INCLUDE) $(AUDIO_INCLUDE) $(STEMLAB_INCLUDE)
+COMPILE=$(CC) $(CFLAGS) $(OPTIONS) $(INCLUDES)
 
 .c.o:
 	$(COMPILE) -c -o $@ $<
@@ -633,24 +637,30 @@ endif
 # an API change in many cases.
 #
 # On MacOS, cppcheck usually cannot find the system include files so we suppress any
-# warnings therefrom. Furthermore, we can use --check-level=exhaustive on MacOS
-# since there we have new newest version (2.11), while on RaspPi we still have 2.3.
+# warnings therefrom, as well as warnings for functions defined in some
+# library but never called.
+# Furthermore, we can use --check-level=exhaustive on MacOS
+# since there we have new newest version (2.11), while on RaspPi we still have
+# older versions.
 #
 ##############################################################################
 
-CPPOPTIONS= --inline-suppr --enable=all
-CPPOPTIONS += --suppress=missingIncludeSystem
 CPPINCLUDES:=$(shell echo $(INCLUDES) | sed -e "s/-pthread / /" )
 
+CPPOPTIONS= --inline-suppr --enable=all --suppress=unmatchedSuppression
+
 ifeq ($(UNAME_S), Darwin)
-CPPOPTIONS += -D__APPLE__ --check-level=exhaustive
+CPPOPTIONS += -D__APPLE__
+CPPOPTIONS += --check-level=exhaustive
+CPPOPTIONS += --suppress=missingIncludeSystem
+CPPOPTIONS += --suppress=unusedFunction
 else
 CPPOPTIONS += -D__linux__
 endif
 
 .PHONY:	cppcheck
 cppcheck:
-	cppcheck -j 4 $(CPPOPTIONS) $(OPTIONS) $(CPPINCLUDES) $(AUDIO_SOURCES) $(SOURCES) \
+	cppcheck $(CPPOPTIONS) $(OPTIONS) $(CPPINCLUDES) $(AUDIO_SOURCES) $(SOURCES) \
 	$(USBOZY_SOURCES)  $(SOAPYSDR_SOURCES) $(MIDI_SOURCES) $(STEMLAB_SOURCES) \
 	$(SERVER_SOURCES) $(SATURN_SOURCES)
 

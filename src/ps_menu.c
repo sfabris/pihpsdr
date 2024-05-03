@@ -518,6 +518,7 @@ static void feedback_cb(GtkWidget *widget, gpointer data) {
   transmitter->feedback = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 }
 
+// cppcheck-suppress constParameterCallback
 static void reset_cb(GtkWidget *widget, gpointer data) {
   if (transmitter->puresignal) {
     SetPSControl(transmitter->id, 1, 0, 0, 0);

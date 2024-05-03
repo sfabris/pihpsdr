@@ -160,8 +160,8 @@ extern int cw_not_ready;
 
 extern void tx_set_mode(TRANSMITTER* tx, int m);
 extern void tx_set_filter(TRANSMITTER *tx);
-extern void transmitter_set_am_carrier_level(TRANSMITTER *tx);
-extern void tx_set_pre_emphasize(TRANSMITTER *tx, int state);
+extern void transmitter_set_am_carrier_level(const TRANSMITTER *tx);
+extern void tx_set_pre_emphasize(const TRANSMITTER *tx, int state);
 extern void transmitter_set_ctcss(TRANSMITTER *tx, int state, int i);
 
 extern void add_mic_sample(TRANSMITTER *tx, float mic_sample);
@@ -177,8 +177,8 @@ extern void tx_set_twotone(TRANSMITTER *tx, int state);
 extern void transmitter_set_compressor_level(TRANSMITTER *tx, double level);
 extern void transmitter_set_compressor(TRANSMITTER *tx, int state);
 
-extern void tx_set_ps_sample_rate(TRANSMITTER *tx, int rate);
-extern void add_ps_iq_samples(TRANSMITTER *tx, double i_sample_0, double q_sample_0, double i_sample_1,
+extern void tx_set_ps_sample_rate(const TRANSMITTER *tx, int rate);
+extern void add_ps_iq_samples(const TRANSMITTER *tx, double i_sample_0, double q_sample_0, double i_sample_1,
                               double q_sample_1);
 
 extern void cw_hold_key(int state);

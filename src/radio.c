@@ -2191,7 +2191,7 @@ void setDrive(double value) {
   }
 }
 
-void setSquelch(RECEIVER *rx) {
+void setSquelch(const RECEIVER *rx) {
   //
   // This is now called whenever
   // - "squelch enable" changes
@@ -2768,7 +2768,7 @@ void radioSaveState() {
   g_mutex_unlock(&property_mutex);
 }
 
-void calculate_display_average(RECEIVER *rx) {
+void calculate_display_average(const RECEIVER *rx) {
   double display_avb;
   int display_average;
   double t = 0.001 * rx->display_average_time;

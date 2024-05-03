@@ -117,7 +117,7 @@ void transmitter_set_out_of_band(TRANSMITTER *tx) {
                              clear_out_of_band_warning, tx, NULL);
 }
 
-void transmitter_set_am_carrier_level(TRANSMITTER *tx) {
+void transmitter_set_am_carrier_level(const TRANSMITTER *tx) {
   SetTXAAMCarrierLevel(tx->id, tx->am_carrier_level);
 }
 
@@ -1024,7 +1024,7 @@ void tx_set_filter(TRANSMITTER *tx) {
   SetTXABandpassFreqs(tx->id, fl, fh);
 }
 
-void tx_set_pre_emphasize(TRANSMITTER *tx, int state) {
+void tx_set_pre_emphasize(const TRANSMITTER *tx, int state) {
   SetTXAFMEmphPosition(tx->id, state);
 }
 
@@ -1467,7 +1467,7 @@ void add_mic_sample(TRANSMITTER *tx, float mic_sample) {
   }
 }
 
-void add_ps_iq_samples(TRANSMITTER *tx, double i_sample_tx, double q_sample_tx, double i_sample_rx,
+void add_ps_iq_samples(const TRANSMITTER *tx, double i_sample_tx, double q_sample_tx, double i_sample_rx,
                        double q_sample_rx) {
   RECEIVER *tx_feedback = receiver[PS_TX_FEEDBACK];
   RECEIVER *rx_feedback = receiver[PS_RX_FEEDBACK];
@@ -1673,7 +1673,7 @@ void tx_set_twotone(TRANSMITTER *tx, int state) {
   g_idle_add(ext_mox_update, GINT_TO_POINTER(state));
 }
 
-void tx_set_ps_sample_rate(TRANSMITTER *tx, int rate) {
+void tx_set_ps_sample_rate(const TRANSMITTER *tx, int rate) {
   SetPSFeedbackRate (tx->id, rate);
 }
 

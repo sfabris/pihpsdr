@@ -282,7 +282,7 @@ extern double getDrive(void);
 extern void setDrive(double d);
 extern void calcDriveLevel(void);
 extern void calcTuneDriveLevel(void);
-extern void setSquelch(RECEIVER *rx);
+extern void setSquelch(const RECEIVER *rx);
 
 extern void radio_set_rf_gain(const RECEIVER *rx);
 
@@ -294,7 +294,7 @@ extern int isTransmitting(void);
 extern void radioRestoreState(void);
 extern void radioSaveState(void);
 
-extern void calculate_display_average(RECEIVER *rx);
+extern void calculate_display_average(const RECEIVER *rx);
 
 extern void radio_set_satmode(int mode);
 

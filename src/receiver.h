@@ -258,10 +258,10 @@ extern void receiver_filter_changed(RECEIVER *rx);
 extern void receiver_vfo_changed(RECEIVER *rx);
 extern void receiver_update_zoom(RECEIVER *rx);
 
-extern void set_mode(RECEIVER* rx, int m);
+extern void set_mode(const RECEIVER* rx, int m);
 extern void set_filter(RECEIVER *rx);
 extern void set_agc(RECEIVER *rx, int agc);
-extern void set_offset(RECEIVER *rx, long long offset);
+extern void set_offset(const RECEIVER *rx, long long offset);
 
 extern void add_iq_samples(RECEIVER *rx, double i_sample, double q_sample);
 extern void add_div_iq_samples(RECEIVER *rx, double i0, double q0, double i1, double q1);

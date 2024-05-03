@@ -581,7 +581,7 @@ void receiver_set_equalizer(RECEIVER *rx) {
   SetRXAEQRun(rx->id, rx->eq_enable);
 }
 
-void set_mode(RECEIVER *rx, int m) {
+void set_mode(const RECEIVER *rx, int m) {
   vfo[rx->id].mode = m;
   SetRXAMode(rx->id, vfo[rx->id].mode);
   //
@@ -719,7 +719,7 @@ void set_agc(RECEIVER *rx, int agc) {
   }
 }
 
-void set_offset(RECEIVER *rx, long long offset) {
+void set_offset(const RECEIVER *rx, long long offset) {
   if (offset == 0) {
     SetRXAShiftFreq(rx->id, (double)offset);
     RXANBPSetShiftFrequency(rx->id, (double)offset);
@@ -731,7 +731,7 @@ void set_offset(RECEIVER *rx, long long offset) {
   }
 }
 
-static void init_analyzer(RECEIVER *rx) {
+static void init_analyzer(const RECEIVER *rx) {
   int flp[] = {0};
   const double keep_time = 0.1;
   const int n_pixout = 1;
