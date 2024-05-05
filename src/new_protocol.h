@@ -96,4 +96,25 @@ extern void new_protocol_menu_stop(void);
 extern void saturn_post_iq_data(int ddc, mybuffer *buffer);
 extern void saturn_post_micaudio(int bytes, mybuffer *buffer);
 extern void saturn_post_high_priority(mybuffer *buffer);
+
+//
+// if DUMP_TX_DATA is #defined, the first 1000000 samples
+// after a RXTX transition are dumped to a file at the
+// next TXRX transition. The value of DUMP_TX_DATA
+// allows to dump either the TX IQ data sent to the radio,
+// the RX or TX feedback data. PURESIGNAL must be enabled
+// to provide this data.
+//
+#define DUMP_TXIQ   1
+#define DUMP_TXFDBK 2
+#define DUMP_RXFDBK 3
+
+//#define DUMP_TX_DATA DUMP_RXFDBK
+
+#ifdef DUMP_TX_DATA
+extern int rxiq_count;
+extern long rxiqi[];
+extern long rxiqq[];
+#endif
+
 #endif

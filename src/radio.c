@@ -1721,8 +1721,24 @@ static void rxtx(int state) {
       break;
 #endif
     }
+#ifdef DUMP_TX_DATA
+    rxiq_count=0;
+#endif
   } else {
     // switch to rx
+#ifdef DUMP_TX_DATA
+    static int snapshot=0;
+    snapshot++;
+    char fname[32];
+    snprintf(fname, 32, "TXDUMP%d.iqdata", snapshot);
+    FILE *fp=fopen(fname,"w");
+    if (fp) {
+      for (int i=0; i<rxiq_count; i++) {
+        fprintf(fp,"%d  %ld  %ld\n", i, rxiqi[i],rxiqq[i]);
+      }
+     fclose(fp);
+    }
+#endif
     switch (protocol) {
 #ifdef SOAPYSDR
 

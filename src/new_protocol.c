@@ -62,6 +62,13 @@
   #include "saturnmain.h"
 #endif
 
+
+#ifdef DUMP_TX_DATA
+long rxiqi[1000000];
+long rxiqq[1000000];
+int  rxiq_count=0;
+#endif
+
 #define min(x,y) (x<y?x:y)
 
 #define PI 3.1415926535897932F
@@ -2407,6 +2414,20 @@ static void process_ps_iq_data(const unsigned char *buffer) {
     rightsampledouble1 = (double)rightsample1 * 1.1920928955078125E-7;
     add_ps_iq_samples(transmitter, leftsampledouble1, rightsampledouble1, leftsampledouble0, rightsampledouble0);
     //t_print("%06x,%06x %06x,%06x\n",leftsample0,rightsample0,leftsample1,rightsample1);
+
+#if defined(DUMP_TX_DATA)
+    if ((DUMP_TX_DATA == DUMP_TXFDBK) && (rxiq_count < 1000000)) {
+      rxiqi[rxiq_count]=leftsample1;
+      rxiqq[rxiq_count]=rightsample1;
+      rxiq_count++;
+    }
+    if ((DUMP_TX_DATA == DUMP_RXFDBK) && (rxiq_count < 1000000)) {
+      rxiqi[rxiq_count]=leftsample0;
+      rxiqq[rxiq_count]=rightsample0;
+      rxiq_count++;
+    }
+#endif
+
   }
 }
 
@@ -2712,6 +2733,14 @@ void new_protocol_iq_samples(int isample, int qsample) {
     txiq_count++;
     return;
   }
+
+#if defined(DUMP_TX_DATA)
+    if ((DUMP_TX_DATA == DUMP_TXIQ) && (rxiq_count < 1000000)) {
+      rxiqi[rxiq_count]=isample;
+      rxiqq[rxiq_count]=qsample;
+      rxiq_count++;
+    }
+#endif
 
   int iptr = txiq_inptr + 6 * txiq_count;
   TXIQRINGBUF[iptr++] = (isample >> 16) & 0xFF;

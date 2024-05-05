@@ -3,6 +3,9 @@ LIST OF RECENT PIHPSDR CHANGES
 
 April 2024:
 -----------
+- shrinked the repository by removing all binary files
+  (executables, shared libs, Manual pdf). The Manual pdf
+  is now available separately from GitHub.
 
 - removed installation procedure for pre-compiled binaries
 
