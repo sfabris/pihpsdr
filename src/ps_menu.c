@@ -117,6 +117,11 @@ static void clear_fields() {
   // In the latter case, the fields stay cleared until the first successful "new"
   // calibration result is obtained.
   //
+  if (dialog == NULL) {
+    // e.g. doing a two-tone experiment and PS menu is not open
+    return;
+  }
+
   gtk_label_set_markup(GTK_LABEL(feedback_l), "<span color='black'>Feedback Lvl</span>");
   gtk_label_set_markup(GTK_LABEL(correcting_l), "<span color='black'>Correcting</span>");
 
