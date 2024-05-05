@@ -206,7 +206,7 @@ void cw_menu(GtkWidget *parent) {
   gtk_widget_set_halign(cw_ramp_width_label, GTK_ALIGN_END);
   gtk_widget_show(cw_ramp_width_label);
   gtk_grid_attach(GTK_GRID(grid), cw_ramp_width_label, 0, 6, 1, 1);
-  GtkWidget *cw_ramp_width_b = gtk_spin_button_new_with_range(5.0, 10.0, 1.0);
+  GtkWidget *cw_ramp_width_b = gtk_spin_button_new_with_range(5.0, 20.0, 1.0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(cw_ramp_width_b), cw_ramp_width);
   gtk_widget_show(cw_ramp_width_b);
   gtk_grid_attach(GTK_GRID(grid), cw_ramp_width_b, 1, 6, 1, 1);
