@@ -1,5 +1,8 @@
 # pihpsdr
 
+**If you encounter problems with "pulling", look at this:** https://github.com/dl1ycf/pihpsdr/releases/download/v2.3/RenewRepo.pdf
+
+
 **piHPSDR Manual:** https://github.com/dl1ycf/pihpsdr/releases/download/v2.3/piHPSDR-Manual.pdf
 
 Standalone code for HPSDR,
