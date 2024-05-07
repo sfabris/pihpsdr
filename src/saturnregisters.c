@@ -1348,6 +1348,7 @@ void InitialiseCWKeyerRamp(bool Protocol2, uint32_t Length_us) {
   ESoftwareID ID;
   unsigned int FPGAVersion = 0;
   unsigned int MaxDuration;               // max ramp duration in microseconds
+  double y, y2, y4, y6,rampsample;
 
   FPGAVersion = GetFirmwareVersion(&ID);
 
@@ -1380,33 +1381,27 @@ void InitialiseCWKeyerRamp(bool Protocol2, uint32_t Length_us) {
     }
 
     RampLength = (uint32_t)(((double)Length_us / SamplePeriod) + 1);
-    //
-    // calculate basic ramp shape
-    // see "CW shaping in DSP software" by Alex Shovkoplyas VE3NEA)
-    //
-    RampSample[0] = 0.0;
 
-    for (Cntr = 1; Cntr < RampLength; Cntr++) {
-      double Fraction = (double)Cntr / (double)RampLength; // fractional position in ramp
-      RampSample[Cntr] = RampSample[Cntr - 1] + a0 + a1 * cos(2.0 * M_PI * Fraction)
-                         + a2 * cos(4.0 * M_PI * Fraction) + a3 * cos(6.0 * M_PI * Fraction);
-    }
-
-    LargestSample = RampSample[RampLength - 1];
-
-    //
-    // now go through and rescale to 2^23-1 max
-    // that's the peak amplitude for I/Q in Saturn, either protocol
-    //
+//
+// DL1YCF code:
+//
     for (Cntr = 0; Cntr < RampLength; Cntr++) {
-      uint32_t Sample = (uint32_t)((RampSample[Cntr] / LargestSample) * 8388607.0); // ramp sample value
-      RegisterWrite(VADDRCWKEYERRAM + 4 * Cntr, Sample);
-      //        t_print("sample: %d = %d\n", Cntr, Sample);
+        y = (double) Cntr / (double) RampLength;           // between 0 and 1
+        y2 = y * 6.2831853071795864769252867665590;  // 2 Pi y
+        y4 = y * 12.566370614359172953850573533118;  // 4 Pi y
+        y6 = y * 18.849555921538759430775860299677;  // 6 Pi y
+        rampsample = 2.787456445993031358885017421602787456445993031358885 *
+            (
+                0.358750000000000000000000000000000000000000000000000    * y
+                - 0.0777137671623415735025882528171650378378063004186075  * sin(y2)
+                + 0.01124270518001148651871394904463441453411422937510584 * sin(y4)
+                - 0.00061964324510444584059352078539698924952082955408284 * sin(y6)
+            );
+        Sample = (uint32_t) (rampsample * 8388607.0);
+        RegisterWrite(VADDRCWKEYERRAM + 4*Cntr, Sample);
     }
-
-    for (Cntr = RampLength; Cntr < VRAMPSIZE; Cntr++) {
-      RegisterWrite(VADDRCWKEYERRAM + 4 * Cntr, 8388607);
-    }
+    for(Cntr = RampLength; Cntr < VRAMPSIZE; Cntr++)                        // fill remainder of RAM
+        RegisterWrite(VADDRCWKEYERRAM + 4*Cntr, 8388607);
 
     //
     // finally write the ramp length
