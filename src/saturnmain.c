@@ -75,7 +75,7 @@ extern bool ServerActive;
 extern bool MOXAsserted;
 
 #define FIRMWARE_MIN_VERSION  8               // Minimum FPGA software version that this software requires
-#define FIRMWARE_MAX_VERSION 14               // Maximum FPGA software version that this software is tested on
+#define FIRMWARE_MAX_VERSION 15               // Maximum FPGA software version that this software is tested on
 
 #define SDRBOARDID 1                          // Hermes
 #define SDRSWVERSION 1                        // version of this software
