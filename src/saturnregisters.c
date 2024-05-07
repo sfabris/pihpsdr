@@ -1335,15 +1335,10 @@ void SetRXDDCEnabled(bool IsEnabled) {
 // only calculate if parameters have changed!
 //
 void InitialiseCWKeyerRamp(bool Protocol2, uint32_t Length_us) {
-  const double a0 = 0.35875;
-  const double a1 = -0.48829;
-  const double a2 = 0.14128;
-  const double a3 = -0.01168;
-  double LargestSample;
   double SamplePeriod;                     // sample period in us
   uint32_t RampLength;                     // integer length in WORDS not bytes!
-  double RampSample[VRAMPSIZE];            // array samples
   uint32_t Cntr;
+  uint32_t Sample;
   uint32_t Register;
   ESoftwareID ID;
   unsigned int FPGAVersion = 0;
