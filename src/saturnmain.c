@@ -1453,9 +1453,9 @@ void saturn_handle_general_packet(bool FromNetwork, uint8_t *PacketBuffer) {
   Byte = *(uint8_t*)(PacketBuffer + 37);              // flag bits
   EnableTimeStamp((bool)(Byte & 1));
   EnableVITA49((bool)(Byte & 2));
+  SetFreqPhaseWord((bool)(Byte & 8));
   Byte = *(uint8_t*)(PacketBuffer + 38);              // enable timeout
   HW_Timer_Enable = ((bool)(Byte & 1));
-  SetFreqPhaseWord((bool)(Byte & 8));
   Byte = *(uint8_t*)(PacketBuffer + 58);              // flag bits
   SetPAEnabled((bool)(Byte & 1));
   SetApolloEnabled((bool)(Byte & 2));
