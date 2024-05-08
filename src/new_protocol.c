@@ -771,6 +771,9 @@ static void new_protocol_high_priority() {
     DDCfrequency[id] += frequency_calibration;
   }
 
+  // CW mode from the Host; disabled since pihpsdr does not use this CW option.
+  high_priority_buffer_to_radio[5] = 0x00;
+    
   if (diversity_enabled && !xmit) {
     //
     // Use frequency of first receiver for both DDC0 and DDC1
