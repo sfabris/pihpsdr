@@ -549,17 +549,24 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
         cairo_show_text(cr, "+40");
         cairo_move_to(cr, 5 + 114 - 6, Y4);
         cairo_show_text(cr, "+60");
-        // if frequency > 30MHz then -93 is S9
-        double l = fmax(-127.0, max_rxlvl);
+
+        //
+        // The scale for l is:
+        //   0.0  --> S0
+        //  54.0  --> S9
+        // 114.0  --> S9+60
+        // 
+        double l = max_rxlvl+127.0;
 
         if (vfo[active_receiver->id].frequency > 30000000LL) {
-          l = max_rxlvl + 20.0;
+          // S9 is -93 dBm for frequencies above 30 MHz
+          l = max_rxlvl + 147.0;
         }
 
         //
         // Restrict bar to S9+60
         //
-        if (l > -13) { l = -13; }
+        if (l > 114.0) { l = 114.0; }
 
         // use colours from the "gradient" panadapter display,
         // but use no gradient: S0-S9 first colour, <S9 last colour
@@ -569,18 +576,16 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
         cairo_pattern_add_color_stop_rgba(pat, 0.50, COLOUR_GRAD4);
         cairo_pattern_add_color_stop_rgba(pat, 1.00, COLOUR_GRAD4);
         cairo_set_source(cr, pat);
-        cairo_rectangle(cr, 5, Y2 - 20, l + 127.0, 20.0);
+        cairo_rectangle(cr, 5, Y2 - 20, l, 20.0);
         cairo_fill(cr);
         cairo_pattern_destroy(pat);
 
-        if (l != 0) {
-          //
-          // Mark right edge of S-meter bar with a line in ATTN colour
-          //
-          cairo_set_source_rgba(cr, COLOUR_ATTN);
-          cairo_move_to(cr, 5 + (double)((max_rxlvl + 127.0)), (double)Y2);
-          cairo_line_to(cr, 5 + (double)((max_rxlvl + 127.0)), (double)(Y2 - 20));
-        }
+        //
+        // Mark right edge of S-meter bar with a line in ATTN colour
+        //
+        cairo_set_source_rgba(cr, COLOUR_ATTN);
+        cairo_move_to(cr, 5 + l, (double)Y2);
+        cairo_line_to(cr, 5 + l, (double)(Y2 - 20));
 
         cairo_stroke(cr);
         text_location = 124;
