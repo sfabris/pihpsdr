@@ -242,8 +242,9 @@ typedef struct _receiver {
   // Equalizer data
   //
   int  eq_enable;
-  double eq_freq[5];
-  double eq_gain[5];
+  double eq_freq[7];
+  double eq_gain[7];
+  int    eq_sixband;
 
 } RECEIVER;
 

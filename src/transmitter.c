@@ -241,9 +241,10 @@ void transmitterSaveState(const TRANSMITTER *tx) {
   SetPropI1("transmitter.%d.dialog_x",          tx->id,               tx->dialog_x);
   SetPropI1("transmitter.%d.dialog_y",          tx->id,               tx->dialog_y);
   SetPropI1("transmitter.%d.display_filled",    tx->id,               tx->display_filled);
-  SetPropI1("transmitter.%d.eq_enable", tx->id,                    tx->eq_enable);
+  SetPropI1("transmitter.%d.eq_enable", tx->id,                       tx->eq_enable);
+  SetPropI1("transmitter.%d.eq_sixband", tx->id,                      tx->eq_sixband);
 
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 7; i++) {
     SetPropF2("transmitter.%d.eq_freq[%d]", tx->id, i,             tx->eq_freq[i]);
     SetPropF2("transmitter.%d.eq_gain[%d]", tx->id, i,             tx->eq_gain[i]);
   }
@@ -294,12 +295,12 @@ static void transmitterRestoreState(TRANSMITTER *tx) {
   GetPropI1("transmitter.%d.dialog_x",          tx->id,               tx->dialog_x);
   GetPropI1("transmitter.%d.dialog_y",          tx->id,               tx->dialog_y);
   GetPropI1("transmitter.%d.display_filled",    tx->id,               tx->display_filled);
-  GetPropI1("transmitter.%d.eq_enable", tx->id,                    tx->eq_enable);
+  GetPropI1("transmitter.%d.eq_enable", tx->id,                       tx->eq_enable);
+  GetPropI1("transmitter.%d.eq_sixband", tx->id,                      tx->eq_sixband);
 
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 7; i++) {
     GetPropF2("transmitter.%d.eq_freq[%d]", tx->id, i,             tx->eq_freq[i]);
     GetPropF2("transmitter.%d.eq_gain[%d]", tx->id, i,             tx->eq_gain[i]);
-    t_print("TX EQ i=%d F=%f G=%f\n", i,  tx->eq_freq[i], tx->eq_gain[i]);
   }
 }
 
@@ -820,16 +821,24 @@ TRANSMITTER *create_transmitter(int id, int width, int height) {
   tx->swr_alarm = 3.0;     // default value for SWR protection
   tx->alc = 0.0;
   tx->eq_enable = 0;
-  tx->eq_freq[0] = 0.0;
-  tx->eq_freq[1] = 200.0;
-  tx->eq_freq[2] = 1000.0;
-  tx->eq_freq[3] = 2000.0;
-  tx->eq_freq[4] = 4000.0;
-  tx->eq_gain[0] = 0.0;
+  tx->eq_sixband = 0;
+
+  tx->eq_freq[0] =     0.0;
+  tx->eq_freq[1] =   200.0;
+  tx->eq_freq[2] =   500.0;
+  tx->eq_freq[3] =  1200.0;
+  tx->eq_freq[4] =  3000.0;
+  tx->eq_freq[5] =  6000.0;
+  tx->eq_freq[6] = 12000.0;
+
+  tx->eq_gain[0] = 0.0; 
   tx->eq_gain[1] = 0.0;
   tx->eq_gain[2] = 0.0;
   tx->eq_gain[3] = 0.0;
   tx->eq_gain[4] = 0.0;
+  tx->eq_gain[5] = 0.0;
+  tx->eq_gain[6] = 0.0;
+
   transmitterRestoreState(tx);
   //
   // allocate buffers
@@ -922,7 +931,8 @@ void tx_set_mode(TRANSMITTER* tx, int mode) {
 }
 
 void tx_set_equalizer(TRANSMITTER *tx) {
-  SetTXAEQProfile(tx->id, 5, tx->eq_freq, tx->eq_gain);
+  int numchan=tx->eq_sixband ? 7 : 5;
+  SetTXAEQProfile(tx->id, numchan, tx->eq_freq, tx->eq_gain);
   SetTXAEQRun(tx->id, tx->eq_enable);
 }
 

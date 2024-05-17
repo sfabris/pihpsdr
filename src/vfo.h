@@ -87,8 +87,12 @@ struct _mode_settings {
   int agc;                  // AGC characteristics (slow/medium/fast etc.)
   int en_txeq;              // TX equalizer on/off
   int en_rxeq;              // RX equalizer on/off
-  double txeq[5];           // TX equalizer settings
-  double rxeq[5];           // RX equalizer settings
+  double tx_eq_freq[7];     // TX equalizer settings
+  double tx_eq_gain[7];
+  int    tx_eq_sixband;
+  double rx_eq_freq[7];     // RX equalizer settings
+  double rx_eq_gain[7];
+  int    rx_eq_sixband;
   long long step;           // VFO step size
   int compressor;           // TX compressor on/off
   double compressor_level;  // TX compressor level
