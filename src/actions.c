@@ -48,6 +48,7 @@
 #include "toolbar.h"
 #include "iambic.h"
 #include "store.h"
+#include "equalizer_menu.h"
 #include "message.h"
 #include "mystring.h"
 
@@ -102,6 +103,7 @@ ACTION_TABLE ActionTable[] = {
   {BANDSTACK_PLUS,      "BndStack +",           "BSTK+",        MIDI_KEY   | CONTROLLER_SWITCH},
   {MENU_BAND,           "Band\nMenu",           "BAND",         MIDI_KEY   | CONTROLLER_SWITCH},
   {MENU_BANDSTACK,      "BndStack\nMenu",       "BSTK",         MIDI_KEY   | CONTROLLER_SWITCH},
+  {CAPTURE_REPLAY,      "CaptRepl",             "CAPREP",       MIDI_KEY   | CONTROLLER_SWITCH},
   {COMP_ENABLE,         "Cmpr On/Off",          "COMP",         MIDI_KEY   | CONTROLLER_SWITCH},
   {COMPRESSION,         "Cmpr Level",           "COMPVAL",      MIDI_KNOB  | MIDI_WHEEL | CONTROLLER_ENCODER},
   {CTUN,                "CTUN",                 "CTUN",         MIDI_KEY   | CONTROLLER_SWITCH},
@@ -674,6 +676,51 @@ int process_action(void *data) {
       vfo_bandstack_changed(b);
     }
 
+    break;
+
+  case CAPTURE_REPLAY:
+    if (can_transmit && a->mode == PRESSED) {
+      switch (capture_state) {
+      case CAP_INIT:
+        if (isTransmitting()) {
+          break;
+        }
+        capture_data = g_new(double, 480000);
+        /* FALLTHROUGH  if not transmitting */
+      case CAP_AVAIL: 
+        if (isTransmitting()) {
+          capture_tx_eq_state = transmitter->eq_enable;
+          transmitter->eq_enable = 0;
+          update_eq();
+          capture_replay_pointer = 0;
+          capture_state = CAP_REPLAY;
+        } else {
+          capture_rx0_eq_state = receiver[0]->eq_enable;
+          capture_rx1_eq_state = receiver[1]->eq_enable;
+          receiver[0]->eq_enable = 0;
+          receiver[1]->eq_enable = 0;
+          update_eq();
+          capture_record_pointer = 0;
+          capture_state = CAP_RECORDING;
+        }
+        break;
+      case CAP_RECORDING:
+      case CAP_RECORD_DONE:
+        // stop recording
+        receiver[0]->eq_enable = capture_rx0_eq_state;
+        receiver[1]->eq_enable = capture_rx1_eq_state;
+        update_eq();
+        capture_state = CAP_AVAIL;
+        break;
+      case CAP_REPLAY:
+      case CAP_REPLAY_DONE:
+        // stop replaying
+        transmitter->eq_enable = capture_tx_eq_state;
+        capture_replay_pointer = 0;
+        capture_state = CAP_AVAIL;
+        break;
+      }
+    }
     break;
 
   case COMP_ENABLE:

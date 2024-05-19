@@ -582,6 +582,10 @@ void receiver_set_equalizer(RECEIVER *rx) {
   int numchan=rx->eq_sixband ? 7 : 5;
   SetRXAEQProfile(rx->id, numchan, rx->eq_freq, rx->eq_gain);
   SetRXAEQRun(rx->id, rx->eq_enable);
+  //t_print("RX EQ id=%d enable=%d\n", rx->id, rx->eq_enable);
+  //for (int i = 0; i < numchan; i++) {
+  //  t_print("RX EQ id=%d chan=%d freq=%f gain=%f\n", rx->id, i, rx->eq_freq[i], rx->eq_gain[i]);
+  //}
 }
 
 void set_mode(const RECEIVER *rx, int m) {
@@ -1421,6 +1425,17 @@ static void process_rx_buffer(RECEIVER *rx) {
     }
 
 #endif
+
+    if (rx == active_receiver && capture_state == CAP_RECORDING) {
+      if (capture_record_pointer < 480000) {
+        capture_data[capture_record_pointer++] = 0.5*(left_sample + right_sample);
+      } else {
+        // switching the state to RECORD_DONE takes care that the
+        // CAPTURE switch is "pressed" only once
+        capture_state = CAP_RECORD_DONE;
+        schedule_action(CAPTURE_REPLAY, PRESSED, 0);
+      }
+    }
 
     if (rx == active_receiver && !pre_mox) {
       //

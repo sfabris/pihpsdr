@@ -50,8 +50,8 @@ tx_panadapter_configure_event_cb (GtkWidget         *widget,
                                   GdkEventConfigure *event,
                                   gpointer           data) {
   TRANSMITTER *tx = (TRANSMITTER *)data;
-  int my_width = gtk_widget_get_allocated_width (tx->panadapter);
-  int my_height = gtk_widget_get_allocated_height (tx->panadapter);
+  int mywidth = gtk_widget_get_allocated_width (tx->panadapter);
+  int myheight = gtk_widget_get_allocated_height (tx->panadapter);
 
   if (tx->panadapter_surface) {
     cairo_surface_destroy (tx->panadapter_surface);
@@ -59,8 +59,8 @@ tx_panadapter_configure_event_cb (GtkWidget         *widget,
 
   tx->panadapter_surface = gdk_window_create_similar_surface (gtk_widget_get_window (widget),
                            CAIRO_CONTENT_COLOR,
-                           my_width,
-                           my_height);
+                           mywidth,
+                           myheight);
   cairo_t *cr = cairo_create(tx->panadapter_surface);
   cairo_set_source_rgba(cr, COLOUR_PAN_BACKGND);
   cairo_paint(cr);
@@ -103,8 +103,8 @@ static gboolean tx_panadapter_button_press_event_cb (GtkWidget *widget, GdkEvent
 
 void tx_panadapter_update(TRANSMITTER *tx) {
   if (tx->panadapter_surface) {
-    int my_width = gtk_widget_get_allocated_width (tx->panadapter);
-    int my_height = gtk_widget_get_allocated_height (tx->panadapter);
+    int mywidth = gtk_widget_get_allocated_width (tx->panadapter);
+    int myheight = gtk_widget_get_allocated_height (tx->panadapter);
     int txvfo = get_tx_vfo();
     int txmode = get_tx_mode();
     double filter_left, filter_right;
@@ -115,20 +115,20 @@ void tx_panadapter_update(TRANSMITTER *tx) {
     cairo_set_source_rgba(cr, COLOUR_PAN_BACKGND);
     cairo_paint (cr);
     // filter
-    filter_left = filter_right = 0.5 * my_width;
+    filter_left = filter_right = 0.5 * mywidth;
 
     if (txmode != modeCWU && txmode != modeCWL) {
       cairo_set_source_rgba(cr, COLOUR_PAN_FILTER);
-      filter_left = (double)my_width / 2.0 + ((double)tx->filter_low / hz_per_pixel);
-      filter_right = (double)my_width / 2.0 + ((double)tx->filter_high / hz_per_pixel);
-      cairo_rectangle(cr, filter_left, 0.0, filter_right - filter_left, (double)my_height);
+      filter_left = (double)mywidth / 2.0 + ((double)tx->filter_low / hz_per_pixel);
+      filter_right = (double)mywidth / 2.0 + ((double)tx->filter_high / hz_per_pixel);
+      cairo_rectangle(cr, filter_left, 0.0, filter_right - filter_left, (double)myheight);
       cairo_fill(cr);
     }
 
     // plot the levels   0, -20,  40, ... dBm (bright turquoise line with label)
     // additionally, plot the levels in steps of the chosen panadapter step size
     // (dark turquoise line without label)
-    double dbm_per_line = (double)my_height / ((double)tx->panadapter_high - (double)tx->panadapter_low);
+    double dbm_per_line = (double)myheight / ((double)tx->panadapter_high - (double)tx->panadapter_low);
     cairo_set_source_rgba(cr, COLOUR_PAN_LINE);
     cairo_set_line_width(cr, PAN_LINE_THICK);
     cairo_select_font_face(cr, DISPLAY_FONT, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
@@ -142,7 +142,7 @@ void tx_panadapter_update(TRANSMITTER *tx) {
           char v[32];
           cairo_set_source_rgba(cr, COLOUR_PAN_LINE_WEAK);
           cairo_move_to(cr, 0.0, y);
-          cairo_line_to(cr, (double)my_width, y);
+          cairo_line_to(cr, (double)mywidth, y);
           snprintf(v, 32, "%d dBm", i);
           cairo_move_to(cr, 1, y);
           cairo_show_text(cr, v);
@@ -150,7 +150,7 @@ void tx_panadapter_update(TRANSMITTER *tx) {
         } else {
           cairo_set_source_rgba(cr, COLOUR_PAN_LINE_WEAK);
           cairo_move_to(cr, 0.0, y);
-          cairo_line_to(cr, (double)my_width, y);
+          cairo_line_to(cr, (double)mywidth, y);
           cairo_stroke(cr);
         }
       }
@@ -166,7 +166,7 @@ void tx_panadapter_update(TRANSMITTER *tx) {
       frequency = vfo[txvfo].frequency;
     }
 
-    double vfofreq = (double)my_width * 0.5;
+    double vfofreq = (double)mywidth * 0.5;
     long long min_display = frequency - half;
     long long max_display = frequency + half;
 
@@ -196,7 +196,7 @@ void tx_panadapter_update(TRANSMITTER *tx) {
         //
         if (x < filter_left || x > filter_right) {
           cairo_move_to(cr, x, 10.0);
-          cairo_line_to(cr, x, (double)my_height);
+          cairo_line_to(cr, x, (double)myheight);
         }
 
         //
@@ -239,14 +239,14 @@ void tx_panadapter_update(TRANSMITTER *tx) {
       if ((min_display < band->frequencyMin) && (max_display > band->frequencyMin)) {
         int i = (band->frequencyMin - min_display) / (long long)hz_per_pixel;
         cairo_move_to(cr, (double)i, 0.0);
-        cairo_line_to(cr, (double)i, (double)my_height);
+        cairo_line_to(cr, (double)i, (double)myheight);
         cairo_stroke(cr);
       }
 
       if ((min_display < band->frequencyMax) && (max_display > band->frequencyMax)) {
         int i = (band->frequencyMax - min_display) / (long long)hz_per_pixel;
         cairo_move_to(cr, (double)i, 0.0);
-        cairo_line_to(cr, (double)i, (double)my_height);
+        cairo_line_to(cr, (double)i, (double)myheight);
         cairo_stroke(cr);
       }
     }
@@ -254,26 +254,26 @@ void tx_panadapter_update(TRANSMITTER *tx) {
     // cursor
     cairo_set_source_rgba(cr, COLOUR_ALARM);
     cairo_set_line_width(cr, PAN_LINE_THIN);
-    //t_print("cursor: x=%f\n",(double)(my_width/2.0)+(vfo[tx->id].offset/hz_per_pixel));
+    //t_print("cursor: x=%f\n",(double)(mywidth/2.0)+(vfo[tx->id].offset/hz_per_pixel));
     cairo_move_to(cr, vfofreq, 0.0);
-    cairo_line_to(cr, vfofreq, (double)my_height);
+    cairo_line_to(cr, vfofreq, (double)myheight);
     cairo_stroke(cr);
     // signal
     double s1;
-    int offset = (tx->pixels / 2) - (my_width / 2);
+    int offset = (tx->pixels / 2) - (mywidth / 2);
     samples[offset] = -200.0;
-    samples[offset + my_width - 1] = -200.0;
+    samples[offset + mywidth - 1] = -200.0;
     s1 = (double)samples[offset];
     s1 = floor((tx->panadapter_high - s1)
-               * (double) my_height
+               * (double) myheight
                / (tx->panadapter_high - tx->panadapter_low));
     cairo_move_to(cr, 0.0, s1);
 
-    for (int i = 1; i < my_width; i++) {
+    for (int i = 1; i < mywidth; i++) {
       double s2;
       s2 = (double)samples[i + offset];
       s2 = floor((tx->panadapter_high - s2)
-                 * (double) my_height
+                 * (double) myheight
                  / (tx->panadapter_high - tx->panadapter_low));
       cairo_line_to(cr, (double)i, s2);
     }
@@ -298,19 +298,19 @@ void tx_panadapter_update(TRANSMITTER *tx) {
         cairo_set_source_rgba(cr,COLOUR_ATTN);
         cairo_set_font_size(cr,DISPLAY_FONT_SIZE3);
         if(ENABLE_E2_ENCODER) {
-          cairo_move_to(cr, my_width-200,70);
+          cairo_move_to(cr, mywidth-200,70);
           snprintf(text, 64, "%s (%s)",encoder_string[e2_encoder_action],sw_string[e2_sw_action]);
           cairo_show_text(cr, text);
         }
 
         if(ENABLE_E3_ENCODER) {
-          cairo_move_to(cr, my_width-200,90);
+          cairo_move_to(cr, mywidth-200,90);
           snprintf(text, 64, "%s (%s)",encoder_string[e3_encoder_action],sw_string[e3_sw_action]);
           cairo_show_text(cr, text);
         }
 
         if(ENABLE_E4_ENCODER) {
-          cairo_move_to(cr, my_width-200,110);
+          cairo_move_to(cr, mywidth-200,110);
           snprintf(text, 64, "%s (%s)",encoder_string[e4_encoder_action],sw_string[e4_sw_action]);
           cairo_show_text(cr, text);
         }
@@ -328,7 +328,7 @@ void tx_panadapter_update(TRANSMITTER *tx) {
     if (tx->puresignal && !cwmode) {
       cairo_set_source_rgba(cr, COLOUR_OK);
       cairo_set_font_size(cr, DISPLAY_FONT_SIZE2);
-      cairo_move_to(cr, my_width / 2 + 10, my_height - 10);
+      cairo_move_to(cr, mywidth / 2 + 10, myheight - 10);
       cairo_show_text(cr, "PureSignal");
       int info[16];
       GetPSInfo(tx->id, &info[0]);
@@ -340,9 +340,9 @@ void tx_panadapter_update(TRANSMITTER *tx) {
       }
 
       if (tx->dialog) {
-        cairo_move_to(cr, (my_width / 2) + 10, my_height - 30);
+        cairo_move_to(cr, (mywidth / 2) + 10, myheight - 30);
       } else {
-        cairo_move_to(cr, (my_width / 2) + 110, my_height - 10);
+        cairo_move_to(cr, (mywidth / 2) + 110, myheight - 10);
       }
 
       cairo_show_text(cr, "Correcting");
@@ -379,7 +379,7 @@ void tx_panadapter_update(TRANSMITTER *tx) {
     }
 
     if (tx->dialog == NULL) {
-      display_panadapter_messages(cr, tx->fps);
+      display_panadapter_messages(cr, mywidth, tx->fps);
     }
 
     cairo_destroy (cr);

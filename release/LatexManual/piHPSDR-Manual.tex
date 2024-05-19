@@ -681,7 +681,7 @@ in the \bltt{AGC} menu. Here one can  also disable AGC,
 in this case the VFO bar shows \rett{AGC off} in grey
 colour.
 
-Continuing to the left, we see the noise reduction settings,
+Continuing to the right, we see the noise reduction settings,
 all printed in grey (that is, they are not effective). This
 can be changed in the \bltt{Noise} menu. We have two different
 noise reduction capabilities \rett{NR1} and \rett{NR2}, these
@@ -692,9 +692,9 @@ they are effective. There are also two different noise blankers
 Besides enabling/disabling these functions, there are  further parameters
 you can tweak in the \bltt{Noise} menu.
 
-The next strings whether Diversity reception is enabled or disabled
+The following items indicate whether Diversity reception is enabled or disabled
 (\rett{DIV}), or whether an equalizer is effective \rett{EQ}.
-Since there is a separate equalizer for the RX and TX audio chain,
+Since there is a separate equalizer for both RX and the TX,
 the equalizer indicator, if it is effective, not only turns yellow
 but reads \rett{RXEQ} while receiving and \rett{TXEQ} while
 transmitting. This means, if only the TX equalizer is enabled,
@@ -1721,8 +1721,8 @@ Noise blanker & NB off/NB1/ NB2 \\\hline
 Automatic notch filter & ANF on/off \\\hline
 Spectral  noise blanker & SNB on/off \\\hline
 AGC characteristic & slow/medium/fast etc. \\\hline
-RX equalizer & on/off and channel gains \\\hline
-TX equalizer & on/off and channel gains \\\hline
+RX equalizer & all settings \\\hline
+TX equalizer & all settings \\\hline
 TX compressor & on/off and compression level \\
 \bottomrule
 \end{tabular}
@@ -2689,13 +2689,7 @@ is shown in Fig. \ref{fig:EqualizerMenu}.
 
 With the combo-box at the top right one can select if one
 wants to change the equalizer settings for the receivers
-RX1 or RX2, or for the transmitter. The equalizers are
-four-channel equalizers where the gain set with the sliders
-applies to the corner frequencies displayed at the left margin.
-Between two corner frequencies, the gain is interpolated
-(see the WDSP manual). The first slider, denoted \rett{Preamp},
-applies an additional, frequency-independent gain.
-
+RX1 or RX2, or for the transmitter.
 The \rett{Enable} checkbox enables/disables the equalizer
 (either for RX1, for RX2, or for TX). 
 If the equalizer of the active receiver 
@@ -2706,23 +2700,39 @@ while transmitting and reads \rett{TxEQ}. So while receiving,
 you cannot tell, from the VFO bar, whether the TX equalizer is
 actually enabled or not!
 
+By default, the equalizers are four-channel equalizers, but
+you can individually change each of the three to a six-band
+one if you check the \rett{SixBands} box. If you do so, the
+slider area below will get two more sliders at the bottom, and this
+makes the equalizer menu taller (to  about 620 pixels).
+So if you run piHPSDR on a very small screen and change to a
+six-band equalizer, the menu will probably no longer fit on the screen.
+In normal situations, where the audio band width is usually 3 kHz
+or less, a four-channel equalizer is sufficient. The possibility
+to add two more channels can be useful for wideband (AM or eSSB) operation. 
+
+In the slider area, you find to the left the text \rett{Preamp},
+which indicates that the slider in that row applies an
+additional, frequency-independent gain. Then, you see for
+each of the equalizer channels a spin button for adjusting the
+corner frequencies (in Hz) of the equalizer, and a slider for adjusting
+the gain (or attenuation) at that corner frequency.
+
 Equalizer settings are saved with the mode, so
 if you adjust the Equaliziers when doing LSB, and then switch to
 DIGU, the equalizers are disabled and they resume their LSB
 settings upon going back to LSB. This also applies to other
 modes such as CWU/CWL, where the TX equalizer has no meaning
 anyway, and where the RX equalizer is normally not needed 
-because CW filters usually are narrow. The corner frequencies
-can (in principle) be different for RX1, RX2, and TX. 
-There is currently
-no GUI to change them, but they can be changed by hand-editing
-the radio settings (props file), which is ,,nerds only'' and
-will not be discussed in the manual.
+because CW filters usually are narrow. 
 
 If the radio currently runs only a single receiver, RX2 cannot
 be selected with the top right combo-box. Likewise, if the
 radio does not have transmitter, the TX settings cannot be
-selected.
+selected. The corner frequencies cannot be changed such that they
+reach adjacent corner frequencies. In the example given in Fig.
+\ref{fig:EqualizerMenu}, the lowest corner frequency cann only be
+increased up to 490 Hz.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The \texttt{Ant} (Antenna) Menu}

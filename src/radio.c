@@ -305,6 +305,18 @@ double div_sin = 1.0;      // Q factor for diversity
 double div_gain = 0.0;     // gain for diversity (in dB)
 double div_phase = 0.0;    // phase for diversity (in degrees, 0 ... 360)
 
+//
+// Audio capture and replay
+// (Equalizers are switched off during capture and replay)
+//
+int capture_state = CAP_INIT;
+int capture_record_pointer;
+int capture_replay_pointer;
+int capture_rx0_eq_state;         // previous Equalizer state
+int capture_rx1_eq_state;
+int capture_tx_eq_state;
+double *capture_data = NULL;
+
 int can_transmit = 0;
 int optimize_for_touchscreen = 0;
 

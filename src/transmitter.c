@@ -934,6 +934,11 @@ void tx_set_equalizer(TRANSMITTER *tx) {
   int numchan=tx->eq_sixband ? 7 : 5;
   SetTXAEQProfile(tx->id, numchan, tx->eq_freq, tx->eq_gain);
   SetTXAEQRun(tx->id, tx->eq_enable);
+  //t_print("TX EQ enable=%d\n", tx->eq_enable);
+  //for (int i = 0; i < numchan; i++) {
+  //  t_print("TX EQ chan=%d freq=%f gain=%f\n", i, tx->eq_freq[i], tx->eq_gain[i]);
+  //}
+
 }
 
 void tx_set_filter(TRANSMITTER *tx) {
@@ -1292,15 +1297,28 @@ void add_mic_sample(TRANSMITTER *tx, float mic_sample) {
   double mic_sample_double;
   int i, j;
 
+  mic_sample_double = (double)mic_sample;
   //
-  // silence TX audio if tuning, or when doing CW.
-  // (in order not to fire VOX)
+  // If there is captured data to re-play, replace incoming
+  // mic samples by captured data. 
   //
-
+  if (capture_state == CAP_REPLAY) {
+    if (capture_replay_pointer < capture_record_pointer) {
+      mic_sample_double = capture_data[capture_replay_pointer++];
+    } else {
+      // switching the state to REPLAY_DONE takes care that the
+      // CAPTURE switch is "pressed" only once
+      capture_state = CAP_REPLAY_DONE;
+      schedule_action(CAPTURE_REPLAY, PRESSED, 0);
+    }
+  }
+  //
+  // silence TX audio if tuning or when doing CW,
+  // to prevent firing VOX
+  // (perhaps not really necessary, but can do no harm)
+  //
   if (tune || txmode == modeCWL || txmode == modeCWU) {
     mic_sample_double = 0.0;
-  } else {
-    mic_sample_double = (double)mic_sample;
   }
 
   //

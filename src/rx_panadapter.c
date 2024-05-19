@@ -505,7 +505,7 @@ void rx_panadapter_update(RECEIVER *rx) {
   */
 
   if (rx->id == 0 && !radio_is_remote) {
-    display_panadapter_messages(cr, rx->fps);
+    display_panadapter_messages(cr, mywidth, rx->fps);
   }
 
   //
@@ -562,7 +562,7 @@ void rx_panadapter_init(RECEIVER *rx, int width, int height) {
                          | GDK_POINTER_MOTION_HINT_MASK);
 }
 
-void display_panadapter_messages(cairo_t *cr, int fps) {
+void display_panadapter_messages(cairo_t *cr, int width, int fps) {
   char text[64];
 
   if (display_warnings) {
@@ -764,5 +764,16 @@ void display_panadapter_messages(cairo_t *cr, int fps) {
     }
 
     if (++count >= fps / 2) { count = 0; }
+  }
+
+  if (capture_state == CAP_RECORDING || capture_state == CAP_REPLAY) {
+      cairo_set_source_rgba(cr, COLOUR_ATTN);
+      cairo_set_font_size(cr, DISPLAY_FONT_SIZE3);
+      cairo_move_to(cr, (double) width -100.0, 30.0);
+      if (capture_state == CAP_RECORDING) {
+        cairo_show_text(cr, "Recording");
+      } else {
+        cairo_show_text(cr, "Replay");
+      }
   }
 }

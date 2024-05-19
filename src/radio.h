@@ -72,6 +72,15 @@ enum _region_enum {
   REGION_WRC15  // 60m band allocation for countries implementing WRC15
 };
 
+enum _capture_state {
+  CAP_INIT = 0,            // util first press
+  CAP_RECORDING,           // audio is being recorded
+  CAP_RECORD_DONE,         // record buffer full
+  CAP_AVAIL,               // audio recording finished
+  CAP_REPLAY,              // audio is being re-played
+  CAP_REPLAY_DONE          // all audio has been sent
+};
+
 extern int region;
 
 extern int RECEIVERS;
@@ -231,6 +240,14 @@ extern int n_adc;
 extern int diversity_enabled;
 extern double div_cos, div_sin;
 extern double div_gain, div_phase;
+
+extern int capture_state;
+extern int capture_record_pointer;
+extern int capture_replay_pointer;
+extern int capture_rx0_eq_state;
+extern int capture_rx1_eq_state;
+extern int capture_tx_eq_state;
+extern double *capture_data;
 
 extern int can_transmit;
 
