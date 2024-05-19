@@ -151,7 +151,7 @@ void fft_menu(GtkWidget *parent) {
       gtk_widget_set_name(w, "boldlabel");
       chan = 1;
       fsize = receiver[1]->fft_size;
-      dsize = receiver[1]->fft_size;
+      dsize = receiver[1]->dsp_size;
       ftype = receiver[1]->low_latency;
     } else {
       w = gtk_label_new("TX");
