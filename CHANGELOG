@@ -1,6 +1,14 @@
 LIST OF RECENT PIHPSDR CHANGES
 ==============================
 
+May 2024:
+---------
+- added an "audio capture and replay" action.
+
+- make equalizer corner  frequencies user-adjustable,
+  and add option to switch between a four- and a six-
+  band equalizer.
+
 April 2024:
 -----------
 - shrinked the repository by removing all binary files
