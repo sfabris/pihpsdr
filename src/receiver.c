@@ -1428,12 +1428,17 @@ static void process_rx_buffer(RECEIVER *rx) {
 
     if (rx == active_receiver && capture_state == CAP_RECORDING) {
       if (capture_record_pointer < 480000) {
-        capture_data[capture_record_pointer++] = 0.5*(left_sample + right_sample);
+        //
+        // normalize samples:
+        // when using AGC, the samples of strong s9 signals are about 0.8
+        //
+        double scale = 0.6*pow(10.0, -0.05 * rx->volume);
+        capture_data[capture_record_pointer++] = scale*(left_sample + right_sample);
       } else {
         // switching the state to RECORD_DONE takes care that the
         // CAPTURE switch is "pressed" only once
         capture_state = CAP_RECORD_DONE;
-        schedule_action(CAPTURE_REPLAY, PRESSED, 0);
+        schedule_action(CAPTURE, PRESSED, 0);
       }
     }
 

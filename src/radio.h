@@ -244,9 +244,6 @@ extern double div_gain, div_phase;
 extern int capture_state;
 extern int capture_record_pointer;
 extern int capture_replay_pointer;
-extern int capture_rx0_eq_state;
-extern int capture_rx1_eq_state;
-extern int capture_tx_eq_state;
 extern double *capture_data;
 
 extern int can_transmit;
@@ -327,6 +324,11 @@ extern int max_band(void);
 extern void protocol_run(void);
 extern void protocol_stop(void);
 extern void protocol_restart(void);
+
+extern void start_playback();
+extern void end_playback();
+extern void start_capture();
+extern void end_capture();
 
 extern gpointer auto_tune_thread(gpointer data);
 //

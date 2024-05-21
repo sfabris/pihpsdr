@@ -1309,7 +1309,7 @@ void add_mic_sample(TRANSMITTER *tx, float mic_sample) {
       // switching the state to REPLAY_DONE takes care that the
       // CAPTURE switch is "pressed" only once
       capture_state = CAP_REPLAY_DONE;
-      schedule_action(CAPTURE_REPLAY, PRESSED, 0);
+      schedule_action(CAPTURE, PRESSED, 0);
     }
   }
   //

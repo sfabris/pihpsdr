@@ -312,9 +312,6 @@ double div_phase = 0.0;    // phase for diversity (in degrees, 0 ... 360)
 int capture_state = CAP_INIT;
 int capture_record_pointer;
 int capture_replay_pointer;
-int capture_rx0_eq_state;         // previous Equalizer state
-int capture_rx1_eq_state;
-int capture_tx_eq_state;
 double *capture_data = NULL;
 
 int can_transmit = 0;
@@ -3039,3 +3036,48 @@ gpointer auto_tune_thread(gpointer data) {
   auto_tune_flag = 0;
   return NULL;
 }
+
+//
+// The next four functions implement a temporary change
+// of settings during capture/replay.
+//
+void start_capture() {
+  //
+  // - turn off  equalizers for both RX
+  //
+  SetRXAEQRun(0, 0);
+  SetRXAEQRun(1, 0);
+}
+
+void end_capture() {
+  //
+  // - set capture flag to  "available"
+  // - restore  RX equalizer on/off flags
+  //
+  SetRXAEQRun(0, receiver[0]->eq_enable);
+  SetRXAEQRun(1, receiver[1]->eq_enable);
+}
+
+void start_playback() {
+  //
+  // - turn off TX equalizer
+  // - turn off TX compression
+  // - set mic gain  to zero
+  //
+  SetTXAEQRun(transmitter->id, 0);
+  SetTXACompressorRun(transmitter->id, 0);
+  SetTXAPanelGain1(transmitter->id, 1.0);
+}
+
+void end_playback() {
+  //
+  // - restore TX equalizer on/off flag
+  // - restore TX compressor on/off flag
+  // - reatore TX mic gain setting
+  //
+  capture_state = CAP_AVAIL;
+  SetTXAEQRun(transmitter->id, transmitter->eq_enable);
+  SetTXACompressorRun(transmitter->id, transmitter->compressor);
+  SetTXAPanelGain1(transmitter->id, pow(10.0, 0.05 * mic_gain));
+}
+

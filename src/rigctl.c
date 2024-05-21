@@ -4575,12 +4575,12 @@ int parse_cmd(void *data) {
       //ENDDEF
       if (can_transmit) {
         if (command[2] == ';') {
-          snprintf(reply, 256, "PL%03d000;", (int)((transmitter->compressor_level / 20.0) * 100.0));
+          snprintf(reply, 256, "PL%03d000;", (int)(5.0 * transmitter->compressor_level));
           send_resp(client->fd, reply);
         } else if (command[8] == ';') {
           command[5] = '\0';
           double level = (double)atoi(&command[2]);
-          level = (level / 100.0) * 20.0;
+          level = 0.2 * level;
           transmitter_set_compressor_level(transmitter, level);
           g_idle_add(ext_vfo_update, NULL);
         }

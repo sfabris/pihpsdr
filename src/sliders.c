@@ -539,7 +539,7 @@ static void micgain_value_changed_cb(GtkWidget *widget, gpointer data) {
   mic_gain = gtk_range_get_value(GTK_RANGE(widget));
 
   if (can_transmit) {
-    SetTXAPanelGain1(transmitter->id, pow(10.0, mic_gain / 20.0));
+    SetTXAPanelGain1(transmitter->id, pow(10.0, 0.05 * mic_gain));
   }
 }
 
@@ -558,7 +558,7 @@ void set_mic_gain(double value) {
   //t_print("%s value=%f\n",__FUNCTION__, value);
   if (can_transmit) {
     mic_gain = value;
-    SetTXAPanelGain1(transmitter->id, pow(10.0, mic_gain / 20.0));
+    SetTXAPanelGain1(transmitter->id, pow(10.0, 0.05 * mic_gain));
 
     if (display_sliders && !mic_linein) {
       gtk_range_set_value (GTK_RANGE(mic_gain_scale), mic_gain);

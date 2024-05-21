@@ -3421,7 +3421,7 @@ first.
 \begin{center}
 \begin{tabular}{|p{7cm}|p{3cm}|p{1cm}|}
 \toprule
-$\phantom{\Big|}$\bltt{\large #1} & \texttt{\large #2} & \texttt{\large #3} \\\cline{1-3}
+\bltt{\large #1} & \texttt{\large #2} & \texttt{\large #3}$\phantom{\Big|}$ \\\cline{1-3}
 \multicolumn{3}{|p{\textwidth}|}{#4} \\
 \bottomrule
 \end{tabular}
@@ -3588,6 +3588,18 @@ frequency range of the radio.}
 
 \action{BndStack MENU}{BSTK}{B}
 {Open the \texttt{BANDSTACK} menu.}
+
+\action{Capture}{CAPTUR}{B}
+{Capture/Replay button: during RX, pressing this button starts capturing up to 10 seconds
+of the RX  audio to an internal buffer, capturing continues until the button is pressed again
+or the buffer is full. During TX, pressing this button replaces TX audio samples by
+samples from this buffer, again until the button is pressed again or the buffer content
+has been completely replayed.
+Note that during recording, {\bf the RX equalizers are temporarily de-activated}  and the audio
+volumes are recorded with an amplitude that does not depend on the position of the
+AF volume slider. During playback, {\bf the TX equalizer and the TX compressor are temporarily
+de-activated} and the mic gain is temporarily set to unity (0 dB).
+}
 
 \action{Cmpr On/Off}{COMP}{B}
 {Toggle the state (on/off) of the compressor used in the TX audio input.}
