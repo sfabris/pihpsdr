@@ -3,6 +3,8 @@ LIST OF RECENT PIHPSDR CHANGES
 
 May 2024:
 ---------
+- support for HermesLite-II I/O board
+
 - added an "audio capture and replay" action.
 
 - make equalizer corner  frequencies user-adjustable,
