@@ -1037,14 +1037,14 @@ static void *server_client_thread(void *arg) {
       }
       break;
 
-    case CMD_RESP_XIT_UPDATE:
-      t_print("server_client_thread: CMD_RESP_XIT_UPDATE\n");
+    case CMD_RESP_XIT_TOGGLE:
+      t_print("server_client_thread: CMD_RESP_XIT_TOGGLE\n");
       {
-        XIT_UPDATE_COMMAND *xit_update_command = g_new(XIT_UPDATE_COMMAND, 1);
-        xit_update_command->header.data_type = header.data_type;
-        xit_update_command->header.version = header.version;
-        xit_update_command->header.context.client = client;
-        g_idle_add(remote_command, xit_update_command);
+        XIT_TOGGLE_COMMAND *xit_toggle_command = g_new(XIT_TOGGLE_COMMAND, 1);
+        xit_toggle_command->header.data_type = header.data_type;
+        xit_toggle_command->header.version = header.version;
+        xit_toggle_command->header.context.client = client;
+        g_idle_add(remote_command, xit_toggle_command);
       }
       break;
 
@@ -1066,6 +1066,14 @@ static void *server_client_thread(void *arg) {
         xit_command->header.data_type = header.data_type;
         xit_command->header.version = header.version;
         xit_command->header.context.client = client;
+        bytes_read = recv_bytes(client->socket, (char *)&xit_command->xit, sizeof(XIT_COMMAND) - sizeof(header));
+
+        if (bytes_read <= 0) {
+          t_print("server_client_thread: short read for XIT\n");
+          t_perror("server_client_thread");
+          // dialog box?
+          return NULL;
+        }
         g_idle_add(remote_command, xit_command);
       }
       break;
@@ -1728,11 +1736,11 @@ void send_rit(int s, int rx, int rit) {
 }
 
 // NOTYETUSED
-void send_xit_update(int s) {
-  XIT_UPDATE_COMMAND command;
-  t_print("send_xit_update\n");
+void send_xit_toggle(int s) {
+  XIT_TOGGLE_COMMAND command;
+  t_print("send_xit_toggle\n");
   command.header.sync = REMOTE_SYNC;
-  command.header.data_type = htons(CMD_RESP_RIT_TOGGLE);
+  command.header.data_type = htons(CMD_RESP_XIT_TOGGLE);
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
@@ -3117,7 +3125,7 @@ static int remote_command(void *data) {
   }
   break;
 
-  case CMD_RESP_XIT_UPDATE: {
+  case CMD_RESP_XIT_TOGGLE: {
     send_vfo_data(client, VFO_A);
     send_vfo_data(client, VFO_B);
   }

@@ -38,8 +38,10 @@
 #include "message.h"
 
 #ifdef GPIO
+#ifdef GPIO_CONFIGURE_LINES
 
 static GtkWidget *i2c_sw_text[16];
+
 static void response_event(GtkWidget *dialog, int id, gpointer user_data) {
   t_print("%s: id=%d\n", __FUNCTION__, id);
 
@@ -82,7 +84,6 @@ void configure_gpio(GtkWidget *parent) {
   }
 
   if (max_encoders > 0) {
-    // No indent for this block to facilitate "diff"
     grid = gtk_grid_new();
     gtk_grid_set_column_homogeneous(GTK_GRID(grid), FALSE);
     gtk_grid_set_row_homogeneous(GTK_GRID(grid), TRUE);
@@ -304,4 +305,5 @@ void configure_gpio(GtkWidget *parent) {
   gtk_widget_show_all(dialog);
   gtk_dialog_run(GTK_DIALOG(dialog));
 }
+#endif
 #endif

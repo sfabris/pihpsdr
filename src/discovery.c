@@ -130,7 +130,7 @@ static gboolean protocols_cb (GtkWidget *widget, GdkEventButton *event, gpointer
 }
 
 #ifdef GPIO
-#if 0
+#ifdef GPIO_CONFIGURE_LINES
 static gboolean gpio_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   configure_gpio(discovery_dialog);
   return TRUE;

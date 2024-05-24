@@ -748,16 +748,15 @@ void audio_get_cards() {
   snd_pcm_info_alloca(&pcminfo);
 
   while (snd_card_next(&card) >= 0 && card >= 0) {
-    int err = 0;
     snd_ctl_t *handle;
     char name[20];
     snprintf(name, sizeof(name), "hw:%d", card);
 
-    if ((err = snd_ctl_open(&handle, name, 0)) < 0) {
+    if (snd_ctl_open(&handle, name, 0) < 0) {
       continue;
     }
 
-    if ((err = snd_ctl_card_info(handle, info)) < 0) {
+    if (snd_ctl_card_info(handle, info) < 0) {
       snd_ctl_close(handle);
       continue;
     }
@@ -770,7 +769,7 @@ void audio_get_cards() {
       // input devices
       snd_pcm_info_set_stream(pcminfo, SND_PCM_STREAM_CAPTURE);
 
-      if ((err = snd_ctl_pcm_info(handle, pcminfo)) == 0) {
+      if (snd_ctl_pcm_info(handle, pcminfo) == 0) {
         device_id = g_new(char, 128);
         snprintf(device_id, 128, "plughw:%d,%d %s", card, dev, snd_ctl_card_info_get_name(info));
 
@@ -789,7 +788,7 @@ void audio_get_cards() {
       // ouput devices
       snd_pcm_info_set_stream(pcminfo, SND_PCM_STREAM_PLAYBACK);
 
-      if ((err = snd_ctl_pcm_info(handle, pcminfo)) == 0) {
+      if (snd_ctl_pcm_info(handle, pcminfo) == 0) {
         device_id = g_new(char, 128);
         snprintf(device_id, 128, "plughw:%d,%d %s", card, dev, snd_ctl_card_info_get_name(info));
 

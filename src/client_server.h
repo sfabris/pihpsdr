@@ -79,7 +79,7 @@ enum _header_type_enum {
   CMD_RESP_RIT_TOGGLE,
   CMD_RESP_RIT_CLEAR,
   CMD_RESP_RIT,
-  CMD_RESP_XIT_UPDATE,
+  CMD_RESP_XIT_TOGGLE,
   CMD_RESP_XIT_CLEAR,
   CMD_RESP_XIT,
   CMD_RESP_RIT_INCREMENT,
@@ -433,9 +433,9 @@ typedef struct __attribute__((__packed__)) _rit_command {
   uint16_t rit;
 } RIT_COMMAND;
 
-typedef struct __attribute__((__packed__)) _xit_update_command {
+typedef struct __attribute__((__packed__)) _xit_toggle_command {
   HEADER header;
-} XIT_UPDATE_COMMAND;
+} XIT_TOGGLE_COMMAND;
 
 typedef struct __attribute__((__packed__)) _xit_clear_command {
   HEADER header;
@@ -522,6 +522,9 @@ extern void send_lock(int s, int lock);
 extern void send_rit_toggle(int s, int rx);
 extern void send_rit_clear(int s, int rx);
 extern void send_rit(int s, int rx, int rit);
+extern void send_xit_toggle(int s);
+extern void send_xit_clear(int s);
+extern void send_xit(int s, int xit);
 extern void send_sample_rate(int s, int rx, int sample_rate);
 extern void send_receivers(int s, int receivers);
 extern void send_rit_increment(int s, int increment);

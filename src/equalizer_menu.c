@@ -34,6 +34,7 @@
 #include "message.h"
 
 static GtkWidget *dialog = NULL;
+static int dialog_width = 1;
 
 static GtkWidget *scale[7];
 static GtkWidget *freqspin[7];
@@ -97,7 +98,7 @@ static void sixband_cb (GtkWidget *widget, gpointer data) {
     gtk_widget_hide(scale   [5]);
     gtk_widget_hide(scale   [6]);
   }
-  gtk_window_resize(GTK_WINDOW(dialog), 1, 1);
+  gtk_window_resize(GTK_WINDOW(dialog), dialog_width, 1);
 
   switch (eqid) {
   case 0:
@@ -242,7 +243,7 @@ static void gain_changed_cb (GtkWidget *widget, gpointer data) {
 //
 static void eqid_changed_cb(GtkWidget *widget, gpointer data) {
   eqid = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
-  int six=0;
+  int six;
 
   switch (eqid) {
   case 0:
@@ -277,6 +278,7 @@ static void eqid_changed_cb(GtkWidget *widget, gpointer data) {
     }
   }
 
+  six = 0;  // silence "maybe uninitialized" compiler warnings
   switch (eqid) {
   case 0:
     six = receiver[0]->eq_sixband;
@@ -304,7 +306,7 @@ static void eqid_changed_cb(GtkWidget *widget, gpointer data) {
     gtk_widget_hide(scale   [5]);
     gtk_widget_hide(scale   [6]);
   }
-  gtk_window_resize(GTK_WINDOW(dialog), 1, 1);
+  gtk_window_resize(GTK_WINDOW(dialog), dialog_width, 1);
 
 }
 
@@ -387,13 +389,15 @@ void equalizer_menu(GtkWidget *parent) {
     gtk_widget_hide(scale   [6]);
   }
   //
-  // For some unknown reason, the following resize emits dozens of 
-  // "critical warnings" if run on RaspPi with hsize=1 and vsize=1
-  // Determining the current hsize and using that value silences
-  // this
+  // For some unknown reason, the following gtk_window_resize emits dozens of 
+  // "critical warnings" if run on RaspPi with a hsize smaller than the
+  // current horizontal size. Therefore,
+  // determin the current hsize and using that value in all window resize
+  // calls
   //
   GtkAllocation alloc;
   gtk_widget_get_allocation(dialog,&alloc);
-  gtk_window_resize(GTK_WINDOW(dialog), alloc.width, 1);
+  dialog_width = alloc.width;
+  gtk_window_resize(GTK_WINDOW(dialog), dialog_width, 1);
 }
 
