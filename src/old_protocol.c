@@ -161,6 +161,11 @@ static void open_tcp_socket(void);
 static void open_udp_socket(void);
 static int how_many_receivers(void);
 
+//
+// HermesLite-II I/O Bord
+//
+static int hl2_io_board_seen = 0;
+
 #define COMMON_MERCURY_FREQUENCY 0x80
 #define PENELOPE_MIC 0x80
 
@@ -1194,20 +1199,37 @@ static void process_control_bytes() {
   static unsigned int ex_acc = 0;
   static unsigned int adc0_acc = 0;
   static unsigned int adc1_acc = 0;
-  // do not set ptt. In PureSignal, this would stop the
-  // receiver sending samples to WDSP abruptly.
-  // Do the RX-TX change only via ext_mox_update.
+
+
   previous_ptt = radio_ptt;
+  radio_ptt  = (control_in[0]     ) & 0x01;
+  if (previous_ptt != radio_ptt) {
+    g_idle_add(ext_mox_update, GINT_TO_POINTER(radio_ptt));
+  }
+
+  if ((device == DEVICE_HERMES_LITE2) && (control_in[0] & 0x80)) {
+    //
+    // The HL2 sends specific ACK responses if bit7 of C0 is set
+    // The ptt line is contained for quick response, but not
+    // the dash and dot signals.
+    // We will wait for such responses each time we issued an I2C
+    // request.
+    //
+    int addr = (control_in[0] & 0x7E) >> 1;
+    //
+    // Since querying the IOB is the only "I2C read" we do, the ACK can only refer
+    // to the IOB query.
+    //
+    if (addr == 0x3D && control_in[1] == 0xF1 && control_in[2] == 0xF1 && !hl2_io_board_seen) {
+     t_print("HL2IOB: board detected\n");
+     hl2_io_board_seen = 1;
+    }
+    return;
+  }
+
   previous_dot = radio_dot;
   previous_dash = radio_dash;
-  //
-  // Note HL2 I/O board
-  // If bit 7 of control_in[0] is set, then
-  // control_in[1:4] contain four bytes of I2C data from the I/O board
-  // which serves various functions.
-  // This is not (yet) implemented in piHPSDR
-  //
-  radio_ptt  = (control_in[0]     ) & 0x01;
+
   radio_dash = (control_in[0] >> 1) & 0x01;
   radio_dot  = (control_in[0] >> 2) & 0x01;
 
@@ -1222,10 +1244,6 @@ static void process_control_bytes() {
     if (radio_dash != previous_dash) { keyer_event(0, radio_dash); }
 
     if (radio_dot  != previous_dot ) { keyer_event(1, radio_dot ); }
-  }
-
-  if (previous_ptt != radio_ptt) {
-    g_idle_add(ext_mox_update, GINT_TO_POINTER(radio_ptt));
   }
 
   switch ((control_in[0] >> 3) & 0x1F) {
@@ -2490,23 +2508,143 @@ void ozy_send_buffer() {
 
       break;
 
-    case 11:
-      // DL1YCF: HermesLite-II only
-      // specify some more robust TX latency and PTT hang times
+    case 11: {
+      static int hl2_command_loop = 0;
+      static long long hl2_iob_tx_freq = 0;   // last freq sent to IO board
+      static int hl2_rf_input_mode = 0;       // last RF-input-mode sent to IO board
+      static int hl2_query_count = 0;
+      //
+      // All HermesLite specific commands are handled HERE "round robin",
+      // such there is a little as possible interruption of the standard
+      // protocol. We arrive *here* every 35 msec
+      // 
+      // As long as no HL2 IO-board has been detected, hl2_command_loop
+      // cycles 0,1,0,1,... but only every 25-th cycle (every 1900 msec)
+      // a query is actually sent.
+      //
+      // Once a HL2 IO-board is detected, hl2_command_loop cycles 0, 2--9, 0, ...
+      // so a complete "turnaround" takes 320 msec. This means we can send
+      // TX frequency / RF input mode constantly, and we need not wait for
+      // ACK packets. This improves resilience w.r.t. lost packets.
+      //
+      // We have to prepeare valid C0-C4 data even if we are only recording
+      // the TX frequency. Therefore a valid packet setting the PTT hang time
+      // and the TX latency is prepeared for any value of hl2_command_loop.
+      //
       // A latency of 40 msec means that we first send 1920
       // TX iq samples before HL2 starts TXing. This should be
       // enough to prevent underflows and leave some head-room.
       // My measurements indicate that the TX FIFO can hold about
       // 75 msec or 3600 samples (cum grano salis).
+      //
       output_buffer[C0] = 0x2E;
       output_buffer[C3] = 20; // 20 msec PTT hang time, only bits 4:0
       output_buffer[C4] = 40; // 40 msec TX latency,    only bits 6:0
+      //
+      switch(hl2_command_loop) {
+      case 0:
+        hl2_command_loop = hl2_io_board_seen ? 2 : 1;
+        break;
+      case 1:
+        //
+        // If there is no HL2 IO board presend, do not query
+        // at high rate. We arrive here every 75 msec,
+        // so it is sufficient to do the query once in 25
+        // visits (every 2 seconds). If we do not send a query,
+        // a default PTT hang/TX latency packet will be sent.
+        //
+        if (hl2_query_count == 0) {
+          output_buffer[C0]=0xFA;         // I2C-2 with ACK
+          output_buffer[C1]=0x07;         // read
+          output_buffer[C2]=0x80 | 0x41;  // i2c addr
+          output_buffer[C3]=0x00;         // register
+          output_buffer[C4]=0x00;         // data (ignored on read)
+          hl2_query_count = 25;
+          //t_print("HL2IOB: Queried board ID\n");
+        } else {
+          hl2_query_count--;
+        }
+        hl2_command_loop = 0;
+        break;
+      case 2:
+        //
+        // Determine current TX dial (!) frequency.
+        // This is send sent for hl2_command_loop values 3,4,5,6,7.
+        // NOTE: arriving here means an IO-board has been detected.
+        //
+        hl2_iob_tx_freq = vfo[txvfo].frequency;
+        if (vfo[txvfo].ctun) { hl2_iob_tx_freq += vfo[txvfo].offset; }
+        if (vfo[txvfo].xit_enabled) { hl2_iob_tx_freq += vfo[txvfo].xit; }
+        hl2_command_loop = 3;
+        break;
+      case 3:
+        output_buffer[C0]=0xFA;                           // I2C-2 with ACK
+        output_buffer[C1]=0x06;                           // write
+        output_buffer[C2]=0x80 | 0x1d;                    // i2c addr
+        output_buffer[C3]=0x00;                           // REG_TX_FREQ_BYTE4
+        output_buffer[C4]=(hl2_iob_tx_freq >> 32) & 0xFF; // bits 32-39
+        hl2_command_loop = 4;
+        break;
+      case 4:
+        output_buffer[C0]=0xFA;                           // I2C-2 with ACK
+        output_buffer[C1]=0x06;                           // write
+        output_buffer[C2]=0x80 | 0x1d;                    // i2c addr
+        output_buffer[C3]=0x01;                           // REG_TX_FREQ_BYTE3
+        output_buffer[C4]=(hl2_iob_tx_freq >> 24) & 0xFF; // bits 24-31
+        hl2_command_loop = 5;
+        break;
+      case 5:
+        output_buffer[C0]=0xFA;                           // I2C-2 with ACK
+        output_buffer[C1]=0x06;                           // write
+        output_buffer[C2]=0x80 | 0x1d;                    // i2c addr
+        output_buffer[C3]=0x02;                           // REG_TX_FREQ_BYTE2
+        output_buffer[C4]=(hl2_iob_tx_freq >> 16) & 0xFF; // bits 16-23
+        hl2_command_loop = 6;
+        break;
+      case 6:
+        output_buffer[C0]=0xFA;                           // I2C-2 with ACK
+        output_buffer[C1]=0x06;                           // write
+        output_buffer[C2]=0x80 | 0x1d;                    // i2c addr
+        output_buffer[C3]=0x03;                           // REG_TX_FREQ_BYTE1
+        output_buffer[C4]=(hl2_iob_tx_freq >>  8) & 0xFF; // bits 8-15
+        hl2_command_loop = 7;
+        break;
+      case 7:
+        output_buffer[C0]=0xFA;                           // I2C-2 with ACK
+        output_buffer[C1]=0x06;                           // write
+        output_buffer[C2]=0x80 | 0x1d;                    // i2c addr
+        output_buffer[C3]=0x04;                           // REG_TX_FREQ_BYTE0
+        output_buffer[C4]=(hl2_iob_tx_freq      ) & 0xFF; // bits 0-7
+        hl2_command_loop = 8;
+        //t_print("HL2IOB: Sent TX freq %lld\n", hl2_iob_tx_freq);
+        break;
+      case 8:
+        hl2_rf_input_mode = 0;
+        if (receiver[0]->alex_antenna != 0) {
+          hl2_rf_input_mode = 1;
+          if (transmitter->puresignal) {
+            hl2_rf_input_mode = 2;
+          }
+        }
+        hl2_command_loop = 9;
+        break;
+      case 9:
+        output_buffer[C0]=0xFA;                           // I2C-2 with ACK
+        output_buffer[C1]=0x06;                           // write
+        output_buffer[C2]=0x80 | 0x1d;                    // i2c addr
+        output_buffer[C3]=0x0B;                           // REG_RF_INPUTS
+        output_buffer[C4]=hl2_rf_input_mode;              // 0, 1, or 2
+        hl2_command_loop = 0;
+        //t_print("HL2IOB: Sent RF INP MODE %d\n", hl2_rf_input_mode);
+        break;
+      }
       //
       // This was the last command we use out of the extended HL2 command set,
       // so roll back to the first one. It is obvious how to extend this
       // to cover more of the HL2 extended command set.
       //
       command = 1;
+      }
       break;
     }
   }

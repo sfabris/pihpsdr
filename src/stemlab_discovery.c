@@ -50,6 +50,7 @@ extern void status_text(const char *);
 
 static size_t app_list_cb(void *buffer, size_t size, size_t nmemb, void *data);
 
+// cppcheck-suppress constParameterCallback
 static size_t get_list_cb(void *buffer, size_t size, size_t nmemb, void *data) {
   //
   // Scan output of original HEAD request, which is the HTML code of the
@@ -77,6 +78,7 @@ static size_t get_list_cb(void *buffer, size_t size, size_t nmemb, void *data) {
   return size * nmemb;
 }
 
+// cppcheck-suppress constParameterCallback
 static size_t app_list_cb(void *buffer, size_t size, size_t nmemb, void *data) {
   //
   // Analyze the JSON output of the "bazaar?app=" request and figure out
@@ -120,6 +122,7 @@ static size_t app_list_cb(void *buffer, size_t size, size_t nmemb, void *data) {
 // This is a no-op curl callback and swallows what is sent by
 // the RedPitaya web server when starting the SDR application.
 //
+// cppcheck-suppress constParameterCallback
 static size_t alpine_start_callback(void *buffer, size_t size, size_t nmemb, void *data) {
   //t_print("WEB-DEBUG:ALPINE-START: %s\n", buffer);
   return size * nmemb;
@@ -129,6 +132,7 @@ static size_t alpine_start_callback(void *buffer, size_t size, size_t nmemb, voi
 // Digest what the web server sends after starting the SDR app.
 // It should show a status:OK message in the JSON output.
 //
+// cppcheck-suppress constParameterCallback
 static size_t app_start_callback(void *buffer, size_t size, size_t nmemb, void *data) {
   //t_print("WEB-DEBUG:STEMLAB-START: %s\n", buffer);
   if (strncmp(buffer, "{\"status\":\"OK\"}", size * nmemb) != 0) {

@@ -203,7 +203,7 @@ void remote_audio(const RECEIVER *rx, short left_sample, short right_sample) {
 
 static int send_spectrum(void *arg) {
   REMOTE_CLIENT *client = (REMOTE_CLIENT *)arg;
-  float *samples;
+  const float *samples;
   short s;
   SPECTRUM_DATA spectrum_data;
   int result;
@@ -3160,7 +3160,7 @@ static int remote_command(void *data) {
   break;
 
   case CMD_RESP_RIT_INCREMENT: {
-    RIT_INCREMENT_COMMAND *rit_increment_command = (RIT_INCREMENT_COMMAND *)data;
+    const RIT_INCREMENT_COMMAND *rit_increment_command = (RIT_INCREMENT_COMMAND *)data;
     short increment = ntohs(rit_increment_command->increment);
     rit_increment = (int)increment;
     send_rit_increment(client->socket, rit_increment);
@@ -3168,7 +3168,7 @@ static int remote_command(void *data) {
   break;
 
   case CMD_RESP_FILTER_BOARD: {
-    FILTER_BOARD_COMMAND *filter_board_command = (FILTER_BOARD_COMMAND *)data;
+    const FILTER_BOARD_COMMAND *filter_board_command = (FILTER_BOARD_COMMAND *)data;
     filter_board = (int)filter_board_command->filter_board;
     load_filters();
     send_filter_board(client->socket, filter_board);
@@ -3176,14 +3176,14 @@ static int remote_command(void *data) {
   break;
 
   case CMD_RESP_SWAP_IQ: {
-    SWAP_IQ_COMMAND *swap_iq_command = (SWAP_IQ_COMMAND *)data;
+    const SWAP_IQ_COMMAND *swap_iq_command = (SWAP_IQ_COMMAND *)data;
     iqswap = (int)swap_iq_command->iqswap;
     send_swap_iq(client->socket, iqswap);
   }
   break;
 
   case CMD_RESP_REGION: {
-    REGION_COMMAND *region_command = (REGION_COMMAND *)data;
+    const REGION_COMMAND *region_command = (REGION_COMMAND *)data;
     iqswap = (int)region_command->region;
     send_region(client->socket, region);
   }
