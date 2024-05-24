@@ -242,7 +242,7 @@ static void gain_changed_cb (GtkWidget *widget, gpointer data) {
 //
 static void eqid_changed_cb(GtkWidget *widget, gpointer data) {
   eqid = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
-  int six;
+  int six=0;
 
   switch (eqid) {
   case 0:
@@ -386,6 +386,14 @@ void equalizer_menu(GtkWidget *parent) {
     gtk_widget_hide(scale   [5]);
     gtk_widget_hide(scale   [6]);
   }
-  gtk_window_resize(GTK_WINDOW(dialog), 1, 1);
+  //
+  // For some unknown reason, the following resize emits dozens of 
+  // "critical warnings" if run on RaspPi with hsize=1 and vsize=1
+  // Determining the current hsize and using that value silences
+  // this
+  //
+  GtkAllocation alloc;
+  gtk_widget_get_allocation(dialog,&alloc);
+  gtk_window_resize(GTK_WINDOW(dialog), alloc.width, 1);
 }
 
