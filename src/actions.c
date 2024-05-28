@@ -683,14 +683,26 @@ int process_action(void *data) {
       switch (capture_state) {
       case CAP_INIT:
         if (isTransmitting()) {
+          //
+          // Hitting "capture" during TX when nothing has ever been
+          // recorded results in a no-op
+          //
           break;
         }
+        //
+        // Hitting "capture" during RX when nothing has ever been
+        // recorded: allocate audio capture buffer, and start recording
+        //
         capture_data = g_new(double, 480000);
         start_capture();
         capture_record_pointer = 0;
         capture_state = CAP_RECORDING;
         break;
       case CAP_AVAIL: 
+        //
+        // In this state, a recording is already in memory, so we can
+        // either play-back (TX) or start a new recording (RX)
+        //
         if (isTransmitting()) {
           start_playback();
           capture_replay_pointer = 0;
@@ -703,13 +715,23 @@ int process_action(void *data) {
         break;
       case CAP_RECORDING:
       case CAP_RECORD_DONE:
-        capture_state = CAP_AVAIL;
+        //
+        // The two states only differ in whether recording stops due
+        // to user request (CAP_RECORDING) or because the audio
+        // buffer was full (CAP_RECORDING_DONE)
+        //
         end_capture();
+        capture_state = CAP_AVAIL;
         break;
       case CAP_REPLAY:
       case CAP_REPLAY_DONE:
-        capture_state = CAP_AVAIL;
+        //
+        // The two states only differ in whether playback stops due
+        // to user request (CAP_REPLAY) or because the entire recording
+        // has been re-played.
+        //
         end_playback();
+        capture_state = CAP_AVAIL;
         break;
       }
     }

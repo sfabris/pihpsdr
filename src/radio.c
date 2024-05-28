@@ -3051,9 +3051,32 @@ void start_capture() {
 
 void end_capture() {
   //
-  // - set capture flag to  "available"
+  // - normalize what has been captured
   // - restore  RX equalizer on/off flags
   //
+  double max=0.0;
+
+  //
+  // Note: when using AGC, this normalization should not
+  //       be necessary except for the weakest signals on
+  //       the quietest bands.
+  //
+  for (int i = 0; i < capture_record_pointer; i++) {
+    double t=fabs(capture_data[i]);
+    if (t > max) { max = t; }
+  }
+  t_print("%s: max=%f\n", __FUNCTION__, max);
+  if (max > 0.05) {
+    //
+    // If max. amplitude is below -25 dB, then assume this
+    // is "noise only" and do not normalize
+    //
+    max = 1.0 / max;  // scale factor
+    for (int i = 0; i < capture_record_pointer; i++) {
+      capture_data[i] *= max;
+    }
+  }
+
   SetRXAEQRun(0, receiver[0]->eq_enable);
   SetRXAEQRun(1, receiver[1]->eq_enable);
 }
@@ -3075,7 +3098,6 @@ void end_playback() {
   // - restore TX compressor on/off flag
   // - reatore TX mic gain setting
   //
-  capture_state = CAP_AVAIL;
   SetTXAEQRun(transmitter->id, transmitter->eq_enable);
   SetTXACompressorRun(transmitter->id, transmitter->compressor);
   SetTXAPanelGain1(transmitter->id, pow(10.0, 0.05 * mic_gain));
