@@ -275,6 +275,17 @@ void rigctl_send_cw_char(char cw_char) {
   char pattern[9],*ptr;
   ptr = &pattern[0];
 
+#ifdef DUMP_TX_DATA
+  //
+  // This is for doing "CW pulse shaping" experiments,
+  // where sending a star via CAT starts a long string
+  // of dots.
+  //
+  if (cw_char == '*') {
+    for (int i=0; i<100; i++) send_dot();
+    return;
+  }
+#endif
   switch (cw_char) {
   case 'a':
   case 'A':
