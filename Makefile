@@ -54,8 +54,33 @@ LINK+=-pthread
 
 PKG_CONFIG = pkg-config
 
+##############################################################################
+# CPP_DEFINES and CPP_SOURCES are "filled" with all  possible options,
+# so that everything is processed when running "cppcheck".
+##############################################################################
+
+CPP_DEFINES=
+CPP_SOURCES=
+CPP_INCLUDE=
+
 WDSP_INCLUDE=-I./wdsp
 WDSP_LIBS=wdsp/libwdsp.a `$(PKG_CONFIG) --libs fftw3`
+
+##############################################################################
+#
+# Add support for extended noise reduction, if requested
+# This implies that one compiles against a wdsp.h e.g. in /usr/local/include,
+# and links with a WDSP shared lib e.g. in /usr/local/lib
+#
+##############################################################################
+
+ifeq ($(EXTENDED_NR), ON)
+EXTNR_OPTIONS=-DEXTNR
+WDSP_INCLUDE=
+WDSP_LIBS=-lwdsp
+endif
+CPP_DEFINES += -DEXTNR
+CPP_INCLUDE +=$(WDSP_INCLUDE)
 
 ##############################################################################
 #
@@ -95,6 +120,10 @@ MIDI_OBJS= src/alsa_midi.o src/midi2.o src/midi3.o src/midi_menu.o
 MIDI_LIBS= -lasound
 endif
 endif
+CPP_DEFINES += -DMIDI
+CPP_SOURCES += src/mac_midi.c src/midi2.c src/midi3.c src/midi_menu.c
+CPP_SOURCES += src/alsa_midi.c src/midi2.c src/midi3.c src/midi_menu.c
+
 
 ##############################################################################
 #
@@ -123,6 +152,10 @@ src/saturnserver.o \
 src/saturnmain.o \
 src/saturn_menu.o
 endif
+CPP_DEFINES += -DSATURN
+CPP_SOURCES += src/saturndrivers.c  src/saturnregisters.c src/saturnserver.c
+CPP_SOURCES += src/saturnmain.c src/saturn_menu.c
+
 
 ##############################################################################
 #
@@ -140,6 +173,8 @@ src/ozyio.h
 USBOZY_OBJS= \
 src/ozyio.o
 endif
+CPP_DEFINES += -DUSBOZY
+CPP_SOURCES += src/ozyio.c
 
 ##############################################################################
 #
@@ -160,20 +195,8 @@ SOAPYSDR_OBJS= \
 src/soapy_discovery.o \
 src/soapy_protocol.o
 endif
-
-##############################################################################
-#
-# Add support for extended noise reduction, if requested
-# This implies that one compiles against a wdsp.h e.g. in /usr/local/include,
-# and links with a WDSP shared lib e.g. in /usr/local/lib
-#
-##############################################################################
-
-ifeq ($(EXTENDED_NR), ON)
-EXTNR_OPTIONS=-DEXTNR
-WDSP_INCLUDE=
-WDSP_LIBS=-lwdsp
-endif
+CPP_DEFINES += -DSOAPYSDR
+CPP_SOURCES += src/soapy_discovery.c src/soapy_protocol.c
 
 ##############################################################################
 #
@@ -189,6 +212,7 @@ GPIO_OPTIONS += -D OLD_GPIOD
 endif
 GPIO_LIBS=-lgpiod -li2c
 endif
+CPP_DEFINES += -DGPIO
 
 ##############################################################################
 #
@@ -208,6 +232,9 @@ STEMLAB_SOURCES=src/stemlab_discovery.c
 STEMLAB_HEADERS=src/stemlab_discovery.h
 STEMLAB_OBJS=src/stemlab_discovery.o
 endif
+CPP_DEFINES += -DSTEMLAB_DISCOVERY
+CPP_SOURCES += src/stemlab_discovery.c
+CPP_INCLUDE += `$(PKG_CONFIG) --cflags libcurl`
 
 ##############################################################################
 #
@@ -229,6 +256,8 @@ src/client_server.h src/server_menu.h
 SERVER_OBJS= \
 src/client_server.o src/server_menu.o
 endif
+CPP_DEFINES += -DCLIENT_SERVER
+CPP_SOURCES += src/client_server.c src/server_menu.c
 
 ##############################################################################
 #
@@ -265,6 +294,8 @@ endif
 AUDIO_SOURCES=src/pulseaudio.c
 AUDIO_OBJS=src/pulseaudio.o
 endif
+CPP_DEFINES += -DPULSEAUDIO
+CPP_SOURCES += src/pulseaudio.c
 
 ##############################################################################
 #
@@ -279,6 +310,8 @@ AUDIO_LIBS=-lasound
 AUDIO_SOURCES=src/audio.c
 AUDIO_OBJS=src/audio.o
 endif
+CPP_DEFINES += -DALSA
+CPP_SOURCES += src/audio.c
 
 ##############################################################################
 #
@@ -293,6 +326,9 @@ AUDIO_LIBS=`$(PKG_CONFIG) --libs portaudio-2.0`
 AUDIO_SOURCES=src/portaudio.c
 AUDIO_OBJS=src/portaudio.o
 endif
+CPP_DEFINES += -DPORTAUDIO
+CPP_SOURCES += src/portaudio.c
+CPP_INCLUDE += `$(PKG_CONFIG) --cflags portaudio-2.0`
 
 ##############################################################################
 #
@@ -308,6 +344,7 @@ endif
 
 GTKINCLUDE=`$(PKG_CONFIG) --cflags gtk+-3.0`
 GTKLIBS=`$(PKG_CONFIG) --libs gtk+-3.0`
+CPP_INCLUDE += $(GTKINCLUDE)
 
 ##############################################################################
 #
@@ -630,7 +667,7 @@ endif
 # "make check" invokes the cppcheck program to do a source-code checking.
 #
 # The "-pthread" compiler option is not valid for cppcheck and must be filtered out.
-# Furthermore, we can add additional options to cppcheck in the variable CPPOPTIONS
+# Furthermore, we can add additional options to cppcheck in the variable CPP_OPTIONS
 #
 # Normally cppcheck complains about variables that could be declared "const".
 # Suppress this warning for callback functions because adding "const" would need
@@ -640,29 +677,29 @@ endif
 # warnings therefrom, as well as warnings for functions defined in some
 # library but never called.
 # Furthermore, we can use --check-level=exhaustive on MacOS
-# since there we have new newest version (2.11), while on RaspPi we still have
+# since there we have new newest version (>2.11), while on RaspPi we still have
 # older versions.
 #
 ##############################################################################
 
-CPPINCLUDES:=$(shell echo $(INCLUDES) | sed -e "s/-pthread / /" )
+CPP_INCLUDE:=$(shell echo $(CPP_INCLUDE) | sed -e "s/ -pthread/ /" )
 
-CPPOPTIONS= --inline-suppr --enable=all --suppress=unmatchedSuppression
+CPP_OPTIONS= --inline-suppr --enable=all --suppress=unmatchedSuppression
 
 ifeq ($(UNAME_S), Darwin)
-CPPOPTIONS += -D__APPLE__
-CPPOPTIONS += --check-level=exhaustive
-CPPOPTIONS += --suppress=missingIncludeSystem
-CPPOPTIONS += --suppress=unusedFunction
+CPP_OPTIONS += -D__APPLE__
+CPP_OPTIONS += --check-level=exhaustive
+CPP_OPTIONS += --suppress=missingIncludeSystem
+CPP_OPTIONS += --suppress=unusedFunction
 else
-CPPOPTIONS += -D__linux__
+CPP_OPTIONS += -D__linux__
+CPP_OPTIONS += --suppress=missingIncludeSystem
+CPP_OPTIONS += --suppress=unusedFunction
 endif
 
 .PHONY:	cppcheck
 cppcheck:
-	cppcheck $(CPPOPTIONS) $(OPTIONS) $(CPPINCLUDES) $(AUDIO_SOURCES) $(SOURCES) \
-	$(USBOZY_SOURCES)  $(SOAPYSDR_SOURCES) $(MIDI_SOURCES) $(STEMLAB_SOURCES) \
-	$(SERVER_SOURCES) $(SATURN_SOURCES)
+	cppcheck $(CPP_OPTIONS) $(CPP_INCLUDE) $(CPP_DEFINES) $(SOURCES) $(CPP_SOURCES)
 
 .PHONY:	clean
 clean:
