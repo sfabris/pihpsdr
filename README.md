@@ -21,12 +21,13 @@ Consult the Manual (**link given above**) on how to compile/install piHPSDR on y
 Latest features:
 
 - in-depth manual (**link given above**)
+- HermesLite-II I/O-board support
+- audio recording (RX capture) and playback (TX)
 - repository shrinked quite a bit by removing some binary files (much better now if you use WLAN)
 - automatic installation procedures for compilation from the sources, for Linux (including RaspPi) and MacOS
   (Appendix J, K).
 - dynamic screen resizing in the "Screen" menu, including transitions
   between full-screen and window mode
 - CW audio peak filter (in the Filter menu)
-- Improved layout for nearly all menus
-- Option (in the Radio menu) to make pop-down menus (combo boxes) "TouchScreen-Friendly"
+
 
