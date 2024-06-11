@@ -1380,17 +1380,13 @@ void InitialiseCWKeyerRamp(bool Protocol2, uint32_t Length_us) {
     //
     for (Cntr = 0; Cntr < RampLength; Cntr++) {
       uint32_t Sample;
-      double y = (double) Cntr / (double) RampLength;           // between 0 and 1
+      double y = (double) Cntr / (double) RampLength;     // between 0 and 1
       double y2 = y * 6.2831853071795864769252867665590;  // 2 Pi y
-      double y4 = y * 12.566370614359172953850573533118;  // 4 Pi y
-      double y6 = y * 18.849555921538759430775860299677;  // 6 Pi y
-      double rampsample = 2.787456445993031358885017421602787456445993031358885 *
-                          (
-                            0.358750000000000000000000000000000000000000000000000    * y
-                            - 0.0777137671623415735025882528171650378378063004186075  * sin(y2)
-                            + 0.01124270518001148651871394904463441453411422937510584 * sin(y4)
-                            - 0.00061964324510444584059352078539698924952082955408284 * sin(y6)
-                          );
+      double y4 = y2 + y2;                                // 4 Pi y
+      double y6 = y4 + y2;                                // 6 Pi y
+      double rampsample = y - 0.216623741219070588160524746528683032300505367020509  * sin(y2)
+                            + 0.0313385510244222620730702412393990649034542979097027 * sin(y4)
+                            - 0.0017272285577824274302258419105142557477932531124260 * sin(y6);
       Sample = (uint32_t) (rampsample * 8388607.0);
       RegisterWrite(VADDRCWKEYERRAM + 4 * Cntr, Sample);
     }
