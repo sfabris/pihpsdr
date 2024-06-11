@@ -98,6 +98,7 @@ static void sixband_cb (GtkWidget *widget, gpointer data) {
     gtk_widget_hide(scale   [5]);
     gtk_widget_hide(scale   [6]);
   }
+
   gtk_window_resize(GTK_WINDOW(dialog), dialog_width, 1);
 
   switch (eqid) {
@@ -106,6 +107,7 @@ static void sixband_cb (GtkWidget *widget, gpointer data) {
     if (eqid < receivers) {
       receiver[eqid]->eq_sixband = val;
     }
+
     if (eqid == 0) {
       m = vfo[eqid].mode;
       mode_settings[m].rx_eq_sixband = val;
@@ -137,6 +139,7 @@ static void enable_cb (GtkWidget *widget, gpointer data) {
     if (eqid < receivers) {
       receiver[eqid]->eq_enable = val;
     }
+
     if (eqid == 0) {
       m = vfo[eqid].mode;
       mode_settings[m].en_rxeq = val;
@@ -168,21 +171,26 @@ static void freq_changed_cb (GtkWidget *widget, gpointer data) {
   // neighbouring spin buttons
   //
   if (i > 1) {
-    double valmin = gtk_spin_button_get_value(GTK_SPIN_BUTTON(freqspin[i-1])) + 10.0;
+    double valmin = gtk_spin_button_get_value(GTK_SPIN_BUTTON(freqspin[i - 1])) + 10.0;
+
     if (val < valmin) { val = valmin; }
   }
+
   if (i < 6) {
-    double valmax = gtk_spin_button_get_value(GTK_SPIN_BUTTON(freqspin[i+1])) - 10.0;
+    double valmax = gtk_spin_button_get_value(GTK_SPIN_BUTTON(freqspin[i + 1])) - 10.0;
+
     if (val > valmax) { val = valmax; }
   }
+
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), val);
-    
+
   switch (eqid) {
   case 0:
   case 1:
     if (eqid < receivers) {
       receiver[eqid]->eq_freq[i] = val;
     }
+
     if (eqid == 0) {
       m = vfo[eqid].mode;
       mode_settings[m].rx_eq_freq[i] = val;
@@ -215,6 +223,7 @@ static void gain_changed_cb (GtkWidget *widget, gpointer data) {
     if (eqid < receivers) {
       receiver[eqid]->eq_gain[i] = val;
     }
+
     if (eqid == 0) {
       m = vfo[eqid].mode;
       mode_settings[m].rx_eq_gain[i] = val;
@@ -279,20 +288,24 @@ static void eqid_changed_cb(GtkWidget *widget, gpointer data) {
   }
 
   six = 0;  // silence "maybe uninitialized" compiler warnings
+
   switch (eqid) {
   case 0:
     six = receiver[0]->eq_sixband;
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (enable_b), receiver[0]->eq_enable);
     break;
+
   case 1:
     six = receiver[1]->eq_sixband;
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (enable_b), receiver[1]->eq_enable);
     break;
+
   case 2:
     six = transmitter->eq_sixband;
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (enable_b), transmitter->eq_enable);
     break;
   }
+
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (sixband_b), six);
 
   if (six) {
@@ -306,8 +319,8 @@ static void eqid_changed_cb(GtkWidget *widget, gpointer data) {
     gtk_widget_hide(scale   [5]);
     gtk_widget_hide(scale   [6]);
   }
-  gtk_window_resize(GTK_WINDOW(dialog), dialog_width, 1);
 
+  gtk_window_resize(GTK_WINDOW(dialog), dialog_width, 1);
 }
 
 void equalizer_menu(GtkWidget *parent) {
@@ -388,15 +401,16 @@ void equalizer_menu(GtkWidget *parent) {
     gtk_widget_hide(scale   [5]);
     gtk_widget_hide(scale   [6]);
   }
+
   //
-  // For some unknown reason, the following gtk_window_resize emits dozens of 
+  // For some unknown reason, the following gtk_window_resize emits dozens of
   // "critical warnings" if run on RaspPi with a hsize smaller than the
   // current horizontal size. Therefore,
   // determin the current hsize and using that value in all window resize
   // calls
   //
   GtkAllocation alloc;
-  gtk_widget_get_allocation(dialog,&alloc);
+  gtk_widget_get_allocation(dialog, &alloc);
   dialog_width = alloc.width;
   gtk_window_resize(GTK_WINDOW(dialog), dialog_width, 1);
 }

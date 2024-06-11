@@ -277,7 +277,7 @@ void num_pad(int action, int id) {
   long long fl;
   struct lconv *locale = localeconv();
   char *buffer = vfo[id].entered_frequency;
-  int len = strlen(buffer);
+  unsigned int len = strlen(buffer);
 
   switch (action) {
   default:  // digit 0...9

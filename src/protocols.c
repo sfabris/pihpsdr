@@ -99,24 +99,28 @@ static void protocol_2_cb(GtkToggleButton *widget, gpointer data) {
 static void soapy_protocol_cb(GtkToggleButton *widget, gpointer data) {
   enable_soapy_protocol = gtk_toggle_button_get_active(widget);
 }
+
 #endif
 
 #ifdef STEMLAB_DISCOVERY
 static void stemlab_cb(GtkToggleButton *widget, gpointer data) {
   enable_stemlab = gtk_toggle_button_get_active(widget);
 }
+
 #endif
 
 #ifdef SATURN
 static void saturn_xdma_cb(GtkToggleButton *widget, gpointer data) {
   enable_saturn_xdma = gtk_toggle_button_get_active(widget);
 }
+
 #endif
 
 #ifdef USBOZY
 static void usbozy_cb(GtkToggleButton *widget, gpointer data) {
   enable_usbozy = gtk_toggle_button_get_active(widget);
 }
+
 #endif
 
 static void autostart_cb(GtkToggleButton *widget, gpointer data) {

@@ -118,7 +118,6 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
   // First, do all the work that  does not depend on whether the
   // meter is analog or digital.
   //
-
   if (last_meter_type != meter_type) {
     last_meter_type = meter_type;
     //
@@ -201,7 +200,6 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
   //
   // From now on, DO NOT USE rxlvl,pwr,alc but use max_rxlvl etc.
   //
-
   if (analog_meter) {
     cairo_set_source_rgba(cr, COLOUR_VFO_BACKGND);
     cairo_paint (cr);
@@ -282,12 +280,12 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
 
       if (vfo[active_receiver->id].frequency > 30000000LL) {
         //
-        // VHF/UHF (beyond 30 Mhz): -147 dBm is S0
+        // VHF/UHF (beyond 30 MHz): -147 dBm is S0
         //
         angle = fmax(-147.0, max_rxlvl) + 147.0 + offset;
       } else {
         //
-        // HF (up to 30 Mhz): -127 dBm is S0
+        // HF (up to 30 MHz): -127 dBm is S0
         //
         angle = fmax(-127.0, max_rxlvl) + 127.0 + offset;
       }
@@ -412,7 +410,9 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
     if ((meter_type == POWER) || (vox_enabled)) {
       double offset = ((double)METER_WIDTH - 100.0) / 2.0;
       double peak = vox_get_peak();
-      if (peak > 1.0) peak = 1.0;
+
+      if (peak > 1.0) { peak = 1.0; }
+
       peak = peak * 100.0;
       cairo_set_source_rgba(cr, COLOUR_OK);
       cairo_rectangle(cr, offset, 0.0, peak, 5.0);
@@ -475,7 +475,9 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
       cairo_line_to(cr, 5.0 + 100.0, Y1 - 10);
       cairo_stroke(cr);
       double peak = vox_get_peak();
-      if (peak > 1.0) peak = 1.0;
+
+      if (peak > 1.0) { peak = 1.0; }
+
       peak = peak * 100.0;
       cairo_set_source_rgba(cr, COLOUR_OK);
       cairo_rectangle(cr, 5.0, Y1 - 10, peak, 5);
@@ -549,14 +551,13 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
         cairo_show_text(cr, "+40");
         cairo_move_to(cr, 5 + 114 - 6, Y4);
         cairo_show_text(cr, "+60");
-
         //
         // The scale for l is:
         //   0.0  --> S0
         //  54.0  --> S9
         // 114.0  --> S9+60
-        // 
-        double l = max_rxlvl+127.0;
+        //
+        double l = max_rxlvl + 127.0;
 
         if (vfo[active_receiver->id].frequency > 30000000LL) {
           // S9 is -93 dBm for frequencies above 30 MHz
@@ -579,14 +580,12 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
         cairo_rectangle(cr, 5, Y2 - 20, l, 20.0);
         cairo_fill(cr);
         cairo_pattern_destroy(pat);
-
         //
         // Mark right edge of S-meter bar with a line in ATTN colour
         //
         cairo_set_source_rgba(cr, COLOUR_ATTN);
         cairo_move_to(cr, 5 + l, (double)Y2);
         cairo_line_to(cr, 5 + l, (double)(Y2 - 20));
-
         cairo_stroke(cr);
         text_location = 124;
       }

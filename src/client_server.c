@@ -514,6 +514,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, freq_command);
       }
+
       break;
 
     case CMD_RESP_RX_STEP:
@@ -534,6 +535,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, step_command);
       }
+
       break;
 
     case CMD_RESP_RX_MOVE:
@@ -554,6 +556,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, move_command);
       }
+
       break;
 
     case CMD_RESP_RX_MOVETO:
@@ -574,6 +577,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, move_to_command);
       }
+
       break;
 
     case CMD_RESP_RX_ZOOM:
@@ -594,6 +598,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, zoom_command);
       }
+
       break;
 
     case CMD_RESP_RX_PAN:
@@ -614,6 +619,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, pan_command);
       }
+
       break;
 
     case CMD_RESP_RX_VOLUME:
@@ -634,6 +640,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, volume_command);
       }
+
       break;
 
     case CMD_RESP_RX_AGC:
@@ -655,6 +662,7 @@ static void *server_client_thread(void *arg) {
         t_print("CMD_RESP_RX_AGC: id=%d agc=%d\n", agc_command->id, ntohs(agc_command->agc));
         g_idle_add(remote_command, agc_command);
       }
+
       break;
 
     case CMD_RESP_RX_AGC_GAIN:
@@ -675,6 +683,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, agc_gain_command);
       }
+
       break;
 
     case CMD_RESP_RX_GAIN:
@@ -695,6 +704,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, command);
       }
+
       break;
 
     case CMD_RESP_RX_ATTENUATION:
@@ -715,6 +725,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, attenuation_command);
       }
+
       break;
 
     case CMD_RESP_RX_SQUELCH:
@@ -735,6 +746,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, squelch_command);
       }
+
       break;
 
     case CMD_RESP_RX_NOISE:
@@ -755,6 +767,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, noise_command);
       }
+
       break;
 
     case CMD_RESP_RX_BAND:
@@ -775,6 +788,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, band_command);
       }
+
       break;
 
     case CMD_RESP_RX_MODE:
@@ -795,6 +809,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, mode_command);
       }
+
       break;
 
     case CMD_RESP_RX_FILTER:
@@ -815,6 +830,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, filter_command);
       }
+
       break;
 
     case CMD_RESP_SPLIT:
@@ -835,6 +851,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, split_command);
       }
+
       break;
 
     case CMD_RESP_SAT:
@@ -855,6 +872,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, sat_command);
       }
+
       break;
 
     case CMD_RESP_DUP:
@@ -875,6 +893,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, dup_command);
       }
+
       break;
 
     case CMD_RESP_LOCK:
@@ -895,6 +914,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, lock_command);
       }
+
       break;
 
     case CMD_RESP_CTUN:
@@ -915,6 +935,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, ctun_command);
       }
+
       break;
 
     case CMD_RESP_RX_FPS:
@@ -935,6 +956,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, fps_command);
       }
+
       break;
 
     case CMD_RESP_RX_SELECT:
@@ -955,6 +977,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, rx_select_command);
       }
+
       break;
 
     case CMD_RESP_VFO:
@@ -975,6 +998,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, vfo_command);
       }
+
       break;
 
     case CMD_RESP_RIT_TOGGLE:
@@ -995,6 +1019,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, rit_toggle_command);
       }
+
       break;
 
     case CMD_RESP_RIT_CLEAR:
@@ -1015,6 +1040,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, rit_clear_command);
       }
+
       break;
 
     case CMD_RESP_RIT:
@@ -1035,6 +1061,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, rit_command);
       }
+
       break;
 
     case CMD_RESP_XIT_TOGGLE:
@@ -1046,6 +1073,7 @@ static void *server_client_thread(void *arg) {
         xit_toggle_command->header.context.client = client;
         g_idle_add(remote_command, xit_toggle_command);
       }
+
       break;
 
     case CMD_RESP_XIT_CLEAR:
@@ -1057,6 +1085,7 @@ static void *server_client_thread(void *arg) {
         xit_clear_command->header.context.client = client;
         g_idle_add(remote_command, xit_clear_command);
       }
+
       break;
 
     case CMD_RESP_XIT:
@@ -1074,8 +1103,10 @@ static void *server_client_thread(void *arg) {
           // dialog box?
           return NULL;
         }
+
         g_idle_add(remote_command, xit_command);
       }
+
       break;
 
     case CMD_RESP_SAMPLE_RATE:
@@ -1096,6 +1127,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, sample_rate_command);
       }
+
       break;
 
     case CMD_RESP_RECEIVERS:
@@ -1117,6 +1149,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, receivers_command);
       }
+
       break;
 
     case CMD_RESP_RIT_INCREMENT:
@@ -1138,6 +1171,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, rit_increment_command);
       }
+
       break;
 
     case CMD_RESP_FILTER_BOARD:
@@ -1159,6 +1193,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, filter_board_command);
       }
+
       break;
 
     case CMD_RESP_SWAP_IQ:
@@ -1179,6 +1214,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, swap_iq_command);
       }
+
       break;
 
     case CMD_RESP_REGION:
@@ -1199,6 +1235,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, region_command);
       }
+
       break;
 
     case CMD_RESP_MUTE_RX:
@@ -1219,6 +1256,7 @@ static void *server_client_thread(void *arg) {
 
         g_idle_add(remote_command, mute_rx_command);
       }
+
       break;
 
     default:
@@ -2476,6 +2514,7 @@ static void *client_thread(void* arg) {
         mode_settings[vfo[id].mode].snb = rx->snb;
         mode_settings[vfo[id].mode].anf = rx->anf;
       }
+
       g_idle_add(ext_vfo_update, NULL);
     }
     break;
@@ -2952,7 +2991,6 @@ static int remote_command(void *data) {
     int id = noise_command->id;
     CHECK_RX(id);
     RECEIVER *rx = receiver[id];
-
     rx->nb = noise_command->nb;
     rx->nr = noise_command->nr;
     rx->anf = noise_command->anf;

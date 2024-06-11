@@ -93,6 +93,7 @@ static void dac0_antenna_cb(GtkComboBox *widget, gpointer data) {
     soapy_protocol_set_tx_antenna(transmitter, mydac->antenna);
   }
 }
+
 #endif
 
 static void show_hf() {

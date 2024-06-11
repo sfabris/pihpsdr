@@ -451,13 +451,16 @@ int process_action(void *data) {
   case ANF:
     if (a->mode == PRESSED) {
       int id = active_receiver->id;
+
       if (active_receiver->anf == 0) {
         active_receiver->anf = 1;
+
         if (id == 0) {
           mode_settings[vfo[id].mode].anf = 1;
         }
       } else {
         active_receiver->anf = 0;
+
         if (id == 0) {
           mode_settings[vfo[id].mode].anf = 0;
         }
@@ -689,6 +692,7 @@ int process_action(void *data) {
           //
           break;
         }
+
         //
         // Hitting "capture" during RX when nothing has ever been
         // recorded: allocate audio capture buffer, and start recording
@@ -698,7 +702,9 @@ int process_action(void *data) {
         capture_record_pointer = 0;
         capture_state = CAP_RECORDING;
         break;
-      case CAP_AVAIL: 
+
+      case CAP_AVAIL:
+
         //
         // In this state, a recording is already in memory, so we can
         // either play-back (TX) or start a new recording (RX)
@@ -712,7 +718,9 @@ int process_action(void *data) {
           capture_record_pointer = 0;
           capture_state = CAP_RECORDING;
         }
+
         break;
+
       case CAP_RECORDING:
       case CAP_RECORD_DONE:
         //
@@ -723,6 +731,7 @@ int process_action(void *data) {
         end_capture();
         capture_state = CAP_AVAIL;
         break;
+
       case CAP_REPLAY:
       case CAP_REPLAY_DONE:
         //
@@ -735,6 +744,7 @@ int process_action(void *data) {
         break;
       }
     }
+
     break;
 
   case COMP_ENABLE:
@@ -1132,6 +1142,7 @@ int process_action(void *data) {
       if (id == 0) {
         mode_settings[vfo[id].mode].nb = active_receiver->nb;
       }
+
       update_noise();
     }
 
@@ -1150,9 +1161,11 @@ int process_action(void *data) {
       if (active_receiver->nr > 2) { active_receiver->nr = 0; }
 
 #endif
+
       if (id == 0) {
         mode_settings[vfo[id].mode].nr = active_receiver->nr;
       }
+
       update_noise();
     }
 
@@ -1468,13 +1481,16 @@ int process_action(void *data) {
   case SNB:
     if (a->mode == PRESSED) {
       int id = active_receiver->id;
+
       if (active_receiver->snb == 0) {
         active_receiver->snb = 1;
+
         if (id == 0) {
           mode_settings[vfo[id].mode].snb = 1;
         }
       } else {
         active_receiver->snb = 0;
+
         if (id == 0) {
           mode_settings[vfo[id].mode].snb = 0;
         }

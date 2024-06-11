@@ -184,6 +184,7 @@ static void modesettingsRestoreState() {
       mode_settings[i].tx_eq_gain[j] = 0;
       mode_settings[i].rx_eq_gain[j] = 0;
     }
+
     mode_settings[i].tx_eq_freq[0] =     0.0;
     mode_settings[i].rx_eq_freq[0] =     0.0;
     mode_settings[i].tx_eq_freq[1] =   200.0;
@@ -198,7 +199,6 @@ static void modesettingsRestoreState() {
     mode_settings[i].rx_eq_freq[5] =  6000.0;
     mode_settings[i].tx_eq_freq[6] = 12000.0;
     mode_settings[i].rx_eq_freq[6] = 12000.0;
-
     mode_settings[i].compressor = 0;
     mode_settings[i].compressor_level = 0.0;
     GetPropI1("modeset.%d.filter", i,                mode_settings[i].filter);
@@ -522,7 +522,6 @@ void vfo_band_changed(int id, int b) {
   // In the case of CTUN, the offset is re-calculated
   // during vfos_changed ==> receiver_vfo_changed ==> receiver_frequency_changed
   //
-
   if (id < receivers && oldmode != vfo[id].mode) {
     vfo_apply_mode_settings(receiver[id]);
   }
@@ -631,10 +630,12 @@ void vfo_id_filter_changed(int id, int f) {
   }
 
 #endif
+
   // store changed filter in the mode settings
   if (id == 0) {
     mode_settings[vfo[id].mode].filter = f;
   }
+
   vfo[id].filter = f;
 
   //
@@ -678,21 +679,25 @@ void vfos_changed() {
 
 void vfo_a_to_b() {
   CLIENT_MISSING;
-  int oldmode=vfo[VFO_B].mode;
+  int oldmode = vfo[VFO_B].mode;
   vfo[VFO_B] = vfo[VFO_A];
+
   if (vfo[VFO_B].mode != oldmode && receivers > 1) {
     vfo_apply_mode_settings(receiver[1]);
   }
+
   vfos_changed();
 }
 
 void vfo_b_to_a() {
   CLIENT_MISSING;
-  int oldmode=vfo[VFO_A].mode;
+  int oldmode = vfo[VFO_A].mode;
   vfo[VFO_A] = vfo[VFO_B];
+
   if (vfo[VFO_A].mode != oldmode) {
     vfo_apply_mode_settings(receiver[0]);
   }
+
   vfos_changed();
 }
 
@@ -701,12 +706,15 @@ void vfo_a_swap_b() {
   struct  _vfo temp = vfo[VFO_A];
   vfo[VFO_A]        = vfo[VFO_B];
   vfo[VFO_B]        = temp;
+
   if (vfo[VFO_A].mode != vfo[VFO_B].mode) {
     vfo_apply_mode_settings(receiver[0]);
+
     if (receivers > 1) {
       vfo_apply_mode_settings(receiver[1]);
     }
   }
+
   vfos_changed();
 }
 
@@ -761,6 +769,7 @@ void vfo_set_step_from_index(int id, int index) {
   int step = steps[index];
   int m = vfo[id].mode;
   vfo[id].step = step;
+
   if (id == 0) {
     mode_settings[m].step = step;
   }
@@ -1398,7 +1407,6 @@ void vfo_update() {
   // Draw VFO B Dial.
   //
   // -----------------------------------------------------------
-
   if (vfl->vfo_b_x != 0) {
     cairo_move_to(cr, abs(vfl->vfo_b_x), abs(vfl->vfo_b_y));
 

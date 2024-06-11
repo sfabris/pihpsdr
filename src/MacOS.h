@@ -112,6 +112,7 @@ static inline int clock_nanosleep(clockid_t clock_id, int flags,
 
   return rc;
 }
+
 #endif  // !defined(TIMER_ABSTIME)
 
 #include <semaphore.h>

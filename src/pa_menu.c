@@ -257,7 +257,7 @@ void pa_menu(GtkWidget *parent) {
 
     if (tx_out_of_band_allowed) {
       //
-      // If out-of-band TXing is allowed, we need a PA calibration value 
+      // If out-of-band TXing is allowed, we need a PA calibration value
       // for the "general" band. Note that if out-of-band TX is allowed
       // while the menu is open, this will not appear (one has to close
       // and re-open the menu).

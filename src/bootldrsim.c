@@ -258,8 +258,8 @@ int main(int argc, char **argv) {
       hismac[3] = packet[9];
       hismac[4] = packet[10];
       hismac[5] = packet[11];
-      //printf("Bootloader packet, his MAC=%02x:%02x:%02x:%02x:%02x:%02x Commands=%d:%d\n", hismac[0], hismac[1], hismac[2], hismac[3], hismac[4], hismac[5],packet[14],packet[15]);
 
+      //printf("Bootloader packet, his MAC=%02x:%02x:%02x:%02x:%02x:%02x Commands=%d:%d\n", hismac[0], hismac[1], hismac[2], hismac[3], hismac[4], hismac[5],packet[14],packet[15]);
       if (packet[14] == 3) {
         switch (packet[15]) {
         case READ_METIS_MAC:

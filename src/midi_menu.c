@@ -499,8 +499,8 @@ static void updateDescription() {
 static void delete_cb(GtkButton *widget, GdkEventButton *event, gpointer user_data) {
   struct desc *previous_cmd;
   struct desc *next_cmd;
-  //t_print("%s: thisNote=%d current_cmd=%p\n", __FUNCTION__, thisNote, current_cmd);
 
+  //t_print("%s: thisNote=%d current_cmd=%p\n", __FUNCTION__, thisNote, current_cmd);
   if (current_cmd == NULL) {
     t_print("%s: current_cmd is NULL!\n", __FUNCTION__);
     return;
@@ -608,7 +608,6 @@ void midi_menu(GtkWidget *parent) {
     // Row containing device checkboxes is partially filled,
     // advance to next one.
     if (col > 3) {
-      col = 0;
       row++;
     }
   } else {
@@ -617,7 +616,6 @@ void midi_menu(GtkWidget *parent) {
     gtk_widget_set_halign(devices_label, GTK_ALIGN_START);
     gtk_grid_attach(GTK_GRID(grid), devices_label, col, row, 4, 1);
     row++;
-    col = 0;
   }
 
   row++;
@@ -740,7 +738,6 @@ void midi_menu(GtkWidget *parent) {
   //
   // Finally, put wheel config elements into the wheel grid
   //
-  col = 0;
   row++;
   col = 0;
   lbl = gtk_label_new("Left <<<");
@@ -942,7 +939,6 @@ static int updatePanel(int state) {
     find_current_cmd();
 
     //t_print("%s: current_cmd %p\n", __FUNCTION__, current_cmd);
-
     if (current_cmd != NULL) {
       thisVfl1  = current_cmd->vfl1;
       thisVfl2  = current_cmd->vfl2;
@@ -1035,7 +1031,7 @@ int ProcessNewMidiConfigureEvent(void * data) {
       gtk_tree_model_get(model, &iter, BSTR_COLUMN, &str_action, -1);
 
       if (str_event != NULL && str_channel != NULL && str_note != NULL && str_type != NULL && str_action != NULL) {
-        int tree_event;
+        enum MIDIevent tree_event;
         int tree_channel;
         int tree_note;
         tree_event = String2Event(str_event);

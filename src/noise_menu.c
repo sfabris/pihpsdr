@@ -141,6 +141,7 @@ static void nb_cb(GtkToggleButton *widget, gpointer data) {
   if (id == 0) {
     mode_settings[vfo[id].mode].nb = val;
   }
+
   update_noise();
 }
 
@@ -148,27 +149,33 @@ static void nr_cb(GtkToggleButton *widget, gpointer data) {
   int val = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
   int id  = active_receiver->id;
   active_receiver->nr = val;
+
   if (id == 0) {
     mode_settings[vfo[id].mode].nr = val;
   }
+
   update_noise();
 }
 
 static void anf_cb(GtkWidget *widget, gpointer data) {
   int id  = active_receiver->id;
   active_receiver->anf = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
+
   if (id == 0) {
     mode_settings[vfo[id].mode].anf = active_receiver->anf;
   }
+
   update_noise();
 }
 
 static void snb_cb(GtkWidget *widget, gpointer data) {
   int id  = active_receiver->id;
   active_receiver->snb = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
+
   if (id == 0) {
     mode_settings[vfo[id].mode].snb = active_receiver->snb;
   }
+
   update_noise();
 }
 
@@ -273,13 +280,14 @@ static void nr4_threshold_cb(GtkWidget *widget, gpointer data) {
   active_receiver->nr4_post_filter_threshold = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
   update_noise();
 }
+
 #endif
 
 void noise_menu(GtkWidget *parent) {
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(parent));
   char title[64];
-  snprintf(title, 64, "piHPSDR - Noise (RX%d VFO-%s)", active_receiver->id+1, active_receiver->id == 0 ? "A" : "B");
+  snprintf(title, 64, "piHPSDR - Noise (RX%d VFO-%s)", active_receiver->id + 1, active_receiver->id == 0 ? "A" : "B");
   GtkWidget *headerbar = gtk_header_bar_new();
   gtk_window_set_titlebar(GTK_WINDOW(dialog), headerbar);
   gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(headerbar), TRUE);

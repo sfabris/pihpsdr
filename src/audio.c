@@ -504,7 +504,6 @@ int audio_write(RECEIVER *rx, float left_sample, float right_sample) {
   // If *not* doing CW, the stream continues because we might wish
   // to listen to this rx while transmitting.
   //
-
   if (rx == active_receiver && isTransmitting() && (txmode == modeCWU || txmode == modeCWL)) {
     return 0;
   }
@@ -623,9 +622,9 @@ int audio_write(RECEIVER *rx, float left_sample, float right_sample) {
 
 static void *mic_read_thread(gpointer arg) {
   int rc;
-  float *float_buffer;
-  int32_t *long_buffer;
-  int16_t *short_buffer;
+  const float *float_buffer;
+  const int32_t *long_buffer;
+  const int16_t *short_buffer;
   float sample;
   int i;
   t_print("%s: mic_buffer_size=%d\n", __FUNCTION__, mic_buffer_size);

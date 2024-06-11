@@ -32,7 +32,7 @@ typedef struct _choice {
 static GtkWidget *dialog;
 static GtkWidget *previous_button;
 static gulong previous_signal_id;
-static int action;
+static enum ACTION action;
 
 static void action_select_cb(GtkWidget *widget, gpointer data) {
   const CHOICE *choice = (CHOICE *)data;
@@ -44,7 +44,7 @@ static void action_select_cb(GtkWidget *widget, gpointer data) {
   action = choice->action;
 }
 
-int action_dialog(GtkWidget *parent, int filter, int currentAction) {
+int action_dialog(GtkWidget *parent, int filter, enum ACTION currentAction) {
   int i, j;
   GtkRequisition min;
   GtkRequisition nat;

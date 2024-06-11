@@ -625,6 +625,7 @@ char* getFrequencyInfo(long long frequency, int filter_low, int filter_high) {
   t_print("getFrequencyInfo %lld is %s\n", frequency, result);
   return result;
 }
+
 #endif
 
 int TransmitAllowed() {

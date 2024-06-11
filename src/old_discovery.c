@@ -426,7 +426,7 @@ static gpointer discover_receive_thread(gpointer data) {
             break;
           }
 
-          t_print("old_discovery: name=%s min=%0.3f MHz max=%0.3f Mhz\n", discovered[devices].name,
+          t_print("old_discovery: name=%s min=%0.3f MHz max=%0.3f MHz\n", discovered[devices].name,
                   discovered[devices].frequency_min * 1E-6,
                   discovered[devices].frequency_max * 1E-6);
 
@@ -446,7 +446,7 @@ static gpointer discover_receive_thread(gpointer data) {
           discovered[devices].use_tcp = 0;
           discovered[devices].use_routing = 0;
           discovered[devices].supported_receivers = 2;
-          t_print("old_discovery: found device=%d software_version=%d status=%d address=%s (%02X:%02X:%02X:%02X:%02X:%02X) on %s min=%0.3f MHz max=%0.3f Mhz\n",
+          t_print("old_discovery: found device=%d software_version=%d status=%d address=%s (%02X:%02X:%02X:%02X:%02X:%02X) on %s min=%0.3f MHz max=%0.3f MHz\n",
                   discovered[devices].device,
                   discovered[devices].software_version,
                   discovered[devices].status,

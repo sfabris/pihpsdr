@@ -60,6 +60,7 @@ void CodecRegisterWrite(uint32_t Address, uint32_t Data) {
   //t_print("Codec write: send %03x to Codec register address %02x, written=%04x\n", Data, Address, WriteData);
   sem_post(&CodecRegMutex);                       // clear protected access
 }
+
 //END codecwrite.c
 
 //
@@ -1335,16 +1336,9 @@ void SetRXDDCEnabled(bool IsEnabled) {
 // only calculate if parameters have changed!
 //
 void InitialiseCWKeyerRamp(bool Protocol2, uint32_t Length_us) {
-  double SamplePeriod;                     // sample period in us
-  uint32_t RampLength;                     // integer length in WORDS not bytes!
-  uint32_t Cntr;
-  uint32_t Sample;
-  uint32_t Register;
   ESoftwareID ID;
   unsigned int FPGAVersion = 0;
   unsigned int MaxDuration;               // max ramp duration in microseconds
-  double y, y2, y4, y6,rampsample;
-
   FPGAVersion = GetFirmwareVersion(&ID);
 
   if (FPGAVersion >= 14) {
@@ -1364,6 +1358,10 @@ void InitialiseCWKeyerRamp(bool Protocol2, uint32_t Length_us) {
 
   // now apply that ramp length
   if ((Length_us != GCWKeyerRampms) || (Protocol2 != GCWKeyerRamp_IsP2)) {
+    double SamplePeriod;                     // sample period in us
+    uint32_t RampLength;                     // integer length in WORDS not bytes!
+    unsigned int Cntr;
+    uint32_t Register;
     GCWKeyerRampms = Length_us;
     GCWKeyerRamp_IsP2 = Protocol2;
     t_print("calculating new CW ramp, length = %d us\n", Length_us);
@@ -1377,26 +1375,29 @@ void InitialiseCWKeyerRamp(bool Protocol2, uint32_t Length_us) {
 
     RampLength = (uint32_t)(((double)Length_us / SamplePeriod) + 1);
 
-//
-// DL1YCF code:
-//
+    //
+    // DL1YCF code:
+    //
     for (Cntr = 0; Cntr < RampLength; Cntr++) {
-        y = (double) Cntr / (double) RampLength;           // between 0 and 1
-        y2 = y * 6.2831853071795864769252867665590;  // 2 Pi y
-        y4 = y * 12.566370614359172953850573533118;  // 4 Pi y
-        y6 = y * 18.849555921538759430775860299677;  // 6 Pi y
-        rampsample = 2.787456445993031358885017421602787456445993031358885 *
-            (
-                0.358750000000000000000000000000000000000000000000000    * y
-                - 0.0777137671623415735025882528171650378378063004186075  * sin(y2)
-                + 0.01124270518001148651871394904463441453411422937510584 * sin(y4)
-                - 0.00061964324510444584059352078539698924952082955408284 * sin(y6)
-            );
-        Sample = (uint32_t) (rampsample * 8388607.0);
-        RegisterWrite(VADDRCWKEYERRAM + 4*Cntr, Sample);
+      uint32_t Sample;
+      double y = (double) Cntr / (double) RampLength;           // between 0 and 1
+      double y2 = y * 6.2831853071795864769252867665590;  // 2 Pi y
+      double y4 = y * 12.566370614359172953850573533118;  // 4 Pi y
+      double y6 = y * 18.849555921538759430775860299677;  // 6 Pi y
+      double rampsample = 2.787456445993031358885017421602787456445993031358885 *
+                          (
+                            0.358750000000000000000000000000000000000000000000000    * y
+                            - 0.0777137671623415735025882528171650378378063004186075  * sin(y2)
+                            + 0.01124270518001148651871394904463441453411422937510584 * sin(y4)
+                            - 0.00061964324510444584059352078539698924952082955408284 * sin(y6)
+                          );
+      Sample = (uint32_t) (rampsample * 8388607.0);
+      RegisterWrite(VADDRCWKEYERRAM + 4 * Cntr, Sample);
     }
-    for(Cntr = RampLength; Cntr < VRAMPSIZE; Cntr++)                        // fill remainder of RAM
-        RegisterWrite(VADDRCWKEYERRAM + 4*Cntr, 8388607);
+
+    for (Cntr = RampLength; Cntr < VRAMPSIZE; Cntr++) {                     // fill remainder of RAM
+      RegisterWrite(VADDRCWKEYERRAM + 4 * Cntr, 8388607);
+    }
 
     //
     // finally write the ramp length

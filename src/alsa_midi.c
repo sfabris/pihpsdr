@@ -435,4 +435,5 @@ void get_midi_devices() {
     t_print("%s: %d: %s %s\n", __FUNCTION__, i, midi_devices[i].name, midi_port[i]);
   }
 }
+
 #endif

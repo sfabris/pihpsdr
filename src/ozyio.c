@@ -540,7 +540,6 @@ void writepenny(int reset, int mode) {
   //
   //    The first two pairs are only sent if "reset" is nonzero
   //
-
   //
   // update mic gain on Penny or PennyLane TLV320
   //
@@ -691,6 +690,7 @@ static void filePath (char *sOut, const char *sIn, size_t len) {
 
   t_print("File %s could not be found!\n", sIn);
 }
+
 #endif
 
 //

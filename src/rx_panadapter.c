@@ -161,7 +161,6 @@ void rx_panadapter_update(RECEIVER *rx) {
   // will keep the center of the PANADAPTER at the VFO frequency and shift the
   // pixels of the spectrum.
   //
-
   if (mode == modeCWU) {
     frequency -= cw_keyer_sidetone_frequency;
     vfofreq += (double) cw_keyer_sidetone_frequency / HzPerPixel;
@@ -268,7 +267,7 @@ void rx_panadapter_update(RECEIVER *rx) {
       //
       // For frequencies larger than 10 GHz, we cannot
       // display all digits here so we give three dots
-      // and three "Mhz" digits
+      // and three "MHz" digits
       //
       if (f > 10000000000LL && marker_distance < 80) {
         snprintf(v, 32, "...%03lld.%03lld", (f / 1000000) % 1000, (f % 1000000) / 1000);
@@ -503,7 +502,6 @@ void rx_panadapter_update(RECEIVER *rx) {
     }
   #endif
   */
-
   if (rx->id == 0 && !radio_is_remote) {
     display_panadapter_messages(cr, mywidth, rx->fps);
   }
@@ -562,7 +560,7 @@ void rx_panadapter_init(RECEIVER *rx, int width, int height) {
                          | GDK_POINTER_MOTION_HINT_MASK);
 }
 
-void display_panadapter_messages(cairo_t *cr, int width, int fps) {
+void display_panadapter_messages(cairo_t *cr, int width, unsigned int fps) {
   char text[64];
 
   if (display_warnings) {
@@ -662,7 +660,7 @@ void display_panadapter_messages(cairo_t *cr, int width, int fps) {
   if (display_pacurr && isTransmitting() && !TxInhibit) {
     double v;  // value
     int flag;  // 0: dont, 1: do
-    static int count = 0;
+    static unsigned int count = 0;
     //
     // Display a maximum value twice per second
     // to avoid flicker
@@ -767,13 +765,14 @@ void display_panadapter_messages(cairo_t *cr, int width, int fps) {
   }
 
   if (capture_state == CAP_RECORDING || capture_state == CAP_REPLAY) {
-      cairo_set_source_rgba(cr, COLOUR_ATTN);
-      cairo_set_font_size(cr, DISPLAY_FONT_SIZE3);
-      cairo_move_to(cr, (double) width -100.0, 30.0);
-      if (capture_state == CAP_RECORDING) {
-        cairo_show_text(cr, "Recording");
-      } else {
-        cairo_show_text(cr, "Replay");
-      }
+    cairo_set_source_rgba(cr, COLOUR_ATTN);
+    cairo_set_font_size(cr, DISPLAY_FONT_SIZE3);
+    cairo_move_to(cr, (double) width - 100.0, 30.0);
+
+    if (capture_state == CAP_RECORDING) {
+      cairo_show_text(cr, "Recording");
+    } else {
+      cairo_show_text(cr, "Replay");
+    }
   }
 }

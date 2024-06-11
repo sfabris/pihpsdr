@@ -180,23 +180,36 @@ typedef struct _receiver {
   int mute_when_not_active;
   int audio_device;
   gchar audio_name[128];
-#ifdef PORTAUDIO
+
+#if defined(PORTAUDIO) && defined(PULSEAUDIO) && defined(ALSA)
+  // this is only possible for "cppcheck" runs
+  // declare all data without conflicts
+  void *playstream;
+  int local_audio_buffer_inpt;
+  int local_audio_buffer_outpt;
+  int local_audio_buffer_offset;
+  void *local_audio_buffer;
+  snd_pcm_t *playback_handle;
+  snd_pcm_format_t local_audio_format;
+#endif
+#if defined(PORTAUDIO) && !defined(PULSEAUDIO) && !defined(ALSA)
   PaStream *playstream;
   volatile int local_audio_buffer_inpt;    // pointer in audio ring-buffer
   volatile int local_audio_buffer_outpt;   // pointer in audio ring-buffer
   float *local_audio_buffer;
 #endif
-#ifdef ALSA
+#if !defined(PORTAUDIO) && !defined(PULSEAUDIO) && defined(ALSA)
   snd_pcm_t *playback_handle;
   snd_pcm_format_t local_audio_format;
   void *local_audio_buffer;        // different formats possible, so void*
-#endif
-#ifdef PULSEAUDIO
-  pa_simple *playstream;
-  gboolean output_started;
-  float *local_audio_buffer;
-#endif
   int local_audio_buffer_offset;
+#endif
+#if !defined(PORTAUDIO) && defined(PULSEAUDIO) && !defined(ALSA)
+  pa_simple *playstream;
+  float *local_audio_buffer;
+  int local_audio_buffer_offset;
+#endif
+
   GMutex local_audio_mutex;
 
   int squelch_enable;

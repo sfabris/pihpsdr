@@ -653,7 +653,6 @@ int main(int argc, char *argv[]) {
 
         // In principle, we should check on (*code0 & 0x00ffffff) == 0x0004feef,
         // then we cover all kinds of start and stop packets.
-
         // In the case of a METIS-stop packet, change the size to 64
         if (*code0 == 0x0004feef) {
           bytes_read = 64;

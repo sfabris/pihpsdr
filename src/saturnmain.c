@@ -327,18 +327,17 @@ bool is_already_running() {
 #define VADDRPRODVERSIONREG 0XC004
 
 void saturn_discovery() {
-  if (devices < MAX_DEVICES) {
-    uint32_t SoftwareInformation;                   // swid & version
-    uint32_t ProductInformation;                    // product id & version
-    uint32_t Version;                               // s/w version
-    uint32_t SWID;                                  // s/w id
-    uint32_t ProdID;                                // product version and id
-    uint32_t ClockInfo;                             // clock status
     struct stat sb;
-    uint8_t *mac = discovered[devices].info.network.mac_address;
-    bool goodConfig = true;
 
-    if (stat("/dev/xdma0_user", &sb) == 0 && S_ISCHR(sb.st_mode)) {
+    if (devices < MAX_DEVICES && stat("/dev/xdma0_user", &sb) == 0 && S_ISCHR(sb.st_mode)) {
+      uint8_t *mac = discovered[devices].info.network.mac_address;
+      uint32_t SoftwareInformation;                   // swid & version
+      uint32_t ProductInformation;                    // product id & version
+      uint32_t Version;                               // s/w version
+      uint32_t SWID;                                  // s/w id
+      uint32_t ProdID;                                // product version and id
+      uint32_t ClockInfo;                             // clock status
+      bool goodConfig = true;
       char buf[256];
       bool running = is_already_running();
 
@@ -371,9 +370,9 @@ void saturn_discovery() {
 
       if (Version < FIRMWARE_MIN_VERSION || Version > FIRMWARE_MAX_VERSION) {
         t_print("Incompatible Saturn FPGA firmware version %d, need %d ... %d\n",
-                 Version,
-                 FIRMWARE_MIN_VERSION,
-                 FIRMWARE_MAX_VERSION);
+                Version,
+                FIRMWARE_MIN_VERSION,
+                FIRMWARE_MAX_VERSION);
         discovered[devices].status = STATE_INCOMPATIBLE;
         goodConfig = false;
       }
@@ -399,10 +398,11 @@ void saturn_discovery() {
         }
 
         fclose(fp);
-      } else
+      } else {
         for (int i = 0; i < 6; i++) {
           discovered[devices].info.network.mac_address[i] = 0;
         }
+      }
 
       discovered[devices].info.network.address_length = 0;
       discovered[devices].info.network.interface_length = 0;
@@ -416,7 +416,6 @@ void saturn_discovery() {
               discovered[devices].frequency_max * 1E-6);
       devices++;
     }
-  }
 }
 
 #define VDUCIQSAMPLESPERFRAME 240                      // samples per UDP frame
@@ -575,7 +574,7 @@ void saturn_init_speaker_audio() {
   return;
 }
 
-void saturn_handle_speaker_audio(uint8_t *UDPInBuffer) {
+void saturn_handle_speaker_audio(const uint8_t *UDPInBuffer) {
   //uint32_t RegVal = 0;    //debug
   bool FIFOSpkOverflow, FIFOSpkUnderflow, FIFOSpkOverThreshold;;
   uint32_t DepthSpk = 0;
@@ -969,7 +968,6 @@ static gpointer saturn_rx_thread(gpointer arg) {
   uint32_t RateWord = 0;                                          // DDC rate word from buffer
   uint32_t HdrWord;                                           // check word read form DMA's data
   uint16_t* SrcWordPtr, * DestWordPtr;                        // 16 bit read & write pointers
-  uint32_t *LongWordPtr;
   uint32_t PrevRateWord;                                      // last used rate word
   uint32_t Cntr;                                              // sample word counter
   bool HeaderFound;
@@ -1197,41 +1195,42 @@ static gpointer saturn_rx_thread(gpointer arg) {
         if (*(DMAReadPtr + 7) != 0x80) {
           t_print("%s: header not found for rate word at addr %hhn\n", __FUNCTION__, DMAReadPtr);
           exit(1);
-        } else {                                                                // analyse word, then process
-          LongWordPtr = (uint32_t*)DMAReadPtr;                            // get 32 bit ptr
-          RateWord = *LongWordPtr;                                      // read rate word
+        } else {                                                                          // analyse word, then process
+          // cppcheck-suppress constVariablePointer
+          uint32_t *LongWordPtr = (uint32_t*)DMAReadPtr;                                  // get 32 bit ptr
+          RateWord = *LongWordPtr;                                                        // read rate word
 
           if (RateWord != PrevRateWord) {
-            FrameLength = AnalyseDDCHeader(RateWord, &DDCCounts[0]);           // read new settings
+            FrameLength = AnalyseDDCHeader(RateWord, &DDCCounts[0]);                      // read new settings
             //                        t_print("new framelength = %d\n", FrameLength);
-            PrevRateWord = RateWord;                                        // so so we know its analysed
+            PrevRateWord = RateWord;                                                      // so so we know its analysed
           }
 
-          if (DecodeByteCount >= ((FrameLength + 1) * 8)) {         // if bytes for header & frame
+          if (DecodeByteCount >= ((FrameLength + 1) * 8)) {                               // if bytes for header & frame
             //THEN COPY DMA DATA TO I / Q BUFFERS
-            DMAReadPtr += 8;                                                // point to 1st location past rate word
-            SrcWordPtr = (uint16_t*)DMAReadPtr;                             // read sample data in 16 bit chunks
+            DMAReadPtr += 8;                                                              // point to 1st location past rate word
+            SrcWordPtr = (uint16_t*)DMAReadPtr;                                           // read sample data in 16 bit chunks
 
             for (DDC = 0; DDC < VNUMDDC; DDC++) {
-              HdrWord = DDCCounts[DDC];                                   // number of words for this DDC. reuse variable
+              HdrWord = DDCCounts[DDC];                                                   // number of words for this DDC. reuse variable
 
               if (HdrWord != 0) {
                 DestWordPtr = (uint16_t *)IQHeadPtr[DDC];
 
-                for (Cntr = 0; Cntr < HdrWord; Cntr++) {                // count 64 bit words
-                  *DestWordPtr++ = *SrcWordPtr++;                     // move 48 bits of sample data
+                for (Cntr = 0; Cntr < HdrWord; Cntr++) {                                  // count 64 bit words
+                  *DestWordPtr++ = *SrcWordPtr++;                                         // move 48 bits of sample data
                   *DestWordPtr++ = *SrcWordPtr++;
                   *DestWordPtr++ = *SrcWordPtr++;
-                  SrcWordPtr++;                                       // and skip 16 bits where theres no data
+                  SrcWordPtr++;                                                           // and skip 16 bits where theres no data
                 }
 
-                IQHeadPtr[DDC] += 6 * HdrWord;                          // 6 bytes per sample
+                IQHeadPtr[DDC] += 6 * HdrWord;                                            // 6 bytes per sample
               }
 
               // read N samples; write at head ptr
             }
 
-            DMAReadPtr += FrameLength * 8;                                  // that's how many bytes we read out
+            DMAReadPtr += FrameLength * 8;                                                // that's how many bytes we read out
             DecodeByteCount -= (FrameLength + 1) * 8;
           } else {
             break;  // if not enough left, exit loop
@@ -1286,7 +1285,6 @@ void saturn_handle_high_priority(bool FromNetwork, unsigned char *UDPInBuffer) {
   FPGAVersion = GetFirmwareVersion(&FPGASWID); // get version of FPGA code
 
   //t_print("high priority %sbuffer received\n", (FromNetwork)?"network ":"");
-
   //
   // now properly decode DDC frequencies
   //
@@ -1300,7 +1298,6 @@ void saturn_handle_high_priority(bool FromNetwork, unsigned char *UDPInBuffer) {
   IsTXMode = (bool)(Byte & 2);
 
   //if(!IsTXMode) TXActive = 0;
-
   if (FromNetwork) {
     if (RunBit) {
       StartBitReceived = true;
@@ -1351,7 +1348,6 @@ void saturn_handle_high_priority(bool FromNetwork, unsigned char *UDPInBuffer) {
   SetTXDriveLevel(Byte);
   //
   // CAT port (if set)
-  //
   Word = ntohs(*(uint16_t *)(UDPInBuffer + 1398));
   //t_print("CAT over TCP port = %x\n", Word);
   //
@@ -1371,6 +1367,10 @@ void saturn_handle_high_priority(bool FromNetwork, unsigned char *UDPInBuffer) {
   // if we don't have a new TX ant bit set, just write "old" word data (byte 1432) to both registers
   // this is to allow safe operation with legacy client apps
   // 1st read bytes and see if a TX ant bit is set
+  //
+  // The word from 1398 is not yet used and overwritten here
+  // cppcheck-suppress redundantAssignment
+  //
   Word = ntohs(*(uint16_t *)(UDPInBuffer + 1428));
   Word = (Word >> 8) & 0x0007;                          // new data TX ant bits. if not set, must be legacy client app
 
@@ -1619,7 +1619,6 @@ void saturn_handle_duc_specific(bool FromNetwork, unsigned char *UDPInBuffer) {
   uint8_t CWRFDelay;
   uint16_t CWHangDelay;
   uint8_t CWRampTime;
-  uint32_t CWRampTime_us;
 
   //t_print("DUC specific %sbuffer received\n", (FromNetwork)?"network ":"");
   if (FromNetwork) {
@@ -1650,7 +1649,7 @@ void saturn_handle_duc_specific(bool FromNetwork, unsigned char *UDPInBuffer) {
   CWRampTime = *(uint8_t*)(UDPInBuffer + 17);             // ramp transition time
 
   if (CWRampTime != 0) {                                  // if ramp period supported by client app
-    CWRampTime_us = 1000 * CWRampTime;
+    uint32_t CWRampTime_us = 1000 * CWRampTime;
     InitialiseCWKeyerRamp(true, CWRampTime_us);         // create required ramp, P2
   }
 

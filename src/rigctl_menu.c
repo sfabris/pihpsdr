@@ -58,6 +58,7 @@ static gboolean close_cb () {
 static void autoreporting_cb(GtkWidget *widget, gpointer data) {
   rigctl_start_with_autoreporting = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 }
+
 static void rigctl_value_changed_cb(GtkWidget *widget, gpointer data) {
   rigctl_port = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
 }
@@ -237,7 +238,6 @@ void rigctl_menu(GtkWidget *parent) {
   g_signal_connect(autoreporting_b, "toggled", G_CALLBACK(autoreporting_cb), NULL);
 
   /* Put the Serial Port stuff here, one port per line */
-
   for (int i = 0; i < MAX_SERIAL; i++) {
     char str[64];
     int row = i + 2;

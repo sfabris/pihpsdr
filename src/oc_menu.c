@@ -73,7 +73,6 @@ static void oc_tx_cb(GtkWidget *widget, gpointer data) {
   int mask = 0x01 << (oc - 1);
 
   //t_print("oc_tx_cb: band=%d oc=%d mask=%d\n",b,oc,mask);
-
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) {
     band->OCtx |= mask;
   } else {

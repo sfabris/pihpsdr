@@ -347,10 +347,10 @@ void receiverRestoreState(RECEIVER *rx) {
   GetPropI1("receiver.%d.low_latency", rx->id,                  rx->low_latency);
   GetPropI1("receiver.%d.fft_size", rx->id,                     rx->fft_size);
   GetPropI1("receiver.%d.sample_rate", rx->id,                  rx->sample_rate);
+
   //
   // This may happen if the firmware was down-graded from P2 to P1
   //
-
   if (protocol == ORIGINAL_PROTOCOL && rx->sample_rate > 384000) {
     rx->sample_rate = 384000;
   }
@@ -550,6 +550,7 @@ void receiver_remote_update_display(RECEIVER *rx) {
     }
   }
 }
+
 #endif
 
 void set_displaying(RECEIVER *rx, int state) {
@@ -579,7 +580,7 @@ void set_displaying(RECEIVER *rx, int state) {
 }
 
 void receiver_set_equalizer(RECEIVER *rx) {
-  int numchan=rx->eq_sixband ? 7 : 5;
+  int numchan = rx->eq_sixband ? 7 : 5;
   SetRXAEQProfile(rx->id, numchan, rx->eq_freq, rx->eq_gain);
   SetRXAEQRun(rx->id, rx->eq_enable);
   //t_print("RX EQ id=%d enable=%d\n", rx->id, rx->eq_enable);
@@ -671,9 +672,7 @@ void set_filter(RECEIVER *rx) {
 }
 
 void set_agc(RECEIVER *rx, int agc) {
-
   int id = rx->id;
-
   SetRXAAGCMode(id, agc);
   SetRXAAGCSlope(id, rx->agc_slope);
   SetRXAAGCTop(id, rx->agc_gain);
@@ -721,7 +720,7 @@ void set_agc(RECEIVER *rx, int agc) {
   // Update mode settings, if this is RX1
   //
   if (id == 0) {
-    int m=vfo[id].mode;
+    int m = vfo[id].mode;
     mode_settings[m].agc = agc;
   }
 }
@@ -1011,7 +1010,6 @@ RECEIVER *create_receiver(int id, int pixels, int width, int height) {
   rx->pan = 0;
   rx->eq_enable = 0;
   rx->eq_sixband = 0;
-
   rx->eq_freq[0] =     0.0;
   rx->eq_freq[1] =   200.0;
   rx->eq_freq[2] =   500.0;
@@ -1019,7 +1017,6 @@ RECEIVER *create_receiver(int id, int pixels, int width, int height) {
   rx->eq_freq[4] =  3000.0;
   rx->eq_freq[5] =  6000.0;
   rx->eq_freq[6] = 12000.0;
-
   rx->eq_gain[0] = 0.0;
   rx->eq_gain[1] = 0.0;
   rx->eq_gain[2] = 0.0;
@@ -1027,12 +1024,11 @@ RECEIVER *create_receiver(int id, int pixels, int width, int height) {
   rx->eq_gain[4] = 0.0;
   rx->eq_gain[5] = 0.0;
   rx->eq_gain[6] = 0.0;
-
   receiverRestoreState(rx);
 
   //
   // If this is the second receiver in P1, over-write sample rate
-  // with that of the first  receiver. Different sample rates in 
+  // with that of the first  receiver. Different sample rates in
   // the props file may arise due to illegal hand editing or
   // firmware downgrade from P2 to P1.
   //
@@ -1382,7 +1378,6 @@ static void process_rx_buffer(RECEIVER *rx) {
   int i;
 
   //t_print("%s: rx=%p id=%d output_samples=%d audio_output_buffer=%p\n",__FUNCTION__,rx,rx->id,rx->output_samples,rx->audio_output_buffer);
-
   for (i = 0; i < rx->output_samples; i++) {
     if (isTransmitting() && (!duplex || mute_rx_while_transmitting)) {
       left_sample = 0.0;
@@ -1432,7 +1427,7 @@ static void process_rx_buffer(RECEIVER *rx) {
         // normalize samples:
         // when using AGC, the samples of strong s9 signals are about 0.8
         //
-        double scale = 0.6*pow(10.0, -0.05 * rx->volume);
+        double scale = 0.6 * pow(10.0, -0.05 * rx->volume);
         capture_data[capture_record_pointer++] = scale*(left_sample + right_sample);
       } else {
         // switching the state to RECORD_DONE takes care that the
@@ -1600,4 +1595,5 @@ void receiver_create_remote(RECEIVER *rx) {
   // receiver structure already setup
   create_visual(rx);
 }
+
 #endif

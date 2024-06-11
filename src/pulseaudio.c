@@ -204,7 +204,6 @@ static void *mic_read_thread(gpointer arg) {
       t_print("%s: simple_read returned %d error=%d (%s)\n", __FUNCTION__, rc, err, pa_strerror(err));
     } else {
       for (int i = 0; i < mic_buffer_size; i++) {
-        float sample = local_microphone_buffer[i];
         //
         // put sample into ring buffer
         //
@@ -214,7 +213,7 @@ static void *mic_read_thread(gpointer arg) {
 
         if (newpt != mic_ring_read_pt) {
           // buffer space available, do the write
-          mic_ring_buffer[mic_ring_write_pt] = sample;
+          mic_ring_buffer[mic_ring_write_pt] = local_microphone_buffer[i];
           // atomic update of mic_ring_write_pt
           mic_ring_write_pt = newpt;
         }

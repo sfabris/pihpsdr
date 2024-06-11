@@ -469,6 +469,7 @@ void filter_cut_default(int id) {
 
   g_idle_add(ext_vfo_update, NULL);
 }
+
 //
 // This function is a no-op unless the vfo referenced uses a Var1 or Var2 filter
 // The notion of "high" and "low" is referenced to the audio, that is,
@@ -637,8 +638,8 @@ void filter_width_changed(int id, int increment) {
 
         break;
       }
-
-    // else fall through: only change high-audio-cut
+      // FALLTHROUGH
+      // only change high-audio-cut
     case modeLSB:
       filter->low -= increment * 25;
 
@@ -655,9 +656,8 @@ void filter_width_changed(int id, int increment) {
 
         break;
       }
-
-    // else fall through: only change high-audio-cut
-
+      // FALLTHROUGH
+      // only change high-audio-cut
     case modeUSB:
       filter->high += increment * 25;
 

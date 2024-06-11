@@ -101,13 +101,15 @@ static enum {
 static gboolean configure = FALSE;
 
 static void ReadMIDIdevice(const MIDIPacketList *pktlist, void *refCon, void *connRefCon) {
-  int i, j, byte, chan, arg1, arg2;
   MIDIPacket *packet = (MIDIPacket *)pktlist->packet;
+  int chan = 0;
+  int arg1 = 0;
+  int arg2 = 0;
 
   // loop through all packets in the current list
-  for (j = 0; j < pktlist->numPackets; ++j) {
-    for (i = 0; i < packet->length; i++) {
-      byte = packet->data[i];
+  for (unsigned int j = 0; j < pktlist->numPackets; ++j) {
+    for (int i = 0; i < packet->length; i++) {
+      int byte = packet->data[i];
 
       switch (state) {
       case STATE_SKIP:
@@ -156,9 +158,10 @@ static void ReadMIDIdevice(const MIDIPacketList *pktlist, void *refCon, void *co
         switch (command) {
         case CMD_NOTEON:
 
-          // Hercules MIDI controllers generate NoteOn
+          // Some controllers generate NoteOn
           // messages with velocity == 0 when releasing
-          // a push-button.
+          // a push-button. This must be interpreted as
+          // a note-off event
           if (arg2 == 0) {
             if (configure) {
               NewMidiConfigureEvent(MIDI_NOTE, chan, arg1, 0);
@@ -188,7 +191,9 @@ static void ReadMIDIdevice(const MIDIPacketList *pktlist, void *refCon, void *co
 
           //
           // When ignoring "controller pairs", all ControllerChange events
-          // for controllers 32...63 are ignored
+          // for controllers 32...63 are ignored, since they provide
+          // the least significant bits of a 14-bit argument.
+          // Here we only use the most signifcant 7 bits.
           //
           if (!midiIgnoreCtrlPairs || arg1 < 32 || arg1 >= 64) {
             if (configure) {
@@ -201,6 +206,8 @@ static void ReadMIDIdevice(const MIDIPacketList *pktlist, void *refCon, void *co
           break;
 
         case CMD_PITCH:
+
+          // PitchBend event with a 14-bit value
           if (configure) {
             NewMidiConfigureEvent(MIDI_PITCH, chan, 0, arg1 + 128 * arg2);
           } else {

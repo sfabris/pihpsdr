@@ -132,6 +132,7 @@ static gboolean saturn_cb (GtkWidget *widget, GdkEventButton *event, gpointer da
   saturn_menu(top_window);
   return TRUE;
 }
+
 #endif
 
 static gboolean about_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
@@ -194,6 +195,7 @@ static gboolean switch_cb (GtkWidget *widget, GdkEventButton *event, gpointer da
   switch_menu(top_window);
   return TRUE;
 }
+
 #endif
 
 static gboolean toolbar_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
@@ -448,6 +450,7 @@ static gboolean server_cb (GtkWidget *widget, GdkEventButton *event, gpointer da
   start_server();
   return TRUE;
 }
+
 #endif
 
 #ifdef MIDI
@@ -461,6 +464,7 @@ static gboolean midi_cb (GtkWidget *widget, GdkEventButton *event, gpointer data
   start_midi();
   return TRUE;
 }
+
 #endif
 
 void new_menu() {

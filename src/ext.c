@@ -147,6 +147,7 @@ int ext_receiver_remote_update_display(void *data) {
   receiver_remote_update_display(rx);
   return G_SOURCE_REMOVE;
 }
+
 int ext_remote_set_zoom(void *data) {
   int zoom = GPOINTER_TO_INT(data);
   remote_set_zoom(active_receiver->id, (double)zoom);
@@ -163,4 +164,5 @@ int ext_set_title(void *data) {
   gtk_window_set_title(GTK_WINDOW(top_window), (char *)data);
   return G_SOURCE_REMOVE;
 }
+
 #endif

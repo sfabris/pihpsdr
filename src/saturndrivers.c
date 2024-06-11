@@ -167,13 +167,12 @@ int DMAReadFromFPGA(int fd, unsigned char*DestData, uint32_t Length, uint32_t AX
 //
 uint32_t RegisterRead(uint32_t Address) {
   uint32_t result = 0;
-  ssize_t nread;
 
   if (register_fd == 0) {
     return result;
   }
 
-  if ((nread = pread(register_fd, &result, sizeof(result), (off_t) Address)) != sizeof(result)) {
+  if (pread(register_fd, &result, sizeof(result), (off_t) Address) != sizeof(result)) {
     t_print("ERROR: register read: addr=0x%08X   error=%s\n", Address, strerror(errno));
   }
 
@@ -184,16 +183,15 @@ uint32_t RegisterRead(uint32_t Address) {
 // 32 bit register write over the AXILite bus
 //
 void RegisterWrite(uint32_t Address, uint32_t Data) {
-  ssize_t nsent;
-
   if (register_fd == 0) {
     return;
   }
 
-  if ((nsent = pwrite(register_fd, &Data, sizeof(Data), (off_t) Address)) != sizeof(Data)) {
+  if (pwrite(register_fd, &Data, sizeof(Data), (off_t) Address) != sizeof(Data)) {
     t_print("ERROR: Write: addr=0x%08X   error=%s\n", Address, strerror(errno));
   }
 }
+
 // END hwaccess.c
 
 sem_t DDCResetFIFOMutex;

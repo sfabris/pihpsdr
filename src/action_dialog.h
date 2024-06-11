@@ -16,4 +16,4 @@
 *
 */
 
-extern int action_dialog(GtkWidget *parent, int filter, int current);
+extern int action_dialog(GtkWidget *parent, int filter, enum ACTION current);

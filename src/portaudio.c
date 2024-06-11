@@ -77,7 +77,7 @@ int n_output_devices = 0;
 // If we then go to RX again a "low water mark" condition is detected in the
 // first call to audio_write() and half a buffer length of silence is inserted
 // again.
-// Of course, a small portaudio audio buffer size (128 sample) helps 
+// Of course, a small portaudio audio buffer size (128 sample) helps
 // keeping the latency small. With the CW low/high water marks of 128/256
 // I have achieved a latency of slightly less than 15 msec on my
 // old 2013 iMac.
@@ -285,7 +285,7 @@ int pa_out_cb(const void *inputBuffer, void *outputBuffer, unsigned long framesP
     //
     int newpt = rx->local_audio_buffer_outpt;
 
-    for (int i = 0; i < framesPerBuffer; i++) {
+    for (unsigned int i = 0; i < framesPerBuffer; i++) {
       if (rx->local_audio_buffer_inpt == newpt) {
         // Ring buffer empty, send zero sample
         *out++ = 0.0;
@@ -356,7 +356,7 @@ int pa_mic_cb(const void *inputBuffer, void *outputBuffer, unsigned long framesP
       last_was_tx = 1;
     }
 
-    for (int i = 0; i < framesPerBuffer; i++) {
+    for (unsigned int i = 0; i < framesPerBuffer; i++) {
       //
       // put sample into ring buffer
       //
@@ -589,8 +589,8 @@ int audio_write (RECEIVER *rx, float left, float right) {
   }
 
   g_mutex_lock(&rx->local_audio_mutex);
-
   cwmode = 0;
+
   if (rx->playstream != NULL && buffer != NULL) {
     int avail = rx->local_audio_buffer_inpt - rx->local_audio_buffer_outpt;
 
@@ -721,7 +721,7 @@ int cw_audio_write(RECEIVER *rx, float sample) {
       //
       // default case:
       //               put sample into ring buffer.
-      //               since the side tone is mono put it into 
+      //               since the side tone is mono put it into
       //               both the left and right channel with the
       //               same phase.
       //

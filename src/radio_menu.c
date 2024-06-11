@@ -90,6 +90,7 @@ static void agc_changed_cb(GtkWidget *widget, gpointer data) {
     soapy_protocol_set_gain(active_receiver);
   }
 }
+
 #endif
 
 static void calibration_value_changed_cb(GtkWidget *widget, gpointer data) {
@@ -279,6 +280,7 @@ static void mic_input_cb(GtkWidget *widget, gpointer data) {
 
   schedule_transmit_specific();
 }
+
 static void sample_rate_cb(GtkToggleButton *widget, gpointer data) {
   const char *p = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget));
   int samplerate;

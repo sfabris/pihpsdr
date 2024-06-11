@@ -112,7 +112,6 @@ void startup(const char *path) {
   //
   // Most likely, piHPDSR is expected to run in the current working directory
   //
-
   if (writeable && found) {
     t_print("%s: working directory not changed.\n", __FUNCTION__);
     return;

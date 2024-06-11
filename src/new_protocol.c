@@ -64,9 +64,9 @@
 
 
 #ifdef DUMP_TX_DATA
-long rxiqi[1000000];
-long rxiqq[1000000];
-int  rxiq_count=0;
+  long rxiqi[1000000];
+  long rxiqq[1000000];
+  int  rxiq_count = 0;
 #endif
 
 #define min(x,y) (x<y?x:y)
@@ -444,17 +444,16 @@ void new_protocol_init() {
   // is only done once. Actions needed for a normal P2 restart are
   // then done in new_protocol_menu_start()
   //
-
   //
   // These are allocated once and forever
   //
   if (TXIQRINGBUF != NULL) {
-    t_print("%s: WARNING: TXIQRINGBUF non-NULL\n" , __FUNCTION__);
+    t_print("%s: WARNING: TXIQRINGBUF non-NULL\n", __FUNCTION__);
     g_free(TXIQRINGBUF);
   }
 
   if (RXAUDIORINGBUF != NULL) {
-    t_print("%s: WARNING: RXAUDIO_RINGGBUF non-NULL\n" , __FUNCTION__);
+    t_print("%s: WARNING: RXAUDIO_RINGGBUF non-NULL\n", __FUNCTION__);
     g_free(RXAUDIORINGBUF);
   }
 
@@ -491,7 +490,6 @@ void new_protocol_init() {
   }
 
 #endif
-
   high_priority_thread_id = g_thread_new( "P2 HP", high_priority_thread, NULL);
   mic_line_thread_id = g_thread_new( "P2 MIC", mic_line_thread, NULL);
 
@@ -507,7 +505,6 @@ void new_protocol_init() {
   // data socket and port addresses.
   // Some QoS stuff included here, and the buffer length for incoming UDP packets
   //
-
   if (have_saturn_xdma) {
 #ifdef SATURN
     saturn_init();
@@ -618,8 +615,8 @@ void new_protocol_init() {
     memcpy(&iq_addr, &radio->info.network.address, radio->info.network.address_length);
     iq_addr_length = radio->info.network.address_length;
     iq_addr.sin_port = htons(TX_IQ_FROM_HOST_PORT);
-    //t_print("iq_addr=%s\n",inet_ntoa(radio->info.network.address.sin_addr));
 
+    //t_print("iq_addr=%s\n",inet_ntoa(radio->info.network.address.sin_addr));
     for (i = 0; i < MAX_DDC; i++) {
       memcpy(&data_addr[i], &radio->info.network.address, radio->info.network.address_length);
       data_addr_length[i] = radio->info.network.address_length;
@@ -630,7 +627,6 @@ void new_protocol_init() {
   //
   // This does all the work which has to be done both at startup and upon each restart
   //
-
   new_protocol_menu_start();
 }
 
@@ -658,7 +654,6 @@ static void new_protocol_general() {
   }
 
   // t_print("new_protocol_general: PA Enable=%02X\n",general_buffer[58]);
-
   if (filter_board == APOLLO) {
     general_buffer[58] |= 0x02; // enable APOLLO tuner
   }
@@ -673,7 +668,6 @@ static void new_protocol_general() {
 
   //t_print("Alex Enable=%02X\n",general_buffer[59]);
   //t_print("new_protocol_general: %s:%d\n",inet_ntoa(base_addr.sin_addr),ntohs(base_addr.sin_port));
-
   if (have_saturn_xdma) {
 #ifdef SATURN
     saturn_handle_general_packet(false, general_buffer);
@@ -773,7 +767,7 @@ static void new_protocol_high_priority() {
 
   // CW mode from the Host; disabled since pihpsdr does not use this CW option.
   high_priority_buffer_to_radio[5] = 0x00;
-    
+
   if (diversity_enabled && !xmit) {
     //
     // Use frequency of first receiver for both DDC0 and DDC1
@@ -862,7 +856,6 @@ static void new_protocol_high_priority() {
   }
 
   high_priority_buffer_to_radio[345] = power & 0xFF;
-
   //
   // RigCtl CAT port
   //
@@ -990,7 +983,6 @@ static void new_protocol_high_priority() {
   //
   // Set RX filters
   //
-
   switch (device) {
   case NEW_DEVICE_SATURN:
   case NEW_DEVICE_ORION2:
@@ -1358,7 +1350,6 @@ static void new_protocol_high_priority() {
   //        during transmit (the code below is essentially duplicated there)
   //         BUT, there might be old firmware around that does not fully implement this.
   //
-
   if (xmit && local_pa_enable) {
     high_priority_buffer_to_radio[1442] = 31;
     high_priority_buffer_to_radio[1443] = 31;
@@ -1372,7 +1363,6 @@ static void new_protocol_high_priority() {
   // Send the HighPrio buffer to the radio
   //
   //t_print("new_protocol_high_priority: %s:%d\n",inet_ntoa(high_priority_addr.sin_addr),ntohs(high_priority_addr.sin_port));
-
   if (have_saturn_xdma) {
 #ifdef SATURN
     saturn_handle_high_priority(false, high_priority_buffer_to_radio);
@@ -1507,7 +1497,6 @@ static void new_protocol_transmit_specific() {
   }
 
   //t_print("new_protocol_transmit_specific: %s:%d\n",inet_ntoa(transmitter_addr.sin_addr),ntohs(transmitter_addr.sin_port));
-
   if (have_saturn_xdma) {
 #ifdef SATURN
     saturn_handle_duc_specific(false, transmit_specific_buffer);
@@ -1618,7 +1607,6 @@ static void new_protocol_receive_specific() {
   }
 
   //t_print("new_protocol_receive_specific: %s:%d enable=%02X\n",inet_ntoa(receiver_addr.sin_addr),ntohs(receiver_addr.sin_port),receive_specific_buffer[7]);
-
   if (have_saturn_xdma) {
 #ifdef SATURN
     saturn_handle_ddc_specific(false, receive_specific_buffer);
@@ -1758,7 +1746,6 @@ void new_protocol_menu_start() {
   new_protocol_transmit_specific();
   new_protocol_receive_specific();
   new_protocol_timer_thread_id = g_thread_new( "P2 task", new_protocol_timer_thread, NULL);
-
 }
 
 static gpointer new_protocol_rxaudio_thread(gpointer data) {
@@ -1994,7 +1981,6 @@ static gpointer new_protocol_thread(gpointer data) {
     sourceport = ntohs(addr.sin_port);
 
     //t_print("new_protocol_thread: recvd %d bytes on port %d\n",bytesread,sourceport);
-
     switch (sourceport) {
     case RX_IQ_TO_HOST_PORT_0:
     case RX_IQ_TO_HOST_PORT_1:
@@ -2163,8 +2149,10 @@ void saturn_post_iq_data(int ddc, mybuffer *mybuf) {
   // Check sequence HERE
   //
   unsigned const char *buffer = mybuf->buffer;
-  long sequence = ((buffer[0] & 0xFF) << 24) + ((buffer[1] & 0xFF) << 16) + ((buffer[2] & 0xFF) << 8)
-                  + (buffer[3] & 0xFF);
+  unsigned long sequence = ((buffer[0] & 0xFF) << 24)
+                           + ((buffer[1] & 0xFF) << 16)
+                           + ((buffer[2] & 0xFF) << 8)
+                           + (buffer[3] & 0xFF);
 
   if (ddc_sequence[ddc] != sequence) {
     t_print("%s: DDC(%d) sequence error: expected %ld got %ld\n", __FUNCTION__, ddc, ddc_sequence[ddc], sequence);
@@ -2417,25 +2405,26 @@ static void process_ps_iq_data(const unsigned char *buffer) {
     rightsampledouble1 = (double)rightsample1 * 1.1920928955078125E-7;
     add_ps_iq_samples(transmitter, leftsampledouble1, rightsampledouble1, leftsampledouble0, rightsampledouble0);
     //t_print("%06x,%06x %06x,%06x\n",leftsample0,rightsample0,leftsample1,rightsample1);
-
 #if defined(DUMP_TX_DATA)
-    if ((DUMP_TX_DATA == DUMP_TXFDBK) && (rxiq_count < 1000000)) {
-      rxiqi[rxiq_count]=leftsample1;
-      rxiqq[rxiq_count]=rightsample1;
-      rxiq_count++;
-    }
-    if ((DUMP_TX_DATA == DUMP_RXFDBK) && (rxiq_count < 1000000)) {
-      rxiqi[rxiq_count]=leftsample0;
-      rxiqq[rxiq_count]=rightsample0;
-      rxiq_count++;
-    }
-#endif
 
+    if ((DUMP_TX_DATA == DUMP_TXFDBK) && (rxiq_count < 1000000)) {
+      rxiqi[rxiq_count] = leftsample1;
+      rxiqq[rxiq_count] = rightsample1;
+      rxiq_count++;
+    }
+
+    if ((DUMP_TX_DATA == DUMP_RXFDBK) && (rxiq_count < 1000000)) {
+      rxiqi[rxiq_count] = leftsample0;
+      rxiqq[rxiq_count] = rightsample0;
+      rxiq_count++;
+    }
+
+#endif
   }
 }
 
 static void process_high_priority() {
-  long sequence;
+  unsigned long sequence;
   int previous_ptt;
   int previous_dot;
   int previous_dash;
@@ -2581,7 +2570,7 @@ static void process_high_priority() {
 }
 
 static void process_mic_data(const unsigned char *buffer) {
-  long sequence;
+  unsigned long sequence;
   int b;
   int i;
   float fsample;
@@ -2639,7 +2628,9 @@ void new_protocol_cw_audio_samples(short left_audio_sample, short right_audio_sa
       // to minimize CW side tone latency (17 msec measured on my ANAN-7000).
       //
       rxaudio_drain = 1;
-      while (rxaudio_inptr != rxaudio_outptr) usleep(1000);
+
+      while (rxaudio_inptr != rxaudio_outptr) { usleep(1000); }
+
       rxaudio_drain = 0;
       rxaudio_flag = 1;
     }
@@ -2738,13 +2729,14 @@ void new_protocol_iq_samples(int isample, int qsample) {
   }
 
 #if defined(DUMP_TX_DATA)
-    if ((DUMP_TX_DATA == DUMP_TXIQ) && (rxiq_count < 1000000)) {
-      rxiqi[rxiq_count]=isample;
-      rxiqq[rxiq_count]=qsample;
-      rxiq_count++;
-    }
-#endif
 
+  if ((DUMP_TX_DATA == DUMP_TXIQ) && (rxiq_count < 1000000)) {
+    rxiqi[rxiq_count] = isample;
+    rxiqq[rxiq_count] = qsample;
+    rxiq_count++;
+  }
+
+#endif
   int iptr = txiq_inptr + 6 * txiq_count;
   TXIQRINGBUF[iptr++] = (isample >> 16) & 0xFF;
   TXIQRINGBUF[iptr++] = (isample >>  8) & 0xFF;

@@ -112,9 +112,9 @@ extern void saturn_post_high_priority(mybuffer *buffer);
 //#define DUMP_TX_DATA DUMP_RXFDBK
 
 #ifdef DUMP_TX_DATA
-extern int rxiq_count;
-extern long rxiqi[];
-extern long rxiqq[];
+  extern int rxiq_count;
+  extern long rxiqi[];
+  extern long rxiqq[];
 #endif
 
 #endif

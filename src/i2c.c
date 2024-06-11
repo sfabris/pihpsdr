@@ -93,6 +93,7 @@ static unsigned char read_byte_data(unsigned char reg) {
   data = i2c_smbus_read_byte_data(i2cfd, reg);
   return data & 0xFF;
 }
+
 #endif
 
 static unsigned int read_word_data(unsigned char reg) {
@@ -219,4 +220,5 @@ void i2c_init() {
 
   g_mutex_unlock(&i2c_mutex);
 }
+
 #endif

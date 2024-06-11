@@ -496,4 +496,5 @@ int ReadLegacyMidiFile(char *filename) {
 
   return 0;
 }
+
 #endif

@@ -406,10 +406,10 @@ static guint full_screen_timeout = 0;
 static int set_full_screen(gpointer data) {
   full_screen_timeout = 0;
   int flag = GPOINTER_TO_INT(data);
+
   //
   // Put the top window in full-screen mode, if full_screen is set
   //
-
   if (flag) {
     //
     // Window-to-fullscreen-transition
@@ -655,6 +655,7 @@ static gboolean save_cb(gpointer data) {
   radioSaveState();
   return TRUE;
 }
+
 #endif
 
 //
@@ -963,8 +964,6 @@ static void create_visual() {
 }
 
 void start_radio() {
-  int i;
-
   //
   // Debug code. Placed here at the start of the program. piHPSDR  implicitly assumes
   //             that the entires in the action table (actions.c) are sorted by their
@@ -973,7 +972,7 @@ void start_radio() {
   //             If the warning appears, correct the order of actions in actions.h
   //             and re-compile.
   //
-  for (i = 0; i < ACTIONS; i++) {
+  for (enum ACTION i = 0; i < ACTIONS; i++) {
     if (i != ActionTable[i].action) {
       t_print("WARNING: action table messed up\n");
       t_print("WARNING: Position %d Action=%d str=%s\n", i, ActionTable[i].action, ActionTable[i].button_str);
@@ -1090,7 +1089,7 @@ void start_radio() {
 
   drive_digi_max = drive_max; // To be updated when reading props file
 
-  for (i = 0; i < 11; i++) {
+  for (int i = 0; i < 11; i++) {
     pa_trim[i] = i * pa_power_list[pa_power] * 0.1;
   }
 
@@ -1149,7 +1148,6 @@ void start_radio() {
   // The GUI expects that we either have a gain or an attenuation slider,
   // but not both.
   //
-
   if (have_rx_gain) {
     have_rx_att = 0;
   }
@@ -1325,13 +1323,13 @@ void start_radio() {
   }
 
   iqswap = 0;
+
   //
   // In most cases, ALEX is the best default choice for the filter board.
   // here we set filter_board to a different default value for some
   // "special" hardware. The choice made here will possibly overwritten
   // with data from the props file.
   //
-
   if (device == SOAPYSDR_USB_DEVICE) {
     iqswap = 1;
     receivers = 1;
@@ -1468,7 +1466,6 @@ void start_radio() {
 
   // save every 30 seconds
   // save_timer_id=gdk_threads_add_timeout(30000, save_cb, NULL);
-
   if (rigctl_enable) {
     launch_rigctl();
 
@@ -1527,7 +1524,7 @@ void start_radio() {
   gdk_window_set_cursor(gtk_widget_get_window(top_window), gdk_cursor_new(GDK_ARROW));
 #ifdef MIDI
 
-  for (i = 0; i < n_midi_devices; i++) {
+  for (int i = 0; i < n_midi_devices; i++) {
     if (midi_devices[i].active) {
       //
       // Normally the "active" flags marks a MIDI device that is up and running.
@@ -1730,24 +1727,29 @@ static void rxtx(int state) {
       break;
 #endif
     }
+
 #ifdef DUMP_TX_DATA
-    rxiq_count=0;
+    rxiq_count = 0;
 #endif
   } else {
     // switch to rx
 #ifdef DUMP_TX_DATA
-    static int snapshot=0;
+    static int snapshot = 0;
     snapshot++;
     char fname[32];
     snprintf(fname, 32, "TXDUMP%d.iqdata", snapshot);
-    FILE *fp=fopen(fname,"w");
+    FILE *fp = fopen(fname, "w");
+
     if (fp) {
-      for (int i=0; i<rxiq_count; i++) {
-        fprintf(fp,"%d  %ld  %ld\n", i, rxiqi[i],rxiqq[i]);
+      for (int i = 0; i < rxiq_count; i++) {
+        fprintf(fp, "%d  %ld  %ld\n", i, rxiqi[i], rxiqq[i]);
       }
-     fclose(fp);
+
+      fclose(fp);
     }
+
 #endif
+
     switch (protocol) {
 #ifdef SOAPYSDR
 
@@ -1905,7 +1907,6 @@ void setTune(int state) {
   if (state && TxInhibit) { return; }
 
   // if state==tune, this function is a no-op
-
   if (tune != state) {
     vox_cancel();
 
@@ -1928,7 +1929,7 @@ void setTune(int state) {
         // "Restart" in the PS menu when tuning is complete.
         //
         // It is therefore suggested to to so implicitly when PS
-        // is enabled. 
+        // is enabled.
         // Added April 2024: if in "OneShot" mode, this is probably
         //                   not necessary and the PS reset also
         //                   most likely not wanted here
@@ -1957,8 +1958,8 @@ void setTune(int state) {
     }
 
     schedule_high_priority();
-    //schedule_general();
 
+    //schedule_general();
     if (state) {
       if (!duplex) {
         for (int i = 0; i < receivers; i++) {
@@ -2865,6 +2866,7 @@ int remote_start(void *data) {
   remote_started = TRUE;
   return 0;
 }
+
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -3054,7 +3056,7 @@ void end_capture() {
   // - normalize what has been captured
   // - restore  RX equalizer on/off flags
   //
-  double max=0.0;
+  double max = 0.0;
 
   //
   // Note: when using AGC, this normalization should not
@@ -3062,16 +3064,20 @@ void end_capture() {
   //       the quietest bands.
   //
   for (int i = 0; i < capture_record_pointer; i++) {
-    double t=fabs(capture_data[i]);
+    double t = fabs(capture_data[i]);
+
     if (t > max) { max = t; }
   }
+
   t_print("%s: max=%f\n", __FUNCTION__, max);
+
   if (max > 0.05) {
     //
     // If max. amplitude is below -25 dB, then assume this
     // is "noise only" and do not normalize
     //
     max = 1.0 / max;  // scale factor
+
     for (int i = 0; i < capture_record_pointer; i++) {
       capture_data[i] *= max;
     }

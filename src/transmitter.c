@@ -822,7 +822,6 @@ TRANSMITTER *create_transmitter(int id, int width, int height) {
   tx->alc = 0.0;
   tx->eq_enable = 0;
   tx->eq_sixband = 0;
-
   tx->eq_freq[0] =     0.0;
   tx->eq_freq[1] =   200.0;
   tx->eq_freq[2] =   500.0;
@@ -830,15 +829,13 @@ TRANSMITTER *create_transmitter(int id, int width, int height) {
   tx->eq_freq[4] =  3000.0;
   tx->eq_freq[5] =  6000.0;
   tx->eq_freq[6] = 12000.0;
-
-  tx->eq_gain[0] = 0.0; 
+  tx->eq_gain[0] = 0.0;
   tx->eq_gain[1] = 0.0;
   tx->eq_gain[2] = 0.0;
   tx->eq_gain[3] = 0.0;
   tx->eq_gain[4] = 0.0;
   tx->eq_gain[5] = 0.0;
   tx->eq_gain[6] = 0.0;
-
   transmitterRestoreState(tx);
   //
   // allocate buffers
@@ -931,14 +928,13 @@ void tx_set_mode(TRANSMITTER* tx, int mode) {
 }
 
 void tx_set_equalizer(TRANSMITTER *tx) {
-  int numchan=tx->eq_sixband ? 7 : 5;
+  int numchan = tx->eq_sixband ? 7 : 5;
   SetTXAEQProfile(tx->id, numchan, tx->eq_freq, tx->eq_gain);
   SetTXAEQRun(tx->id, tx->eq_enable);
   //t_print("TX EQ enable=%d\n", tx->eq_enable);
   //for (int i = 0; i < numchan; i++) {
   //  t_print("TX EQ chan=%d freq=%f gain=%f\n", i, tx->eq_freq[i], tx->eq_gain[i]);
   //}
-
 }
 
 void tx_set_filter(TRANSMITTER *tx) {
@@ -1098,7 +1094,6 @@ static void full_tx_buffer(TRANSMITTER *tx) {
 
     // These are the I/Q samples that describe our CW signal
     // The only use we make of it is displaying the spectrum.
-
     for (j = 0; j < tx->output_samples; j++) {
       *dp++ = 0.0;
       *dp++ = tx->cw_sig_rf[j];
@@ -1296,11 +1291,11 @@ void add_mic_sample(TRANSMITTER *tx, float mic_sample) {
   int txmode = get_tx_mode();
   double mic_sample_double;
   int i, j;
-
   mic_sample_double = (double)mic_sample;
+
   //
   // If there is captured data to re-play, replace incoming
-  // mic samples by captured data. 
+  // mic samples by captured data.
   //
   if (capture_state == CAP_REPLAY) {
     if (capture_replay_pointer < capture_record_pointer) {
@@ -1312,6 +1307,7 @@ void add_mic_sample(TRANSMITTER *tx, float mic_sample) {
       schedule_action(CAPTURE, PRESSED, 0);
     }
   }
+
   //
   // silence TX audio if tuning or when doing CW,
   // to prevent firing VOX
@@ -1501,7 +1497,6 @@ void add_ps_iq_samples(const TRANSMITTER *tx, double i_sample_tx, double q_sampl
   RECEIVER *rx_feedback = receiver[PS_RX_FEEDBACK];
 
   //t_print("add_ps_iq_samples: samples=%d i_rx=%f q_rx=%f i_tx=%f q_tx=%f\n",rx_feedback->samples, i_sample_rx,q_sample_rx,i_sample_tx,q_sample_tx);
-
   if (tx->do_scale) {
     tx_feedback->iq_input_buffer[tx_feedback->samples * 2] = i_sample_tx * tx->drive_iscal;
     tx_feedback->iq_input_buffer[(tx_feedback->samples * 2) + 1] = q_sample_tx * tx->drive_iscal;
@@ -1770,6 +1765,7 @@ void tx_set_ramps(TRANSMITTER *tx) {
   // seems to be standard, and has less latency than a 8 msec BH RF profile
   //
   if (tx->cw_ramp_audio) { g_free(tx->cw_ramp_audio); }
+
   tx->cw_ramp_audio_ptr = 0;
   tx->cw_ramp_audio_len = 240;
   tx->cw_ramp_audio = g_new(double, tx->cw_ramp_audio_len + 1);
@@ -1780,6 +1776,7 @@ void tx_set_ramps(TRANSMITTER *tx) {
   // user-specified width
   //
   if (tx->cw_ramp_rf) { g_free(tx->cw_ramp_rf); }
+
   tx->cw_ramp_rf_ptr = 0;
   tx->cw_ramp_rf_len = 48 * tx->ratio * cw_ramp_width;
   tx->cw_ramp_rf = g_new(double, tx->cw_ramp_rf_len + 1);

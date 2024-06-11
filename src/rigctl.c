@@ -83,10 +83,8 @@ int parse_cmd (void *data);
 
 int cat_control;
 
-typedef struct {GMutex m; } GT_MUTEX;
-
-GT_MUTEX * mutex_a;
-GT_MUTEX * mutex_busy;
+GMutex mutex_numcat;   // only needed to make in/de-crements of "cat_control"  atomic
+GMutex mutex_serial;   // this is probably not necessary at all
 
 #define MAX_TCP_CLIENTS 3
 static GThread *rigctl_server_thread_id = NULL;
@@ -175,6 +173,8 @@ void shutdown_rigctl() {
     close(server_socket);
     server_socket = -1;
   }
+
+  g_mutex_clear(&mutex_numcat);
 }
 
 //
@@ -275,17 +275,6 @@ void rigctl_send_cw_char(char cw_char) {
   char pattern[9],*ptr;
   ptr = &pattern[0];
 
-#ifdef DUMP_TX_DATA
-  //
-  // This is for doing "CW pulse shaping" experiments,
-  // where sending a star via CAT starts a long string
-  // of dots.
-  //
-  if (cw_char == '*') {
-    for (int i=0; i<100; i++) send_dot();
-    return;
-  }
-#endif
   switch (cw_char) {
   case 'a':
   case 'A':
@@ -546,7 +535,6 @@ void rigctl_send_cw_char(char cw_char) {
   // spacing (7 dotlens) and therefore need 6 additional dotlens
   // We need no longer take care of a sequence of spaces since adjacent spaces
   // are now filtered out while filling the CW character (ring-) buffer.
-
   if (cw_char == ' ') {
     send_space(6);  // produce inter-word space of 7 dotlens
   } else {
@@ -960,12 +948,12 @@ static gpointer rigctl_server(gpointer data) {
 static gpointer rigctl_client (gpointer data) {
   CLIENT *client = (CLIENT *)data;
   t_print("%s: starting rigctl_client: socket=%d\n", __FUNCTION__, client->fd);
-  g_mutex_lock(&mutex_a->m);
+  g_mutex_lock(&mutex_numcat);
   cat_control++;
 
   if (rigctl_debug) { t_print("RIGCTL: CTLA INC cat_control=%d\n", cat_control); }
 
-  g_mutex_unlock(&mutex_a->m);
+  g_mutex_unlock(&mutex_numcat);
   g_idle_add(ext_vfo_update, NULL);
   int i;
   int numbytes;
@@ -1001,6 +989,8 @@ static gpointer rigctl_client (gpointer data) {
     }
   }
 
+  // Release the last "command" buffer (that has not yet been used)
+  g_free(command);
   t_print("%s: Leaving rigctl_client thread\n", __FUNCTION__);
 
   //
@@ -1023,12 +1013,12 @@ static gpointer rigctl_client (gpointer data) {
   }
 
   // Decrement CAT_CONTROL
-  g_mutex_lock(&mutex_a->m);
+  g_mutex_lock(&mutex_numcat);
   cat_control--;
 
   if (rigctl_debug) { t_print("RIGCTL: CTLA DEC - cat_control=%d\n", cat_control); }
 
-  g_mutex_unlock(&mutex_a->m);
+  g_mutex_unlock(&mutex_numcat);
   g_idle_add(ext_vfo_update, NULL);
   return NULL;
 }
@@ -1386,12 +1376,12 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
       break;
 
-    case 'S': //ZZBS
-    case 'T': //ZZBT
- 
-      {
+    case 'S':
+    case 'T': { //ZZBS and ZZBT
       int v = VFO_A;
+
       if (command[3] == 'T') { v = VFO_B; }
+
       //CATDEF    ZZBS
       //DESCR     Set/Read VFO-A band
       //SET       ZZBSxxx;
@@ -1475,7 +1465,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
           break;
         }
 
-        snprintf(reply, 256, "ZZB%c%03d;", 'S'+v, b);
+        snprintf(reply, 256, "ZZB%c%03d;", 'S' + v, b);
         send_resp(client->fd, reply) ;
       } else if (command[7] == ';') {
         int band = band20;
@@ -1545,9 +1535,8 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
         vfo_band_changed(v, band);
       }
-      }
-
-      break;
+    }
+    break;
 
     case 'U': //ZZBU
 
@@ -1666,6 +1655,8 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         snprintf(reply, 256, "ZZDD%04d;", (int)div_phase);
         send_resp(client->fd, reply) ;
       }
+
+      break;
 
     case 'M': //ZZDM
 
@@ -2811,7 +2802,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
   case 'V': //ZZVx
     switch (command[3]) {
     case 'L': //ZZVL
-
       //DO NOT DOCUMENT, THIS WILL BE REMOVED
       locked = command[4] == '1';
       g_idle_add(ext_vfo_update, NULL);
@@ -2849,7 +2839,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
   case 'X': //ZZXx
     switch (command[3]) {
     case 'C': //ZZXC
-
       //DO NOT DOCUMENT, THIS WILL BE REMOVED
       schedule_action(XIT_CLEAR, PRESSED, 0);
       break;
@@ -4225,7 +4214,7 @@ int parse_cmd(void *data) {
         //
         int j = 3;
 
-        for (int i = 3; i < strlen(command); i++) {
+        for (unsigned int i = 3; i < strlen(command); i++) {
           if (command[i] == ';') { break; }
 
           if (command[i] != ' ') { j = i; }
@@ -4307,7 +4296,7 @@ int parse_cmd(void *data) {
       //SET       MDx;
       //READ      MD;
       //RESP      MDx;
-      //NOTE      Kenwood-stype  mode  list:
+      //NOTE      Kenwood-type  mode  list:
       //NOTE      LSB (x=1), USB (x=2), CWU (x=3), FMN (x=4),
       //NOTE      AM (x=5), DIGL (x=6), CWL (x=7), DIGU (x=9)
       //ENDDEF
@@ -4683,7 +4672,6 @@ int parse_cmd(void *data) {
       //NOTE      HermesLite-II etc.: gain range -12...48 dB
       //NOTE      y is always zero.
       //ENDDEF
-
       // set/read Attenuator function
       if (command[2] == ';') {
         int att = 0;
@@ -5315,7 +5303,6 @@ int parse_cmd(void *data) {
       //DESCR     Enter TX mode
       //SET       TX;
       //ENDDEF
-
       // set transceiver to TX mode
       if (command[2] == ';') {
         mox_update(1);
@@ -5581,12 +5568,12 @@ static gpointer serial_server(gpointer data) {
   fd_set fds;
   struct timeval tv;
   t_print("%s: Entering Thread\n", __FUNCTION__);
-  g_mutex_lock(&mutex_a->m);
+  g_mutex_lock(&mutex_numcat);
   cat_control++;
 
   if (rigctl_debug) { t_print("RIGCTL: SER INC cat_control=%d\n", cat_control); }
 
-  g_mutex_unlock(&mutex_a->m);
+  g_mutex_unlock(&mutex_numcat);
   g_idle_add(ext_vfo_update, NULL);
   client->running = TRUE;
 
@@ -5638,7 +5625,6 @@ static gpointer serial_server(gpointer data) {
     // is available. Therefore the serial thread is not shut down if
     // the read() failed -- it will try again and again until it is
     // shut down by the rigctl menu.
-
     if (!client->running) { break; }
 
     if (numbytes > 0) {
@@ -5662,10 +5648,10 @@ static gpointer serial_server(gpointer data) {
           COMMAND *info = g_new(COMMAND, 1);
           info->client = client;
           info->command = command;
-          g_mutex_lock(&mutex_busy->m);
+          g_mutex_lock(&mutex_serial);                    // mutex probably not necessary
           client->busy = 10;
           g_idle_add(parse_cmd, info);
-          g_mutex_unlock(&mutex_busy->m);
+          g_mutex_unlock(&mutex_serial);                  // mutex probably not necessary
           command = g_new(char, MAXDATASIZE);
           command_index = 0;
         }
@@ -5673,12 +5659,14 @@ static gpointer serial_server(gpointer data) {
     }
   }
 
-  g_mutex_lock(&mutex_a->m);
+  // Release the last "command" buffer (that has not yet been used)
+  g_free(command);
+  g_mutex_lock(&mutex_numcat);
   cat_control--;
 
   if (rigctl_debug) { t_print("RIGCTL: SER DEC - cat_control=%d\n", cat_control); }
 
-  g_mutex_unlock(&mutex_a->m);
+  g_mutex_unlock(&mutex_numcat);
   g_idle_add(ext_vfo_update, NULL);
   t_print("%s: Exiting Thread, running=%d\n", __FUNCTION__, client->running);
   return NULL;
@@ -5789,12 +5777,7 @@ int launch_serial (int id) {
   int fd;
   int baud;
   t_print("%s: Open Serial Port %s\n", __FUNCTION__, SerialPorts[id].port);
-
-  if (mutex_busy == NULL) {
-    mutex_busy = g_new(GT_MUTEX, 1);
-    g_mutex_init(&mutex_busy->m);
-  }
-
+  g_mutex_init(&mutex_serial);
   //
   // Use O_NONBLOCK to prevent "hanging" upon open(), set blocking mode
   // later.
@@ -5879,6 +5862,8 @@ void disable_serial (int id) {
     close(serial_client[id].fd);
     serial_client[id].fd = -1;
   }
+
+  g_mutex_clear(&mutex_serial);
 }
 
 void disable_andromeda (int id) {
@@ -5888,6 +5873,7 @@ void disable_andromeda (int id) {
     serial_client[id].andromeda_timer = 0;
   }
 }
+
 //
 // 2-25-17 - K5JAE - create each thread with the pointer to the port number
 //                   (Port numbers now const ints instead of defines..)
@@ -5895,8 +5881,7 @@ void disable_andromeda (int id) {
 void launch_rigctl () {
   t_print( "---- LAUNCHING RIGCTL ----\n");
   cat_control = 0;
-  mutex_a = g_new(GT_MUTEX, 1); // memory leak
-  g_mutex_init(&mutex_a->m);
+  g_mutex_init(&mutex_numcat);
   server_running = 1;
   //
   // Start auto reporter

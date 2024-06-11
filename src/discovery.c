@@ -135,6 +135,7 @@ static gboolean gpio_cb (GtkWidget *widget, GdkEventButton *event, gpointer data
   configure_gpio(discovery_dialog);
   return TRUE;
 }
+
 #endif
 
 static void gpio_changed_cb(GtkWidget *widget, gpointer data) {
@@ -142,6 +143,7 @@ static void gpio_changed_cb(GtkWidget *widget, gpointer data) {
   gpio_set_defaults(controller);
   gpioSaveState();
 }
+
 #endif
 
 static gboolean discover_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
@@ -215,6 +217,7 @@ static gboolean connect_cb (GtkWidget *widget, GdkEventButton *event, gpointer d
 
   return TRUE;
 }
+
 #endif
 
 void discovery() {

@@ -293,7 +293,7 @@ static void get_info(char *driver) {
       STRLCPY(discovered[devices].info.soapy.address, "USB", sizeof(discovered[devices].info.soapy.address));
     }
 
-    t_print("soapy_discovery: name=%s min=%0.3f MHz max=%0.3f Mhz\n", discovered[devices].name,
+    t_print("soapy_discovery: name=%s min=%0.3f MHz max=%0.3f MHz\n", discovered[devices].name,
             discovered[devices].frequency_min * 1E-6,
             discovered[devices].frequency_max * 1E-6);
     devices++;

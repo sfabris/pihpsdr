@@ -73,4 +73,5 @@ sem_t *apple_sem(int initial_value) {
   sem_unlink(sname);
   return sem;
 }
+
 #endif

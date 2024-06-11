@@ -192,6 +192,7 @@ int MakeSocket(struct ThreadSocketData* Ptr, int DDCid) {
 // this runs as its own thread to see if messages have stopped being received.
 // if no messages in a second, goes back to "inactive" state.
 //
+// cppcheck-suppress constParameterCallback
 void* CheckForActivity(void *arg) {
   while (1) {
     sleep(1000);                                   // wait for 1 second
@@ -726,8 +727,8 @@ void *IncomingSpkrAudio(void *arg) {                    // listener thread
       //RegVal += 1;            //debug
       int Depth = ReadFIFOMonitorChannel(eSpkCodecDMA, &FIFOOverflow, &FIFOOverThreshold, &FIFOUnderflow,
                                          &Current); // read the FIFO free locations
-      //t_print("speaker packet received; depth = %d\n", Depth);
 
+      //t_print("speaker packet received; depth = %d\n", Depth);
       while (Depth < VMEMWORDSPERFRAME) {     // loop till space available
         usleep(1000);                                   // 1ms wait
         Depth = ReadFIFOMonitorChannel(eSpkCodecDMA, &FIFOOverflow, &FIFOOverThreshold, &FIFOUnderflow,
@@ -818,6 +819,7 @@ void *IncomingDUCIQ(void *arg) {                        // listener thread
 //
 void HandlerCheckDDCSettings(void) {
 }
+
 //
 // HandlerSetEERMode (bool EEREnabled)
 // enables amplitude restoration mode. Generates envelope output alongside I/Q samples.

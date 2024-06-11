@@ -794,6 +794,7 @@ static void process_edge(int offset, int value) {
   t_print("%s: could not find %d\n", __FUNCTION__, offset);
 }
 
+// cppcheck-suppress constParameterCallback
 static int interrupt_cb(int event_type, unsigned int line, const struct timespec *timeout, void* data) {
   //t_print("%s: event=%d line=%d\n",__FUNCTION__,event_type,line);
   switch (event_type) {
@@ -815,6 +816,7 @@ static int interrupt_cb(int event_type, unsigned int line, const struct timespec
 
   return GPIOD_CTXLESS_EVENT_CB_RET_OK;
 }
+
 #endif
 
 void gpio_default_encoder_actions(int ctrlr) {
@@ -1235,6 +1237,7 @@ static struct gpiod_line *setup_output_line(struct gpiod_chip *chip, int offset,
 
   return line;
 }
+
 #endif
 
 int gpio_init() {

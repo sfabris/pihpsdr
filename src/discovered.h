@@ -111,6 +111,7 @@ struct _DISCOVERED {
       struct sockaddr_in interface_netmask;
       char interface_name[64];
     } network;
+
 #ifdef SOAPYSDR
     struct soapy {
       char version[128];
@@ -138,6 +139,7 @@ struct _DISCOVERED {
       gboolean has_temp;
       char address[64];
     } soapy;
+
 #endif
   } info;
 };
