@@ -89,15 +89,16 @@
 #define min(x,y) (x<y?x:y)
 #define max(x,y) (x<y?y:x)
 
-int MENU_HEIGHT = 30;        // always set to VFO_HEIGHT/2
-int MENU_WIDTH = 65;         // nowhere changed
-int VFO_HEIGHT = 60;         // taken from the current VFO bar layout
-int VFO_WIDTH = 530;         // taken from the current VFO bar layout
-int METER_HEIGHT = 60;       // always set to  VFO_HEIGHT
-int METER_WIDTH = 200;       // nowhere changed
-int ZOOMPAN_HEIGHT = 50;     // nowhere changed
-int SLIDERS_HEIGHT = 100;    // nowhere changed
-int TOOLBAR_HEIGHT = 30;     // nowhere changed
+int MENU_HEIGHT = 30;             // always set to VFO_HEIGHT/2
+int MENU_WIDTH = 65;              // nowhere changed
+int VFO_HEIGHT = 60;              // taken from the current VFO bar layout
+int VFO_WIDTH = 530;              // taken from the current VFO bar layout
+const int MIN_METER_WIDTH = 200;  // nowhere changed
+int METER_HEIGHT = 60;            // always set to  VFO_HEIGHT
+int METER_WIDTH = 200;            // dynamically set in choose_vfo_layout
+int ZOOMPAN_HEIGHT = 50;          // nowhere changed
+int SLIDERS_HEIGHT = 100;         // nowhere changed
+int TOOLBAR_HEIGHT = 30;          // nowhere changed
 
 int rx_stack_horizontal = 0;
 
@@ -375,12 +376,14 @@ static void choose_vfo_layout() {
     vfo_layout = 0;
   }
 
+  METER_WIDTH = MIN_METER_WIDTH;
   VFO_WIDTH = full_screen ? screen_width : display_width;
   VFO_WIDTH -= (MENU_WIDTH + METER_WIDTH);
 
   //
   // If chosen layout does not fit:
   // Choose the first largest layout that fits
+  // with a minimum-width meter
   //
   if (vfo_layout_list[vfo_layout].width > VFO_WIDTH) {
     vfl = vfo_layout_list;
@@ -399,6 +402,15 @@ static void choose_vfo_layout() {
     vfo_layout = vfl - vfo_layout_list;
     t_print("%s: vfo_layout changed (width=%d)\n", __FUNCTION__, vfl->width);
   }
+  //
+  // If chosen layout leaves at least 50 pixels unused:
+  // give 50 extra pixels to the meter
+  //
+  if (vfo_layout_list[vfo_layout].width < VFO_WIDTH-50) {
+    VFO_WIDTH -=50;
+    METER_WIDTH += 50;
+  }
+  t_print("VFO NEEDED=%d WIDTH=%d METER=%d\n", vfo_layout_list[vfo_layout].width, VFO_WIDTH, METER_WIDTH);
 }
 
 static guint full_screen_timeout = 0;
@@ -467,6 +479,10 @@ void reconfigure_screen() {
   VFO_HEIGHT = vfo_layout_list[vfo_layout].height;
   MENU_HEIGHT = VFO_HEIGHT / 2;
   METER_HEIGHT = VFO_HEIGHT;
+
+  //
+  // If there is enough space, increase the meter width
+  //
 
   //
   // Change sizes of main window, Hide and Menu buttons, meter, and vfo

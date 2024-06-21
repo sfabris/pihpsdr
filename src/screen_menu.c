@@ -98,7 +98,7 @@ static gboolean close_cb () {
 static void vfo_cb(GtkWidget *widget, gpointer data) {
   my_vfo_layout = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
   VFO_HEIGHT = vfo_layout_list[my_vfo_layout].height;
-  int needed = vfo_layout_list[my_vfo_layout].width + METER_WIDTH + MENU_WIDTH;
+  int needed = vfo_layout_list[my_vfo_layout].width + MIN_METER_WIDTH + MENU_WIDTH;
 
   if (needed % 32 != 0) { needed = 32 * (needed / 32 + 1); }
 

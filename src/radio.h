@@ -272,6 +272,7 @@ extern int mute_spkr_amp;        // Mute audio amplifier in radio    (ANAN-7000,
 
 extern int VFO_WIDTH;
 extern int VFO_HEIGHT;
+extern const int MIN_METER_WIDTH;
 extern int METER_WIDTH;
 extern int METER_HEIGHT;
 extern int MENU_WIDTH;
