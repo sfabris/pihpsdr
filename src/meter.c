@@ -391,9 +391,9 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
 
       cairo_set_line_width(cr, PAN_LINE_EXTRA);
       cairo_set_source_rgba(cr, COLOUR_METER);
-      angle = (max_pwr * 10.0 / interval) + min_angle;
+      angle = max_pwr * (max_angle - min_angle) / (10.0*interval) + min_angle;
 
-      if (angle > max_angle + 10) { angle = max_angle + 10; }
+      if (angle > max_angle + 5) { angle = max_angle + 5; }
 
       radians = angle * M_PI / 180.0;
       cairo_arc(cr, cx, cx, radius + 8, radians, radians);
