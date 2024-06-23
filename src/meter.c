@@ -380,7 +380,7 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
             //
             // move labels at the left side to the left
             //
-            x = x + 6.0 * (x / cx - 1.0);
+            x = x + 6.0 * (x / (2.0*cx) - 1.0);
             cairo_move_to(cr, x, y);
             cairo_show_text(cr, sf);
           }
@@ -427,11 +427,11 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
         }
       }
 
-      snprintf(sf, 32, "SWR: %1.1f:1", swr);
+      snprintf(sf, 32, "SWR %1.1f:1", swr);
       cairo_move_to(cr, cx - 40, cx - radius + 28);
       cairo_show_text(cr, sf);
       cairo_set_source_rgba(cr, COLOUR_METER);
-      snprintf(sf, 32, "ALC: %2.1f dB", max_alc);
+      snprintf(sf, 32, "ALC %2.1f dB", max_alc);
       cairo_move_to(cr, cx - 40, cx - radius + 41);
       cairo_show_text(cr, sf);
     }
@@ -635,7 +635,7 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
       cairo_select_font_face(cr, DISPLAY_FONT,
                              CAIRO_FONT_SLANT_NORMAL,
                              CAIRO_FONT_WEIGHT_BOLD);
-      cairo_set_font_size(cr, DISPLAY_FONT_SIZE2);
+      cairo_set_font_size(cr, DISPLAY_FONT_SIZE3);
 
       if (protocol == ORIGINAL_PROTOCOL || protocol == NEW_PROTOCOL) {
         //
@@ -643,43 +643,43 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
         //
         switch (pa_power) {
         case PA_1W:
-          snprintf(sf, 32, "FWD: %dmW", (int)(1000.0 * max_pwr + 0.5));
+          snprintf(sf, 32, "FWD %dmW", (int)(1000.0 * max_pwr + 0.5));
           break;
 
         case PA_5W:
         case PA_10W:
-          snprintf(sf, 32, "FWD: %0.1fW", max_pwr);
+          snprintf(sf, 32, "FWD %0.1fW", max_pwr);
           break;
 
         default:
-          snprintf(sf, 32, "FWD: %dW", (int)(max_pwr + 0.5));
+          snprintf(sf, 32, "FWD %dW", (int)(max_pwr + 0.5));
           break;
         }
 
-        cairo_move_to(cr, 10, Y2);
+        cairo_set_source_rgba(cr, COLOUR_ATTN);
+        cairo_move_to(cr, 5, Y2);
         cairo_show_text(cr, sf);
 
         if (can_transmit) {
           if (swr > transmitter->swr_alarm) {
             cairo_set_source_rgba(cr, COLOUR_ALARM);  // display SWR in red color
           } else {
-            cairo_set_source_rgba(cr, COLOUR_METER); // display SWR in white color
+            cairo_set_source_rgba(cr, COLOUR_OK); // display SWR in white color
           }
         }
+        snprintf(sf, 32, "SWR %1.1f:1", swr);
+        cairo_move_to(cr, METER_WIDTH/2, Y2);
+        cairo_show_text(cr, sf);
 
         cairo_select_font_face(cr, DISPLAY_FONT,
                                CAIRO_FONT_SLANT_NORMAL,
                                CAIRO_FONT_WEIGHT_BOLD);
         cairo_set_font_size(cr, DISPLAY_FONT_SIZE2);
-        snprintf(sf, 32, "SWR: %1.1f:1", swr);
-        cairo_move_to(cr, 10, Y4);
+        cairo_set_source_rgba(cr, COLOUR_METER);  // revert to white color
+        snprintf(sf, 32, "ALC %2.1f dB", max_alc);
+        cairo_move_to(cr, METER_WIDTH/2, Y4);
         cairo_show_text(cr, sf);
       }
-
-      cairo_set_source_rgba(cr, COLOUR_METER);  // revert to white color
-      snprintf(sf, 32, "ALC: %2.1f dB", max_alc);
-      cairo_move_to(cr, METER_WIDTH / 2, Y2);
-      cairo_show_text(cr, sf);
       break;
     }
   }
