@@ -410,7 +410,6 @@ static void choose_vfo_layout() {
     VFO_WIDTH -=50;
     METER_WIDTH += 50;
   }
-  t_print("VFO NEEDED=%d WIDTH=%d METER=%d\n", vfo_layout_list[vfo_layout].width, VFO_WIDTH, METER_WIDTH);
 }
 
 static guint full_screen_timeout = 0;
