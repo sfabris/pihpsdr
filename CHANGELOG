@@ -1,6 +1,11 @@
 LIST OF RECENT PIHPSDR CHANGES
 ==============================
 
+June 2024:
+----------
+
+- improved readability of the meters
+
 May 2024:
 ---------
 - support for HermesLite-II I/O board

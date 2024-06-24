@@ -35,12 +35,29 @@
 
 //
 // Fonts and sizes for VFO, meter, panadapter etc.
+// NOTE MacOS versus RaspPi:
+// - on RaspPi, there is the font "FreeSans" which can be requested with a normal
+//   and a bold font weight.
+// - on MacOS, there is "FreeSans" but here *only* a normal weight is available,
+//   and there is "FreeSansBold" which *only* has a bold weight.
+// - therefore we define DISPLAY_FONT_NORMAL and DISPLAY_FONT_BOLD, which shall then
+//   exclusively be combined with a normal and bold font weight, and which can be
+//   be the same if both weights are available.
 //
-#define DISPLAY_FONT "FreeSans"                     // Default: FreeSans
-#define DISPLAY_FONT_SIZE1 10                       // Default: 10, used for small ticks in meter
-#define DISPLAY_FONT_SIZE2 12                       // Default: 12, used for SWR, FWD in Tx meter, and panadapter labels
-#define DISPLAY_FONT_SIZE3 16                       // Default: 16, used for warning/info in panadapters
-#define DISPLAY_FONT_SIZE4 20                       // Default: 22, only used for server IP addr in client mode
+// Note both the digital and analog RX meter "dBm" reading is printed in a font size
+// that is calculated based on available space.
+// 
+//
+#define DISPLAY_FONT_NORMAL     "FreeSans"
+#ifdef __APPLE__
+#define DISPLAY_FONT_BOLD       "FreeSansBold"
+#else
+#define DISPLAY_FONT_BOLD       "FreeSans"
+#endif
+#define DISPLAY_FONT_SIZE1 10                       // this is too small for elder hams
+#define DISPLAY_FONT_SIZE2 12                       // used for SWR, FWD in Tx meter, S-meter ticks, and panadapter labels
+#define DISPLAY_FONT_SIZE3 16                       // used for warning/info in panadapters
+#define DISPLAY_FONT_SIZE4 20                       // only used for server IP addr in client mode
 
 //
 // Colours. They are given as a 4-tuple (RGB and opacity).

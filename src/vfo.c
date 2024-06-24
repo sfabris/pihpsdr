@@ -1169,7 +1169,7 @@ void vfo_update() {
   cr = cairo_create (vfo_surface);
   cairo_set_source_rgba(cr, COLOUR_VFO_BACKGND);
   cairo_paint (cr);
-  cairo_select_font_face(cr, DISPLAY_FONT, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+  cairo_select_font_face(cr, DISPLAY_FONT_BOLD, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
 
   // -----------------------------------------------------------
   //

@@ -795,6 +795,13 @@ during TX.
 \label{fig:MeterDesigns}
 \end{figure}
 
+By default, the width of the meter section is 200 pixels, but if the current
+choice of the VFO bar and the window width leaves enough space, the width
+of the meter is increased to 250 pixels which allows for displaying some information
+at a larger font size. For example, if the standard VFO bar for a piHPSDR
+window 800 pixels wide is chosen, and the width of the window exceeds 850
+pixels, the meter automatically widens.
+
 The design can be switched between digital and analog in the \bltt{Meter}
 menu, which can be accessed quickly just by clicking into the meter area.
 During RX, an S-meter is shown together with the signal level in dBm. Note

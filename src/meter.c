@@ -451,9 +451,7 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
       cairo_set_source_rgba(cr, COLOUR_OK);
       cairo_rectangle(cr, offset, 0.0, peak, 5.0);
       cairo_fill(cr);
-      cairo_select_font_face(cr, DISPLAY_FONT,
-                             CAIRO_FONT_SLANT_NORMAL,
-                             CAIRO_FONT_WEIGHT_BOLD);
+      cairo_select_font_face(cr, DISPLAY_FONT_BOLD, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
       cairo_set_font_size(cr, DISPLAY_FONT_SIZE2);
       cairo_set_source_rgba(cr, COLOUR_METER);
       cairo_move_to(cr, offset+105.0, 10.0);
@@ -490,9 +488,7 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
     // Digital meter, both RX and TX:
     // Mic level display
     //
-    cairo_select_font_face(cr, DISPLAY_FONT,
-                           CAIRO_FONT_SLANT_NORMAL,
-                           CAIRO_FONT_WEIGHT_BOLD);
+    cairo_select_font_face(cr, DISPLAY_FONT_BOLD, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_line_width(cr, PAN_LINE_THICK);
 
     if (can_transmit) {
@@ -597,7 +593,7 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
         if (l > 114.0) { l = 114.0; }
 
         // use colours from the "gradient" panadapter display,
-        // but use no gradient: S0-S9 first colour, <S9 last colour
+        // but use no gradient: S0-S9 first colour, beyond S9 last colour
         cairo_pattern_t *pat = cairo_pattern_create_linear(0.0, 0.0, 114.0, 0.0);
         cairo_pattern_add_color_stop_rgba(pat, 0.00, COLOUR_GRAD1);
         cairo_pattern_add_color_stop_rgba(pat, 0.50, COLOUR_GRAD1);
@@ -617,24 +613,25 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
         text_location = 124;
       }
 
+      //
+      // Compute largest size for the digital S-meter reading such that
+      // it fits, both horizontally and vertically
+      //
+
       size = (METER_WIDTH - text_location) / 5;
 
       if (size > METER_HEIGHT / 3) { size = METER_HEIGHT / 3; }
 
-      if (size >= 12) {
-        cairo_set_source_rgba(cr, COLOUR_ATTN);
-        cairo_set_font_size(cr, size);
-        snprintf(sf, 32, "%d dBm", (int)(max_rxlvl - 0.5));  // assume max_rxlvl < 0 in rounding
-        cairo_move_to(cr, text_location, Y2);
-        cairo_show_text(cr, sf);
-      }
+      cairo_set_source_rgba(cr, COLOUR_ATTN);
+      cairo_set_font_size(cr, size);
+      snprintf(sf, 32, "%d dBm", (int)(max_rxlvl - 0.5));  // assume max_rxlvl < 0 in rounding
+      cairo_move_to(cr, text_location, Y2);
+      cairo_show_text(cr, sf);
 
       break;
 
     case POWER:
-      cairo_select_font_face(cr, DISPLAY_FONT,
-                             CAIRO_FONT_SLANT_NORMAL,
-                             CAIRO_FONT_WEIGHT_BOLD);
+      cairo_select_font_face(cr, DISPLAY_FONT_BOLD, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
       cairo_set_font_size(cr, DISPLAY_FONT_SIZE3);
 
       if (protocol == ORIGINAL_PROTOCOL || protocol == NEW_PROTOCOL) {
@@ -671,9 +668,7 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
         cairo_move_to(cr, METER_WIDTH/2, Y2);
         cairo_show_text(cr, sf);
 
-        cairo_select_font_face(cr, DISPLAY_FONT,
-                               CAIRO_FONT_SLANT_NORMAL,
-                               CAIRO_FONT_WEIGHT_BOLD);
+        cairo_select_font_face(cr, DISPLAY_FONT_BOLD, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
         cairo_set_font_size(cr, DISPLAY_FONT_SIZE2);
         cairo_set_source_rgba(cr, COLOUR_METER);  // revert to white color
         snprintf(sf, 32, "ALC %2.1f dB", max_alc);
