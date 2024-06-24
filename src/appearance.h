@@ -16,33 +16,19 @@
 *
 */
 
-/*
- * This file contains lots of #defines that control the appearance
- * of piHPSDR, e.g.
- * - window sizes
- * - font sizes
- * colours.
- *
- * The purpose of this file is that the appearance can be
- * changed easily at compile time.
- *
- * DO NOT CHANGE the "Default" values in the comments, since
- * these define the original look-and-feel of piHPSDR.
- *
- * IMPORTANT: think twice before adding new colours or font  sizes,
- *            and then decide to re-use an existing one.
- */
-
 //
-// Fonts and sizes for VFO, meter, panadapter etc.
+// This *only* defines Fonts and sizes for VFO, meter, and the panadapters,
+// since fonts used for GTK buttons, texts, etc. are defined via CSS in css.c
+//
 // NOTE MacOS versus RaspPi:
 // - on RaspPi, there is the font "FreeSans" which can be requested with a normal
 //   and a bold font weight.
 // - on MacOS, there is "FreeSans" but here *only* a normal weight is available,
 //   and there is "FreeSansBold" which *only* has a bold weight.
-// - therefore we define DISPLAY_FONT_NORMAL and DISPLAY_FONT_BOLD, which shall then
-//   exclusively be combined with a normal and bold font weight, and which can be
-//   be the same if both weights are available.
+//
+// Therefore we define DISPLAY_FONT_NORMAL and DISPLAY_FONT_BOLD here, which shall then
+// exclusively be combined with a normal and bold font weight.
+// These two names are the usually same on RaspPi but should be different on MacOS.
 //
 // Note both the digital and analog RX meter "dBm" reading is printed in a font size
 // that is calculated based on available space.
@@ -54,7 +40,7 @@
 #else
 #define DISPLAY_FONT_BOLD       "FreeSans"
 #endif
-#define DISPLAY_FONT_SIZE1 10                       // this is too small for elder hams
+#define DISPLAY_FONT_SIZE1 10                       // no longer used, this is too small for elder hams
 #define DISPLAY_FONT_SIZE2 12                       // used for SWR, FWD in Tx meter, S-meter ticks, and panadapter labels
 #define DISPLAY_FONT_SIZE3 16                       // used for warning/info in panadapters
 #define DISPLAY_FONT_SIZE4 20                       // only used for server IP addr in client mode
@@ -63,8 +49,6 @@
 // Colours. They are given as a 4-tuple (RGB and opacity).
 // The default value for the opacity (1.0) is used  in most cases.
 // "weak" versions of some colours (e.g. for the non-active receiver) are also available
-//
-// It is intended that these three colours are used in most of the cases.
 //
 
 //
@@ -120,7 +104,7 @@
 #define COLOUR_GRAD4_WEAK    0.50, 0.00, 0.00, 1.00 // Default: 0.50, 0.00, 0.00, 1.00
 
 //
-// Settings for a "black and white" spectrum (not the TX spectrum is always B&W).
+// Settings for a "black and white" spectrum (note the TX spectrum is always B&W).
 //
 // FILL1 is used for a filled spectrum of a non-active receiver
 // FILL2 is used for a filled spectrum of an active receiver,
@@ -138,8 +122,12 @@
 //
 #define PAN_LINE_THIN  0.5
 #define PAN_LINE_THICK 1.0
-#define PAN_LINE_EXTRA 2.0  // used for really important things such as band edges
+#define PAN_LINE_EXTRA 2.0  // used for really important things such as band edges, and the analog meter needle.
 
+//
+// This data structure contains the size of the VFO bar, and the position of its elements
+// Several such layouts are stored in the array vfo_layout_list[] (see appearance.c).
+//
 struct _VFO_BAR_LAYOUT {
   const char *description; // Text appearing in the screen menu combobox
   int width;               // overall width required

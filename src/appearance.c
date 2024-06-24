@@ -35,9 +35,9 @@
 #include "appearance.h"
 
 //
-// Note the first layout that fits into the actual size of
-// the VFO bar is taken, so the largest one come first, and
-// the smallest one last.
+// When a VFO bar layout that fits is searched in this list,
+// first mathing layout is taken,
+// so the largest one come first and the smallest one last.
 //
 const VFO_BAR_LAYOUT vfo_layout_list[] = {
   //
