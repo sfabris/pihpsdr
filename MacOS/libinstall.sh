@@ -72,7 +72,7 @@ fi
 ################################################################
 #
 # create links in /usr/local if necessary (only if
-# HomeBrew is installed in /opt/local)
+# HomeBrew is installed in /opt/homebrew)
 #
 # Should be done HERE if some of the following packages
 # have to be compiled from the sources
@@ -85,17 +85,17 @@ fi
 if [ ! -d /usr/local/lib ]; then
   echo "/usr/local/lib does not exist, creating symbolic link ..."
   sudo rm -f /usr/local/lib
-  sudo ln -s /opt/local/lib /usr/local/lib
+  sudo ln -s /opt/homebrew/lib /usr/local/lib
 fi
 if [ ! -d /usr/local/bin ]; then
   echo "/usr/local/bin does not exist, creating symbolic link ..."
   sudo rm -f /usr/local/bin
-  sudo ln -s /opt/local/bin /usr/local/bin
+  sudo ln -s /opt/homebrew/bin /usr/local/bin
 fi
 if [ ! -d /usr/local/include ]; then
   echo "/usr/local/include does not exist, creating symbolic link ..."
   sudo rm -f /usr/local/include
-  sudo ln -s /opt/local/include /usr/local/include
+  sudo ln -s /opt/homebrew/include /usr/local/include
 fi
 
 ################################################################
@@ -125,6 +125,7 @@ $BREW install cmake
 # This may be necessary if an older version exists
 #
 $BREW uninstall soapysdr
+$BREW install python-setuptools
 $BREW install pothosware/pothos/soapyplutosdr
 $BREW install pothosware/pothos/limesuite
 $BREW install pothosware/pothos/soapyrtlsdr
