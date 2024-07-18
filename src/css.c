@@ -44,6 +44,10 @@
 // small_button        15px text with minimal paddding. Used in menus where one wants
 //                     to make the buttons narrow.
 //
+// medium_button        the same as small_button but with 20px
+//
+// large_button        the same as small_button but with 25px
+//
 // small_toggle_button Used for the buttons in action dialogs, and the filter etc.
 //                     menus where the current choice needs proper high-lighting
 //
@@ -109,6 +113,16 @@ char *css =
   "    padding: 1px;\n"
   "    font-family: Sans;\n"
   "    font-size: 15px;\n"
+  "    }\n"
+  "  #medium_button {\n"
+  "    padding: 1px;\n"
+  "    font-family: Sans;\n"
+  "    font-size: 20px;\n"
+  "    }\n"
+  "  #large_button {\n"
+  "    padding: 1px;\n"
+  "    font-family: Sans;\n"
+  "    font-size: 25px;\n"
   "    }\n"
   "  #small_button_with_border {\n"
   "    padding: 3px;\n"

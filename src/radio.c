@@ -96,9 +96,9 @@ int VFO_WIDTH = 530;              // taken from the current VFO bar layout
 const int MIN_METER_WIDTH = 200;  // nowhere changed
 int METER_HEIGHT = 60;            // always set to  VFO_HEIGHT
 int METER_WIDTH = 200;            // dynamically set in choose_vfo_layout
-int ZOOMPAN_HEIGHT = 50;          // nowhere changed
-int SLIDERS_HEIGHT = 100;         // nowhere changed
-int TOOLBAR_HEIGHT = 30;          // nowhere changed
+int ZOOMPAN_HEIGHT = 50;
+int SLIDERS_HEIGHT = 100;
+int TOOLBAR_HEIGHT = 30;
 
 int rx_stack_horizontal = 0;
 
@@ -552,6 +552,26 @@ void reconfigure_radio() {
   int my_height = full_screen ? screen_height : display_height;
   int my_width  = full_screen ? screen_width  : display_width;
   rx_height = my_height - VFO_HEIGHT;
+
+  //
+  // Many "large" displays have many pixels, but also a higher
+  // pixel density. Therefore, increase the toolbar height such
+  // that those buttons have at least one finger's height on
+  // a touch screen
+  //
+  if (my_height < 560) {
+    TOOLBAR_HEIGHT = 30;
+    ZOOMPAN_HEIGHT = 50;
+    SLIDERS_HEIGHT = 100;
+  } else if (my_height < 720) {
+    TOOLBAR_HEIGHT = 40;
+    ZOOMPAN_HEIGHT = 60;
+    SLIDERS_HEIGHT = 120;
+  } else {
+    TOOLBAR_HEIGHT = 50;
+    ZOOMPAN_HEIGHT = 70;
+    SLIDERS_HEIGHT = 140;
+  }
 
   if (display_zoompan) {
     rx_height -= ZOOMPAN_HEIGHT;
