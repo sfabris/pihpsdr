@@ -141,9 +141,9 @@ typedef struct _transmitter {
   // Equalizer data
   //
   int  eq_enable;
-  double eq_freq[7];  // frequency in Hz
-  double eq_gain[7];  // gain in dB
-  int    eq_sixband;  // four or six channels
+  double eq_freq[11];  // frequency in Hz
+  double eq_gain[11];  // gain in dB
+  int    eq_tenband;  // four or ten channels
 
 } TRANSMITTER;
 

@@ -2580,24 +2580,29 @@ than a dot. The dash length is proportional to this value, so it can
 be from zero to six times the dot length.
 
 \rett{CW ramp width (ms)}. This spin-box lets you choose the
-width of the ,,ramp'' used for CW pulses, both the RF pulses
-and the sidetone. At the beginning of a dot or dash, the
-amplitude of both the RF pulse and the side tone is slowly
+width of the ,,ramp'' used for RF CW pulses.
+At the beginning of a dot or dash, the
+amplitude of  the RF pulse is slowly
 increased from zero to full amplitude at the beginning,
 and at the end the amplitudes slowly fall down to zero.
-This avoids harsh clicks in the side tone and in the RF signal
+This avoids harsh clicks in the RF signal
 (which could possibly been heard all over the band). The
 width is the rise/fall time of the envelope, the default value
-(8 msec) is fine in most cases, you can choose here values from
-5 to 20 msec (piHPSDR does not allow values smaller than 5 msec
-to ensure that your CW signal is free of clicks).
-The ,,ramp width change'' is fully implemented
-for CW generated within piHPSDR. A very recent Protocol2 update
+(8 msec) is fine for CW speeds up to 32 wpm, you can choose here values from
+5 to 16 msec (piHPSDR does not allow values smaller than 5 msec
+to ensure that your CW signal does not produce overly strong clicks).
+If the RF pulse is made
+by piHPSDR (\rett{CW handled in Radio} \textit{not} checked),
+this ,,ramp width change'' will be effective. A very recent Protocol-2 update
 (March 2024) allows to send the ramp width to the radio as well.
-While this is implemented in piHPSDR, the Saturn/G2 radios
-are the only ones so far to implement this feature in the FPGA firmware,
-for all others changing the ramp width has no effect for CW generated
-in the radio.
+However, the FPGA firmware in the radio will ignore that value
+unless you have a very recent model, so with 
+\rett{CW handled in Radio} checked, changing the ramp width in this menu
+has possibly no effect.
+
+To make sure that the delay of the CW side tone is 
+as small as possible,
+a ramp with a constant width of 5 msec is used here.
 
 \rett{Paddle Mode:} Here the choice is Iambic Mode A, Iambic Mode B,
 and  Straight Key. In Straight Key mode, the key has to be connected
@@ -2690,7 +2695,7 @@ is shown in Fig. \ref{fig:EqualizerMenu}.
 
 \begin{figure}[ht]
 \center
-\includegraphics[width=12cm]{EqualizerMenu.png}
+\includegraphics[width=9cm]{EqualizerMenu.png}
 \caption{The Equaliser menu}
 \label{fig:EqualizerMenu}
 \end{figure}
@@ -2709,22 +2714,30 @@ you cannot tell, from the VFO bar, whether the TX equaliser is
 actually enabled or not!
 
 By default, the equalisers are four-channel equalisers, but
-you can individually change each of the three to a six-band
-one if you check the \rett{SixBands} box. If you do so, the
-slider area below will get two more sliders at the bottom, and this
-makes the equaliser menu taller (to  about 620 pixels).
-So if you run piHPSDR on a very small screen and change to a
-six-band equaliser, the menu will probably no longer fit on the screen.
+you can individually change each of the three to a ten-band
+one if you check the \rett{Ten Bands} box. If you do so, additional
+spin buttons and sliders appear to the right of those already
+seen (see Fig. \ref{fig:TenBandEqualizer}), such that the menu
+window gets quite broad (about 900 pixels) so the use of ten-
+band equalizers may become cumbersome for very small screens.
 In normal situations, where the audio band width is usually 3 kHz
-or less, a four-channel equaliser is sufficient. The possibility
-to add two more channels can be useful for wide band (AM or eSSB) operation.
+or less, a four-channel equaliser is usually sufficient. The possibility
+to have (up to) ten channels can be useful for wide band (AM or eSSB) operation.
 
-In the slider area, you find to the left the text \rett{Preamp},
-which indicates that the slider in that row applies an
-additional, frequency-independent gain. Then, you see for
-each of the equaliser channels a spin button for adjusting the
-corner frequencies (in Hz) of the equaliser, and a slider for adjusting
-the gain (or attenuation) at that corner frequency.
+\begin{figure}[ht]
+\center
+\includegraphics[width=13cm]{TenBandEqualizer.png}
+\caption{Broad version of the Equaliser menu (in 10-channel mode)}
+\label{fig:TenBandEqualizer}
+\end{figure}
+
+For each equalizer channel, you can set the corner frequency
+using the spin button and the gain/attenuation with the
+slider to the right of that.
+The top left slider does not have a spin button but is
+labeled \rett{Preamp},
+which indicates that thes slider applies an
+additional, frequency-independent gain.
 
 Equaliser settings are saved with the mode, so
 if you adjust the Equalisers when doing LSB, and then switch to
@@ -2737,11 +2750,10 @@ because CW filters usually are narrow.
 If the radio currently runs only a single receiver, RX2 cannot
 be selected with the top right combo-box. Likewise, if the
 radio does not have transmitter, the TX settings cannot be
-selected. The corner frequencies cannot be changed such that they
-reach adjacent corner frequencies. In the example given in Fig.
-\ref{fig:EqualizerMenu}, the lowest corner frequency can only be
-increased up to 490 Hz.
-
+selected. The corner frequencies cannot ,,cross'', that is,
+the spin buttons are programmed such that
+corner frequencies of the (four or ten) channels are kept
+strictly in ascending order.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The \texttt{Ant} (Antenna) Menu}
 

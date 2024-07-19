@@ -115,14 +115,14 @@ static void modesettingsSaveState() {
     SetPropI1("modeset.%d.snb", i,                   mode_settings[i].snb);
     SetPropI1("modeset.%d.agc", i,                   mode_settings[i].agc);
     SetPropI1("modeset.%d.en_txeq", i,               mode_settings[i].en_txeq);
-    SetPropI1("modeset.%d.txeq_sixband", i,          mode_settings[i].tx_eq_sixband);
+    SetPropI1("modeset.%d.txeq_tenband", i,          mode_settings[i].tx_eq_tenband);
     SetPropI1("modeset.%d.en_rxeq", i,               mode_settings[i].en_rxeq);
-    SetPropI1("modeset.%d.rxeq_sixband", i,          mode_settings[i].rx_eq_sixband);
+    SetPropI1("modeset.%d.rxeq_tenband", i,          mode_settings[i].rx_eq_tenband);
     SetPropI1("modeset.%d.step", i,                  mode_settings[i].step);
     SetPropF1("modeset.%d.compressor_level", i,      mode_settings[i].compressor_level);
     SetPropI1("modeset.%d.compressor", i,            mode_settings[i].compressor);
 
-    for (int j = 0; j < 7; j++) {
+    for (int j = 0; j < 11; j++) {
       SetPropF2("modeset.%d.txeq.%d", i, j,          mode_settings[i].tx_eq_gain[j]);
       SetPropF2("modeset.%d.txeqfrq.%d", i, j,       mode_settings[i].tx_eq_freq[j]);
       SetPropF2("modeset.%d.rxeq.%d", i, j,          mode_settings[i].rx_eq_gain[j]);
@@ -177,28 +177,36 @@ static void modesettingsRestoreState() {
     mode_settings[i].snb = 0;
     mode_settings[i].en_rxeq = 0;
     mode_settings[i].en_txeq = 0;
-    mode_settings[i].rx_eq_sixband = 0;
-    mode_settings[i].tx_eq_sixband = 0;
+    mode_settings[i].rx_eq_tenband = 0;
+    mode_settings[i].tx_eq_tenband = 0;
 
-    for (int j = 0; j < 7; j++) {
+    for (int j = 0; j < 11; j++) {
       mode_settings[i].tx_eq_gain[j] = 0;
       mode_settings[i].rx_eq_gain[j] = 0;
     }
 
-    mode_settings[i].tx_eq_freq[0] =     0.0;
-    mode_settings[i].rx_eq_freq[0] =     0.0;
-    mode_settings[i].tx_eq_freq[1] =   200.0;
-    mode_settings[i].rx_eq_freq[1] =   200.0;
-    mode_settings[i].tx_eq_freq[2] =   500.0;
-    mode_settings[i].rx_eq_freq[2] =   500.0;
-    mode_settings[i].tx_eq_freq[3] =  1200.0;
-    mode_settings[i].rx_eq_freq[3] =  1200.0;
-    mode_settings[i].tx_eq_freq[4] =  3000.0;
-    mode_settings[i].rx_eq_freq[4] =  3000.0;
-    mode_settings[i].tx_eq_freq[5] =  6000.0;
-    mode_settings[i].rx_eq_freq[5] =  6000.0;
-    mode_settings[i].tx_eq_freq[6] = 12000.0;
-    mode_settings[i].rx_eq_freq[6] = 12000.0;
+    mode_settings[i].tx_eq_freq[0]  =     0.0;
+    mode_settings[i].rx_eq_freq[0]  =     0.0;
+    mode_settings[i].tx_eq_freq[1]  =   200.0;
+    mode_settings[i].rx_eq_freq[1]  =   200.0;
+    mode_settings[i].tx_eq_freq[2]  =   500.0;
+    mode_settings[i].rx_eq_freq[2]  =   500.0;
+    mode_settings[i].tx_eq_freq[3]  =  1200.0;
+    mode_settings[i].rx_eq_freq[3]  =  1200.0;
+    mode_settings[i].tx_eq_freq[4]  =  3000.0;
+    mode_settings[i].rx_eq_freq[4]  =  3000.0;
+    mode_settings[i].tx_eq_freq[5]  =  5000.0;
+    mode_settings[i].rx_eq_freq[5]  =  5000.0;
+    mode_settings[i].tx_eq_freq[6]  =  7000.0;
+    mode_settings[i].rx_eq_freq[6]  =  7000.0;
+    mode_settings[i].tx_eq_freq[7]  =  9000.0;
+    mode_settings[i].rx_eq_freq[7]  =  9000.0;
+    mode_settings[i].tx_eq_freq[8]  = 11000.0;
+    mode_settings[i].rx_eq_freq[8]  = 11000.0;
+    mode_settings[i].tx_eq_freq[9]  = 13000.0;
+    mode_settings[i].rx_eq_freq[9]  = 13000.0;
+    mode_settings[i].tx_eq_freq[10] = 15000.0;
+    mode_settings[i].rx_eq_freq[10] = 15000.0;
     mode_settings[i].compressor = 0;
     mode_settings[i].compressor_level = 0.0;
     GetPropI1("modeset.%d.filter", i,                mode_settings[i].filter);
@@ -209,13 +217,13 @@ static void modesettingsRestoreState() {
     GetPropI1("modeset.%d.agc", i,                   mode_settings[i].agc);
     GetPropI1("modeset.%d.en_txeq", i,               mode_settings[i].en_txeq);
     GetPropI1("modeset.%d.en_rxeq", i,               mode_settings[i].en_rxeq);
-    GetPropI1("modeset.%d.txeq_sixband", i,          mode_settings[i].tx_eq_sixband);
-    GetPropI1("modeset.%d.rxeq_sixband", i,          mode_settings[i].rx_eq_sixband);
+    GetPropI1("modeset.%d.txeq_tenband", i,          mode_settings[i].tx_eq_tenband);
+    GetPropI1("modeset.%d.rxeq_tenband", i,          mode_settings[i].rx_eq_tenband);
     GetPropI1("modeset.%d.step", i,                  mode_settings[i].step);
     GetPropF1("modeset.%d.compressor_level", i,      mode_settings[i].compressor_level);
     GetPropI1("modeset.%d.compressor", i,            mode_settings[i].compressor);
 
-    for (int j = 0; j < 7; j++) {
+    for (int j = 0; j < 11; j++) {
       GetPropF2("modeset.%d.txeq.%d", i, j,          mode_settings[i].tx_eq_gain[j]);
       GetPropF2("modeset.%d.rxeq.%d", i, j,          mode_settings[i].rx_eq_gain[j]);
       GetPropF2("modeset.%d.txeqfrq.%d", i, j,       mode_settings[i].tx_eq_freq[j]);
@@ -407,9 +415,9 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
   rx->snb              = mode_settings[m].snb;
   rx->agc              = mode_settings[m].agc;
   rx->eq_enable        = mode_settings[m].en_rxeq;
-  rx->eq_sixband       = mode_settings[m].rx_eq_sixband;
+  rx->eq_tenband       = mode_settings[m].rx_eq_tenband;
 
-  for (int i = 0; i < 7; i++) {
+  for (int i = 0; i < 11; i++) {
     rx->eq_gain[i]       = mode_settings[m].rx_eq_gain[i];
     rx->eq_freq[i]       = mode_settings[m].rx_eq_freq[i];
   }
@@ -422,9 +430,9 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
   //
   if ((id == get_tx_vfo()) && can_transmit) {
     transmitter->eq_enable   = mode_settings[m].en_txeq;
-    transmitter->eq_sixband  = mode_settings[m].tx_eq_sixband;
+    transmitter->eq_tenband  = mode_settings[m].tx_eq_tenband;
 
-    for (int i = 0; i < 7; i++) {
+    for (int i = 0; i < 11; i++) {
       transmitter->eq_gain[i]       = mode_settings[m].tx_eq_gain[i];
       transmitter->eq_freq[i]       = mode_settings[m].tx_eq_freq[i];
     }

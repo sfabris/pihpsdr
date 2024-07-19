@@ -306,9 +306,9 @@ void receiverSaveState(RECEIVER *rx) {
   SetPropI1("receiver.%d.zoom", rx->id,                         rx->zoom);
   SetPropI1("receiver.%d.pan", rx->id,                          rx->pan);
   SetPropI1("receiver.%d.eq_enable", rx->id,                    rx->eq_enable);
-  SetPropI1("receiver.%d.eq_sixband", rx->id,                   rx->eq_sixband);
+  SetPropI1("receiver.%d.eq_tenband", rx->id,                   rx->eq_tenband);
 
-  for (int i = 0; i < 7; i++) {
+  for (int i = 0; i < 11; i++) {
     SetPropF2("receiver.%d.eq_freq[%d]", rx->id, i,             rx->eq_freq[i]);
     SetPropF2("receiver.%d.eq_gain[%d]", rx->id, i,             rx->eq_gain[i]);
   }
@@ -411,9 +411,9 @@ void receiverRestoreState(RECEIVER *rx) {
   GetPropI1("receiver.%d.zoom", rx->id,                         rx->zoom);
   GetPropI1("receiver.%d.pan", rx->id,                          rx->pan);
   GetPropI1("receiver.%d.eq_enable", rx->id,                    rx->eq_enable);
-  GetPropI1("receiver.%d.eq_sixband", rx->id,                   rx->eq_sixband);
+  GetPropI1("receiver.%d.eq_tenband", rx->id,                   rx->eq_tenband);
 
-  for (int i = 0; i < 7; i++) {
+  for (int i = 0; i < 11; i++) {
     GetPropF2("receiver.%d.eq_freq[%d]", rx->id, i,             rx->eq_freq[i]);
     GetPropF2("receiver.%d.eq_gain[%d]", rx->id, i,             rx->eq_gain[i]);
   }
@@ -580,7 +580,7 @@ void set_displaying(RECEIVER *rx, int state) {
 }
 
 void receiver_set_equalizer(RECEIVER *rx) {
-  int numchan = rx->eq_sixband ? 7 : 5;
+  int numchan = rx->eq_tenband ? 11 : 5;
   SetRXAEQProfile(rx->id, numchan, rx->eq_freq, rx->eq_gain);
   SetRXAEQRun(rx->id, rx->eq_enable);
   //t_print("RX EQ id=%d enable=%d\n", rx->id, rx->eq_enable);
@@ -1009,21 +1009,29 @@ RECEIVER *create_receiver(int id, int pixels, int width, int height) {
   rx->zoom = 1;
   rx->pan = 0;
   rx->eq_enable = 0;
-  rx->eq_sixband = 0;
-  rx->eq_freq[0] =     0.0;
-  rx->eq_freq[1] =   200.0;
-  rx->eq_freq[2] =   500.0;
-  rx->eq_freq[3] =  1200.0;
-  rx->eq_freq[4] =  3000.0;
-  rx->eq_freq[5] =  6000.0;
-  rx->eq_freq[6] = 12000.0;
-  rx->eq_gain[0] = 0.0;
-  rx->eq_gain[1] = 0.0;
-  rx->eq_gain[2] = 0.0;
-  rx->eq_gain[3] = 0.0;
-  rx->eq_gain[4] = 0.0;
-  rx->eq_gain[5] = 0.0;
-  rx->eq_gain[6] = 0.0;
+  rx->eq_tenband  = 0;
+  rx->eq_freq[0]  =     0.0;
+  rx->eq_freq[1]  =   200.0;
+  rx->eq_freq[2]  =   500.0;
+  rx->eq_freq[3]  =  1200.0;
+  rx->eq_freq[4]  =  3000.0;
+  rx->eq_freq[5]  =  5000.0;
+  rx->eq_freq[6]  =  7000.0;
+  rx->eq_freq[7]  =  9000.0;
+  rx->eq_freq[8]  = 11000.0;
+  rx->eq_freq[9]  = 13000.0;
+  rx->eq_freq[10] = 15000.0;
+  rx->eq_gain[0]  = 0.0;
+  rx->eq_gain[1]  = 0.0;
+  rx->eq_gain[2]  = 0.0;
+  rx->eq_gain[3]  = 0.0;
+  rx->eq_gain[4]  = 0.0;
+  rx->eq_gain[5]  = 0.0;
+  rx->eq_gain[6]  = 0.0;
+  rx->eq_gain[7]  = 0.0;
+  rx->eq_gain[8]  = 0.0;
+  rx->eq_gain[9]  = 0.0;
+  rx->eq_gain[10] = 0.0;
   receiverRestoreState(rx);
 
   //

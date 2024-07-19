@@ -149,9 +149,38 @@ static void init_audio_ramp(double *ramp, int width) {
   }
 }
 
-static void init_rf_ramp(double *ramp, int width) {
+static void init_dl1ycf_ramp(double *ramp, int width) {
   //
-  // Calculate a "Blackman-Harris-Ramp"
+  // Calculate a "DL1YCF" ramp (optimized)
+  // The "black magic" in the coefficients comes from optimizing them
+  // against the spectral pollution of a string of dots,
+  // namely with ramp width 7 msec for CW speed  5 - 11 wpm
+  //        and  ramp width 8 msec for CW speed 12 - 27 wpm
+  //        and  ramp width 9 msec for CW speed 28 - 40 wpm
+  //
+  // Output: ramp[0] ... ramp[width] contain numbers
+  // that smoothly grow from zero to one.
+  // (yes, the length of the ramp is width+1)
+  //
+  for (int i = 0; i <= width; i++) {
+    double y = (double) i / ((double) width);           // between 0 and 1
+    double y2  = y * 6.2831853071795864769252867665590;  //  2 Pi y
+    double y4  = y2 + y2;                                //  4 Pi y
+    double y6  = y4 + y2;                                //  6 Pi y
+    double y8  = y4 + y4;                                //  8 Pi y
+    double y10 = y4 + y6;                                // 10 Pi y
+    ramp[i] = y - 0.12125230681296284    * sin(y2)
+                - 0.018763726354969288   * sin(y4)
+                - 0.0005062279289650188  * sin(y6)
+                + 0.0008311079030784445  * sin(y8)
+                - 0.00005673179986547569 * sin(y10);
+  }
+}
+
+#if 0
+static void init_ve3nea_ramp(double *ramp, int width) {
+  //
+  // Calculate a "VE3NEA" ramp (integrated Blackman-Harris-Window)
   // Output: ramp[0] ... ramp[width] contain numbers
   // that smoothly grow from zero to one.
   // (yes, the length of the ramp is width+1)
@@ -166,6 +195,7 @@ static void init_rf_ramp(double *ramp, int width) {
                 - 0.0017272285577824274302258419105142557477932531124260 * sin(y6);
   }
 }
+#endif
 
 void reconfigure_transmitter(TRANSMITTER *tx, int width, int height) {
   if (width != tx->width || height != tx->height) {
@@ -239,9 +269,9 @@ void transmitterSaveState(const TRANSMITTER *tx) {
   SetPropI1("transmitter.%d.dialog_y",          tx->id,               tx->dialog_y);
   SetPropI1("transmitter.%d.display_filled",    tx->id,               tx->display_filled);
   SetPropI1("transmitter.%d.eq_enable", tx->id,                       tx->eq_enable);
-  SetPropI1("transmitter.%d.eq_sixband", tx->id,                      tx->eq_sixband);
+  SetPropI1("transmitter.%d.eq_tenband", tx->id,                      tx->eq_tenband);
 
-  for (int i = 0; i < 7; i++) {
+  for (int i = 0; i < 11; i++) {
     SetPropF2("transmitter.%d.eq_freq[%d]", tx->id, i,             tx->eq_freq[i]);
     SetPropF2("transmitter.%d.eq_gain[%d]", tx->id, i,             tx->eq_gain[i]);
   }
@@ -293,9 +323,9 @@ static void transmitterRestoreState(TRANSMITTER *tx) {
   GetPropI1("transmitter.%d.dialog_y",          tx->id,               tx->dialog_y);
   GetPropI1("transmitter.%d.display_filled",    tx->id,               tx->display_filled);
   GetPropI1("transmitter.%d.eq_enable", tx->id,                       tx->eq_enable);
-  GetPropI1("transmitter.%d.eq_sixband", tx->id,                      tx->eq_sixband);
+  GetPropI1("transmitter.%d.eq_tenband", tx->id,                      tx->eq_tenband);
 
-  for (int i = 0; i < 7; i++) {
+  for (int i = 0; i < 11; i++) {
     GetPropF2("transmitter.%d.eq_freq[%d]", tx->id, i,             tx->eq_freq[i]);
     GetPropF2("transmitter.%d.eq_gain[%d]", tx->id, i,             tx->eq_gain[i]);
   }
@@ -818,21 +848,29 @@ TRANSMITTER *create_transmitter(int id, int width, int height) {
   tx->swr_alarm = 3.0;     // default value for SWR protection
   tx->alc = 0.0;
   tx->eq_enable = 0;
-  tx->eq_sixband = 0;
-  tx->eq_freq[0] =     0.0;
-  tx->eq_freq[1] =   200.0;
-  tx->eq_freq[2] =   500.0;
-  tx->eq_freq[3] =  1200.0;
-  tx->eq_freq[4] =  3000.0;
-  tx->eq_freq[5] =  6000.0;
-  tx->eq_freq[6] = 12000.0;
-  tx->eq_gain[0] = 0.0;
-  tx->eq_gain[1] = 0.0;
-  tx->eq_gain[2] = 0.0;
-  tx->eq_gain[3] = 0.0;
-  tx->eq_gain[4] = 0.0;
-  tx->eq_gain[5] = 0.0;
-  tx->eq_gain[6] = 0.0;
+  tx->eq_tenband  = 0;
+  tx->eq_freq[0]  =     0.0;
+  tx->eq_freq[1]  =   200.0;
+  tx->eq_freq[2]  =   500.0;
+  tx->eq_freq[3]  =  1200.0;
+  tx->eq_freq[4]  =  3000.0;
+  tx->eq_freq[5]  =  5000.0;
+  tx->eq_freq[6]  =  7000.0;
+  tx->eq_freq[7]  =  9000.0;
+  tx->eq_freq[8]  = 11000.0;
+  tx->eq_freq[9]  = 13000.0;
+  tx->eq_freq[10] = 15000.0;
+  tx->eq_gain[0]  = 0.0;
+  tx->eq_gain[1]  = 0.0;
+  tx->eq_gain[2]  = 0.0;
+  tx->eq_gain[3]  = 0.0;
+  tx->eq_gain[4]  = 0.0;
+  tx->eq_gain[5]  = 0.0;
+  tx->eq_gain[6]  = 0.0;
+  tx->eq_gain[7]  = 0.0;
+  tx->eq_gain[8]  = 0.0;
+  tx->eq_gain[9]  = 0.0;
+  tx->eq_gain[10] = 0.0;
   transmitterRestoreState(tx);
   //
   // allocate buffers
@@ -925,7 +963,7 @@ void tx_set_mode(TRANSMITTER* tx, int mode) {
 }
 
 void tx_set_equalizer(TRANSMITTER *tx) {
-  int numchan = tx->eq_sixband ? 7 : 5;
+  int numchan = tx->eq_tenband ? 11 : 5;
   SetTXAEQProfile(tx->id, numchan, tx->eq_freq, tx->eq_gain);
   SetTXAEQRun(tx->id, tx->eq_enable);
   //t_print("TX EQ enable=%d\n", tx->eq_enable);
@@ -1759,7 +1797,7 @@ void tx_set_ramps(TRANSMITTER *tx) {
 
   //
   // For the side tone, a RaisedCosine profile with a width of 5 msec
-  // seems to be standard, and has less latency than a 8 msec BH RF profile
+  // seems to be standard.
   //
   if (tx->cw_ramp_audio) { g_free(tx->cw_ramp_audio); }
 
@@ -1777,6 +1815,6 @@ void tx_set_ramps(TRANSMITTER *tx) {
   tx->cw_ramp_rf_ptr = 0;
   tx->cw_ramp_rf_len = 48 * tx->ratio * cw_ramp_width;
   tx->cw_ramp_rf = g_new(double, tx->cw_ramp_rf_len + 1);
-  init_rf_ramp(tx->cw_ramp_rf, tx->cw_ramp_rf_len);
+  init_dl1ycf_ramp(tx->cw_ramp_rf, tx->cw_ramp_rf_len);
   g_mutex_unlock(&tx->cw_ramp_mutex);
 }

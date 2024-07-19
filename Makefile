@@ -328,7 +328,10 @@ AUDIO_OBJS=src/portaudio.o
 endif
 CPP_DEFINES += -DPORTAUDIO
 CPP_SOURCES += src/portaudio.c
+ifeq ($(UNAME_S), Darwin)
+# does not exist on RaspPi
 CPP_INCLUDE += `$(PKG_CONFIG) --cflags portaudio-2.0`
+endif
 
 ##############################################################################
 #

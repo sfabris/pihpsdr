@@ -34,12 +34,11 @@
 #include "message.h"
 
 static GtkWidget *dialog = NULL;
-static int dialog_width = 1;
 
-static GtkWidget *scale[7];
-static GtkWidget *freqspin[7];
+static GtkWidget *scale[11];
+static GtkWidget *freqspin[11];
 static GtkWidget *enable_b;
-static GtkWidget *sixband_b;
+static GtkWidget *tenband_b;
 
 static int eqid;  // 0: RX1, 1: RX2, 2: TX
 
@@ -83,43 +82,43 @@ void update_eq() {
 #endif
 }
 
-static void sixband_cb (GtkWidget *widget, gpointer data) {
+static void tenband_cb (GtkWidget *widget, gpointer data) {
   int val = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   int m;
 
   if (val) {
-    gtk_widget_show(freqspin[5]);
-    gtk_widget_show(freqspin[6]);
-    gtk_widget_show(scale   [5]);
-    gtk_widget_show(scale   [6]);
+    for (int i=5; i<11; i++) {
+      gtk_widget_show(freqspin[i]);
+      gtk_widget_show(scale   [i]);
+    }
   } else {
-    gtk_widget_hide(freqspin[5]);
-    gtk_widget_hide(freqspin[6]);
-    gtk_widget_hide(scale   [5]);
-    gtk_widget_hide(scale   [6]);
+    for (int i=5; i<11; i++) {
+      gtk_widget_hide(freqspin[i]);
+      gtk_widget_hide(scale   [i]);
+    }
   }
 
-  gtk_window_resize(GTK_WINDOW(dialog), dialog_width, 1);
+  gtk_window_resize(GTK_WINDOW(dialog), 400, 400);
 
   switch (eqid) {
   case 0:
   case 1:
     if (eqid < receivers) {
-      receiver[eqid]->eq_sixband = val;
+      receiver[eqid]->eq_tenband = val;
     }
 
     if (eqid == 0) {
       m = vfo[eqid].mode;
-      mode_settings[m].rx_eq_sixband = val;
+      mode_settings[m].rx_eq_tenband = val;
     }
 
     break;
 
   case 2:
     if (can_transmit) {
-      transmitter->eq_sixband = val;
+      transmitter->eq_tenband = val;
       m = vfo[get_tx_vfo()].mode;
-      mode_settings[m].tx_eq_sixband = val;
+      mode_settings[m].tx_eq_tenband = val;
     }
 
     break;
@@ -252,17 +251,17 @@ static void gain_changed_cb (GtkWidget *widget, gpointer data) {
 //
 static void eqid_changed_cb(GtkWidget *widget, gpointer data) {
   eqid = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
-  int six;
+  int ten;
 
   switch (eqid) {
   case 0:
   case 1:
     if (eqid < receivers) {
-      for (int i = 0; i < 7; i++) {
+      for (int i = 0; i < 11; i++) {
         gtk_range_set_value(GTK_RANGE(scale[i]), receiver[eqid]->eq_gain[i]);
       }
 
-      for (int i = 1; i < 7; i++) {
+      for (int i = 1; i < 11; i++) {
         gtk_spin_button_set_value(GTK_SPIN_BUTTON(freqspin[i]), receiver[eqid]->eq_freq[i]);
       }
     } else {
@@ -274,11 +273,11 @@ static void eqid_changed_cb(GtkWidget *widget, gpointer data) {
 
   case 2:
     if (can_transmit) {
-      for (int i = 0; i < 7; i++) {
+      for (int i = 0; i < 11; i++) {
         gtk_range_set_value(GTK_RANGE(scale[i]), transmitter->eq_gain[i]);
       }
 
-      for (int i = 1; i < 7; i++) {
+      for (int i = 1; i < 11; i++) {
         gtk_spin_button_set_value(GTK_SPIN_BUTTON(freqspin[i]), transmitter->eq_freq[i]);
       }
     } else {
@@ -287,40 +286,40 @@ static void eqid_changed_cb(GtkWidget *widget, gpointer data) {
     }
   }
 
-  six = 0;  // silence "maybe uninitialized" compiler warnings
+  ten = 0;  // silence "maybe uninitialized" compiler warnings
 
   switch (eqid) {
   case 0:
-    six = receiver[0]->eq_sixband;
+    ten = receiver[0]->eq_tenband;
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (enable_b), receiver[0]->eq_enable);
     break;
 
   case 1:
-    six = receiver[1]->eq_sixband;
+    ten = receiver[1]->eq_tenband;
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (enable_b), receiver[1]->eq_enable);
     break;
 
   case 2:
-    six = transmitter->eq_sixband;
+    ten = transmitter->eq_tenband;
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (enable_b), transmitter->eq_enable);
     break;
   }
 
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (sixband_b), six);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (tenband_b), ten);
 
-  if (six) {
-    gtk_widget_show(freqspin[5]);
-    gtk_widget_show(freqspin[6]);
-    gtk_widget_show(scale   [5]);
-    gtk_widget_show(scale   [6]);
+  if (ten) {
+    for (int i=5; i<11; i++) {
+      gtk_widget_show(freqspin[i]);
+      gtk_widget_show(scale   [i]);
+    }
   } else {
-    gtk_widget_hide(freqspin[5]);
-    gtk_widget_hide(freqspin[6]);
-    gtk_widget_hide(scale   [5]);
-    gtk_widget_hide(scale   [6]);
+    for (int i=5; i<11; i++) {
+      gtk_widget_hide(freqspin[i]);
+      gtk_widget_hide(scale   [i]);
+    }
   }
 
-  gtk_window_resize(GTK_WINDOW(dialog), dialog_width, 1);
+  gtk_window_resize(GTK_WINDOW(dialog), 400, 400);
 }
 
 void equalizer_menu(GtkWidget *parent) {
@@ -338,30 +337,30 @@ void equalizer_menu(GtkWidget *parent) {
   gtk_grid_set_column_spacing (GTK_GRID(grid), 10);
   gtk_grid_set_row_spacing (GTK_GRID(grid), 5);
   gtk_grid_set_row_homogeneous(GTK_GRID(grid), FALSE);
-  gtk_grid_set_column_homogeneous(GTK_GRID(grid), TRUE);
+  gtk_grid_set_column_homogeneous(GTK_GRID(grid), FALSE);
   GtkWidget *close_b = gtk_button_new_with_label("Close");
   gtk_widget_set_name(close_b, "close_button");
   g_signal_connect (close_b, "button-press-event", G_CALLBACK(close_cb), NULL);
   gtk_grid_attach(GTK_GRID(grid), close_b, 0, 0, 1, 1);
   GtkWidget *eqid_combo_box = gtk_combo_box_text_new();
-  gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(eqid_combo_box), NULL, "RX1 Equalizer Settings");
-  gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(eqid_combo_box), NULL, "RX2 Equalizer Settings");
-  gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(eqid_combo_box), NULL, "TX  Equalizer Settings");
+  gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(eqid_combo_box), NULL, "RX1 Eq Settings");
+  gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(eqid_combo_box), NULL, "RX2 Eq Settings");
+  gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(eqid_combo_box), NULL, "TX  Eq Settings");
   gtk_combo_box_set_active(GTK_COMBO_BOX(eqid_combo_box), 0);
-  my_combo_attach(GTK_GRID(grid), eqid_combo_box, 2, 1, 2, 1);
+  my_combo_attach(GTK_GRID(grid), eqid_combo_box, 2, 1, 1, 1);
   g_signal_connect(eqid_combo_box, "changed", G_CALLBACK(eqid_changed_cb), NULL);
   enable_b = gtk_check_button_new_with_label("Enable");
   gtk_widget_set_name(enable_b, "boldlabel");
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (enable_b), receiver[0]->eq_enable);
   g_signal_connect(enable_b, "toggled", G_CALLBACK(enable_cb), GINT_TO_POINTER(0));
   gtk_grid_attach(GTK_GRID(grid), enable_b, 0, 1, 1, 1);
-  sixband_b = gtk_check_button_new_with_label("SixBands");
-  gtk_widget_set_name(sixband_b, "boldlabel");
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(sixband_b), receiver[0]->eq_sixband);
-  g_signal_connect(sixband_b, "toggled", G_CALLBACK(sixband_cb), GINT_TO_POINTER(0));
-  gtk_grid_attach(GTK_GRID(grid), sixband_b, 1, 1, 1, 1);
+  tenband_b = gtk_check_button_new_with_label("Ten Bands");
+  gtk_widget_set_name(tenband_b, "boldlabel");
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(tenband_b), receiver[0]->eq_tenband);
+  g_signal_connect(tenband_b, "toggled", G_CALLBACK(tenband_cb), GINT_TO_POINTER(0));
+  gtk_grid_attach(GTK_GRID(grid), tenband_b, 1, 1, 1, 1);
 
-  for (int i = 0; i < 7; i++) {
+  for (int i = 0; i < 11; i++) {
     if (i == 0) {
       GtkWidget *label = gtk_label_new("Preamp  ");
       gtk_widget_set_name(label, "boldlabel");
@@ -371,14 +370,23 @@ void equalizer_menu(GtkWidget *parent) {
       freqspin[i] = gtk_spin_button_new_with_range(50.0, 16000.0, 10.0);
       gtk_spin_button_set_value(GTK_SPIN_BUTTON(freqspin[i]), receiver[0]->eq_freq[i]);
       g_signal_connect(freqspin[i], "value-changed", G_CALLBACK(freq_changed_cb), GINT_TO_POINTER(i));
-      gtk_grid_attach(GTK_GRID(grid), freqspin[i], 0, 2 * i + 2, 1, 1);
+      if (i < 5) {
+        gtk_grid_attach(GTK_GRID(grid), freqspin[i], 0, 2 * i + 2, 1, 1);
+      } else {
+        gtk_grid_attach(GTK_GRID(grid), freqspin[i], 4, 2 * i - 8, 1, 1);
+      }
     }
 
     scale[i] = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, -12.0, 15.0, 1.0);
+    gtk_widget_set_size_request(scale[i], 300, 1);
     gtk_range_set_increments (GTK_RANGE(scale[i]), 1.0, 1.0);
     gtk_range_set_value(GTK_RANGE(scale[i]), receiver[0]->eq_gain[i]);
     g_signal_connect(scale[i], "value-changed", G_CALLBACK(gain_changed_cb), GINT_TO_POINTER(i));
-    gtk_grid_attach(GTK_GRID(grid), scale[i], 1, 2 * i + 2, 3, 2);
+    if (i < 5) {
+      gtk_grid_attach(GTK_GRID(grid), scale[i], 1, 2 * i + 2, 2, 2);
+    } else {
+      gtk_grid_attach(GTK_GRID(grid), scale[i], 5, 2 * i - 8, 2, 2);
+    }
     gtk_scale_add_mark(GTK_SCALE(scale[i]), -12.0, GTK_POS_LEFT, "-12dB");
     gtk_scale_add_mark(GTK_SCALE(scale[i]), -9.0, GTK_POS_LEFT, NULL);
     gtk_scale_add_mark(GTK_SCALE(scale[i]), -6.0, GTK_POS_LEFT, NULL);
@@ -395,23 +403,18 @@ void equalizer_menu(GtkWidget *parent) {
   sub_menu = dialog;
   gtk_widget_show_all(dialog);
 
-  if (!receiver[0]->eq_sixband) {
-    gtk_widget_hide(freqspin[5]);
-    gtk_widget_hide(freqspin[6]);
-    gtk_widget_hide(scale   [5]);
-    gtk_widget_hide(scale   [6]);
+  if (!receiver[0]->eq_tenband) {
+    for (int i=5; i<11; i++) {
+      gtk_widget_hide(freqspin[i]);
+      gtk_widget_hide(scale   [i]);
+    }
   }
 
   //
   // For some unknown reason, the following gtk_window_resize emits dozens of
   // "critical warnings" if run on RaspPi with a hsize smaller than the
-  // current horizontal size. Therefore,
-  // determin the current hsize and using that value in all window resize
-  // calls
+  // current horizontal size. However, the resizing works as intended.
   //
-  GtkAllocation alloc;
-  gtk_widget_get_allocation(dialog, &alloc);
-  dialog_width = alloc.width;
-  gtk_window_resize(GTK_WINDOW(dialog), dialog_width, 1);
+  gtk_window_resize(GTK_WINDOW(dialog), 400, 400);
 }
 
