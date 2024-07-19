@@ -1,5 +1,5 @@
 /* Copyright (C)
-* 2023 - Christoph van Wüllen, DL1YCF
+* 2023, 2024 - Christoph van Wüllen, DL1YCF
 *
 *   This program is free software: you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -41,6 +41,75 @@
 //
 const VFO_BAR_LAYOUT vfo_layout_list[] = {
   //
+  // A layout tailored for a screen 1280 px wide:
+  // a Layout with dial digits of size 50, and a "LED" size 20
+  // which requires a width of 875 and a height of 90
+  //
+  {
+    .description = "VFO bar for 1280px windows",
+    .width = 875,
+    .height = 95,
+    .size1 = 16,
+    .size2 = 30,
+    .size3 = 50,
+
+    .vfo_a_x = -5,
+    .vfo_a_y = 70,
+    .vfo_b_x = -560,
+    .vfo_b_y = 70,
+
+    .mode_x = 5,
+    .mode_y = 24,
+    .agc_x = 250,
+    .agc_y = 24,
+    .nr_x = 380,
+    .nr_y = 24,
+    .nb_x = 430,
+    .nb_y = 24,
+    .anf_x = 470,
+    .anf_y = 24,
+    .snb_x = 520,
+    .snb_y = 24,
+    .div_x = 560,
+    .div_y = 24,
+    .eq_x = 610,
+    .eq_y = 24,
+    .cat_x = 670,
+    .cat_y = 24,
+
+    .cmpr_x = 380,
+    .cmpr_y = 50,
+    .ps_x = 470,
+    .ps_y = 50,
+
+    .vox_x = 380,
+    .vox_y = 68,
+    .dup_x = 470,
+    .dup_y = 68,
+
+    .lock_x = 5,
+    .lock_y = 90,
+    .zoom_x = 90,
+    .zoom_y = 90,
+    .ctun_x = 180,
+    .ctun_y = 90,
+    .step_x = 250,
+    .step_y = 90,
+    .split_x = 380,
+    .split_y = 90,
+    .sat_x = 470,
+    .sat_y = 90,
+    .rit_x = 560,
+    .rit_y = 90,
+    .xit_x = 670,
+    .xit_y = 90,
+    .filter_x = 730,
+    .filter_y = 24,
+    .multifn_x = 775,
+    .multifn_y = 90
+  },
+
+  //
   // A layout tailored for a screen 1024 px wide:
   // a Layout with dial digits of size 40, and a "LED" size 17
   // which requires a width of 745 and a height of 78
@@ -74,7 +143,7 @@ const VFO_BAR_LAYOUT vfo_layout_list[] = {
     .div_y = 21,
     .eq_x = 530,
     .eq_y = 21,
-    .cat_x = 570,
+    .cat_x = 580,
     .cat_y = 21,
 
     .cmpr_x = 330,
