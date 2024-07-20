@@ -809,7 +809,7 @@ GtkWidget *sliders_init(int my_width, int my_height) {
     gtk_widget_set_name(attenuation_label, "boldlabel");
     gtk_widget_set_halign(attenuation_label, GTK_ALIGN_END);
     gtk_widget_show(attenuation_label);
-    gtk_grid_attach(GTK_GRID(sliders), attenuation_label, t3pos, 0, swidth, 1);
+    gtk_grid_attach(GTK_GRID(sliders), attenuation_label, t3pos, 0, twidth, 1);
     attenuation_scale = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0.0, 31.0, 1.0);
     gtk_widget_set_size_request(attenuation_scale, 0, height / 2);
     gtk_widget_set_valign(attenuation_scale, GTK_ALIGN_CENTER);
