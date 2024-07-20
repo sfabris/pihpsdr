@@ -151,12 +151,33 @@ static void init_audio_ramp(double *ramp, int width) {
 
 static void init_dl1ycf_ramp(double *ramp, int width) {
   //
-  // Calculate a "DL1YCF" ramp (optimized)
+  // ========================================================================
+  //
+  // Calculate a "DL1YCF" ramp
+  // -------------------------
+  //
   // The "black magic" in the coefficients comes from optimizing them
   // against the spectral pollution of a string of dots,
-  // namely with ramp width 7 msec for CW speed  5 - 11 wpm
-  //        and  ramp width 8 msec for CW speed 12 - 27 wpm
-  //        and  ramp width 9 msec for CW speed 28 - 40 wpm
+  // namely with ramp width 7 msec for CW speed  5 - 15 wpm
+  //        and  ramp width 8 msec for CW speed 16 - 32 wpm
+  //        and  ramp width 9 msec for CW speed 33 - 40 wpm
+  //
+  // such that the spectra meet ARRL's "clean signal initiative" requirement
+  // for the maximum peak strength at frequencies with a distance to the
+  // carrier that is larger than an offset, namely
+  //
+  //  -20 dBc for offsets >   90 Hz
+  //  -40 dBc for offsets >  150 Hz
+  //  -60 dBc for offsets >  338 Hz
+  //
+  // and is also meets the extended DL1YCF criteria which restrict spectral
+  // pollution at larger offsets, namely
+  //
+  //  -80 dBc for offsets >  600 Hz
+  // -100 dBc for offsets >  900 Hz
+  // -120 dBc for offsets > 1200 Hz
+  //
+  // ========================================================================
   //
   // Output: ramp[0] ... ramp[width] contain numbers
   // that smoothly grow from zero to one.
@@ -169,11 +190,11 @@ static void init_dl1ycf_ramp(double *ramp, int width) {
     double y6  = y4 + y2;                                //  6 Pi y
     double y8  = y4 + y4;                                //  8 Pi y
     double y10 = y4 + y6;                                // 10 Pi y
-    ramp[i] = y - 0.12125230681296284    * sin(y2)
-                - 0.018763726354969288   * sin(y4)
-                - 0.0005062279289650188  * sin(y6)
-                + 0.0008311079030784445  * sin(y8)
-                - 0.00005673179986547569 * sin(y10);
+    ramp[i] = y - 0.12182865361171612    * sin(y2)
+                - 0.018557469249199286   * sin(y4)
+                - 0.0009378783245428506  * sin(y6)
+                + 0.0008567571519403228  * sin(y8)
+                + 0.00018706912431472442 * sin(y10);
   }
 }
 
