@@ -713,7 +713,7 @@ int main(int argc, char *argv[]) {
     if (bytes_read <= 0) { continue; }
 
     count = 0;
-    memcpy(&code, buffer, 4);
+    code = *code0;
 
     switch (code) {
     // PC to SDR transmission via process_ep2
@@ -1577,10 +1577,17 @@ void *handler_ep6(void *arg) {
   while (1) {
     if (!enable_thread) { break; }
 
-    size = receivers * 6 + 2;
-    n = 504 / size;  // number of samples per 512-byte-block
-    // Time (in nanosecs) to "collect" the samples sent in one sendmsg
-    wait = (2 * n * 1000000L) / (48 << rate);
+    if (receivers >0) {
+      size = receivers * 6 + 2;
+      n = 504 / size;  // number of samples per 512-byte-block
+      // Time (in nanosecs) to "collect" the samples sent in one sendmsg
+      wait = (2 * n * 1000000L) / (48 << rate);
+    } else {
+      // this happens until the first packets are received from the radio.
+      // however, we must keep things flowing.
+      n = 0;
+      wait = 1000000L;
+    }
     // plug in sequence numbers
     *(uint32_t *)(buffer + 4) = htonl(counter);
     ++counter;
