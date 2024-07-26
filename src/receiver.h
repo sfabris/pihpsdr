@@ -261,7 +261,7 @@ typedef struct _receiver {
 
 } RECEIVER;
 
-extern RECEIVER *create_pure_signal_receiver(int id, int sample_rate, int pixels);
+extern RECEIVER *create_pure_signal_receiver(int id, int sample_rate, int pixels, int fps);
 extern RECEIVER *create_receiver(int id, int pixels, int width, int height);
 extern void receiver_change_sample_rate(RECEIVER *rx, int sample_rate);
 extern void receiver_change_adc(RECEIVER *rx, int adc);

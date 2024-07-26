@@ -826,7 +826,7 @@ static void create_visual(RECEIVER *rx) {
   gtk_widget_show_all(rx->panel);
 }
 
-RECEIVER *create_pure_signal_receiver(int id, int sample_rate, int width) {
+RECEIVER *create_pure_signal_receiver(int id, int sample_rate, int width, int fps) {
   //
   // For a PureSignal receiver, most parameters are not needed.
   //
@@ -844,13 +844,18 @@ RECEIVER *create_pure_signal_receiver(int id, int sample_rate, int width) {
 
   if (id == PS_RX_FEEDBACK) {
     int result;
+    //
+    // Note the parameters for the analyzer should match those 
+    // for the transmitter. The analyzer is only used if
+    // displaying the RX feedback samples (MON button in PS menu).
+    //
     rx->alex_antenna = 0;
     rx->adc = 0;
     receiverRestoreState(rx);
     g_mutex_init(&rx->mutex);
     g_mutex_init(&rx->display_mutex);
     rx->sample_rate = sample_rate;
-    rx->fps = 5;
+    rx->fps = fps;
     rx->width = width; // used to re-calculate rx->pixels upon sample rate change
     rx->pixels = (sample_rate / 24000) * width;
     rx->pixel_samples = g_new(float, rx->pixels);
@@ -863,11 +868,12 @@ RECEIVER *create_pure_signal_receiver(int id, int sample_rate, int width) {
     }
 
     //
-    // This cannot be changed for the PS feedback receiver,
-    // so use peak mode
+    // These values are nowhere changed, use the same as for the TX display
     //
-    SetDisplayDetectorMode(rx->id, 0, DETECTOR_MODE_PEAK);
-    SetDisplayAverageMode(rx->id, 0,  AVERAGE_MODE_NONE);
+    SetDisplayDetectorMode (rx->id, 0, DETECTOR_MODE_PEAK);
+    SetDisplayAverageMode  (rx->id, 0,  AVERAGE_MODE_LOG_RECURSIVE);
+    SetDisplayNumAverage   (rx->id,  0, 4);
+    SetDisplayAvBackmult   (rx->id,  0, 0.4000);
   }
 
   return rx;

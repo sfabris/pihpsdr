@@ -565,12 +565,12 @@ void reconfigure_radio() {
     SLIDERS_HEIGHT = 100;
   } else if (my_height < 720) {
     TOOLBAR_HEIGHT = 40;
-    ZOOMPAN_HEIGHT = 60;
-    SLIDERS_HEIGHT = 120;
+    ZOOMPAN_HEIGHT = 55;
+    SLIDERS_HEIGHT = 110;
   } else {
     TOOLBAR_HEIGHT = 50;
-    ZOOMPAN_HEIGHT = 70;
-    SLIDERS_HEIGHT = 140;
+    ZOOMPAN_HEIGHT = 60;
+    SLIDERS_HEIGHT = 120;
   }
 
   if (display_zoompan) {
@@ -869,9 +869,9 @@ static void create_visual() {
         double pk;
         tx_set_ps_sample_rate(transmitter, protocol == NEW_PROTOCOL ? 192000 : active_receiver->sample_rate);
         receiver[PS_TX_FEEDBACK] = create_pure_signal_receiver(PS_TX_FEEDBACK,
-                                   protocol == ORIGINAL_PROTOCOL ? active_receiver->sample_rate : 192000, my_width);
+                                   protocol == ORIGINAL_PROTOCOL ? active_receiver->sample_rate : 192000, my_width, transmitter->fps);
         receiver[PS_RX_FEEDBACK] = create_pure_signal_receiver(PS_RX_FEEDBACK,
-                                   protocol == ORIGINAL_PROTOCOL ? active_receiver->sample_rate : 192000, my_width);
+                                   protocol == ORIGINAL_PROTOCOL ? active_receiver->sample_rate : 192000, my_width, transmitter->fps);
 
         //
         // If the pk value is slightly too large, this does no harm, but
