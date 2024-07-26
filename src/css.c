@@ -31,7 +31,11 @@
 // boldlabel           This is used to write texts in menus and the slider area,
 //                     therefore it contains 3px border
 //
-// big_tet             This is a large bold text. Used for the "pi label" on the
+// slider1             Used for slider and zoompan areas for small  screen width
+// slider2             Used for slider and zoompan areas for medium screen width
+// slider3             Used for slider and zoompan areas for large  screen width
+//
+// big_txt             This is a large bold text. Used for the "pi label" on the
 //                     discovery screen, and the "Start" button there
 //
 // med_txt             This is a large text. Used for the status bar, etc.
@@ -44,7 +48,7 @@
 // small_button        15px text with minimal paddding. Used in menus where one wants
 //                     to make the buttons narrow.
 //
-// medium_button        the same as small_button but with 20px
+// medium_button       the same as small_button but with 20px
 //
 // large_button        the same as small_button but with 25px
 //
@@ -54,9 +58,9 @@
 // popup_scale         Used to define the slider that "pops up" when e.g. AF volume
 //                     is changed via GPIO/MIDI but no sliders are on display
 //
-// checkbutton         Very difficult to see on RaspPi with a light GTK theme. So we
-//                     draw a grey border which should be OK for both the light and
-//                     dark theme.
+// checkbutton         THe standard button is Very difficult to see on RaspPi with
+//                     a light GTK theme. So we use our own, and draw a grey border
+//                     so this should be OK for both the light and dark theme.
 //
 // radiobutton         see checkbutton.
 //
@@ -87,6 +91,24 @@ char *css =
   "    font-family: Sans;\n"
   "    font-weight: bold;\n"
   "    font-size: 15px;\n"
+  "  }\n"
+  "  #slider1   {\n"
+  "    padding: 3px;\n"
+  "    font-family: Sans;\n"
+  "    font-weight: bold;\n"
+  "    font-size: 16px;\n"
+  "  }\n"
+  "  #slider2   {\n"
+  "    padding: 3px;\n"
+  "    font-family: Sans;\n"
+  "    font-weight: normal;\n"
+  "    font-size: 18px;\n"
+  "  }\n"
+  "  #slider3   {\n"
+  "    padding: 3px;\n"
+  "    font-family: Sans;\n"
+  "    font-weight: normal;\n"
+  "    font-size: 22px;\n"
   "  }\n"
   "  #big_txt {\n"
   "    font-family: Sans;\n"

@@ -720,36 +720,60 @@ GtkWidget *sliders_init(int my_width, int my_height) {
   t_print("sliders_init: width=%d height=%d\n", width, height);
 
   //
-  // the horizontal layout changes a little if the total width changes
+  // The larger the width, the smaller the fraction used for the label can be
+  // font size.
   //
-  int twidth, swidth, sq1, sq2;
+  int twidth, swidth, tpix;
   int t1pos, t2pos, t3pos;
   int s1pos, s2pos, s3pos, sqpos;
+  char *csslabel;
   if (width < 1024) {
-    twidth =  3;              // width of text label
-    swidth =  6;              // width of slider
-    sq1    =  1;              // squelch check box
-    sq2    =  swidth - sq1;   // squelch slider
+    // label  width: 1/9 of screen width
+    // slider width: 2/9 of screen width
+    tpix   =  width / 9;      // width of text label in pixel
+    twidth =  3;              // width of text label in grid units
+    swidth =  6;              // width of slider in grid units
+  } else if (width < 1280) {
+    // label  width: 1/12 of screen width
+    // slider width: 3/12 of screen width
+    tpix   =  width / 12;
+    twidth =  3;              // width of text label in pixel
+    swidth =  9;              // width of slider in grid units
   } else {
-    twidth =  3;              // width of text label
-    swidth =  9;              // width of slider
-    sq1    =  2;              // squelch check box
-    sq2    =  swidth - sq1;   // squelch slider
+    // label  width: 1/15 of screen width
+    // slider width: 4/12 of screen width
+    tpix   =  width / 15;
+    twidth =  2;              // width of text label in pixel
+    swidth =  8;              // width of slider in grid units
   }
+
+  //
+  // Depending on the width for the Label, we can increase the
+  // font size. Note the minimum value for tpix is 71
+  // (for a 640-pix-screen)
+  //
+  if (tpix < 75 ) {
+    csslabel = "slider1";
+  } else if (tpix < 85) {
+    csslabel = "slider2";
+  } else {
+    csslabel = "slider3";
+  }
+
   t1pos  =  0;
   s1pos  =  t1pos + twidth;
   t2pos  =  s1pos + swidth;
   s2pos  =  t2pos + twidth;
   t3pos  =  s2pos + swidth;
   s3pos  =  t3pos + twidth;
-  sqpos  =  s3pos + sq1;
+  sqpos  =  s3pos + 1;
 
   sliders = gtk_grid_new();
   gtk_widget_set_size_request (sliders, width, height);
   gtk_grid_set_row_homogeneous(GTK_GRID(sliders), FALSE);
   gtk_grid_set_column_homogeneous(GTK_GRID(sliders), TRUE);
-  af_gain_label = gtk_label_new("AF:");
-  gtk_widget_set_name(af_gain_label, "boldlabel");
+  af_gain_label = gtk_label_new("AF");
+  gtk_widget_set_name(af_gain_label, csslabel);
   gtk_widget_set_halign(af_gain_label, GTK_ALIGN_END);
   gtk_widget_show(af_gain_label);
   gtk_grid_attach(GTK_GRID(sliders), af_gain_label, t1pos, 0, twidth, 1);
@@ -761,8 +785,8 @@ GtkWidget *sliders_init(int my_width, int my_height) {
   gtk_widget_show(af_gain_scale);
   gtk_grid_attach(GTK_GRID(sliders), af_gain_scale, s1pos, 0, swidth, 1);
   g_signal_connect(G_OBJECT(af_gain_scale), "value_changed", G_CALLBACK(afgain_value_changed_cb), NULL);
-  agc_gain_label = gtk_label_new("AGC:");
-  gtk_widget_set_name(agc_gain_label, "boldlabel");
+  agc_gain_label = gtk_label_new("AGC");
+  gtk_widget_set_name(agc_gain_label, csslabel);
   gtk_widget_set_halign(agc_gain_label, GTK_ALIGN_END);
   gtk_widget_show(agc_gain_label);
   gtk_grid_attach(GTK_GRID(sliders), agc_gain_label, t2pos, 0, twidth, 1);
@@ -776,13 +800,8 @@ GtkWidget *sliders_init(int my_width, int my_height) {
   g_signal_connect(G_OBJECT(agc_scale), "value_changed", G_CALLBACK(agcgain_value_changed_cb), NULL);
 
   if (have_rx_gain) {
-    if (my_width >= 800) {
-      rf_gain_label = gtk_label_new("RF Gain:");
-    } else {
-      rf_gain_label = gtk_label_new("RF:");
-    }
-
-    gtk_widget_set_name(rf_gain_label, "boldlabel");
+    rf_gain_label = gtk_label_new("RF");
+    gtk_widget_set_name(rf_gain_label, csslabel);
     gtk_widget_set_halign(rf_gain_label, GTK_ALIGN_END);
     gtk_widget_show(rf_gain_label);
     gtk_grid_attach(GTK_GRID(sliders), rf_gain_label, t3pos, 0, twidth, 1);
@@ -800,13 +819,8 @@ GtkWidget *sliders_init(int my_width, int my_height) {
   }
 
   if (have_rx_att) {
-    if (my_width >= 800) {
-      attenuation_label = gtk_label_new("Att (dB):");
-    } else {
-      attenuation_label = gtk_label_new("Att:");
-    }
-
-    gtk_widget_set_name(attenuation_label, "boldlabel");
+    attenuation_label = gtk_label_new("ATT");
+    gtk_widget_set_name(attenuation_label, csslabel);
     gtk_widget_set_halign(attenuation_label, GTK_ALIGN_END);
     gtk_widget_show(attenuation_label);
     gtk_grid_attach(GTK_GRID(sliders), attenuation_label, t3pos, 0, twidth, 1);
@@ -829,8 +843,8 @@ GtkWidget *sliders_init(int my_width, int my_height) {
   // Because "touch-screen friendly" comboboxes cannot be shown/hidden properly,
   // we put this into a container
   //
-  c25_att_label = gtk_label_new("Att/Pre:");
-  gtk_widget_set_name(c25_att_label, "boldlabel");
+  c25_att_label = gtk_label_new("Att/Pre");
+  gtk_widget_set_name(c25_att_label, csslabel);
   gtk_widget_set_halign(c25_att_label, GTK_ALIGN_END);
   gtk_grid_attach(GTK_GRID(sliders), c25_att_label, t3pos, 0, twidth, 1);
   c25_container = gtk_fixed_new();
@@ -842,7 +856,7 @@ GtkWidget *sliders_init(int my_width, int my_height) {
   // but it seems sufficient to either engage attenuators or preamps
   //
   c25_att_combobox = gtk_combo_box_text_new();
-  gtk_widget_set_name(c25_att_combobox, "boldlabel");
+  gtk_widget_set_name(c25_att_combobox, csslabel);
   gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(c25_att_combobox), "-36", "-36 dB");
   gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(c25_att_combobox), "-24", "-24 dB");
   gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(c25_att_combobox), "-12", "-12 dB");
@@ -854,12 +868,12 @@ GtkWidget *sliders_init(int my_width, int my_height) {
   gtk_container_add(GTK_CONTAINER(c25_container), c25_grid);
 
   if (can_transmit) {
-    mic_gain_label = gtk_label_new("Mic:");
-    gtk_widget_set_name(mic_gain_label, "boldlabel");
+    mic_gain_label = gtk_label_new("Mic");
+    gtk_widget_set_name(mic_gain_label, csslabel);
     gtk_widget_set_halign(mic_gain_label, GTK_ALIGN_END);
     gtk_grid_attach(GTK_GRID(sliders), mic_gain_label, t1pos, 1, twidth, 1);
-    linein_label = gtk_label_new("Linein:");
-    gtk_widget_set_name(linein_label, "boldlabel");
+    linein_label = gtk_label_new("LineIn");
+    gtk_widget_set_name(linein_label, csslabel);
     gtk_widget_set_halign(linein_label, GTK_ALIGN_END);
     gtk_grid_attach(GTK_GRID(sliders), linein_label, t1pos, 1, twidth, 1);
     mic_gain_scale = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, -12.0, 50.0, 1.0);
@@ -876,8 +890,8 @@ GtkWidget *sliders_init(int my_width, int my_height) {
     gtk_grid_attach(GTK_GRID(sliders), linein_scale, s1pos, 1, swidth, 1);
     gtk_range_set_value (GTK_RANGE(linein_scale), linein_gain);
     g_signal_connect(G_OBJECT(linein_scale), "value_changed", G_CALLBACK(linein_value_changed_cb), NULL);
-    drive_label = gtk_label_new("TX Drv:");
-    gtk_widget_set_name(drive_label, "boldlabel");
+    drive_label = gtk_label_new("TX Drv");
+    gtk_widget_set_name(drive_label, csslabel);
     gtk_widget_set_halign(drive_label, GTK_ALIGN_END);
     gtk_grid_attach(GTK_GRID(sliders), drive_label, t2pos, 1, twidth, 1);
     drive_scale = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0.0, drive_max, 1.00);
@@ -895,13 +909,8 @@ GtkWidget *sliders_init(int my_width, int my_height) {
     drive_scale = NULL;
   }
 
-  if (my_width >= 800) {
-    squelch_label = gtk_label_new("Squelch:");
-  } else {
-    squelch_label = gtk_label_new("Sqlch:");
-  }
-
-  gtk_widget_set_name(squelch_label, "boldlabel");
+  squelch_label = gtk_label_new("Sqlch");
+  gtk_widget_set_name(squelch_label, csslabel);
   gtk_widget_set_halign(squelch_label, GTK_ALIGN_END);
   gtk_widget_show(squelch_label);
   gtk_grid_attach(GTK_GRID(sliders), squelch_label, t3pos, 1, twidth, 1);
@@ -911,13 +920,13 @@ GtkWidget *sliders_init(int my_width, int my_height) {
   gtk_range_set_increments (GTK_RANGE(squelch_scale), 1.0, 1.0);
   gtk_range_set_value (GTK_RANGE(squelch_scale), active_receiver->squelch);
   gtk_widget_show(squelch_scale);
-  gtk_grid_attach(GTK_GRID(sliders), squelch_scale, sqpos, 1, sq2, 1);
+  gtk_grid_attach(GTK_GRID(sliders), squelch_scale, sqpos, 1, swidth-1, 1);
   squelch_signal_id = g_signal_connect(G_OBJECT(squelch_scale), "value_changed", G_CALLBACK(squelch_value_changed_cb),
                                        NULL);
   squelch_enable = gtk_check_button_new();
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(squelch_enable), active_receiver->squelch_enable);
   gtk_widget_show(squelch_enable);
-  gtk_grid_attach(GTK_GRID(sliders), squelch_enable, s3pos, 1, sq1, 1);
+  gtk_grid_attach(GTK_GRID(sliders), squelch_enable, s3pos, 1, 1, 1);
   gtk_widget_set_halign(squelch_enable, GTK_ALIGN_CENTER);
   g_signal_connect(squelch_enable, "toggled", G_CALLBACK(squelch_enable_cb), NULL);
   return sliders;

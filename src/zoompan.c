@@ -210,29 +210,48 @@ GtkWidget *zoompan_init(int my_width, int my_height) {
   //
   // the horizontal layout changes a little if the total width changes
   //
-  int twidth, s1width, s2width;
+  int twidth, tpix, s1width, s2width;
   int t1pos, t2pos;
   int s1pos, s2pos;
+  char *csslabel;
+
   if (width < 1024) {
-    twidth =  1;              // width of text label
-    s1width = 2;              // width of zoom slider
-    s2width = 5;              // width of pan slider
+    tpix   =  width / 9;      // width of text label in pixels
+    twidth =  1;              // width of text label in grid units
+    s1width = 2;              // width of zoom slider in grid units
+    s2width = 5;              // width of pan slider in grid units
+  } else if (width < 1280) {
+    tpix   =  width / 12;     // width of text label in pixels
+    twidth =  1;              // width of text label in grid units
+    s1width = 3;              // width of zoom slider in grid units
+    s2width = 7;              // width of pan slider in grid units
   } else {
-    twidth =  1;              // width of text label
-    s1width = 3;              // width of zoom slider
-    s2width = 7;              // width of pan slider
+    tpix   =  width / 15;     // width of text label in pixels
+    twidth =  1;              // width of text label in grid units
+    s1width = 4;              // width of zoom slider in grid units
+    s2width = 9;              // width of pan slider in grid units
   }
+
   t1pos = 0;
   s1pos = t1pos + twidth;
   t2pos = s1pos + s1width;
   s2pos = t2pos + twidth;
 
+  if (tpix < 75 ) {
+    csslabel = "slider1";
+  } else if (tpix < 85) {
+    csslabel = "slider2";
+  } else {
+    csslabel = "slider3";
+  }
+
+
   zoompan = gtk_grid_new();
   gtk_widget_set_size_request (zoompan, width, height);
   gtk_grid_set_row_homogeneous(GTK_GRID(zoompan), FALSE);
   gtk_grid_set_column_homogeneous(GTK_GRID(zoompan), TRUE);
-  zoom_label = gtk_label_new("Zoom:");
-  gtk_widget_set_name(zoom_label, "boldlabel");
+  zoom_label = gtk_label_new("Zoom");
+  gtk_widget_set_name(zoom_label, csslabel);
   gtk_widget_set_halign(zoom_label, GTK_ALIGN_END);
   gtk_widget_show(zoom_label);
   gtk_grid_attach(GTK_GRID(zoompan), zoom_label, t1pos, 0, twidth, 1);
@@ -244,8 +263,8 @@ GtkWidget *zoompan_init(int my_width, int my_height) {
   gtk_widget_show(zoom_scale);
   gtk_grid_attach(GTK_GRID(zoompan), zoom_scale, s1pos, 0, s1width, 1);
   zoom_signal_id = g_signal_connect(G_OBJECT(zoom_scale), "value_changed", G_CALLBACK(zoom_value_changed_cb), NULL);
-  pan_label = gtk_label_new("Pan:");
-  gtk_widget_set_name(pan_label, "boldlabel");
+  pan_label = gtk_label_new("Pan");
+  gtk_widget_set_name(pan_label, csslabel);
   gtk_widget_set_halign(pan_label, GTK_ALIGN_END);
   gtk_widget_show(pan_label);
   gtk_grid_attach(GTK_GRID(zoompan), pan_label, t2pos, 0, twidth, 1);
