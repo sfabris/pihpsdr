@@ -94,12 +94,6 @@ int ext_set_vox(void *data) {
 }
 
 // cppcheck-suppress constParameterPointer
-int ext_sliders_update(void *data) {
-  sliders_update();
-  return G_SOURCE_REMOVE;
-}
-
-// cppcheck-suppress constParameterPointer
 int ext_start_band(void *data) {
   start_band();
   return G_SOURCE_REMOVE;

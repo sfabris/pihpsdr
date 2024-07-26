@@ -650,7 +650,6 @@ void reconfigure_radio() {
     }
 
     gtk_widget_show_all(sliders);  // ... this shows both C25 and Alex ATT/Preamp, and both Mic/Linein sliders
-    sliders_update();
     att_type_changed();            // ... and this hides the „wrong“ ones.
     y += SLIDERS_HEIGHT;
   } else {

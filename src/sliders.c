@@ -70,9 +70,7 @@ static GtkWidget *c25_container = NULL;
 static GtkWidget *c25_att_combobox = NULL;
 static GtkWidget *c25_att_label = NULL;
 static GtkWidget *mic_gain_label;
-static GtkWidget *linein_label;
 static GtkWidget *mic_gain_scale;
-static GtkWidget *linein_scale;
 static GtkWidget *drive_label;
 static GtkWidget *drive_scale;
 static GtkWidget *squelch_label;
@@ -157,24 +155,6 @@ void show_popup_slider(enum ACTION action, int rx, double min, double max, doubl
 
     gtk_range_set_value (GTK_RANGE(popup_scale), value),
                         scale_timer = g_timeout_add(2000, scale_timeout_cb, NULL);
-  }
-}
-
-void sliders_update() {
-  if (display_sliders) {
-    if (can_transmit) {
-      if (mic_linein) {
-        gtk_widget_hide(mic_gain_label);
-        gtk_widget_hide(mic_gain_scale);
-        gtk_widget_show(linein_label);
-        gtk_widget_show(linein_scale);
-      } else {
-        gtk_widget_show(mic_gain_label);
-        gtk_widget_show(mic_gain_scale);
-        gtk_widget_hide(linein_label);
-        gtk_widget_hide(linein_scale);
-      }
-    }
   }
 }
 
@@ -531,10 +511,6 @@ void set_filter_shift(int rx, int shift) {
   show_popup_slider(IF_SHIFT, rx,  (double)(min), (double) (max), 1.0, (double) shift, title);
 }
 
-static void linein_value_changed_cb(GtkWidget *widget, gpointer data) {
-  linein_gain = gtk_range_get_value(GTK_RANGE(widget));
-}
-
 static void micgain_value_changed_cb(GtkWidget *widget, gpointer data) {
   mic_gain = gtk_range_get_value(GTK_RANGE(widget));
 
@@ -547,11 +523,7 @@ void set_linein_gain(double value) {
   //t_print("%s value=%f\n",__FUNCTION__, value);
   linein_gain = value;
 
-  if (display_sliders && mic_linein) {
-    gtk_range_set_value (GTK_RANGE(linein_scale), linein_gain);
-  } else {
-    show_popup_slider(LINEIN_GAIN, 0, -34.0, 12.0, 1.0, linein_gain, "LineIn Gain");
-  }
+  show_popup_slider(LINEIN_GAIN, 0, -34.0, 12.0, 1.0, linein_gain, "LineIn Gain");
 }
 
 void set_mic_gain(double value) {
@@ -560,7 +532,7 @@ void set_mic_gain(double value) {
     mic_gain = value;
     SetTXAPanelGain1(transmitter->id, pow(10.0, 0.05 * mic_gain));
 
-    if (display_sliders && !mic_linein) {
+    if (display_sliders) {
       gtk_range_set_value (GTK_RANGE(mic_gain_scale), mic_gain);
     } else {
       show_popup_slider(MIC_GAIN, 0, -12.0, 50.0, 1.0, mic_gain, "Mic Gain");
@@ -872,10 +844,6 @@ GtkWidget *sliders_init(int my_width, int my_height) {
     gtk_widget_set_name(mic_gain_label, csslabel);
     gtk_widget_set_halign(mic_gain_label, GTK_ALIGN_END);
     gtk_grid_attach(GTK_GRID(sliders), mic_gain_label, t1pos, 1, twidth, 1);
-    linein_label = gtk_label_new("LineIn");
-    gtk_widget_set_name(linein_label, csslabel);
-    gtk_widget_set_halign(linein_label, GTK_ALIGN_END);
-    gtk_grid_attach(GTK_GRID(sliders), linein_label, t1pos, 1, twidth, 1);
     mic_gain_scale = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, -12.0, 50.0, 1.0);
     gtk_widget_set_size_request(mic_gain_scale, 0, height / 2);
     gtk_widget_set_valign(mic_gain_scale, GTK_ALIGN_CENTER);
@@ -883,13 +851,6 @@ GtkWidget *sliders_init(int my_width, int my_height) {
     gtk_grid_attach(GTK_GRID(sliders), mic_gain_scale, s1pos, 1, swidth, 1);
     gtk_range_set_value (GTK_RANGE(mic_gain_scale), mic_gain);
     g_signal_connect(G_OBJECT(mic_gain_scale), "value_changed", G_CALLBACK(micgain_value_changed_cb), NULL);
-    linein_scale = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, -34.0, 12.0, 1.0);
-    gtk_widget_set_size_request(linein_scale, 0, height / 2);
-    gtk_widget_set_valign(linein_scale, GTK_ALIGN_CENTER);
-    gtk_range_set_increments (GTK_RANGE(linein_scale), 1.0, 1.0);
-    gtk_grid_attach(GTK_GRID(sliders), linein_scale, s1pos, 1, swidth, 1);
-    gtk_range_set_value (GTK_RANGE(linein_scale), linein_gain);
-    g_signal_connect(G_OBJECT(linein_scale), "value_changed", G_CALLBACK(linein_value_changed_cb), NULL);
     drive_label = gtk_label_new("TX Drv");
     gtk_widget_set_name(drive_label, csslabel);
     gtk_widget_set_halign(drive_label, GTK_ALIGN_END);
