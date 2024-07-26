@@ -129,16 +129,13 @@ places,
 I do highly recommend against a WiFi connection. WiFi routers often use optimisations where they hold
 back data packets for a given client for a while, to be able to send a collection of them in a burst. While
 this certainly optimises the through-put because it minimises clear-channel arbitration events, such jitters
-are disastrous in SDR operation. The safest way of connecting the radio and the computer is to have a
-managed switch with a built-in DHCP server, and to connect both the computer and the radio with a suitable
+are disastrous in SDR operation. The easiest way of connecting the radio and the computer is to have a
+managed switch (or router) with a built-in DHCP server, and to connect both the computer and the radio with a suitable
 cable to the switch. If the computer has both a RJ45 jack for an ethernet cable, and a WiFi interface, my
 personal recommendation is to use WiFi to connect the computer to the internet, and use a single direct
 cable plugged
-into the RJ45 jacks of the computer and of the radio. It is a little tricky how both the computer
-and the radio obtain their IP (\textit{internet protocol}) address in this case,
- one such possibility is described in Appendix
-\ref{sec:dhcp}. An alternative to setting up a DHCP server as described there is to ,,burn'' a fixed
-IP address into the radio, as described in the radio manuals.
+into the RJ45 jacks of the computer and of the radio (see Appendix
+\ref{sec:dhcp}).
 
 \begin{figure}
 \center
@@ -2596,11 +2593,11 @@ by piHPSDR (\rett{CW handled in Radio} \textit{not} checked),
 this ,,ramp width change'' will be effective. A very recent Protocol-2 update
 (March 2024) allows to send the ramp width to the radio as well.
 However, the FPGA firmware in the radio will ignore that value
-unless you have a very recent model, so with 
+unless you have a very recent model, so with
 \rett{CW handled in Radio} checked, changing the ramp width in this menu
 has possibly no effect.
 
-To make sure that the delay of the CW side tone is 
+To make sure that the delay of the CW side tone is
 as small as possible,
 a ramp with a constant width of 5 msec is used here.
 
@@ -2731,21 +2728,25 @@ to have (up to) ten channels can be useful for wide band (AM or eSSB) operation.
 \label{fig:TenBandEqualizer}
 \end{figure}
 
-For each equalizer channel, you can set the corner frequency
-using the spin button and the gain/attenuation with the
-slider to the right of that.
+The four (or ten) corner frequencies can be changed with the
+spin buttons, while the corresponding gain/attenuation is
+set with the slider to the right thereof. Between the corner frequencies, the
+(frequency dependent!) gain/attenuation is obtained by linear interpolation.
+The gain/attenuation specified for the lowest corner frequency
+then applies to all frequencies below, and likewise for the
+highest corner frequency.
 The top left slider does not have a spin button but is
 labeled \rett{Preamp},
-which indicates that thes slider applies an
-additional, frequency-independent gain.
+which indicates that this slider applies an
+additional, frequency-independent gain or attenuation.
+
 
 Equaliser settings are saved with the mode, so
 if you adjust the Equalisers when doing LSB, and then switch to
 DIGU, the equalisers are disabled and they resume their LSB
 settings upon going back to LSB. This also applies to other
 modes such as CWU/CWL, where the TX equaliser has no meaning
-anyway, and where the RX equaliser is normally not needed
-because CW filters usually are narrow.
+anyway, and where the RX equaliser is normally not needed.
 
 If the radio currently runs only a single receiver, RX2 cannot
 be selected with the top right combo-box. Likewise, if the
@@ -2787,6 +2788,12 @@ is much simpler because there are much fewer choices possible.
 such as a beverage antenna which often has a better signal-to-noise
  ration than standard antennas used for transmitting.
 
+\textbf{Transverter operation.} Newer radios (Anan-7000, 8000, and Saturn/G2) have a
+switchable low-power TX output, e.g. the \texttt{Xvtr Out} jack at the ANAN-7000 back plane.
+ This output is automatically enabled if \rett{Xvtr} is selected as the RX antenna of RX1.
+
+
+
 
 \begin{center}
 \fbox{
@@ -2817,21 +2824,17 @@ Even if not using CW this way, it cannot excluded that Ant relay switching
 is so slow that such ,,RF spikes'' appear at an Ant jack intended for RX
 only.
 
-A very recent (Jan 2024) update of the Protocol2 definition offers the possibility to
+A very recent (Jan 2024) update of the Protocol-2 definition offers the possibility to
 tell the radio which antenna settings is must use when it goes TX on its
 own behalf. piHPSDR fully supports this, and if you have an updated
-Protocol2 firmware in your radio then the problem disappears. For Protocol1,
-there is no such firmware update.
+Protocol-2 firmware in your radio then the problem disappears. For Protocol-1,
+there is no such update so the problem remains.
 
 \vspace{0.5cm}
-\textbf{If possible, use the Ext1/Ext2/Xvtr jacks for connecting active RX antennas.}
+\textbf{If possible, use the Ext1/Ext2/Xvtr jacks for connecting sensitive equipment.}
 }
 }
 \end{center}
-
-\textbf{Transverter operation.} Newer radios (Anan-7000, 8000, and Saturn/G2) have a
-switchable low-power TX output. This is enabled if \rett{Xvtr} is selected as the RX antenna of RX1.
-The connector used for low-power TX output can also be used for receiving.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -6583,13 +6586,15 @@ The piHPSDR repository is downloaded, and support libraries are installed, with 
 \begin{center}
 \textbf{\color{red} ----- Release and Development version -----}
 \end{center}
-Proceeding as shown above will provide a current ,,snap shot'' of the piHPSDR repository.
+Proceeding as shown above will provide an up-to-date ,,snap shot'' of the piHPSDR repository.
 This ensures that you have the latest (development) version which corresponds to the present
 version of the manual, but there is a chance that there is a recently introduced bug
 which has not yet been found and fixed. Currently, the development version has version number 2.3.
 
-There is also a ,,release'' version which is the previous version. New features are not implemented
-in the release version, but fixes for bugs that have been found are also applied to the release version.
+There is also a ,,release'' version which is the previous version. The ,,release'' version lags
+behind the current development since new features are not included there. This means that any
+,,release'' version is stable at least from the end user's view point (bug fixes are still
+occasionally made).
 To get the release version, you must, after typing in the the command \texttt{cd pihpsdr},
 insert the command
 
@@ -6602,6 +6607,7 @@ to switch between version with the \texttt{git} command can be given in this man
 }
 }
 \end{center}
+
 
 Depending on the internet speed (and the speed of your SD card or hard disk), the first and the
 last command my take some time. The first command loads the complete piHPSDR repository from
@@ -6761,17 +6767,16 @@ stems from missing, corrupt, or outdated SoapySDR libraries which are not part o
 \chapter[MacOS: piHPDSR install from sources]{Installation of piHPSDR from the sources (MacOS)}
 \label{sec:installmacosx}
 
-\textit{This procedure has been tested on a  fairly recent MacBookAir (2020 model, M1 Silicon CPU, running
-MacOS
-Ventura 13.5.2) and on old iMac (late 2013 model, Intel CPU, running MacOS Catalina 10.15.7.
-For the old iMac the installation procedure takes very long, because most of the \texttt{HomeBrew} packages
-are no longer available in pre-compiled form and have to be compiled from the sources -- but it works!}
+\textit{This procedure has been tested on several Macintosh models, including a MacBook Air with an
+M1 Apple Silicon CPU, a MacMini with an M2 pro CPU, and a somewhat older MacMini with an Intel CPU.
+In the last year, MacOS operating systems from version 10.15 (,,Catalina'') through 14.5 (,,Sonoma'')
+have been used. Very old MacOS systems (e.g. Catalina) are no longer supported by HomeBrew.}
 
 If you want to run piHPDSR on an Apple Macintosh computer (iMac, Mac Mini, iBook Air, PowerBook), then
-you \textit{have to} compile from the sources. The author personally uses piHPSDR on an iMac, and would like
-to provide piHPSDR as a program that you simply copy on your computer and double-click. However, this is
-rather involved for an application built upon the GTK graphical user interface. If you know how to do this,
-any help is welcome. But for the time being, compiling from the sources is the only option.
+you \textit{have to} compile piHPSDR from the sources. Producing a pre-compiled binary that can be
+distributed and run simply by double-clicking is overly complicated for applications using the GTK
+graphical user interface (as piHSPDR does). But fear not, the proceduce is actually very simple because
+all the difficult things are avoided by using the HomeBrew toolkit.
 
 \begin{center}
 \fbox{
@@ -6788,7 +6793,7 @@ to install the ,,HomeBrew'' universe which is the prerequisite for compiling piH
 }
 \end{center}
 
-It seems to be necessary to first install the X Window manager on the Macintosh.
+Some users have reported that it seems to be necessary to first install the X Window manager on the Macintosh.
  To the end, in a web browser open the link
 
 \texttt{www.xquartz.org}
@@ -6830,13 +6835,15 @@ The piHPSDR repository is downloaded, and support libraries are installed, with 
 \begin{center}
 \textbf{\color{red} ----- Release and Development version -----}
 \end{center}
-Proceeding as shown above will provide a current ,,snap shot'' of the piHPSDR repository.
+Proceeding as shown above will provide an up-to-date ,,snap shot'' of the piHPSDR repository.
 This ensures that you have the latest (development) version which corresponds to the present
 version of the manual, but there is a chance that there is a recently introduced bug
 which has not yet been found and fixed. Currently, the development version has version number 2.3.
 
-There is also a ,,release'' version which is the previous version. New features are not implemented
-in the release version, but fixes for bugs that have been found are also applied to the release version.
+There is also a ,,release'' version which is the previous version. The ,,release'' version lags
+behind the current development since new features are not included there. This means that any
+,,release'' version is stable at least from the end user's view point (bug fixes are still
+occasionally made).
 To get the release version, you must, after typing in the the command \texttt{cd pihpsdr},
 insert the command
 
@@ -7014,209 +7021,75 @@ to a SoapySDR device that has not been recognised by the SoapySDR library. If su
 stems from missing, corrupt, or outdated SoapySDR libraries which are not part of piHPSDR.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter[Connecting the RaspPi and the Radio]{Connecting the RaspPi and the Radio}
+\chapter[Connecting the Computer and the Radio]{Connecting Computer and Radio}
 \label{sec:dhcp}
-\textit{This section does \textbf{not} apply to the new Saturn/G2 radios, where the internal RaspPi
-is directly connected to the radio via an XDMA interface. On the other hand, this  section
-\textbf{does} apply if you run piHPSDR on a LINUX desktop or laptop computer, at least if you run a
-Debian Linux variant. For other LINUX variants, the methods described in this section a probably
-a  little different.}
+\textit{This section applies if you run piHPSDR on a
+RaspPi or aDesktop or Laptop computer running Linux or MacOS, and if this computer connects to the
+radio via ethernet, and the radio is running HPSDR protocol-1 or protocol-2. This class of radios
+encompasses the original HPSDR radios but also the HermesLite-II (which runs a variant of the HPSDR
+protocol-1) and RedPitayas (if it runs a hpsdr radio emulator).}
 
-\textit{The procedures in this chapter have been tested both with the old (,,BullsEye'') and
-new (,,BookWorm'') RaspPi operating system.}
+\textit{This section also does not apply to SoapySDR radios (Adalm Pluto, RTL sticks, etc.). In most
+cases they use an USB connection so you can just plug and play.}
+
+\textit{This section further does \textbf{not} apply to the new Saturn/G2 radios when running piHPSDR on the
+internal RaspPi compute module. In this case, the internal RaspPi
+is directly connected to the radio via an XDMA interface.}
 
 
-\section{Rationale.}
+\textbf{The easiest way: DHCP-based connection.}\\
 Every ethernet interface needs an IP address assigned to, otherwise it will not be operative. This applies
 both to computers and radios. The standard way of assigning an IP address to an interface is, that
 a so-called DHCP server is running ,,at the other side of the cable''. Then the computer or the radio
 requests an IP address and gets it from that server. For example, if you connect both the computer (RaspPi)
 and the radio to an internet router via a cable, then the router (assuming that it runs a DHCP server)
-will provide an IP address to both devices and they can start to communicate.
+will provide an IP address to both devices and they can start to communicate. This is not only the
+easiest way to set up the communication between computer and radio, but also lets the radio connect
+to the internet. Alternatively, you simply use an Ethernet switch with a built-in DHCP server. This also
+lets computer and radio communicate but offers no internet connection.
 
+\textbf{The most stable way: direct cable connection.}\\
 My recommended setup is to have a \textit{direct cable connection} between the RaspPi and the radio, that
-is, there is one cable where one end is plugged into the RaspPi and the other into the radio. The RaspPi
+is, there is one cable where one end is plugged into the computer and the other into the radio. The computer
 can then still be connected to the web via its WiFi interface. In this direct cable connection, neither
-the RaspPi nor the radio gets an IP address for the wired interface simply because there is no DHCP server
-at the other side. To cope with this situation, this section describes
-\begin{itemize}
-\item[$\bullet$] {how to assign a fixed IP address to the wired ethernet connection of the RaspPi, such that
-it does not need a DCHP server at the other end of the cable.}
-\item[$\bullet$] {how to set up a DHCP server on the RaspPi that will provide, upon request, an IP address
-to the radio at the other end of the cable.}
-\end{itemize}
+the computer nor the radio gets an IP address for the wired interface simply because there is no DHCP server
+at either side of the cable.
 
-This means that we can (and have to) choose (specify) the IP address (range) of the RaspPi and the Radio. You might
-wonder why the RaspPi needs an IP address since it does already have one. But note that the RaspPi needs
-an individual IP address for all network interfaces it has. So if you use, at the end of the day, both
-the WiFi and the wired interface of the RaspPI this means it has two IP addresses, on for each of the interfaces.
+To make the communication work, the easiest workaraound is probably to assign a fixed IP address both to
+the wired interface of the computer and to the radio. The convention is that such ,,local'' IP addresses have
+the form $192.168.xxx.yyy$, where $xxx$ and $yyy$ are numbers between 1 and 250. Furthermore, such
+local addresses are set up in "batches", where $xxx$ describes the sub-net and $yyy$ the address within the
+subnet. That is, the so-called netmask is 255.255.255.0, alternatively, the addresses are given in the
+form $192.168.xxx.yyy/24$ where the number 24 encodes the netmask.
 
-To demonstrate everything, I have set up a RaspPi with a ,,virgin'' operating system from a freshly burned
-microSD card, and connected it to the web via its WiFi interface. Then, I opened a terminal window and typed
-in the command (and you should do as well!)
+Such local subnets with small numbers of $xxx$ (say, 1 through 4) are often created/used by routers etc.,
+so it is strongly recommended to use a higher number, e.g. $xxx=8$ for the subnet used for connecting
+the comnputer and the radio.
 
-\grtt{ip addr}
+The bad news is that the procedure of assigning a fixed IP address differs greatly between different
+radios, and different operating systems (e.g. Linux and MacOS). For HPSDR radios, a fixed IP address
+can most easily be set with a so-called bootloader program. For RedPitaya radios, this can often
+be done via the web interface of the RedPitaya. For the HermesLite-II radio, the Quisk software
+is recommended to set a fixed IP address.
 
-and here is the output I got:
+Information on how to assign a fixed IP address to a wired ethernet interface for Linux computers
+is relatively easy to locate on the internet. For MacOS it is even easier since it is an option that
+can be chosen in the network setup tool.
 
-\begin{tiny}
-\begin{verbatim}
-1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
-    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-    inet 127.0.0.1/8 scope host lo
-       valid_lft forever preferred_lft forever
-    inet6 ::1/128 scope host
-       valid_lft forever preferred_lft forever
-2: eth0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc mq state DOWN group default qlen 1000
-    link/ether dc:a6:32:45:0f:a5 brd ff:ff:ff:ff:ff:ff
-3: wlan0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
-    link/ether dc:a6:32:45:0f:a6 brd ff:ff:ff:ff:ff:ff
-    inet 192.168.1.3/24 brd 192.168.1.255 scope global dynamic noprefixroute wlan0
-       valid_lft 86102sec preferred_lft 73142sec
-    inet6 fe80::aa2e:dea3:58e6:b566/64 scope link
-       valid_lft forever preferred_lft forever
-\end{verbatim}
-\end{tiny}
-
-Reading this closely, you see that the Wifi interface (wlan0) is working with an IP address $192.168.1.3$, but
-that the wired interface (eth0) does not have an IP address and thus will not work.
-The IP addresses are not so easy to find in the output, watch for the keyword ,,inet'' and note it is missing
-for the eth0 interface.
-
-IP addresses of the form
-$192.168.xxx.yyy$ ($xxx$ and $yyy$ are numbers between 1 and 255)
-are special since they are used for so-called local networks, and from the output given above
-you can tell that the WiFi router the RaspPi is connected to uses a local network with $xxx=1$.
-Your local WiFi setup might be different, but usually $xxx$ assumes small values such as 1, 2, 3.
-This is important to know since we should not use this address range for our new
-local network created to connect the RaspPi with the radio.
-The example shown here uses
- the IP address range $192.168.8.yyy$ for the new local network that consists of the RaspPi, the radio, and
- the cable between them.
-There is nothing magic about $xxx=8$ except that it should not duplicate one of the existing local networks
-the RaspPi is connected to.
-
-\section{Assigned a fixed IP address to the RaspPi}
-
-Assigning a fixed IP address can be done by modifying a system file.
-To this end use the command
-
-\grtt{sudo nano /etc/network/interfaces}
-
-and add four lines such that it reads
-
-\begin{verbatim}
-# interfaces(5) file used by ifup(8) and ifdown(8)
-# Include files from /etc/network/interfaces.d:
-source /etc/network/interfaces.d/*
-
-allow-hotplug eth0
-iface eth0 inet static
-address 192.168.8.1
-netmask 255.255.255.0
-\end{verbatim}
-
-Note that the first three lines were already there,  I have inserted  the lines
-starting with \texttt{allow-hotplug}.
-After reboot, you can check the configuration
-with the command
-
-\grtt{ip addr}
-
-and now it should contain an IP address in the ,,eth0'' field (look for ,,inet 192.168.8.1/24'').
-
-\section{Setting up a DHCP server}
-
-The DHCP server software is not installed on a ,,virgin'' RaspPi OS, therefore install it with the
-command (you need internet connection to do so)
-
-\grtt{sudo apt-get install kea-dhcp4-server}
-
-(a few more packages that are needed for the DHCP server are installed as well).
-It is a bit difficult to manually configure the DHCP server, so just edit
-the relevant configuration file with the command
-
-\grtt{sudo nano /etc/kea/kea-dhcp4.conf}
-
-There is extensive explanation in this file (mostly comments).
-Delete everything that is in there
-and replace it with the contents given at the top of the next page.
-The file contents is placed at the beginning of the page. It it placed
-there and does not look very readable, since all blank lines have
-been removed and all lines start at the left margin. This is so to make
-it easier to drag-and-drop it directly from  the PDF manual file
-into the configuration file. Start copy-pasting with the very first
-opening curly brace and end it with the very last curly brace!
-\clearpage
-
-\begin{verbatim}
-{
-"Dhcp4": {
-"valid-lifetime": 99999,
-"interfaces-config": {
-"interfaces": [ "eth0/192.168.8.1" ]
-},
-"lease-database": {
-"type": "memfile",
-"lfc-interval": 3600
-},
-"subnet4": [{
-"subnet": "192.168.8.0/24",
-"pools": [{ "pool": "192.168.8.10 - 192.168.8.30" }]
-}]
-}
-}
-\end{verbatim}
-
-After changing the configuration file and rebooting, the status of the DHCP server
-can be checked with the command
-
-\grtt{systemctl status kea-dhcp4-server}
-
-and this should indicate that the DHCP server is active and running.
-
-\textbf{The chicken-and-egg problem.}
-However, there is frequently the problem of bringing up the network interfaces
-early enough such that the DHCP server can use it. This is in particular the case
-if the RaspPi is powered up before the radio is powered up, since then the ethernet
-jack behaves as if unconnected and the ethernet interface is not brought up.
-I this case, the output of the above command has line(s)
-containing ,,\texttt{WARN}'' and one of these further contains
-
-\texttt{failed to open socket: the interface eth0 is not running}
-
-This is a chicken-and-egg problem: the radio wants go get its DHCP request serviced
-immediately after it is powered up, which requires to start the RaspPi first. On the
-other hand, the RaspPi wants to see ,,something'' connected to the network jack,
-which requires the radio to be started first.
-
-
-
-It is quite difficult to have a general bullet-proof solution for this.
-This involves virtual interfaces, bridges, and all that stuff.
-Therefore, I think the easiest to proceed as follows if you meet this difficulty:
-Power up the radio (if not yet done), wait a few seconds, and then issue the command
-
-\grtt{sudo systemctl restart kea-dhcp4-server}
-
-This restarts the DHCP server and this should be successful now, because the
-ethernet interface should be up and running.
-Therefore, if one then repeats the ,,systemctl status'' command (the second-last one),
-the lines containing WARN should have been gone.
-Because meanwhile the radio has probably given up to obtain an IP address,
-it is then required
-to power cycle (power off, wait few second, power up) the radio once more.
-It is fully admitted that this procedure is quite ugly, but it works!
-
-P.S.: anybody who comes up with an easy solution that lets the DHCP server correctly start while
-the radio is powered off, and that the radio's DHCP request is then processed after
-it has been powered up, should let me know.
+\textbf{If you plan to run your own DHCP server.}\\
+In principle, one can have a DHCP server running on the computer that also runs piHPSDR, and thi8
+will then assign an IP address to the wired interface of the computer and to the
+radio. Therefore, the problem of how to "burn" a fixed IP address into the radio does not arise. For MacOS, this
+is indeed relatively easy. For Linux computers, I experienced problems doing so because I ran into a
+,,chicken and egg'' problem: upon system start, the DHCP server could not be started since no cable was
+detected in the wired interface. On the other hand, the radio might activate its interface only after
+it gets an IP address via DHCP. Because of this problem, my personal recommendation is to use a fixed
+IP address in the radio whenever possible.
 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\clearpage
 \begin{center}
 \fbox{
 \parbox{\textwidth - 4cm}{
