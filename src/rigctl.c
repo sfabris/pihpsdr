@@ -563,7 +563,7 @@ static gpointer rigctl_cw_thread(gpointer data) {
     //
     // if TX mode is not CW, drain ring buffer
     //
-    int txmode = get_tx_mode();
+    int txmode = vfo_get_tx_mode();
 
     if (txmode != modeCWU && txmode != modeCWL) {
       cw_buf_out = cw_buf_in;
@@ -2765,7 +2765,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         snprintf(reply, 256, "ZZTU%d;", tune);
         send_resp(client->fd, reply) ;
       } else if (command[5] == ';') {
-        tune_update(atoi(&command[4]));
+        radio_tune_update(atoi(&command[4]));
       }
 
       break;
@@ -2783,7 +2783,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         snprintf(reply, 256, "ZZTX%d;", mox);
         send_resp(client->fd, reply) ;
       } else if (command[5] == ';') {
-        mox_update(atoi(&command[4]));
+        radio_mox_update(atoi(&command[4]));
       }
 
       break;
@@ -2847,7 +2847,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
       //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
-        snprintf(reply, 256, "ZZXT%+05lld;", vfo[get_tx_vfo()].xit);
+        snprintf(reply, 256, "ZZXT%+05lld;", vfo[vfo_get_tx_vfo()].xit);
         send_resp(client->fd, reply) ;
       } else if (command[9] == ';') {
         vfo_xit_value(atoi(&command[4]));
@@ -2945,10 +2945,10 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
       //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
-        snprintf(reply, 256, "ZZXS%d;", vfo[get_tx_vfo()].xit_enabled);
+        snprintf(reply, 256, "ZZXS%d;", vfo[vfo_get_tx_vfo()].xit_enabled);
         send_resp(client->fd, reply);
       } else if (command[5] == ';') {
-        vfo[get_tx_vfo()].xit_enabled = atoi(&command[4]);
+        vfo[vfo_get_tx_vfo()].xit_enabled = atoi(&command[4]);
         schedule_high_priority();
         g_idle_add(ext_vfo_update, NULL);
       }
@@ -3123,10 +3123,10 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
             break;
 
           case 60: // XIT
-            if (vfo[get_tx_vfo()].xit_enabled) {
+            if (vfo[vfo_get_tx_vfo()].xit_enabled) {
               vfo_xit_incr((v == 0) ? rit_increment : -rit_increment);
 
-              if (!vfo[get_tx_vfo()].xit_enabled) {
+              if (!vfo[vfo_get_tx_vfo()].xit_enabled) {
                 snprintf(reply, 256, "ZZZI090;");
                 send_resp(client->fd, reply);
               }
@@ -3193,7 +3193,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
               } else {
                 static int startstop = 1;
                 startstop ^= 1;
-                startstop ? protocol_run() : protocol_stop();
+                startstop ? radio_protocol_run() : radio_protocol_stop();
               }
             } else if (v == 2) {
               new_menu();
@@ -3364,12 +3364,12 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
           case 42: // RIT/XIT
             if (v == 0) {
-              if (!vfo[active_receiver->id].rit_enabled && !vfo[get_tx_vfo()].xit_enabled) {
+              if (!vfo[active_receiver->id].rit_enabled && !vfo[vfo_get_tx_vfo()].xit_enabled) {
                 // neither RIT nor XIT: ==> activate RIT
                 vfo_rit_onoff(active_receiver->id, 1);
                 snprintf(reply, 256, "ZZZI081;");
                 send_resp(client->fd, reply);
-              } else if (vfo[active_receiver->id].rit_enabled && !vfo[get_tx_vfo()].xit_enabled) {
+              } else if (vfo[active_receiver->id].rit_enabled && !vfo[vfo_get_tx_vfo()].xit_enabled) {
                 // RIT but no XIT: ==> de-activate RIT and activate XIT
                 vfo_rit_onoff(active_receiver->id, 0);
                 vfo_xit_onoff(1);
@@ -3433,7 +3433,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
               snprintf(reply, 256, "ZZZI01%d;", mox);
               send_resp(client->fd, reply);
             } else {
-              mox_update(mox ^ 1);
+              radio_mox_update(mox ^ 1);
             }
 
             break;
@@ -3443,7 +3443,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
               snprintf(reply, 256, "ZZZI03%d;", tune);
               send_resp(client->fd, reply);
             } else {
-              tune_update(tune ^ 1);
+              radio_tune_update(tune ^ 1);
             }
 
             break;
@@ -4109,7 +4109,7 @@ int parse_cmd(void *data) {
       int tx_ctcss = 0;
 
       if (can_transmit) {
-        tx_xit_en   = vfo[get_tx_vfo()].xit_enabled;
+        tx_xit_en   = vfo[vfo_get_tx_vfo()].xit_enabled;
         tx_ctcss    = transmitter->ctcss + 1;
         tx_ctcss_en = transmitter->ctcss_enabled;
       }
@@ -4117,7 +4117,7 @@ int parse_cmd(void *data) {
       snprintf(reply, 256, "IF%011lld%04d%+06lld%d%d%d%02d%d%d%d%d%d%d%02d%d;",
                vfo[VFO_A].ctun ? vfo[VFO_A].ctun_frequency : vfo[VFO_A].frequency,
                vfo[VFO_A].step, vfo[VFO_A].rit, vfo[VFO_A].rit_enabled, tx_xit_en,
-               0, 0, isTransmitting(), mode, 0, 0, split, tx_ctcss_en ? 2 : 0, tx_ctcss, 0);
+               0, 0, radio_is_transmitting(), mode, 0, 0, split, tx_ctcss_en ? 2 : 0, tx_ctcss, 0);
       send_resp(client->fd, reply);
     }
     break;
@@ -4808,7 +4808,7 @@ int parse_cmd(void *data) {
       //SET       RX;
       //ENDDEF
       if (command[2] == ';') {
-        mox_update(0);
+        radio_mox_update(0);
       }
 
       break;
@@ -5305,7 +5305,7 @@ int parse_cmd(void *data) {
       //ENDDEF
       // set transceiver to TX mode
       if (command[2] == ';') {
-        mox_update(1);
+        radio_mox_update(1);
       }
 
       break;
@@ -5438,7 +5438,7 @@ int parse_cmd(void *data) {
       //ENDDEF
       if (can_transmit) {
         if (command[2] == ';') {
-          snprintf(reply, 256, "XT%d;", vfo[get_tx_vfo()].xit_enabled);
+          snprintf(reply, 256, "XT%d;", vfo[vfo_get_tx_vfo()].xit_enabled);
           send_resp(client->fd, reply);
         } else if (command[3] == ';') {
           vfo_xit_onoff(SET(atoi(&command[2])));
@@ -5737,7 +5737,7 @@ gboolean andromeda_handler(gpointer data) {
   }
 
   if (can_transmit) {
-    int new_xit = vfo[get_tx_vfo()].xit_enabled;
+    int new_xit = vfo[vfo_get_tx_vfo()].xit_enabled;
 
     if (andromeda_last_xit != new_xit) {
       snprintf(reply, 256, "ZZZI09%d;", new_xit);

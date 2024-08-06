@@ -130,10 +130,10 @@ static void toggle_cb(GtkWidget *widget, gpointer data) {
 }
 
 static void anan10e_cb(GtkWidget *widget, gpointer data) {
-  protocol_stop();
+  radio_protocol_stop();
   usleep(200000);
   anan10E = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-  protocol_run();
+  radio_protocol_run();
 }
 
 static void split_cb(GtkWidget *widget, gpointer data) {
@@ -165,7 +165,7 @@ void setDuplex() {
 }
 
 static void duplex_cb(GtkWidget *widget, gpointer data) {
-  if (isTransmitting()) {
+  if (radio_is_transmitting()) {
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), duplex);
     return;
   }
@@ -218,7 +218,7 @@ void load_filters() {
   case APOLLO:
   case CHARLY25:
     // This is most likely not necessary here, but can do no harm
-    set_alex_antennas();
+    radio_set_alex_antennas();
     break;
 
   case NO_FILTER_BOARD:
@@ -309,7 +309,7 @@ static void receivers_cb(GtkToggleButton *widget, gpointer data) {
   // reconfigure_radio requires that the RX panels are active
   // (segfault otherwise), therefore ignore this while TXing
   //
-  if (isTransmitting()) {
+  if (radio_is_transmitting()) {
     gtk_combo_box_set_active(GTK_COMBO_BOX(widget), receivers - 1);
     return;
   }
