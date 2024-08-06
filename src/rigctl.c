@@ -1837,7 +1837,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       } else if (command[5] == ';') {
         int d = atoi(&command[4]);
         vfo[VFO_A].deviation = d ? 5000 : 2500;
-        set_filter(receiver[0]);
+        rx_set_filter(receiver[0]);
 
         if (can_transmit) {
           tx_set_filter(transmitter);
@@ -1965,7 +1965,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         int agc = atoi(&command[4]);
         // update RX1 AGC
         receiver[0]->agc = agc;
-        set_agc(receiver[0], agc);
+        rx_set_agc(receiver[0], agc);
         g_idle_add(ext_vfo_update, NULL);
       }
 
@@ -1988,7 +1988,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         // update RX2 AGC
         RXCHECK(1,
                 receiver[1]->agc = agc;
-                set_agc(receiver[1], agc);
+                rx_set_agc(receiver[1], agc);
                 g_idle_add(ext_vfo_update, NULL);
                )
       }
@@ -3735,7 +3735,7 @@ int parse_cmd(void *data) {
           send_resp(client->fd, reply) ;
         } else if (command[4] == ';') {
           int i = atoi(&command[2]) - 1;
-          transmitter_set_ctcss(transmitter, transmitter->ctcss_enabled, i);
+          tx_set_ctcss(transmitter, transmitter->ctcss_enabled, i);
           g_idle_add(ext_vfo_update, NULL);
         }
       }
@@ -3757,7 +3757,7 @@ int parse_cmd(void *data) {
           send_resp(client->fd, reply) ;
         } else if (command[3] == ';') {
           int state = SET(command[2] == '1');
-          transmitter_set_ctcss(transmitter, state, transmitter->ctcss);
+          tx_set_ctcss(transmitter, state, transmitter->ctcss);
           g_idle_add(ext_vfo_update, NULL);
         }
       }
@@ -3989,7 +3989,7 @@ int parse_cmd(void *data) {
             vfo[VFO_A].deviation = 5000;
           }
 
-          set_filter(receiver[0]);
+          rx_set_filter(receiver[0]);
 
           if (can_transmit) {
             tx_set_filter(transmitter);
@@ -4047,7 +4047,7 @@ int parse_cmd(void *data) {
         send_resp(client->fd, reply) ;
       } else if (command[5] == ';') {
         receiver[0]->agc = atoi(&command[2]) / 5;
-        set_agc(receiver[0], receiver[0]->agc);
+        rx_set_agc(receiver[0], receiver[0]->agc);
         g_idle_add(ext_vfo_update, NULL);
       }
 
@@ -4581,7 +4581,7 @@ int parse_cmd(void *data) {
           command[5] = '\0';
           double level = (double)atoi(&command[2]);
           level = 0.2 * level;
-          transmitter_set_compressor_level(transmitter, level);
+          tx_set_compressor_level(transmitter, level);
           g_idle_add(ext_vfo_update, NULL);
         }
       }
