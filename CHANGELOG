@@ -1,12 +1,18 @@
 LIST OF RECENT PIHPSDR CHANGES
 ==============================
 
+August 2024:
+------------
+
+- activate CESSB overshoot correction with TX compression
+- support for ANAN G2V2
+
 July 2024:
 ----------
 
 - ten-band equalizers
-- new optimized CW RF pulse
-- better layout for large screens
+- new optimized CW RF pulse ("DL1YCF ramp")
+- Slider area: better layout/font sizes for large screens
 
 June 2024:
 ----------
