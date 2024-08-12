@@ -83,11 +83,12 @@ void set_noise() {
   SetRXAANRPosition(active_receiver->id, active_receiver->nr_agc);
   SetRXAANRRun(active_receiver->id, (active_receiver->nr == 1));
   //
-  // d) NB2
+  // d) NR2
   //
   SetRXAEMNRPosition(active_receiver->id, active_receiver->nr_agc);
   SetRXAEMNRgainMethod(active_receiver->id, active_receiver->nr2_gain_method);
   SetRXAEMNRnpeMethod(active_receiver->id, active_receiver->nr2_npe_method);
+  SetRXAEMNRtrainZetaThresh(active_receiver->id, active_receiver->nr2_trained_threshold);
   SetRXAEMNRaeRun(active_receiver->id, active_receiver->nr2_ae);
   SetRXAEMNRRun(active_receiver->id, (active_receiver->nr == 2));
   //
@@ -400,6 +401,7 @@ void noise_menu(GtkWidget *parent) {
   gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(gain_combo), NULL, "Linear");
   gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(gain_combo), NULL, "Log");
   gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(gain_combo), NULL, "Gamma");
+  gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(gain_combo), NULL, "Trained");
   gtk_combo_box_set_active(GTK_COMBO_BOX(gain_combo), active_receiver->nr2_gain_method);
   my_combo_attach(GTK_GRID(nr_grid), gain_combo, 1, 0, 1, 1);
   g_signal_connect(gain_combo, "changed", G_CALLBACK(gain_cb), NULL);

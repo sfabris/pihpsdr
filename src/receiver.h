@@ -118,6 +118,7 @@ typedef struct _receiver {
   int nr2_gain_method;
   int nr2_npe_method;
   int nr2_ae;
+  double nr2_trained_threshold;
 
   //
   // Noise blanker parameters. These parameters have

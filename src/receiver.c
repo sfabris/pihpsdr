@@ -287,6 +287,7 @@ void rx_save_state(RECEIVER *rx) {
   SetPropI1("receiver.%d.nr2_gain_method", rx->id,              rx->nr2_gain_method);
   SetPropI1("receiver.%d.nr2_npe_method", rx->id,               rx->nr2_npe_method);
   SetPropI1("receiver.%d.nr2_ae", rx->id,                       rx->nr2_ae);
+  SetPropF1("receiver.%d.nr2_trained_threshold", rx->id,        rx->nr2_trained_threshold);
   SetPropI1("receiver.%d.nb2_mode", rx->id,                     rx->nb2_mode);
   SetPropF1("receiver.%d.nb_tau", rx->id,                       rx->nb_tau);
   SetPropF1("receiver.%d.nb_advtime", rx->id,                   rx->nb_advtime);
@@ -392,6 +393,7 @@ void rx_restore_state(RECEIVER *rx) {
   GetPropI1("receiver.%d.nr2_gain_method", rx->id,              rx->nr2_gain_method);
   GetPropI1("receiver.%d.nr2_npe_method", rx->id,               rx->nr2_npe_method);
   GetPropI1("receiver.%d.nr2_ae", rx->id,                       rx->nr2_ae);
+  GetPropF1("receiver.%d.nr2_trained_threshold", rx->id,        rx->nr2_trained_threshold);
   GetPropI1("receiver.%d.nb2_mode", rx->id,                     rx->nb2_mode);
   GetPropF1("receiver.%d.nb_tau", rx->id,                       rx->nb_tau);
   GetPropF1("receiver.%d.nb_advtime", rx->id,                   rx->nb_advtime);
@@ -1042,10 +1044,11 @@ RECEIVER *rx_create_receiver(int id, int pixels, int width, int height) {
   rx->nr = 0;
   rx->anf = 0;
   rx->snb = 0;
-  rx->nr_agc = 0;              // NR/NR2/ANF before AGC
-  rx->nr2_gain_method = 2;     // Gamma
-  rx->nr2_npe_method = 0;      // OSMS
-  rx->nr2_ae = 1;              // Artifact Elimination is "on"
+  rx->nr_agc = 0;                   // NR/NR2/ANF before AGC
+  rx->nr2_gain_method = 2;          // Gamma
+  rx->nr2_npe_method = 0;           // OSMS
+  rx->nr2_ae = 1;                   // Artifact Elimination is "on"
+  rx->nr2_trained_threshold = -0.5; // Threshold if gain method is "Trained"
   //
   // It has been reported that the piHPSDR noise blankers do not function
   // satisfactorily. I could reproduce this after building an "impulse noise source"
@@ -1194,6 +1197,7 @@ RECEIVER *rx_create_receiver(int id, int pixels, int width, int height) {
   //
   SetRXAEMNRPosition(rx->id, rx->nr_agc);
   SetRXAEMNRgainMethod(rx->id, rx->nr2_gain_method);
+  SetRXAEMNRtrainZetaThresh (rx->id, rx->nr2_trained_threshold);
   SetRXAEMNRnpeMethod(rx->id, rx->nr2_npe_method);
   SetRXAEMNRaeRun(rx->id, rx->nr2_ae);
   SetRXAEMNRRun(rx->id, (rx->nr == 2));

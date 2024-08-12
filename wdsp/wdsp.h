@@ -135,7 +135,7 @@ extern void SetTXAAMSQThreshold (int channel, double threshold);
 //
 
 extern void ResetPixelBuffers(int disp);
-extern void SetAnalyzer (   int disp,
+extern void SetAnalyzer (  int disp,
                     int n_pixout,
                     int n_fft,
                     int typ,
@@ -155,7 +155,7 @@ extern void SetAnalyzer (   int disp,
                     double fmax,
                     int max_w
                  );
-extern void XCreateAnalyzer(    int disp,
+extern void XCreateAnalyzer(   int disp,
                         int *success,
                         int m_size,
                         int m_num_fft,
@@ -163,22 +163,22 @@ extern void XCreateAnalyzer(    int disp,
                         char *app_data_path
                         );
 extern void DestroyAnalyzer(int disp);
-extern void GetPixels   (   int disp,
+extern void GetPixels  (   int disp,
                     int pixout,
                     dOUTREAL *pix,
                     int *flag
                 );
-extern void SnapSpectrum(   int disp,
+extern void SnapSpectrum(  int disp,
                     int ss,
                     int LO,
                     double *snap_buff);
-extern void SnapSpectrumTimeout(int disp,
-    int ss,
-    int LO,
-    double* snap_buff,
-    DWORD timeout,
-    int* flag);
-extern void SetCalibration (    int disp,
+extern void SnapSpectrumTimeout(   int disp,
+                            int ss,
+                            int LO,
+                            double* snap_buff,
+                            DWORD timeout,
+                            int* flag);
+extern void SetCalibration (   int disp,
                         int set_num,
                         int n_points,
                         double (*cal)[dMAX_M+1]
@@ -418,6 +418,7 @@ extern void SetRXAEMNRaeRun (int channel, int run);
 extern void SetRXAEMNRPosition (int channel, int position);
 extern void SetRXAEMNRaeZetaThresh (int channel, double zetathresh);
 extern void SetRXAEMNRaePsi (int channel, double psi);
+extern void SetRXAEMNRtrainZetaThresh(int channel, double thresh);
 
 //
 // Interfaces from emph.c
@@ -615,7 +616,7 @@ extern void RXANBPSetAutoIncrease (int channel, int autoincr);
 // Interfaces from nob.c
 //
 
-extern ANB create_anb   (
+extern ANB create_anb  (
     int run,
     int buffsize,
     double* in,
@@ -638,7 +639,7 @@ extern void pSetRCVRANBHangtime (ANB a, double time);
 extern void pSetRCVRANBAdvtime (ANB a, double time);
 extern void pSetRCVRANBBacktau (ANB a, double tau);
 extern void pSetRCVRANBThreshold (ANB a, double thresh);
-extern void create_anbEXT   (
+extern void create_anbEXT  (
     int id,
     int run,
     int buffsize,
@@ -693,7 +694,7 @@ extern void pSetRCVRNOBHangtime (NOB a, double time);
 extern void pSetRCVRNOBAdvtime (NOB a, double time);
 extern void pSetRCVRNOBBacktau (NOB a, double tau);
 extern void pSetRCVRNOBThreshold (NOB a, double thresh);
-extern void create_nobEXT   (
+extern void create_nobEXT  (
     int id,
     int run,
     int mode,
@@ -819,7 +820,7 @@ extern void SetSiphonInsize (int id, int size);
 // Interfaces from slew.c
 //
 
-extern void SetTXAuSlewTime(int channel, double time);
+extern void SetTXAuSlewTime (int channel, double time);
 
 //
 // Interfaces from snb.c

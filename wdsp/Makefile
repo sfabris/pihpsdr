@@ -67,7 +67,8 @@ utilities.c\
 varsamp.c\
 version.c\
 wcpAGC.c\
-wisdom.c
+wisdom.c\
+zetahat.c
 
 HEADERS=amd.h\
 ammod.h\
@@ -127,7 +128,8 @@ ssql.h \
 syncbuffs.h\
 TXA.h\
 utilities.h\
-wcpAGC.h
+wcpAGC.h \
+zetahat.h
 
 OBJS=linux_port.o\
 amd.o\
@@ -187,7 +189,8 @@ utilities.o\
 version.o\
 varsamp.o\
 wcpAGC.o\
-wisdom.o
+wisdom.o\
+zetahat.o
 
 libwdsp.a:	$(OBJS)
 	ar rv libwdsp.a $(OBJS)
