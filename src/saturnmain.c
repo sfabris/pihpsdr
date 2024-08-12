@@ -286,7 +286,7 @@ void saturn_register_init() {
   //
   CodecInitialise();
   InitialiseDACAttenROMs();
-  InitialiseCWKeyerRamp(true, 5000);
+  InitialiseCWKeyerRamp(true, 9000);
   SetCWSidetoneEnabled(true);
   SetTXProtocol(true);                                              // set to protocol 2
   SetTXModulationSource(eIQData);                                   // disable debug options

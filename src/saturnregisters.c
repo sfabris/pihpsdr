@@ -1323,7 +1323,7 @@ void SetRXDDCEnabled(bool IsEnabled) {
 }
 
 
-#define VMINCWRAMPDURATION         3000             // 3ms min
+#define VMINCWRAMPDURATION         5000             // 5ms min
 #define VMAXCWRAMPDURATION        10000             // 10ms max
 #define VMAXCWRAMPDURATIONV14PLUS 20000             // 20ms max, for firmware V1.4 and later
 
