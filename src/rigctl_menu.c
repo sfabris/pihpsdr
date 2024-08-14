@@ -84,10 +84,22 @@ static void rigctl_tcp_enable_cb(GtkWidget *widget, gpointer data) {
   }
 }
 
+//
+// That that this call-back is invoked on each and every key stroke
+// in the text field
+//
 static void serial_port_cb(GtkWidget *widget, gpointer data) {
   int id = GPOINTER_TO_INT(data);
-  const char *cp = gtk_entry_get_text(GTK_ENTRY(widget));
-  STRLCPY(SerialPorts[id].port, cp, sizeof(SerialPorts[id].port));
+  if (SerialPorts[id].enable) {
+    //
+    // If this port is running, do not allow changes and
+    // re-init the text entry field
+    //
+    gtk_entry_set_text(GTK_ENTRY(widget), SerialPorts[id].port);
+  } else {
+    const char *cp = gtk_entry_get_text(GTK_ENTRY(widget));
+    STRLCPY(SerialPorts[id].port, cp, sizeof(SerialPorts[id].port));
+  }
 }
 
 static void tcp_andromeda_cb(GtkWidget *widget, gpointer data) {
