@@ -1974,39 +1974,52 @@ menu always looks the same, the lower part lets you fine-tune noise reduction
 or noise blanker parameters. For an in-depth explanation of the noise reduction
 and noise blanker capabilities, the reader is referred to the WDSP manual.
 
-\rett{SNB} This check box lets you enable/disable the spectral noise blanker.
+\rett{SNB}. This check box lets you enable/disable the spectral noise blanker.
 
-\rett{ANF} This check box enables/disables the automatic notch filter. The ANF is
+\rett{ANF}. This check box enables/disables the automatic notch filter. The ANF is
 very good at eliminating a single-tone QRM carrier in SSB modes. It goes without
 saying that activating the ANF in CW is detrimental rather than beneficial, because
 here the signal is of the type the ANF tries to eliminate.
 
-\rett{Noise Reduction} With this pop-down menu, you can choose the type of noise reduction
-(no noise reduction, NR1 or NR2).
+\rett{Noise Reduction}. With this pop-down menu, you can choose the type of noise reduction
+namely no noise reduction, LMS noise reduction (NR1) or spectral noise reduction (NR2).
 
-\rett{Noise Blanker} With this pop-down menu, you can choose the type of noise blanker
+\rett{Noise Blanker}. With this pop-down menu, you can choose the type of noise blanker
 (no noise blanker, the preemptive wide band blanker NB or the interpolating wide band
 blanker NB2 ).
 
-\rett{NR Settings/NB Settings} Choosing one of the two buttons determines whether the
+\rett{NR Settings/NB Settings}. Choosing one of the two buttons determines whether the
 lower part of the menu offers fine-tuning of the noise reduction or noise blanker settings.
 The set up for changing the noise reduction settings is shown in Fig. \ref{fig:NoiseMenu1},
 below (Fig \ref{fig:NoiseMenu2}) you find the set up for changing the noise blanker settings.
 We discuss the noise reduction settings first, but note again for the details you have
-to study the WDSP manual.
+to study the WDSP manual. It should also be noted that noise reduction in general has two
+goals, namely to reduce fatigue (that is, quieting the background)
+and to increase readability (that is, digging otherwise unreadable signals out of the noise).
+ This implies that which settings
+are judged to be ,,best'' very much depends on the beholder,
+and that you have to play around with the parameters until you find a setting that
+suits your needs.
 
-\rett{NR2 Gain Method} The available choices for the NR2 noise reduction here are Linear, Log, and Gamma, where Gamma is the default.
+\rett{NR2 Gain Method}. The available choices for the NR2 noise reduction here are \rett{Linear},
+ \rett{Log}, \rett{Gamma}, and \rett{Trained} (\rett{Gamma} is the default). The new method
+ \rett{Trained} has recently been introduced (since WDSP, version 1.25).
 
-\rett{NR2 NPE Method} The available choices for the NR2 noise reduction here are OSMS and MMSE,
+\rett{NR2 NPE Method}. The available choices for the NR2 noise reduction here are OSMS and MMSE,
 where OSMS is the default.
 
-\rett{NR...Position} In the RX chain, the noise reduction can be placed before or after
+\rett{NR...Position}. In the RX chain, the noise reduction can be placed before or after
 the automatic gain control (AGC). The choice here refers to \textit{all} noise reduction
 capabilities (SNB, ANF, NR1, NR2).
 
 \rett{NR2 Artefact Elimination} The NR2 noise reduction algorithm is prone to producing
-artefacts, so there is an option to reduce such artefacts which should normally be checked
-(artefact elimination ,,on'').
+artefacts, so there is an option to reduce such artefacts.
+Although piHPSDR allows you to play with it, this option should nearly always be
+checked (artefact elimination ,,enabled'').
+
+\rett{NR2 Trained Thresh} This spin-box sets a threshold (between $-5$ and $5$)
+that is only used in the NR2 \rett{Trained} method. The default value, $-0.5$, should be
+suitable in most cases.
 
 \begin{figure}[ht]
 \center
@@ -2017,21 +2030,35 @@ artefacts, so there is an option to reduce such artefacts which should normally 
 
 Note the noise blanker works very different from the noise reduction, since noise blanking
 is applied to the original RX IQ samples before any frequency shifts etc. take place.
+Noise blanking is targeted at impulse noise, that is, small but strong impulses in the RX
+signal that are almost exclusively man-made noise.
 If you have a single source of noise (e.g. a Plasma TV) that drives you crazy, it is worth
 the effort to play around with the NB2 parameters, especially the timings. Different
-QRM sources will require different parameters! The default parameters have been proven useful
+QRM sources will require different noise blanker parameters! The default parameters have been proven useful
 for many situations, but for you a different setting may produce better results!
 The options to control the noise blanker algorithms are:
 
-\rett{NB2 Mode} The available choices for the interpolating NB2 noise blanker here are Zero,
+\rett{NB2 Mode}. The available choices for the interpolating NB2 noise blanker here are Zero,
 Sample\&Hold, Mean Hold, Hold Sample, and Interpolate.
 
-\rett{NB Slew time/Lag time/Lead time/Threshold} These parameters apply both to NB and NB2.
+\rett{NB Slew time/NB Lag time/NB Lead time/NB Threshold}.\\
+ These parameters apply both to NB and NB2.
 piHPSDR currently does not allow to have a separate set of parameters for NB and NB2.
+The times are in the range $0\ldots0.1$ msec, and 0.01 msec is a good starting point. The Threshold
+can vary from 15 to 500. If normal signals are blanked out (erroneously treated as impulse noise),
+then this threshold should be increased. On the other hand, a too high value will prevent the
+noise blanker from detecting (and blanking) impulse noise.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The \texttt{AGC} Menu}
+
+\begin{figure}[ht]
+\center
+\includegraphics[width=6cm]{AGCMenu.png}
+\caption{The \bltt{AGC} menu.}
+\label{fig:AGCMenu}
+\end{figure}
 
 Only few parameters can be controlled via the automatic gain control (AGC) menu.
 The first is the AGC time constant, which can be Off (no AGC), Long, Slow, Medium,
@@ -2046,12 +2073,6 @@ since the AGC hang time is turned off for Medium and Fast.
 In this case, the RX spectrum scope not only shows the ,,normal'' AGC line in green,
 but also the hang threshold line in orange.
 
-\begin{figure}[ht]
-\center
-\includegraphics[width=6cm]{AGCMenu.png}
-\caption{The \bltt{AGC} menu.}
-\label{fig:AGCMenu}
-\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The \texttt{Diversity} Menu}
