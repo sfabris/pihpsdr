@@ -2002,11 +2002,15 @@ are judged to be ,,best'' very much depends on the beholder,
 and that you have to play around with the parameters until you find a setting that
 suits your needs.
 
-\rett{NR2 Gain Method}. The available choices for the NR2 noise reduction here are \rett{Linear},
+\rett{NR2 Gain Method}. The available choices for the NR2 gain-per-bin calculation
+ are \rett{Linear},
  \rett{Log}, \rett{Gamma}, and \rett{Trained} (\rett{Gamma} is the default). The new method
  \rett{Trained} has recently been introduced (since WDSP, version 1.25).
 
-\rett{NR2 NPE Method}. The available choices for the NR2 noise reduction here are OSMS and MMSE,
+\rett{NR2 NPE Method}. The available choices for the NR2 noise power estimation
+are OSMS 
+(Optimal Smoothing Minimum Statistics), MMSE (Minimum Mean-Square Error), and
+NSTAT (Non-stationary Noise Method),
 where OSMS is the default.
 
 \rett{NR...Position}. In the RX chain, the noise reduction can be placed before or after
@@ -2018,16 +2022,11 @@ artefacts, so there is an option to reduce such artefacts.
 Although piHPSDR allows you to play with it, this option should nearly always be
 checked (artefact elimination ,,enabled'').
 
-\rett{NR2 Trained Thresh} This spin-box sets a threshold (between $-5$ and $5$)
+\rett{NR2 Trained Thresh}. This spin-box sets a threshold (between $-5$ and $5$)
 that is only used in the NR2 \rett{Trained} method. The default value, $-0.5$, should be
 suitable in most cases.
 
-\begin{figure}[ht]
-\center
-\includegraphics[width=10cm]{NoiseMenu2.png}
-\caption{The \bltt{Noise} menu (with NB settings).}
-\label{fig:NoiseMenu2}
-\end{figure}
+
 
 Note the noise blanker works very different from the noise reduction, since noise blanking
 is applied to the original RX IQ samples before any frequency shifts etc. take place.
@@ -2039,6 +2038,12 @@ QRM sources will require different noise blanker parameters! The default paramet
 for many situations, but for you a different setting may produce better results!
 The options to control the noise blanker algorithms are:
 
+\begin{figure}[ht]
+\center
+\includegraphics[width=10cm]{NoiseMenu2.png}
+\caption{The \bltt{Noise} menu (with NB settings).}
+\label{fig:NoiseMenu2}
+\end{figure}
 \rett{NB2 Mode}. The available choices for the interpolating NB2 noise blanker here are Zero,
 Sample\&Hold, Mean Hold, Hold Sample, and Interpolate.
 

@@ -424,6 +424,7 @@ void noise_menu(GtkWidget *parent) {
   GtkWidget *npe_combo = gtk_combo_box_text_new();
   gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(npe_combo), NULL, "OSMS");
   gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(npe_combo), NULL, "MMSE");
+  gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(npe_combo), NULL, "NSTAT");
   gtk_combo_box_set_active(GTK_COMBO_BOX(npe_combo), active_receiver->nr2_npe_method);
   my_combo_attach(GTK_GRID(nr_grid), npe_combo, 3, 0, 1, 1);
   g_signal_connect(npe_combo, "changed", G_CALLBACK(npe_cb), NULL);
