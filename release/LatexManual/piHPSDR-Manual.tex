@@ -238,9 +238,9 @@ was not yet ready when piHPSDR was started. Simply press \rett{Discover} to star
 
 The combo-box (pop-down menu) to the left of the \rett{Discover} button lets you choose which type of GPIO
 controller you
-have attached to the computer. This menu is only available if piHPSDR has been compiled with the
-\texttt{GPIO} option, which makes sense on a Raspberry Pi but is not possible on most LINUX desktop/laptop
-or Macintosh computers. The menu lets you choose between
+have attached to the computer.  If compiled with GPIO support (this can also be done for
+programs running on a Raspberry Pi or on an internal Raspberry module of ANAN G2 radios),
+the menu lets you choose between
 
 \begin{itemize}[font=\texttt, left=80pt]
 \item[No Controller]{Choose this if no GPIO controller is wired to your Raspberry Pi. This is the default
@@ -257,13 +257,18 @@ This controller is denoted Controller2 in the rest of this manual.}
 \item[G2 Mk2 Panel]{Choose this if you have an ANAN G2 Mk2 radio (with LEDs in the front panel).}
 \end{itemize}
 
+If piHPSDR is compiles without GPIO support, you can only choose between \rett{No Controller} and
+\rett{G2 Mk2 Panel} (the latter is controlled by a serial connection rather than by GPIO lines).
+The effect of choosing \rett{G2 Mk2 Panel} is that piHPSDR will then use a default when configuring
+the serial lines that is suitable of an ANAN G2-MkII radio.
+
 \textbf{Attention.} Be sure to choose a controller only if such a controller is actually connected to your
 Raspberry Pi. Unexpected things can happen if you chose one type of controller here but have totally different
 hardware connected to the GPIO. For example, if you have a so-called ,,audio hat'' attached to the RaspPi
 GPIO, then it is safest to choose \texttt{No Controller} to avoid piHPSDR using GPIO lines actually used
 by the audio hat.
 
-All settings (protocols, controller, IP address) made in this menu are stored in the global (radio-
+All settings (protocols, controller, IP address) made in this menu are stored in the global (radio
 independent) settings
 and are restored when piHPSDR is started the next time.
 

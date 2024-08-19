@@ -43,9 +43,9 @@
   #include "stemlab_discovery.h"
 #endif
 #include "ext.h"
+#include "gpio.h"
 #ifdef GPIO
   #include "actions.h"
-  #include "gpio.h"
   #include "configure.h"
 #endif
 #include "protocols.h"
@@ -137,14 +137,19 @@ static gboolean gpio_cb (GtkWidget *widget, GdkEventButton *event, gpointer data
 }
 
 #endif
+#endif
 
 static void gpio_changed_cb(GtkWidget *widget, gpointer data) {
   controller = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+#ifndef GPIO
+  if (controller != G2_V2) {
+    controller = NO_CONTROLLER;
+    gtk_combo_box_set_active(GTK_COMBO_BOX(widget), controller);
+  }
+#endif
   gpio_set_defaults(controller);
   gpioSaveState();
 }
-
-#endif
 
 static gboolean discover_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   gtk_widget_destroy(discovery_dialog);
@@ -516,7 +521,6 @@ void discovery() {
   gtk_grid_attach(GTK_GRID(grid), host_port_spinner, 3, row, 1, 1);
   row++;
 #endif
-#ifdef GPIO
   controller = NO_CONTROLLER;
   gpioRestoreState();
   gpio_set_defaults(controller);
@@ -530,7 +534,6 @@ void discovery() {
   my_combo_attach(GTK_GRID(grid), gpio, 0, row, 1, 1);
   gtk_combo_box_set_active(GTK_COMBO_BOX(gpio), controller);
   g_signal_connect(gpio, "changed", G_CALLBACK(gpio_changed_cb), NULL);
-#endif
   GtkWidget *discover_b = gtk_button_new_with_label("Discover");
   g_signal_connect (discover_b, "button-press-event", G_CALLBACK(discover_cb), NULL);
   gtk_grid_attach(GTK_GRID(grid), discover_b, 1, row, 1, 1);
