@@ -33,8 +33,8 @@ struct _SERIALPORT {
 
 typedef struct _SERIALPORT SERIALPORT;
 
-#define MAX_SERIAL 2
-extern SERIALPORT SerialPorts[2];
+#define MAX_SERIAL 3
+extern SERIALPORT SerialPorts[MAX_SERIAL];
 extern gboolean rigctl_debug;
 
 void launch_tcp_rigctl (void);

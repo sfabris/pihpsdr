@@ -1616,8 +1616,15 @@ int process_action(void *data) {
     break;
 
   case VFO:
+    // respect the VFO encoder divisor
     if (a->mode == RELATIVE && !locked) {
-      vfo_step(a->val);
+      static int acc = 0;
+      acc += (int) a->val;
+      int new = acc / vfo_encoder_divisor;
+      if (new != 0) {
+        vfo_step(new);
+        acc -= new*vfo_encoder_divisor;
+      }
     }
 
     break;
@@ -1641,15 +1648,29 @@ int process_action(void *data) {
     break;
 
   case VFOA:
+    // respect the VFO encoder divisor
     if (a->mode == RELATIVE && !locked) {
-      vfo_id_step(0, (int)a->val);
+      static int acc = 0;
+      acc += (int) a->val;
+      int new = acc / vfo_encoder_divisor;
+      if (new != 0) {
+        vfo_id_step(0, new);
+        acc -= new*vfo_encoder_divisor;
+      }
     }
 
     break;
 
   case VFOB:
+    // respect the VFO encoder divisor
     if (a->mode == RELATIVE && !locked) {
-      vfo_id_step(1, (int)a->val);
+      static int acc = 0;
+      acc += (int) a->val;
+      int new = acc / vfo_encoder_divisor;
+      if (new != 0) {
+        vfo_id_step(1, new);
+        acc -= new*vfo_encoder_divisor;
+      }
     }
 
     break;

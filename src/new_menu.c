@@ -698,7 +698,7 @@ void new_menu() {
 #endif
 #ifdef GPIO
 
-    if (controller != NO_CONTROLLER) {
+    if (controller != NO_CONTROLLER && controller != G2_V2) {
       GtkWidget *encoders_b = gtk_button_new_with_label("Encoders");
       g_signal_connect (encoders_b, "button-press-event", G_CALLBACK(encoder_cb), NULL);
       gtk_grid_attach(GTK_GRID(grid), encoders_b, col, row, 1, 1);
@@ -708,7 +708,7 @@ void new_menu() {
     //
     // Note the switches of CONTROLLER1 are assigned via the Toolbar menu
     //
-    if (controller != NO_CONTROLLER && controller != CONTROLLER1) {
+    if (controller != NO_CONTROLLER && controller != CONTROLLER1 && controller != G2_V2) {
       GtkWidget *switches_b = gtk_button_new_with_label("Switches");
       g_signal_connect (switches_b, "button-press-event", G_CALLBACK(switch_cb), NULL);
       gtk_grid_attach(GTK_GRID(grid), switches_b, col, row, 1, 1);

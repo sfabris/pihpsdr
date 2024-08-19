@@ -254,6 +254,7 @@ single encoders. This special case is not covered in this manual.}
 on a single shaft), or a clone thereof.
 This controller is denoted Controller2 in the rest of this manual.}
 \item[G2 Front Panel]{Choose this if you have an ANAN G2 radio with a built-in controller.}
+\item[G2 Mk2 Panel]{Choose this if you have an ANAN G2 Mk2 radio (with LEDs in the front panel).}
 \end{itemize}
 
 \textbf{Attention.} Be sure to choose a controller only if such a controller is actually connected to your
@@ -1052,13 +1053,12 @@ It is possible to change the OC settings in the \bltt{OC} menu, and these settin
 preferences. Upon next program start, however, these preferences will again be overwritten as long
 as the \texttt{N2ADR} filter board is chosen.
 
-\rett{VFO Encoder Divisor:} This option is visible only if using a GPIO controller.
-It may happen that the
-encoders of the main VFO dial generate too many ticks per revolution, such that it is difficult
-to fine tune on a signal. If the VFO Encoder Divisor, as shown in the example, has a value of
-15, only every 15$^\textrm{th}$ tick will we processed. In my view, one should rather decrease
-the VFO step size than using a divisor value larger than one, but the option is left
-for backwards compatibility.
+\rett{VFO Encoder Divisor:} This option applies to VFO knobs in front panels, GPIO
+or MIDI controllers. In some cases, these encoders generate too many ticks per revolution,
+such that it is difficult to fine tune on a signal.
+If the VFO Encoder Divisor, as shown in the example, has a value of
+15, only every 15$^\textrm{th}$ tick will we processed. For the default value of 1,
+the divisor has no effect.
 
 \rett{Split} Use this checkbox to enable/disable Split mode. In Split mode, the frequency of
 the non-active receiver (when using two receivers) or the frequency of VFO-B (when using one
@@ -3065,12 +3065,11 @@ function, one is stuck and can no longer cycle through the function layers.
 \section{The \texttt{RigCtl} (Rig control, or CAT) Menu}
 
 piHPSDR has a built-in rig control or CAT (computer aided transceiver) facility. This can be used to control
-piHPSDR from
-other programs or even other computers. You can have up to three simultaneous CAT connections via TCP, and
-two additional CAT
-connections via serial lines (provided the host computer running piHPSDR has those serial interfaces
-available). It is
-also possible to use FIFOs (also known as named pipes) instead of real serial devices, which offers a
+piHPSDR from other programs or even other computers. You can have up to three simultaneous CAT connections
+via TCP, and three additional CAT connections via serial lines (provided the host computer running piHPSDR
+has those serial interfaces available). Note that on the new ANAN G2MkII radios, one of the serial lines
+is used for controlling the front panel.
+It is also possible to use FIFOs (also known as named pipes) instead of real serial devices, which offers a
 hardware-free connection
 of, say, a logbook program running on the same computer to piHPSDR, even if the logbook program cannot use
 TCP. On my Macintosh computer for example, using a named pipe and the Kenwood TS-2000 radio model,
@@ -3099,14 +3098,18 @@ is rather standard, using another one is only necessary if you are running more 
 SDR program on the host computer at the same time.
 This port number must match the port number used in the (digi-mode or logbook) program that wants to connect.
 
-\rett{Serial}. piHPSDR support up two two CAT connections over serial lines or named pipes.
+\rett{Serial}. piHPSDR support up two three CAT connections over serial lines or named pipes.
 In the text field, enter the device name of the serial port or the named pipe to use.
 Which names to use
-is highly operating system dependent. On a RaspPi, the built-in serial ports is usually referred to
-by the device file \texttt{/dev/ttyS0}. USB-to-serial
+is highly operating system dependent. On a RaspPi,  USB-to-serial
 adapters (which are nowadays the standard way to add serial ports to a computer) have names such as
 \texttt{/dev/ttyACM0} or \texttt{/dev/USB0} (on RaspPi) or \texttt{/dev/tty.usbserial-....} (on MacOS).
- piHPSDR does not try to ,,detect'' serial
+The serial port shown in the third line of Fig. \ref{fig:RigCtlMenu}, \texttt{/dev/ttyAMA3},
+is used on the ANAN G2-MkII radios for communicating with the front panel. If you chose 
+\rett{G2 Mk2 Panel} in the discovery menu, this port will be assigned by default to the third
+slot and it is also enabled, this can be changed in the RigCtl menu and will then also be written to
+the props file.
+ It is important to know that piHPSDR does not try to ,,detect'' serial
 ports, you must know the proper name (e.g. by looking at the contents of the \texttt{/dev} directory).
 Named pipes can be created everywhere in the file system hierarchy using the command
 ,,\texttt{mkdir -p <some\_arbitrary\_name>}''. Names pipes can be used for the communication between piHPSDR
@@ -3120,11 +3123,13 @@ To the right of the serial port text field, there is a pop-down menu for choosin
 Enabling and disabling can be done separately for the TCP subsystem and each of the serial
 connections.
 
-\rett{Andromeda}. This checkbox enables the connection for use with ANDROMEDA consoles. Serial lines are
+\rett{Andromeda}. This checkbox enables the connection for use with ANDROMEDA consoles
+of the G2-MkII front panel. Serial lines are
 forced to 9600 baud if enabled for ANDROMEDA. Furthermore, status changes of piHPSDR (e.g. RIT on/off) are
 automatically reported via ZZZI CAT commands (see Appendix \ref{sec:catcommands}). These messages are
-used by the ANDROMEDA console to switch LED indicators such that they reflect the current state
-of piHPSDR. Note that this flag is only inspected when the connection is opened. Serial CAT connections
+used by the ANDROMEDA console or the G2-MkII front panel
+to switch LED indicators such that they reflect the current state
+of piHPSDR. Note that the \rett{Andromeda} flag is only inspected when the connection is opened. Serial CAT connections
 are established when successfully opened upon program start or via this menu.
 TCP CAT connections are established when the \textit{client} successfully connects.
 

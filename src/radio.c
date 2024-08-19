@@ -220,7 +220,7 @@ int auto_tune_end = 0;
 int enable_tx_inhibit = 0;
 int TxInhibit = 0;
 
-int vfo_encoder_divisor = 15;
+int vfo_encoder_divisor = 1;
 
 int protocol;
 int device;
@@ -1051,22 +1051,25 @@ void radio_start_radio() {
     SerialPorts[id].autoreporting = 0;
     snprintf(SerialPorts[id].port, sizeof(SerialPorts[id].port), "/dev/ttyACM%d", id);
   }
+  //
+  // If the controller is G2_V2, enable first serial port for the
+  // built-in ANDROMEDA-type panel on /dev/ttyAMA3. This will not be done
+  // if compiled without GPIO support but then you can fill  in by hand
+  // in the rigctl menu.
+  //
+  if (controller == G2_V2) {
+    SerialPorts[MAX_SERIAL-1].enable = 1;
+    SerialPorts[MAX_SERIAL-1].andromeda = 1;
+    SerialPorts[MAX_SERIAL-1].baud = B9600;
+    SerialPorts[MAX_SERIAL-1].autoreporting = 0;
+    snprintf(SerialPorts[MAX_SERIAL-1].port, sizeof(SerialPorts[MAX_SERIAL-1].port), "/dev/ttyAMA3");
+  }
 
   protocol = radio->protocol;
   device = radio->device;
 
   if (device == NEW_DEVICE_SATURN && (strcmp(radio->info.network.interface_name, "XDMA") == 0)) {
     have_saturn_xdma = 1;
-    //
-    // On a Saturn, enable /dev/ttyS0 as an Andromeda port by default.
-    // This will be overridden by the props file, if this setting has
-    // been changed meanwhile in the RIGCTL menu
-    //
-    SerialPorts[0].enable = 1;
-    SerialPorts[0].andromeda = 1;
-    SerialPorts[0].baud = B9600;
-    SerialPorts[0].autoreporting = 0;
-    snprintf(SerialPorts[0].port, sizeof(SerialPorts[0].port), "/dev/ttyS0");
   }
 
   if (device == DEVICE_METIS || device == DEVICE_OZY || device == NEW_DEVICE_ATLAS) {
@@ -1520,8 +1523,11 @@ void radio_start_radio() {
   }
 
   for (int id = 0; id < MAX_SERIAL; id++) {
+    //
+    // If serial port is enabled but no success, clear "enable" flag
+    //
     if (SerialPorts[id].enable) {
-      launch_serial_rigctl(id);
+      SerialPorts[id].enable = launch_serial_rigctl(id);
     }
   }
 
@@ -2394,11 +2400,12 @@ static void radio_restore_state() {
   t_print("%s: path=%s\n", __FUNCTION__, property_path);
   g_mutex_lock(&property_mutex);
   loadProperties(property_path);
+
   //
   // For consistency, all variables should get default values HERE,
-  // but this is too much for the moment. TODO: initialize at least all
-  // variables that are needed if the radio is remote
+  // but this is too much for the moment.
   //
+
   GetPropI0("WindowPositionX",                               window_x_pos);
   GetPropI0("WindowPositionY",                               window_y_pos);
   GetPropI0("display_zoompan",                               display_zoompan);

@@ -27,7 +27,8 @@ enum _controller_enum {
   CONTROLLER1,
   CONTROLLER2_V1,
   CONTROLLER2_V2,
-  G2_FRONTPANEL
+  G2_FRONTPANEL,
+  G2_V2
 };
 
 extern int controller;
