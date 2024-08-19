@@ -3262,7 +3262,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
           steps *= andromeda_vfo_speedup[31];
         }
 
-        vfo_id_step(active_receiver->id, -steps);
+        schedule_action(VFO, RELATIVE, -steps);
       }
 
       break;
@@ -4101,7 +4101,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
           steps *= andromeda_vfo_speedup[31];
         }
 
-        vfo_id_step(active_receiver->id, steps);
+        schedule_action(VFO, RELATIVE, steps);
       }
 
       break;
