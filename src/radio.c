@@ -1043,7 +1043,8 @@ void radio_start_radio() {
 
   for (int id = 0; id < MAX_SERIAL; id++) {
     //
-    // Apply some default values
+    // Apply some default values. The name ttyACMx is suitable for
+    // USB-serial adapters on Linux
     //
     SerialPorts[id].enable = 0;
     SerialPorts[id].andromeda = 0;
@@ -1052,17 +1053,15 @@ void radio_start_radio() {
     snprintf(SerialPorts[id].port, sizeof(SerialPorts[id].port), "/dev/ttyACM%d", id);
   }
   //
-  // If the controller is G2_V2, enable first serial port for the
-  // built-in ANDROMEDA-type panel on /dev/ttyAMA3. This will not be done
-  // if compiled without GPIO support but then you can fill  in by hand
-  // in the rigctl menu.
+  // If the controller is G2_V2, enable last serial port for the
+  // built-in ANDROMEDA-type panel on /dev/ttyAMA1.
   //
   if (controller == G2_V2) {
     SerialPorts[MAX_SERIAL-1].enable = 1;
     SerialPorts[MAX_SERIAL-1].andromeda = 1;
     SerialPorts[MAX_SERIAL-1].baud = B9600;
     SerialPorts[MAX_SERIAL-1].autoreporting = 0;
-    snprintf(SerialPorts[MAX_SERIAL-1].port, sizeof(SerialPorts[MAX_SERIAL-1].port), "/dev/ttyAMA3");
+    snprintf(SerialPorts[MAX_SERIAL-1].port, sizeof(SerialPorts[MAX_SERIAL-1].port), "/dev/ttyAMA1");
   }
 
   protocol = radio->protocol;
