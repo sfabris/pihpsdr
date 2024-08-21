@@ -93,6 +93,85 @@ static void* wisdom_thread(void *arg) {
   return NULL;
 }
 
+static void udp_tts_send(char *msg) {
+  int sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+  int optval = 1;
+  struct sockaddr_in addr;
+
+  t_print("%s: sending >>>%s<<<\n", __FUNCTION__, msg);
+  setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &optval, sizeof(optval));
+  setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
+  setsockopt(sock, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
+
+  memset(&addr, 0, sizeof(addr));
+  addr.sin_family = AF_INET;
+  addr.sin_addr.s_addr = htonl(INADDR_BROADCAST);
+  addr.sin_port = htons(19080);
+
+  sendto(sock, msg, strlen(msg), 0, (struct sockaddr * ) &addr, sizeof(addr));
+  close(sock);
+}
+
+static void udp_tts_freq() {
+ long long freq;
+ long kilo;
+ int hertz;
+ int v = active_receiver->id;
+ char msg[128];
+
+ if (vfo[v].ctun) {
+   freq = vfo[v].ctun_frequency;
+ } else {
+   freq = vfo[v].frequency;
+ }
+ kilo = freq / 1000;
+ hertz = freq - 1000*kilo;
+ snprintf(msg, sizeof(msg), "Frequency %ld.%03d kilo hertz", kilo, hertz);
+ udp_tts_send(msg);
+}
+
+static void udp_tts_mode() {
+  int v = active_receiver->id;
+  int m = vfo[v].mode;
+
+  switch (m) {
+  case modeLSB:
+    udp_tts_send("Mode L S B");
+    break;
+  case modeUSB:
+    udp_tts_send("Mode U S B");
+    break;
+  case modeDSB:
+    udp_tts_send("Mode D S B");
+    break;
+  case modeCWL:
+    udp_tts_send("Mode C W L");
+    break;
+  case modeCWU:
+    udp_tts_send("Mode C W U");
+    break;
+  case modeFMN:
+    udp_tts_send("Mode F M");
+    break;
+  case modeAM:
+    udp_tts_send("Mode A M");
+    break;
+  case modeDIGU:
+    udp_tts_send("Mode U S B digital");
+    break;
+  case modeDIGL:
+    udp_tts_send("Mode L S B digital");
+    break;
+  }
+}
+
+static void udp_tts_filter() {
+  char msg[128];
+  int w = active_receiver->filter_high - active_receiver->filter_low;
+   snprintf(msg, sizeof(msg), "Filter width %d Hertz", w);
+  udp_tts_send(msg);
+}
+
 // cppcheck-suppress constParameterCallback
 gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data) {
   gboolean ret = TRUE;
@@ -116,7 +195,27 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data) {
   // Keypad Add        ==>  NUMPAD kHz
   // Keypad Enter      ==>  NUMPAD MHz
   //
+  // Accessibility for blind hams:
+  //   create UDP packets with text that is to be read aloud
+  //   piHPSDR does not care what is done with these packets,
+  //   it simply sends them out on UDP port 12345.
+  //   for example such a packet may contain the string
+  //   "Frequency 7.1234 kilo"
+  //
+  // F1                ==>  read Frequency
+  // F2                ==>  read Mode
+  // F3                ==>  read Filter
+  //
   switch (event->keyval) {
+  case GDK_KEY_F1:
+    udp_tts_freq();
+    break;
+  case GDK_KEY_F2:
+    udp_tts_mode();
+    break;
+  case GDK_KEY_F3:
+    udp_tts_filter();
+    break;
   case GDK_KEY_space:
     if (can_transmit) {
       if (radio_get_tune() == 1) {
