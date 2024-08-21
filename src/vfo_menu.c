@@ -81,15 +81,22 @@ static gboolean close_cb () {
 static gboolean vfo_num_pad_cb(GtkWidget *widget, GdkEventButton *event, gpointer data) {
   int val = GPOINTER_TO_INT(data);
   char output[64];
-  vfo_num_pad(btn_actions[val], myvfo);
+  //
+  // A "double click" with the mouse actually generates THREE button press
+  // events, the third one has event->type == GDK_2BUTTON_PRESS.
+  // This one has to be ignored.
+  //
+  if (event->type != GDK_2BUTTON_PRESS) {
+    vfo_num_pad(btn_actions[val], myvfo);
 
-  if (vfo[myvfo].entered_frequency[0]) {
-    snprintf(output, 64, "<big><b>%s</b></big>", vfo[myvfo].entered_frequency);
-  } else {
-    snprintf(output, 64, "<big><b>0</b></big>");
+    if (vfo[myvfo].entered_frequency[0]) {
+      snprintf(output, 64, "<big><b>%s</b></big>", vfo[myvfo].entered_frequency);
+    } else {
+      snprintf(output, 64, "<big><b>0</b></big>");
+    }
+
+    gtk_label_set_markup (GTK_LABEL (label), output);
   }
-
-  gtk_label_set_markup (GTK_LABEL (label), output);
   return FALSE;
 }
 
