@@ -2,7 +2,7 @@
 
 ################################################################
 #
-# A script to setup everything that needs be done on a 
+# A script to setup everything that needs be done on a
 # 'virgin' RaspPi.
 #
 ################################################################
@@ -251,35 +251,35 @@ echo
 echo "... Final RaspPi Setup."
 echo
 
-if test -f "/boot/config.txt"; then
-  echo "... putting GPIO stuff into /boot/config.txt"
-  if grep -q "gpio=4-13,16-27=ip,pu" /boot/config.txt; then
-    echo "!!! /boot/config.txt already contains gpio setup."
-  else
-    echo "... /boot/config.txt does not contain gpio setup - adding it."
-    echo "... Please reboot system for this to take effect."
-    cat <<EGPIO | sudo tee -a /boot/config.txt > /dev/null
-[all]
-# setup GPIO for pihpsdr controllers
-gpio=4-13,16-27=ip,pu
-EGPIO
-  fi
-fi
-
-if test -f "/boot/firmware/config.txt"; then  
-  echo "... putting GPIO stuff into /boot/firmware/config.txt"
-  if grep -q "gpio=4-13,16-27=ip,pu" /boot/firmware/config.txt; then
-    echo "!!! /boot/firmware/config.txt already contains gpio setup."
-  else
-    echo "... /boot/firmware/config.txt does not contain gpio setup - adding it."
-    echo "... Please reboot system for this to take effect."
-    cat <<EGPIO | sudo tee -a /boot/firmware/config.txt > /dev/null
-[all]
-# setup GPIO for pihpsdr controllers
-gpio=4-13,16-27=ip,pu
-EGPIO
-  fi
-fi
+#if test -f "/boot/config.txt"; then
+#  echo "... putting GPIO stuff into /boot/config.txt"
+#  if grep -q "gpio=4-13,16-27=ip,pu" /boot/config.txt; then
+#    echo "!!! /boot/config.txt already contains gpio setup."
+#  else
+#    echo "... /boot/config.txt does not contain gpio setup - adding it."
+#    echo "... Please reboot system for this to take effect."
+#    cat <<EGPIO | sudo tee -a /boot/config.txt > /dev/null
+#[all]
+## setup GPIO for pihpsdr controllers
+#gpio=4-13,16-27=ip,pu
+#EGPIO
+#  fi
+#fi
+#
+#if test -f "/boot/firmware/config.txt"; then
+#  echo "... putting GPIO stuff into /boot/firmware/config.txt"
+#  if grep -q "gpio=4-13,16-27=ip,pu" /boot/firmware/config.txt; then
+#    echo "!!! /boot/firmware/config.txt already contains gpio setup."
+#  else
+#    echo "... /boot/firmware/config.txt does not contain gpio setup - adding it."
+#    echo "... Please reboot system for this to take effect."
+#    cat <<EGPIO | sudo tee -a /boot/firmware/config.txt > /dev/null
+#[all]
+## setup GPIO for pihpsdr controllers
+#gpio=4-13,16-27=ip,pu
+#EGPIO
+#  fi
+#fi
 
 echo " ...copying XDMA udev rules"
 sudo cp $PIHPSDR/60-xdma.rules $PIHPSDR/xdma-udev-command.sh /etc/udev/rules.d/
