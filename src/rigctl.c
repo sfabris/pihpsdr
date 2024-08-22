@@ -1068,7 +1068,7 @@ static gpointer rigctl_server(gpointer data) {
     tcp_client[spare].busy            = 0;
     tcp_client[spare].done            = 0;
     tcp_client[spare].running         = 1;
-    tcp_client[spare].andromeda_timer = 1;
+    tcp_client[spare].andromeda_timer = 0;
     tcp_client[spare].auto_reporting  = SET(rigctl_tcp_autoreporting);
     tcp_client[spare].andromeda_type  = 0;
     tcp_client[spare].last_fa         = 0;
