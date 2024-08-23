@@ -471,6 +471,7 @@ src/switch_menu.c \
 src/toolbar.c \
 src/toolbar_menu.c \
 src/transmitter.c \
+src/tts.c \
 src/tx_menu.c \
 src/tx_panadapter.c \
 src/version.c \
@@ -558,6 +559,7 @@ src/switch_menu.h \
 src/toolbar.h \
 src/toolbar_menu.h \
 src/transmitter.h \
+src/tts.h \
 src/tx_menu.h \
 src/tx_panadapter.h \
 src/version.h \
@@ -639,6 +641,7 @@ src/switch_menu.o \
 src/toolbar.o \
 src/toolbar_menu.o \
 src/transmitter.o \
+src/tts.o \
 src/tx_menu.o \
 src/tx_panadapter.o \
 src/version.o \

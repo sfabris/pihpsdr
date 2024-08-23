@@ -17,18 +17,27 @@
 */
 
 //
-// Stand-alone "UDP listener program. It depends on the existence of
-// the /usr/bin/festival program. This program is a text-to-speech
-// application.
+// Stand-alone "UDP listener" program for use with the piHPSDR
+// Text-to-Speech hook. It makes use of either eSpeak or festival
+// as the text-to-speech backend.
 //
 // This program will grap UDP packets (which may be broadcast)
-// to port 19080.
-// The contents are interpreted as a text and wrapped into a
-// SayText command suitable for festival.
+// to port 19080.  The contents are interpreted as a text and
+// fed to the text-to-speech program, which must be configured
+// to produce audio on a suitable device.
 //
-// Just start this program in a separate window and let it
-// run.
+// ESPEAK or FESTIVAL must be defined and indicate the full
+// pathname of the text-to-speech application. If both are defined,
+// ESPEAK is used. On many systems, espeak is actually named espeak-ng.
 //
+// On MacOS, I installed espeak via homebrew, and the program is then
+// actually /usr/local/bin/espeak.
+//
+
+//#define ESPEAK    "/usr/bin/espeak-ng"
+//#define FESTIVAL  "/usr/bin/festival"
+
+#define ESPEAK "/usr/local/bin/espeak"
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -43,7 +52,7 @@ int main() {
   int udpsock;                   // UDP listening socket
   struct sockaddr_in addr;       // address to listen to
   struct sockaddr_in from;       // filled in recvfrm: where the packet came from
-  socklen_t lenaddr;             
+  socklen_t lenaddr;
   ssize_t bytes;                  // size (in bytes) of a received packet
   char msg[130];                 // buffer for message from piHPSDR
   char cmd[256];                 // buffer for a command for festival
@@ -57,20 +66,32 @@ int main() {
     // Child process: connect pipe to stdin
     // connect stdout and stderr to /dev/null
     // run festival program from /usr/bin/festival
-    // 
+    //
     int fd1=open("/dev/null", O_WRONLY);
     int fd2=open("/dev/null", O_WRONLY);
     close (0);
     close (1);
-    close (2); dup(pipefd[0]);    // assigned to stdin
+    close (2);
+    dup(pipefd[0]);    // assigned to stdin
     dup(fd1);          // assigned to stdout
     dup(fd2);          // assigned to stderr
-    execl("/usr/bin/festival", "/usr/bin/festival", "--interactive", (char *) NULL);
+#ifdef ESPEAK
+    execl(ESPEAK, ESPEAK, (char *) NULL);
+#else
+    execl(FESTIVAL, FESTIVAL, "--interactive", (char *) NULL);
+#endif
     //
     // We should not arrive at this point
+    // TODO: a signal handler in the original process
+    // that kills the forked-off process if the main program
+    // terminates. However, this program is meant to be invoked
+    // once and run forever in the background.
     //
     exit(1);
   }
+  sleep(1);
+  snprintf(cmd, sizeof(cmd), "Welcome to UDP listener\n");                  // one line espeak input
+  write (pipefd[1], cmd, strlen(cmd));                      // write command to espeak/festival
 
   //
   // Prepeare UDP listener on port 19080
@@ -101,8 +122,8 @@ int main() {
   for (;;) {
     //
     // Infinite loop: get UDP packet,
-    //                wrap text into a SayText command,
-    //                send it to festival
+    //                send the text to the Text-to-Speech process
+    //                exec'ed above.
     //
     lenaddr = sizeof(from);
     bytes=recvfrom(udpsock, msg, 128, 0, (struct sockaddr *)&from, &lenaddr);
@@ -111,7 +132,11 @@ int main() {
       continue;
     }
     msg[bytes]=0;                                             // form null-terminated string
-    snprintf(cmd, sizeof(cmd), "(SayText \"%s\")\n", msg);    // form festival command
-    write (pipefd[1], cmd, strlen(cmd));                      // write command to festival
+#ifdef ESPEAK
+    snprintf(cmd, sizeof(cmd), "%s\n", msg);                  // espeak: one line of text
+#else
+    snprintf(cmd, sizeof(cmd), "(SayText \"%s\")\n", msg);    // festival SayText command
+#endif
+    write (pipefd[1], cmd, strlen(cmd));                      // write command to stdin of espeak/festival
   }
 }
