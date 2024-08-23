@@ -4273,7 +4273,41 @@ namely \bltt{AG gain}.
 There are a lot of keyboard bindings effective if you run piHPSDR. Most of them are
 standard key bindings of the GTK user interface. For example, when using a normal
 slider, you can use the up-arrow and down-arrow keys to fine adjust the value. In this
-section we will only list the keyboard binding that are captured and processed by piHPSDR
+section we will only list the keyboard binding that are captured and processed by piHPSDR.
+
+\section{Accessability for the Blind}
+
+piHPSDR has built-in support for making operating easier for those with very limited
+eye-sight. The idea is that pressing one of the function keys generates a message that
+is read aloud and that informs about frequency, mode, etc.
+
+Integrating a text-to-speech functionality inside piHPSDR is beyond the scope of the program,
+but there are programs around, e.g. \texttt{eSpeak} or \texttt{festi\-val},
+ that one can use. The ,,hook'' implemented
+in piHPSDR is as follows (now it becomes technical): a message that is to be read aloud is
+simply sent out as a ,,promiscuous'' (a.k.a. broadcast) UDP packet to port number 19080.
+A program running on the same computer, or even on another computer on the same network, can
+then receive the packet and take care of the reading. A sample program that does so 
+is included in the piHPSDR source code tree (\texttt{udplistener.c}) for demonstration purposes.
+This program can either use the \texttt{eSpeak} or \texttt{festival} programs.
+The function key events implemented are
+
+\rett{F1} Hitting the F1 function key reads the frequency of the active receiver.
+
+\rett{F2} Hitting the F2 function key reads the mode of the active receiver.
+
+\rett{F3} Hitting the F3 function key reads the filter width of the active receiver.
+
+\rett{F4} Hitting the F4 function key reads the S-meter value of the active receiver.
+Note there may be strong fluctuation in the reported value.
+
+\rett{F5} Hitting the F5 function key reads the value of the TX drive slider.
+
+\rett{F6} Hitting the F6 function key reads the gain or the attenuation in the front
+end of the active receiver.
+
+
+\section{Other keyboard shortcuts}
 
 \rett{space bar} Hitting the space bar will execute the \bltt{MOX} command, that is, a
 transition from RX to TX or from TX to RX. Use this as the last resort for TRX switching
@@ -4350,6 +4384,8 @@ sent if something
 changes (active receiver,  diversity status, PTT status, TUNE mode, PS status, CTUN mode, RIT and XIT
 status, and LOCK status),
 such that the ANDROMEDA controller can update the corresponding LEDs.
+
+The ANDROMEDA protocol is also used for the communication with the panel of the Saturn G2 Mk2 radios.
 
 
 %
@@ -6432,6 +6468,7 @@ The function of GPIO lines actually used by the controllers are indicated in bla
 explanation is needed since these are hard wired and one therefore should not change this assignment.
 
 Lines which are available but are not used by piHPSDR are marked as \texttt{available} in blue colour.
+{\color{red} Note that no GPIO lines are accessible and available if piHPSDR runs inside the Saturn G2 radios.}
 Then there are up to four input lines (\texttt{CWL}, \texttt{CWR}, \texttt{CWKEY}, and \texttt{PTTIN})
 and two output lined (\texttt{PTTOUT}, \texttt{CWOUT}) which can be assigned to available (blue-coloured)
 GPIO lines. Shown in Fig. \ref{fig:GPIO} is the default assignment done in the program, but any of the
@@ -6559,13 +6596,15 @@ must be enabled. This is done by opening \texttt{Menu}$\to$\texttt{Preferences}$
 (marked by the red arrows).
 
 If you need the piHPSDR built-in serial port, activate the \rett{Serial Port} button and deactivate
-the \rett{Serial Console} button. Note that the built-in serial port uses GPIO lines 14 and 15, so
+the \rett{Serial Console} button. Note that the built-in serial port uses GPIO lines that may
+conflict with GPIO lines used for the controller, so
 you should only activate it when you a) need it and b) have checked \rett{No Controller} in the
-initial GPIO menu (or have not compiled the program with GPIO support), since GPIO lines 14 and 15 are
-used for \texttt{Controller1}, \texttt{Controller2}, and {G2 Front Panel} (see Appendix \ref{sec:gpio}).
+initial GPIO menu (or have not compiled the program with GPIO support).
 
 Restart the computer after making the changes..
-The other buttons (SSH, VNC, etc) need not be changed and can be set according to your needs.
+The other buttons (SSH, VNC, etc) need not be changed and can be set according to your needs. SSH allows
+you to log in into your RaspPi over a network, and VNC allows operating the Pi from another computer,
+using the screen and keyboard and mouse from that other computer to control the Pi.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
