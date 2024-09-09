@@ -525,8 +525,7 @@ static gpointer rotary_encoder_thread(gpointer data) {
         mode = RELATIVE;
         val = encoders[i].bottom_encoder_pos;
         encoders[i].bottom_encoder_pos = 0;
-
-        if (val != 0) { schedule_action(action, mode, val); }
+        schedule_action(action, mode, val);
       }
 
       if (encoders[i].top_encoder_enabled && encoders[i].top_encoder_pos != 0) {
@@ -535,8 +534,7 @@ static gpointer rotary_encoder_thread(gpointer data) {
         mode = RELATIVE;
         val = encoders[i].top_encoder_pos;
         encoders[i].top_encoder_pos = 0;
-
-        if (val != 0) { schedule_action(action, mode, val); }
+        schedule_action(action, mode, val);
       }
     }
 
@@ -958,14 +956,15 @@ void gpio_set_defaults(int ctrlr) {
     break;
 
   case G2_V2:
+    //
+    // There are no GPIO lines that the user can use
+    //
     memcpy(my_encoders, encoders_no_controller, sizeof(my_encoders));
     memcpy(my_switches, switches_no_controller, sizeof(my_switches));
     encoders = my_encoders;
     switches = my_switches;
     break;
-    //
-    // There are no GPIO lines that the user can use
-    //
+
   case NO_CONTROLLER:
   default:
     //

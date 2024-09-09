@@ -239,7 +239,7 @@ static int hexitsToUInt(char *p, int count) {
     char c = *p;
     ++p;
 
-    if ( !ishexit(c) ) {
+    if (!ishexit(c)) {
       return -1;
     }
 
@@ -321,7 +321,7 @@ static int ozy_load_firmware(char *fnamep) {
               length, length, addr, my_cksum, cksum);
 #endif
 
-      if ( ((cksum + my_cksum) & 0xff) != 0 ) {
+      if (((cksum + my_cksum) & 0xff) != 0) {
         t_print( "ozy_upload_firmware: bad checksum\n");
         return 0;
       }
@@ -390,9 +390,9 @@ static int ozy_load_fpga(char *rbf_fnamep) {
   }
 
   /*
-       *  read the rbf and send it over the wire, 64 bytes at a time
-       */
-  while ( (bytes_read = fread(buf, 1, sizeof(buf), rbffile)) > 0 ) {
+   *  read the rbf and send it over the wire, 64 bytes at a time
+   */
+  while ((bytes_read = fread(buf, 1, sizeof(buf), rbffile)) > 0) {
     rc = libusb_control_transfer(ozy_handle, VENDOR_REQ_TYPE_OUT, VENDOR_REQ_FPGA_LOAD,
                                  0, FL_XFER, buf, bytes_read, OZY_IO_TIMEOUT);
     total_bytes_xferd += bytes_read;
@@ -659,7 +659,7 @@ static void filePath (char *sOut, const char *sIn, size_t len) {
   if (rc >= 0) {
     char *p;
 
-    if ( (p = strrchr (xPath, '/')) ) { *p = '\0'; }
+    if ((p = strrchr (xPath, '/'))) { *p = '\0'; }
 
     t_print( "%d, Path of executable: %s\n", rc, xPath);
     // d) <exedir>/sIn

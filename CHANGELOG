@@ -7,7 +7,7 @@ August 2024:
 - added "Accessability for the Blind" option (see Manual
   chapter C.1)
 - new "trained" NR2 noise reduction
-- activate CESSB overshoot correction with TX compression
+- activate CESSB overshoot correction and auto-leveler with TX compression
 - support for ANAN G2V2
 
 July 2024:

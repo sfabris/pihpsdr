@@ -508,14 +508,13 @@ void set_filter_shift(int rx, int shift) {
   snprintf(title, 64, "Filter SHIFT RX%d (Hz)", rx + 1);
   min = shift - 500;
   max = shift + 500;
-  show_popup_slider(IF_SHIFT, rx,  (double)(min), (double) (max), 1.0, (double) shift, title);
+  show_popup_slider(IF_SHIFT, rx, (double)(min), (double) (max), 1.0, (double) shift, title);
 }
 
 static void micgain_value_changed_cb(GtkWidget *widget, gpointer data) {
-  mic_gain = gtk_range_get_value(GTK_RANGE(widget));
-
   if (can_transmit) {
-    SetTXAPanelGain1(transmitter->id, pow(10.0, 0.05 * mic_gain));
+    double gain = gtk_range_get_value(GTK_RANGE(widget));
+    tx_set_mic_gain(transmitter, gain);
   }
 }
 
@@ -528,13 +527,12 @@ void set_linein_gain(double value) {
 void set_mic_gain(double value) {
   //t_print("%s value=%f\n",__FUNCTION__, value);
   if (can_transmit) {
-    mic_gain = value;
-    SetTXAPanelGain1(transmitter->id, pow(10.0, 0.05 * mic_gain));
+    tx_set_mic_gain(transmitter, value);
 
     if (display_sliders) {
-      gtk_range_set_value (GTK_RANGE(mic_gain_scale), mic_gain);
+      gtk_range_set_value (GTK_RANGE(mic_gain_scale), value);
     } else {
-      show_popup_slider(MIC_GAIN, 0, -12.0, 50.0, 1.0, mic_gain, "Mic Gain");
+      show_popup_slider(MIC_GAIN, 0, -12.0, 50.0, 1.0, value, "Mic Gain");
     }
   }
 }
@@ -696,7 +694,7 @@ GtkWidget *sliders_init(int my_width, int my_height) {
   int twidth, swidth, tpix;
   int t1pos, t2pos, t3pos;
   int s1pos, s2pos, s3pos, sqpos;
-  char *csslabel;
+  const char *csslabel;
 
   if (width < 1024) {
     // label  width: 1/9 of screen width
@@ -847,7 +845,7 @@ GtkWidget *sliders_init(int my_width, int my_height) {
     gtk_widget_set_valign(mic_gain_scale, GTK_ALIGN_CENTER);
     gtk_range_set_increments (GTK_RANGE(mic_gain_scale), 1.0, 1.0);
     gtk_grid_attach(GTK_GRID(sliders), mic_gain_scale, s1pos, 1, swidth, 1);
-    gtk_range_set_value (GTK_RANGE(mic_gain_scale), mic_gain);
+    gtk_range_set_value (GTK_RANGE(mic_gain_scale), transmitter->mic_gain);
     g_signal_connect(G_OBJECT(mic_gain_scale), "value_changed", G_CALLBACK(micgain_value_changed_cb), NULL);
     drive_label = gtk_label_new("TX Drv");
     gtk_widget_set_name(drive_label, csslabel);

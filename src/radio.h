@@ -135,8 +135,6 @@ extern int display_zoompan;
 extern int display_sliders;
 extern int display_toolbar;
 
-extern double mic_gain;
-
 extern int mic_linein;
 extern double linein_gain;
 extern int mic_boost;

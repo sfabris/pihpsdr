@@ -212,7 +212,7 @@ GtkWidget *zoompan_init(int my_width, int my_height) {
   int twidth, tpix, s1width, s2width;
   int t1pos, t2pos;
   int s1pos, s2pos;
-  char *csslabel;
+  const char *csslabel;
 
   if (width < 1024) {
     tpix   =  width / 9;      // width of text label in pixels

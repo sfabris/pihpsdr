@@ -90,6 +90,7 @@ static void rigctl_tcp_enable_cb(GtkWidget *widget, gpointer data) {
 //
 static void serial_port_cb(GtkWidget *widget, gpointer data) {
   int id = GPOINTER_TO_INT(data);
+
   if (SerialPorts[id].enable) {
     //
     // If this port is running, do not allow changes and

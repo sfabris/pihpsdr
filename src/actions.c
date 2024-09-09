@@ -1070,8 +1070,11 @@ int process_action(void *data) {
     break;
 
   case MIC_GAIN:
-    value = KnobOrWheel(a, mic_gain, -12.0, 50.0, 1.0);
-    set_mic_gain(value);
+    if (can_transmit) {
+      value = KnobOrWheel(a, transmitter->mic_gain, -12.0, 50.0, 1.0);
+      set_mic_gain(value);
+    }
+
     break;
 
   case MODE_MINUS:
@@ -1616,11 +1619,11 @@ int process_action(void *data) {
     break;
 
   case VFO:
-    // respect the VFO encoder divisor
     if (a->mode == RELATIVE && !locked) {
       static int acc = 0;
       acc += (int) a->val;
       int new = acc / vfo_encoder_divisor;
+
       if (new != 0) {
         vfo_step(new);
         acc -= new*vfo_encoder_divisor;
@@ -1648,11 +1651,11 @@ int process_action(void *data) {
     break;
 
   case VFOA:
-    // respect the VFO encoder divisor
     if (a->mode == RELATIVE && !locked) {
       static int acc = 0;
       acc += (int) a->val;
       int new = acc / vfo_encoder_divisor;
+
       if (new != 0) {
         vfo_id_step(0, new);
         acc -= new*vfo_encoder_divisor;
@@ -1662,11 +1665,11 @@ int process_action(void *data) {
     break;
 
   case VFOB:
-    // respect the VFO encoder divisor
     if (a->mode == RELATIVE && !locked) {
       static int acc = 0;
       acc += (int) a->val;
       int new = acc / vfo_encoder_divisor;
+
       if (new != 0) {
         vfo_id_step(1, new);
         acc -= new*vfo_encoder_divisor;

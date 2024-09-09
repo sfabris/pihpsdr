@@ -311,6 +311,7 @@ static BANDSTACK bandstack_xvtr_7 = {3, 0, bandstack_entries_xvtr_7};
 static BANDSTACK bandstack_xvtr_8 = {3, 0, bandstack_entries_xvtr_8};
 static BANDSTACK bandstack_xvtr_9 = {3, 0, bandstack_entries_xvtr_9};
 
+// *INDENT-OFF*
 static BAND bands[BANDS + XVTRS] = {
   {"136kHz", &bandstack136,     0, 0, 0, 0, 0, 0, 53.0,     135700LL,     137800LL, 0LL, 0LL, 0},
   {"472kHz", &bandstack472,     0, 0, 0, 0, 0, 0, 53.0,     472000LL,     479000LL, 0LL, 0LL, 0},
@@ -348,6 +349,7 @@ static BAND bands[BANDS + XVTRS] = {
   {"",       &bandstack_xvtr_8, 0, 0, 0, 0, 0, 0, 53.0,          0LL,          0LL, 0LL, 0LL, 1},
   {"",       &bandstack_xvtr_9, 0, 0, 0, 0, 0, 0, 53.0,          0LL,          0LL, 0LL, 0LL, 1}
 };
+// *INDENT-ON*
 
 static CHANNEL band_channels_60m_UK[UK_CHANNEL_ENTRIES] = {
   {5261250LL, 5500LL},

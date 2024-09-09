@@ -65,17 +65,14 @@ void tts_send(char *msg) {
   int sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
   int optval = 1;
   struct sockaddr_in addr;
-
-  t_print("%s: sending >>>%s<<<\n", __FUNCTION__, msg);
+  //t_print("%s: sending >>>%s<<<\n", __FUNCTION__, msg);
   setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &optval, sizeof(optval));
   setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
   setsockopt(sock, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
-
   memset(&addr, 0, sizeof(addr));
   addr.sin_family = AF_INET;
   addr.sin_addr.s_addr = htonl(INADDR_BROADCAST);
   addr.sin_port = htons(19080);
-
   sendto(sock, msg, strlen(msg), 0, (struct sockaddr * ) &addr, sizeof(addr));
   close(sock);
 }
@@ -85,21 +82,22 @@ void tts_send(char *msg) {
 //           and send this string via tts_send
 //
 void tts_freq() {
- long long freq;
- long kilo;
- int hertz;
- int v = active_receiver->id;
- char msg[128];
+  long long freq;
+  long kilo;
+  int hertz;
+  int v = active_receiver->id;
+  char msg[128];
 
- if (vfo[v].ctun) {
-   freq = vfo[v].ctun_frequency;
- } else {
-   freq = vfo[v].frequency;
- }
- kilo = freq / 1000;
- hertz = freq - 1000*kilo;
- snprintf(msg, sizeof(msg), "Frequency %ld.%03d kilo hertz", kilo, hertz);
- tts_send(msg);
+  if (vfo[v].ctun) {
+    freq = vfo[v].ctun_frequency;
+  } else {
+    freq = vfo[v].frequency;
+  }
+
+  kilo = freq / 1000;
+  hertz = freq - 1000 * kilo;
+  snprintf(msg, sizeof(msg), "Frequency %ld.%03d kilo hertz", kilo, hertz);
+  tts_send(msg);
 }
 
 //
@@ -114,27 +112,35 @@ void tts_mode() {
   case modeLSB:
     tts_send("Mode L S B");
     break;
+
   case modeUSB:
     tts_send("Mode U S B");
     break;
+
   case modeDSB:
     tts_send("Mode D S B");
     break;
+
   case modeCWL:
     tts_send("Mode C W L");
     break;
+
   case modeCWU:
     tts_send("Mode C W U");
     break;
+
   case modeFMN:
     tts_send("Mode F M");
     break;
+
   case modeAM:
     tts_send("Mode A M");
     break;
+
   case modeDIGU:
     tts_send("Mode U S B digital");
     break;
+
   case modeDIGL:
     tts_send("Mode L S B digital");
     break;
@@ -148,7 +154,7 @@ void tts_mode() {
 void tts_filter() {
   char msg[128];
   int w = active_receiver->filter_high - active_receiver->filter_low;
-   snprintf(msg, sizeof(msg), "Filter width %d Hertz", w);
+  snprintf(msg, sizeof(msg), "Filter width %d Hertz", w);
   tts_send(msg);
 }
 
@@ -162,24 +168,30 @@ void tts_smeter() {
   int plus;
   int val = (int) active_receiver->meter;
   char msg[128];
+
   if (vfo[active_receiver->id].frequency > 30000000LL) {
     val += 20;
   }
+
   plus = 0;
   s = (val + 127) / 6;
+
   if (s < 0) {
     s = 0;
   }
+
   if (s > 9) {
     s = 9;
     // for "plus" only use 10, 20, ...
-    plus = 10 *(( val +73) / 10);
+    plus = 10 * (( val + 73) / 10);
   }
+
   if (plus <= 0) {
     snprintf(msg, sizeof(msg), "Meter S %d", s);
   } else {
     snprintf(msg, sizeof(msg), "Meter S %d plus %d", s, plus);
   }
+
   tts_send(msg);
 }
 
@@ -187,8 +199,8 @@ void tts_smeter() {
 // tts_txdrive: report value of TX drive slider
 //
 void tts_txdrive() {
-  char msg[128];
   if (can_transmit) {
+    char msg[128];
     snprintf(msg, sizeof(msg), "T X drive %d", transmitter->drive);
     tts_send(msg);
   }
@@ -203,8 +215,8 @@ void tts_atten() {
 
   if (filter_board == CHARLY25 && active_receiver->adc == 0) {
     level += 12 * active_receiver->alex_attenuation
-           - 18 * active_receiver->preamp
-           - 18 * active_receiver->dither;
+             - 18 * active_receiver->preamp
+             - 18 * active_receiver->dither;
   }
 
   if (filter_board == ALEX && active_receiver->adc == 0) {
@@ -215,7 +227,8 @@ void tts_atten() {
   if (level < 0) {
     snprintf(msg, sizeof(msg), "R F gain is %d", -level);
   } else {
-    snprintf(msg, sizeof(msg), "R F attenuation is %d", -level);
+    snprintf(msg, sizeof(msg), "R F attenuation is %d", level);
   }
+
   tts_send(msg);
 }

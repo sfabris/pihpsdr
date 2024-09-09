@@ -440,7 +440,7 @@ void saturn_init_duc_iq() {
 
   if (!IQWriteBuffer) {
     t_print("%s: I/Q TX write buffer allocation failed\n", __FUNCTION__);
-    exit( -1 );
+    exit(-1);
   }
 
   DUCIQBasePtr = IQWriteBuffer + VBASE;
@@ -452,7 +452,7 @@ void saturn_init_duc_iq() {
 
   if (DMADUCWritefile_fd < 0) {
     t_print("%s: XDMA write device open failed for TX I/Q data\n", __FUNCTION__);
-    exit( -1 );
+    exit(-1);
   }
 
   //
@@ -552,7 +552,7 @@ void saturn_init_speaker_audio() {
 
   if (!SpkWriteBuffer) {
     t_print("%s: spkr write buffer allocation failed\n", __FUNCTION__);
-    exit( -1 );
+    exit(-1);
   }
 
   SpkReadPtr = SpkWriteBuffer + VBASE;              // offset 4096 bytes into buffer
@@ -566,7 +566,7 @@ void saturn_init_speaker_audio() {
 
   if (DMASpkWritefile_fd < 0) {
     t_print("%s: XDMA write device open failed for spk data\n", __FUNCTION__);
-    exit( -1 );
+    exit(-1);
   }
 
   SetupFIFOMonitorChannel(eSpkCodecDMA, false);
@@ -644,9 +644,9 @@ void start_saturn_high_priority_thread() {
   t_print("%s: \n", __FUNCTION__);
   saturn_high_priority_thread_id = g_thread_new( "SATURN HP OUT", saturn_high_priority_thread, NULL);
 
-  if ( ! saturn_high_priority_thread_id ) {
+  if (!saturn_high_priority_thread_id) {
     t_print("%s: g_thread_new failed\n", __FUNCTION__);
-    exit( -1 );
+    exit(-1);
   }
 }
 
@@ -732,7 +732,7 @@ static gpointer saturn_high_priority_thread(gpointer arg) {
           if (Error == -1) {
             t_print("Send Error, errno=%d, socket id = %d\n",
                     errno, SocketData[VPORTHIGHPRIORITYFROMSDR].Socketid);
-            exit( -1 );
+            exit(-1);
           }
         }
       } else {
@@ -766,9 +766,9 @@ void start_saturn_micaudio_thread() {
   t_print("%s\n", __FUNCTION__);
   saturn_micaudio_thread_id = g_thread_new( "SATURN MIC", saturn_micaudio_thread, NULL);
 
-  if ( ! saturn_micaudio_thread_id ) {
+  if (!saturn_micaudio_thread_id) {
     t_print("%s: g_thread_new failed\n", __FUNCTION__);
-    exit( -1 );
+    exit(-1);
   }
 }
 
@@ -800,7 +800,7 @@ static gpointer saturn_micaudio_thread(gpointer arg) {
 
   if (!MicReadBuffer) {
     t_print("%s: mic read buffer allocation failed\n", __FUNCTION__);
-    exit( -1 );
+    exit(-1);
   }
 
   MicBasePtr = MicReadBuffer + VBASE;
@@ -812,7 +812,7 @@ static gpointer saturn_micaudio_thread(gpointer arg) {
 
   if (DMAReadfile_fd < 0) {
     t_print("%s: XDMA read device open failed for mic data\n", __FUNCTION__);
-    exit( -1 );
+    exit(-1);
   }
 
   //
@@ -915,7 +915,7 @@ static gpointer saturn_micaudio_thread(gpointer arg) {
 
         if (Error == -1) {
           t_perror("sendmsg, Mic Audio");
-          exit( -1 );
+          exit(-1);
         }
       } else {
         SequenceCounter2 = 0;
@@ -931,9 +931,9 @@ void start_saturn_receive_thread() {
   t_print("%s\n", __FUNCTION__);
   saturn_rx_thread_id = g_thread_new( "SATURN RX", saturn_rx_thread, NULL);
 
-  if ( ! saturn_rx_thread_id ) {
+  if (!saturn_rx_thread_id) {
     t_print("%s: g_thread_new failed\n", __FUNCTION__);
-    exit( -1 );
+    exit(-1);
   }
 }
 
@@ -981,7 +981,7 @@ static gpointer saturn_rx_thread(gpointer arg) {
 
   if (CreateDynamicMemory()) {
     t_print("%s: CreateDynamicMemory Failed\n", __FUNCTION__);
-    exit( -1 );
+    exit(-1);
   }
 
   //
@@ -991,7 +991,7 @@ static gpointer saturn_rx_thread(gpointer arg) {
 
   if (IQReadfile_fd < 0) {
     t_print("%s: XDMA read device open failed for DDC data\n", __FUNCTION__);
-    exit( -1 );
+    exit(-1);
   }
 
   //
@@ -1072,7 +1072,7 @@ static gpointer saturn_rx_thread(gpointer arg) {
               if (Error == -1) {
                 t_print("Send Error, DDC=%d, errno=%d, socket id = %d\n", DDC,
                         errno, SocketData[VPORTDDCIQ0 + DDC].Socketid);
-                exit( -1 );
+                exit(-1);
               }
             } else {
               SequenceCounter[DDC] = 0;

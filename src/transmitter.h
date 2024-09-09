@@ -50,7 +50,7 @@ typedef struct _transmitter {
 
   int filter_low;
   int filter_high;
-  gboolean use_rx_filter;
+  int use_rx_filter;
 
   int alex_antenna;
 
@@ -80,17 +80,17 @@ typedef struct _transmitter {
 
   // PS 2.0 parameters
   double ps_ampdelay;
-  int ps_ints;
-  int ps_spi;
-  int ps_stbl;
-  int ps_map;
-  int ps_pin;
+  int    ps_ints;
+  int    ps_spi;
+  int    ps_stbl;
+  int    ps_map;
+  int    ps_pin;
   double ps_ptol;
   double ps_moxdelay;
   double ps_loopdelay;
   int    ps_oneshot;
 
-  gboolean ctcss_enabled;
+  int ctcss_enabled;
   int ctcss;
 
   int deviation;
@@ -104,9 +104,10 @@ typedef struct _transmitter {
   int tune_drive;
 
   int drive_level;      // amplitude (0-255) corresponding to "drive"
-  int    do_scale;      // apply TX iq scaling
+  int do_scale;         // apply TX iq scaling
   double drive_scale;   // additional TX iq scaling required
   double drive_iscal;   // inverse of drive_scale
+  double mic_gain;
 
   int compressor;
   double compressor_level;
@@ -115,7 +116,7 @@ typedef struct _transmitter {
   double rev;
   double alc;
   double swr;
-  gboolean swr_protection;
+  int    swr_protection;
   double swr_alarm;
 
   int x;
@@ -139,10 +140,10 @@ typedef struct _transmitter {
   //
   // Equalizer data
   //
-  int  eq_enable;
+  int    eq_enable;
   double eq_freq[11];  // frequency in Hz
   double eq_gain[11];  // gain in dB
-  int    eq_tenband;  // four or ten channels
+  int    eq_tenband;   // four or ten channels
 
 } TRANSMITTER;
 
@@ -163,6 +164,8 @@ extern void tx_set_filter(TRANSMITTER *tx);
 extern void tx_set_am_carrier_level(const TRANSMITTER *tx);
 extern void tx_set_pre_emphasize(const TRANSMITTER *tx, int state);
 extern void tx_set_ctcss(TRANSMITTER *tx, int state, int i);
+extern void tx_set_mic_gain(TRANSMITTER *tx, double gain);
+extern void tx_set_singletone(TRANSMITTER *tx, int state, double freq);
 
 extern void tx_add_mic_sample(TRANSMITTER *tx, float mic_sample);
 extern void tx_add_freedv_mic_sample(TRANSMITTER *tx, float mic_sample);

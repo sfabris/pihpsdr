@@ -34,9 +34,11 @@ xcode-select --install
 
 #
 # At this point, there is a "brew" command either in /usr/local/bin (Intel Mac) or in
-# /opt/homebrew/bin (Silicon Mac). Look what applies
+# /opt/homebrew/bin (Silicon Mac). Look what applies, and set the variable OPTHOMEBREW to 1
+# if homebrew is installed in /opt/homebrew rather than in /usr/local
 #
 BREW=junk
+OPTHOMEBREW=0
 
 if [ -x /usr/local/bin/brew ]; then
   BREW=/usr/local/bin/brew
@@ -44,6 +46,7 @@ fi
 
 if [ -x /opt/homebrew/bin/brew ]; then
   BREW=/opt/homebrew/bin/brew
+  OPTHOMEBREW=1
 fi
 
 if [ $BREW == "junk" ]; then
@@ -82,22 +85,40 @@ fi
 # already exist.
 ################################################################
 
-if [ ! -d /usr/local/lib ]; then
-  echo "/usr/local/lib does not exist, creating symbolic link ..."
-  sudo rm -f /usr/local/lib
-  sudo ln -s /opt/homebrew/lib /usr/local/lib
+if [ $OPTHOMEBREW == 0 ]; then
+  # we assume that bin, lib, include, and share exist in /usr/(local
+  if [ ! -d /usr/local/share/pihpsdr ]; then
+    echo "/usr/local/share/pihpsdr does not exist, creating ..."
+    # this will (and should) file if /usr/local/share/pihpsdr is a symbolic link
+    mkdir /usr/local/share/pihpsdr
+  fi
+else
+  if [ ! -d /usr/local/lib ]; then
+    echo "/usr/local/lib does not exist, creating symbolic link ..."
+    sudo rm -f /usr/local/lib
+    sudo ln -s /opt/homebrew/lib /usr/local/lib
+  fi
+  if [ ! -d /usr/local/bin ]; then
+    echo "/usr/local/bin does not exist, creating symbolic link ..."
+    sudo rm -f /usr/local/bin
+    sudo ln -s /opt/homebrew/bin /usr/local/bin
+  fi
+  if [ ! -d /usr/local/include ]; then
+    echo "/usr/local/include does not exist, creating symbolic link ..."
+    sudo rm -f /usr/local/include
+    sudo ln -s /opt/homebrew/include /usr/local/include
+  fi
+  if [ ! -d /usr/local/share ]; then
+    echo "/usr/local/share does not exist, creating symbolic link ..."
+    sudo rm -f /usr/local/share
+    sudo ln -s /opt/homebrew/share /usr/local/share
+  fi
+  if [ ! -d /opt/homebrew/share/pihpsdr ]; then
+    echo "/opt/homebrew/share/pihpsdr does not exist, creating ..."
+    # this will (and should) file if /opt/homebrew/share/pihpsdr is a symbolic link
+    sudo mkdir /opt/homebrew/share/pihpsdr
+  fi
 fi
-if [ ! -d /usr/local/bin ]; then
-  echo "/usr/local/bin does not exist, creating symbolic link ..."
-  sudo rm -f /usr/local/bin
-  sudo ln -s /opt/homebrew/bin /usr/local/bin
-fi
-if [ ! -d /usr/local/include ]; then
-  echo "/usr/local/include does not exist, creating symbolic link ..."
-  sudo rm -f /usr/local/include
-  sudo ln -s /opt/homebrew/include /usr/local/include
-fi
-
 ################################################################
 #
 # All homebrew packages needed for pihpsdr

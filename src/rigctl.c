@@ -2349,12 +2349,16 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //RESP      ZZMGxxx;
       //NOTE      x 0-70 mapped to -12 ... +50 dB
       //ENDDEF
-      if (command[4] == ';') {
-        snprintf(reply, 256, "ZZMG%03d;", (int)((mic_gain + 12.0) * 1.129));
-        send_resp(client->fd, reply);
-      } else if (command[7] == ';') {
-        int val = atoi(&command[4]);
-        mic_gain = ((double) val * 0.8857)  - 12.0;
+      if (can_transmit) {
+        if (command[4] == ';') {
+          snprintf(reply, 256, "ZZMG%03d;", (int)((transmitter->mic_gain + 12.0) * 1.129));
+          send_resp(client->fd, reply);
+        } else if (command[7] == ';') {
+          int val = atoi(&command[4]);
+          tx_set_mic_gain(transmitter, ((double) val * 0.8857) - 12.0);
+        }
+      } else {
+        implemented = FALSE;
       }
 
       break;
@@ -4944,18 +4948,22 @@ int parse_cmd(void *data) {
       //RESP      MGxxx;
       //NOTE      x 0-100 mapped to -12 ... +50 dB
       //ENDDEF
-      if (command[2] == ';') {
-        snprintf(reply, 256, "MG%03d;", (int)(((mic_gain + 12.0) / 62.0) * 100.0));
-        send_resp(client->fd, reply);
-      } else if (command[5] == ';') {
-        double gain = (double)atoi(&command[2]);
-        gain = ((gain / 100.0) * 62.0) - 12.0;
+      if (can_transmit) {
+        if (command[2] == ';') {
+          snprintf(reply, 256, "MG%03d;", (int)(((transmitter->mic_gain + 12.0) / 62.0) * 100.0));
+          send_resp(client->fd, reply);
+        } else if (command[5] == ';') {
+          double gain = (double)atoi(&command[2]);
+          gain = ((gain / 100.0) * 62.0) - 12.0;
 
-        if (gain < -12.0) { gain = -12.0; }
+          if (gain < -12.0) { gain = -12.0; }
 
-        if (gain >  50.0) { gain =  50.0; }
+          if (gain > 50.0) { gain = 50.0; }
 
-        set_mic_gain(gain);
+          tx_set_mic_gain(transmitter, gain);
+        }
+      } else {
+        implemented = FALSE;
       }
 
       break;

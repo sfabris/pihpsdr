@@ -181,8 +181,6 @@ int display_zoompan = 0;
 int display_sliders = 0;
 int display_toolbar = 0;
 
-double mic_gain = 0.0;
-
 int mic_linein = 0;        // Use microphone rather than linein in radio's audio codec
 double linein_gain = 0.0;  // -34.0 ... +12.5 in steps of 1.5 dB
 int mic_boost = 0;
@@ -1052,16 +1050,17 @@ void radio_start_radio() {
     SerialPorts[id].autoreporting = 0;
     snprintf(SerialPorts[id].port, sizeof(SerialPorts[id].port), "/dev/ttyACM%d", id);
   }
+
   //
   // If the controller is G2_V2, enable last serial port for the
   // built-in ANDROMEDA-type panel on /dev/ttyAMA1.
   //
   if (controller == G2_V2) {
-    SerialPorts[MAX_SERIAL-1].enable = 1;
-    SerialPorts[MAX_SERIAL-1].andromeda = 1;
-    SerialPorts[MAX_SERIAL-1].baud = B9600;
-    SerialPorts[MAX_SERIAL-1].autoreporting = 0;
-    snprintf(SerialPorts[MAX_SERIAL-1].port, sizeof(SerialPorts[MAX_SERIAL-1].port), "/dev/ttyAMA1");
+    SerialPorts[MAX_SERIAL - 1].enable = 1;
+    SerialPorts[MAX_SERIAL - 1].andromeda = 1;
+    SerialPorts[MAX_SERIAL - 1].baud = B9600;
+    SerialPorts[MAX_SERIAL - 1].autoreporting = 0;
+    snprintf(SerialPorts[MAX_SERIAL - 1].port, sizeof(SerialPorts[MAX_SERIAL - 1].port), "/dev/ttyAMA1");
   }
 
   protocol = radio->protocol;
@@ -2051,38 +2050,34 @@ void radio_set_tune(int state) {
       int txmode = vfo_get_tx_mode();
       pre_tune_mode = txmode;
       pre_tune_cw_internal = cw_keyer_internal;
+      double freq = 0.0;
 #if 0
 
+      // Code currently not active:
+      // depending on the mode, do not necessarily tune on the dial frequency
+      // if this frequency is not within the pass-band
       //
-      // in USB/DIGU      tune 1000 Hz above carrier
-      // in LSB/DIGL,     tune 1000 Hz below carrier
-      // all other (CW, AM, FM): tune on carrier freq.
+      // in USB/DIGU      tune 1000 Hz above dial freq
+      // in LSB/DIGL,     tune 1000 Hz below dial freq
       //
       switch (txmode) {
       case modeLSB:
       case modeDIGL:
-        SetTXAPostGenToneFreq(transmitter->id, -(double)1000.0);
+        freq = -1000.0;
         break;
 
       case modeUSB:
       case modeDIGU:
-        SetTXAPostGenToneFreq(transmitter->id, (double)1000.0);
+        freq = 1000.0;
         break;
 
       default:
-        SetTXAPostGenToneFreq(transmitter->id, (double)0.0);
+        freq = 0.0;
         break;
       }
 
-#else
-      //
-      // Perhaps it it best to *always* tune on the dial frequency
-      //
-      SetTXAPostGenToneFreq(transmitter->id, (double)0.0);
 #endif
-      SetTXAPostGenToneMag(transmitter->id, 0.99999);
-      SetTXAPostGenMode(transmitter->id, 0);
-      SetTXAPostGenRun(transmitter->id, 1);
+      tx_set_singletone(transmitter, 1, freq);
 
       switch (txmode) {
       case modeCWL:
@@ -2100,8 +2095,8 @@ void radio_set_tune(int state) {
       radio_calc_drive_level();
       rxtx(state);
     } else {
+      tx_set_singletone(transmitter, 0, 0.0);
       rxtx(state);
-      SetTXAPostGenRun(transmitter->id, 0);
 
       switch (pre_tune_mode) {
       case modeCWL:
@@ -2399,12 +2394,10 @@ static void radio_restore_state() {
   t_print("%s: path=%s\n", __FUNCTION__, property_path);
   g_mutex_lock(&property_mutex);
   loadProperties(property_path);
-
   //
   // For consistency, all variables should get default values HERE,
   // but this is too much for the moment.
   //
-
   GetPropI0("WindowPositionX",                               window_x_pos);
   GetPropI0("WindowPositionY",                               window_y_pos);
   GetPropI0("display_zoompan",                               display_zoompan);
@@ -2467,7 +2460,6 @@ static void radio_restore_state() {
   GetPropI0("filter_board",                                  filter_board);
   GetPropI0("pa_enabled",                                    pa_enabled);
   GetPropI0("pa_power",                                      pa_power);
-  GetPropF0("mic_gain",                                      mic_gain);
   GetPropI0("mic_boost",                                     mic_boost);
   GetPropI0("mic_linein",                                    mic_linein);
   GetPropF0("linein_gain",                                   linein_gain);
@@ -2674,7 +2666,6 @@ void radio_save_state() {
   SetPropI0("filter_board",                                  filter_board);
   SetPropI0("pa_enabled",                                    pa_enabled);
   SetPropI0("pa_power",                                      pa_power);
-  SetPropF0("mic_gain",                                      mic_gain);
   SetPropI0("mic_boost",                                     mic_boost);
   SetPropI0("mic_linein",                                    mic_linein);
   SetPropF0("linein_gain",                                   linein_gain);
@@ -3080,23 +3071,30 @@ void radio_end_capture() {
 
 void radio_start_playback() {
   //
-  // - turn off TX equalizer
-  // - turn off TX compression
-  // - set mic gain  to zero
+  // - turn off TX equalizer   but keep equalizer  info in transmitter->eq_enable
+  // - turn off TX compression but keep compressor info in transmitter->compression
+  // - set mic gain  to zero   but keep mic_gain   info in transmitter->mic_gain
   //
-  SetTXAEQRun(transmitter->id, 0);
-  SetTXACompressorRun(transmitter->id, 0);
-  SetTXAPanelGain1(transmitter->id, 1.0);
+  int  comp   = transmitter->compressor;
+  int  eq     = transmitter->eq_enable;
+  double gain = transmitter->mic_gain;
+  tx_set_equalizer(transmitter);
+  tx_set_mic_gain(transmitter, 0.0);
+  tx_set_compressor(transmitter, 0);
+  transmitter->compressor = comp;
+  transmitter->eq_enable  = eq;
+  transmitter->mic_gain = gain;
 }
 
 void radio_end_playback() {
   //
-  // - restore TX equalizer on/off flag
-  // - restore TX compressor on/off flag
-  // - reatore TX mic gain setting
+  // re-inforce settings stored in transmitter:
+  // - TX equalizer on/off
+  // - TX compressor on/off
+  // - TX mic gain setting
   //
-  SetTXAEQRun(transmitter->id, transmitter->eq_enable);
-  SetTXACompressorRun(transmitter->id, transmitter->compressor);
-  SetTXAPanelGain1(transmitter->id, pow(10.0, 0.05 * mic_gain));
+  tx_set_equalizer(transmitter);
+  tx_set_mic_gain(transmitter, transmitter->mic_gain);
+  tx_set_compressor(transmitter, transmitter->compressor);
 }
 

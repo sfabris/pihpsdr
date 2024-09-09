@@ -81,6 +81,7 @@ static gboolean close_cb () {
 static gboolean vfo_num_pad_cb(GtkWidget *widget, GdkEventButton *event, gpointer data) {
   int val = GPOINTER_TO_INT(data);
   char output[64];
+
   //
   // A "double click" with the mouse actually generates THREE button press
   // events, the third one has event->type == GDK_2BUTTON_PRESS.
@@ -97,6 +98,7 @@ static gboolean vfo_num_pad_cb(GtkWidget *widget, GdkEventButton *event, gpointe
 
     gtk_label_set_markup (GTK_LABEL (label), output);
   }
+
   return FALSE;
 }
 

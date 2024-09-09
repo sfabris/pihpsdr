@@ -191,11 +191,21 @@ void tx_set_compressor(TRANSMITTER *tx, int state) {
   //
   // The CESSB overshoot filter (on/off) automatically follows
   // the Compressor on/off setting. This we can do because we
-  // do not allow low-latency filters in the TX
+  // do not allow low-latency filters in the TX.
+  //
+  // The compressor only works well if the mic level peaks at
+  // 0 dB, therefore, the auto-leveler is also automatically
+  // activated when en/dis-abling the compressor(de-)
   //
   tx->compressor = state;
   SetTXACompressorRun(tx->id, state);
   SetTXAosctrlRun(tx->id, state);
+  SetTXALevelerSt(tx->id, state);
+}
+
+void tx_set_mic_gain(TRANSMITTER *tx, double gain) {
+  tx->mic_gain = gain;
+  SetTXAPanelGain1(tx->id, pow(10.0, gain * 0.05));
 }
 
 static void init_audio_ramp(double *ramp, int width) {
@@ -335,6 +345,7 @@ void tx_save_state(const TRANSMITTER *tx) {
   SetPropI1("transmitter.%d.deviation",         tx->id,               tx->deviation);
   SetPropF1("transmitter.%d.am_carrier_level",  tx->id,               tx->am_carrier_level);
   SetPropI1("transmitter.%d.drive",             tx->id,               tx->drive);
+  SetPropF1("transmitter.%d.mic_gain",          tx->id,               tx->mic_gain);
   SetPropI1("transmitter.%d.tune_drive",        tx->id,               tx->tune_drive);
   SetPropI1("transmitter.%d.tune_use_drive",    tx->id,               tx->tune_use_drive);
   SetPropI1("transmitter.%d.swr_protection",    tx->id,               tx->swr_protection);
@@ -388,6 +399,7 @@ static void tx_restore_state(TRANSMITTER *tx) {
   GetPropI1("transmitter.%d.deviation",         tx->id,               tx->deviation);
   GetPropF1("transmitter.%d.am_carrier_level",  tx->id,               tx->am_carrier_level);
   GetPropI1("transmitter.%d.drive",             tx->id,               tx->drive);
+  GetPropF1("transmitter.%d.mic_gain",          tx->id,               tx->mic_gain);
   GetPropI1("transmitter.%d.tune_drive",        tx->id,               tx->tune_drive);
   GetPropI1("transmitter.%d.tune_use_drive",    tx->id,               tx->tune_use_drive);
   GetPropI1("transmitter.%d.swr_protection",    tx->id,               tx->swr_protection);
@@ -903,6 +915,7 @@ TRANSMITTER *tx_create_transmitter(int id, int width, int height) {
   tx->am_carrier_level = 0.5;
   tx->drive = 50;
   tx->tune_drive = 10;
+  tx->mic_gain = 0.0;
   tx->tune_use_drive = 0;
   tx->drive_level = 0;
   tx->drive_scale = 1.0;
@@ -984,14 +997,9 @@ TRANSMITTER *tx_create_transmitter(int id, int width, int height) {
   tx_set_equalizer(tx);
   tx_set_ctcss(tx, tx->ctcss_enabled, tx->ctcss);
   SetTXAAMSQRun(tx->id, 0);
-  SetTXAosctrlRun(tx->id, 0);
   SetTXAALCAttack(tx->id, 1);
   SetTXAALCDecay(tx->id, 10);
   SetTXAALCSt(tx->id, 1); // turn it on (always on)
-  SetTXALevelerAttack(tx->id, 1);
-  SetTXALevelerDecay(tx->id, 500);
-  SetTXALevelerTop(tx->id, 5.0);
-  SetTXALevelerSt(tx->id, 0);
   SetTXAPreGenMode(tx->id, 0);
   SetTXAPreGenToneMag(tx->id, 0.0);
   SetTXAPreGenToneFreq(tx->id, 0.0);
@@ -1001,12 +1009,21 @@ TRANSMITTER *tx_create_transmitter(int id, int width, int height) {
   SetTXAPostGenTTMag(tx->id, 0.2, 0.2);
   SetTXAPostGenToneFreq(tx->id, 0.0);
   SetTXAPostGenRun(tx->id, 0);
-  SetTXAPanelGain1(tx->id, pow(10.0, mic_gain * 0.05));
+  SetTXAPanelGain1(tx->id, pow(10.0, tx->mic_gain * 0.05));
   SetTXAPanelRun(tx->id, 1);
   SetTXAFMDeviation(tx->id, (double)tx->deviation);
   SetTXAAMCarrierLevel(tx->id, tx->am_carrier_level);
   SetTXACompressorGain(tx->id, tx->compressor_level);
+  //
+  // The compressor is *always* used together with the
+  // CESSB overshoot control and the TX leveler
+  //
   SetTXACompressorRun(tx->id, tx->compressor);
+  SetTXAosctrlRun(tx->id, tx->compressor);
+  SetTXALevelerAttack(tx->id, 1);
+  SetTXALevelerDecay(tx->id, 500);
+  SetTXALevelerTop(tx->id, 6.0);
+  SetTXALevelerSt(tx->id, tx->compressor);
   tx_set_mode(tx, vfo_get_tx_mode());
   XCreateAnalyzer(tx->id, &rc, 262144, 1, 1, "");
 
@@ -1037,10 +1054,6 @@ void tx_set_equalizer(TRANSMITTER *tx) {
   int numchan = tx->eq_tenband ? 11 : 5;
   SetTXAEQProfile(tx->id, numchan, tx->eq_freq, tx->eq_gain);
   SetTXAEQRun(tx->id, tx->eq_enable);
-  //t_print("TX EQ enable=%d\n", tx->eq_enable);
-  //for (int i = 0; i < numchan; i++) {
-  //  t_print("TX EQ chan=%d freq=%f gain=%f\n", i, tx->eq_freq[i], tx->eq_gain[i]);
-  //}
 }
 
 void tx_set_filter(TRANSMITTER *tx) {
@@ -1756,6 +1769,32 @@ void tx_set_ps(TRANSMITTER *tx, int state) {
   // update screen
   g_idle_add(ext_vfo_update, NULL);
 }
+
+void tx_set_singletone(TRANSMITTER *tx, int state, double freq) {
+  if (state) {
+    SetTXAPostGenToneFreq(tx->id, freq);
+    SetTXAPostGenToneMag(tx->id, 0.99999);
+    SetTXAPostGenMode(tx->id, 0);
+    SetTXAPostGenRun(tx->id, 1);
+  } else {
+    //
+    // These radios show "tails" of the TX signal after a TX/RX transition,
+    // so wait after the SingleTone signal has been removed, before
+    // removing MOX.
+    // The wait time required is rather long, since we must fill the TX IQ
+    // FIFO completely with zeroes. 100 msec was measured on a HermesLite-2
+    // to be OK.
+    //
+    //
+    SetTXAPostGenRun(tx->id, 0);
+
+    if (device == DEVICE_HERMES_LITE2 || device == DEVICE_HERMES_LITE ||
+        device == DEVICE_HERMES || device == DEVICE_STEMLAB || device == DEVICE_STEMLAB_Z20) {
+      usleep(100000);
+    }
+  }
+}
+
 
 void tx_set_twotone(TRANSMITTER *tx, int state) {
   static guint timer = 0;

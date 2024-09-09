@@ -93,12 +93,14 @@ static int thisFr1,  thisFr2;
 static int thisVfr1, thisVfr2;
 
 static GtkWidget *WheelContainer;
+// *INDENT-OFF*
 static GtkWidget *set_vfl1, *set_vfl2;
 static GtkWidget *set_fl1,  *set_fl2;
 static GtkWidget *set_lft1, *set_lft2;
 static GtkWidget *set_rgt1, *set_rgt2;
 static GtkWidget *set_fr1,  *set_fr2;
 static GtkWidget *set_vfr1, *set_vfr2;
+// *INDENT-ON*
 
 static enum ACTIONtype thisType;
 static int thisAction;

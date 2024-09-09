@@ -142,10 +142,12 @@ static gboolean gpio_cb (GtkWidget *widget, GdkEventButton *event, gpointer data
 static void gpio_changed_cb(GtkWidget *widget, gpointer data) {
   controller = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
 #ifndef GPIO
+
   if (controller != G2_V2) {
     controller = NO_CONTROLLER;
     gtk_combo_box_set_active(GTK_COMBO_BOX(widget), controller);
   }
+
 #endif
   gpio_set_defaults(controller);
   gpioSaveState();

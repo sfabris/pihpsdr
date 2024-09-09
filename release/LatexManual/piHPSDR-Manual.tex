@@ -13,11 +13,12 @@
 \def\rett#1{\texttt{\color{red}#1}}
 \def\bltt#1{\texttt{\color{blue}#1}}
 \def\grtt#1{\texttt{\color{magenta}#1}}
+\def\pH{pi\-HPSDR }
 \graphicspath{{./figures/}}
 \begin{document}
 \frontmatter
 \title{
-piHPSDR User's Manual \\
+\pH User's Manual \\
 \small{For development version 2.4}
 }
 \author{
@@ -38,7 +39,7 @@ If you modify or build upon the material, you must license the modified material
 
 \textbf{Disclaimer.} The manual has been written with the intention that it is useful. It is quite clear
 that it still contains errors, therefore it is stressed here that it comes without any warranty. The reader
-is hereby explicitly warned that through wrong use of an SDR program such as piHPSDR, it is possible to
+is hereby explicitly warned that through wrong use of an SDR program such as \pH, it is possible to
 damage the radio hardware.
 
 \textbf{Trade marks.} Registered trade marks are not marked with a sign in this manual. From the absence of
@@ -48,7 +49,7 @@ protected.
 \bigskip
 \textbf{The author:}
 
-Christoph van W\"ullen (DL1YCF) has contributed a lot to piHPSDR in the last few years, this manual refers
+Christoph van W\"ullen (DL1YCF) has contributed a lot to \pH in the last few years, this manual refers
 to the code in his GitHub account
 
 \texttt{https://github.com/dl1ycf/pihpsdr}
@@ -56,7 +57,7 @@ to the code in his GitHub account
 where the \LaTeX\   ,,source code'' of this manual, together with all figures in .png format, can be found
 in the \texttt{release/LatexManual} directory. At this moment this code has numerous additions/corrections
  compared
-to the piHPSDR code in John Melton's master repository, but there is still hope that both versions can
+to the \pH code in John Melton's master repository, but there is still hope that both versions can
 be merged in  the  future.
 
 If you think you can improve the manual, you are welcome.
@@ -66,54 +67,69 @@ email to the author: \texttt{dl1ycf@darc.de}
 \mainmatter
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Introduction}
-piHPSDR is a program that can operate with software defined radios (SDRs). As a graphical user interface,
+\pH is a program that can operate with software defined radios (SDRs). As a graphical user interface,
 it uses the GTK-3 toolkit, while the actual signal processing is done by Warren Pratt's WDSP library. Thus,
-piHPSDR organises the transfer of digitised radio (IF) data between the radio hardware and the
+\pH organises the transfer of digitised radio ,,intermediate frequency'' (IF)
+data between the radio hardware and the
 WDSP library, the
-transfer of audio data (either from a microphone or to a headphone), as well as the processing of user
+transfer of audio input (e.g. from a microphone) or output (e.g. to a headephone) data,
+ as well as the processing of user
 input (either by mouse/touch-screen, keyboard, or external "knobs and buttons"),
- and the graphical display of the IF data. piHPSDR is intended
-to run on different variants of Unix. It runs on all sorts of Linux systems, including a Raspberry Pi (hence
-the name piHPSDR), but equally well on Linux desktop or laptop computers, and on Apple Macintosh (Mac OSX)
-computers which have a Unix variant under the hood. The present author is not aware of piHPSDR running
+ and the graphical display of the IF data. \pH is intended
+to run on different variants of Unix/Linux. It runs on all sorts of Linux systems,
+including a Raspberry Pi (hence
+the name \pH), but equally well on Linux desktop or laptop computers, and on Apple Macintosh (Mac OSX)
+computers which have a Unix variant under the hood. The present author is not aware of \pH running
 under the Windows operating system, although with environments such as MinGW, this should be possible.
 
-Although piHPSDR can be operated entirely by using mouse and keyboard as input devices, many users prefer to
-have physical push-buttons and/or knobs or dials. To this end, piHPSDR can control push-buttons and rotary
+Although \pH can be operated entirely by using mouse and keyboard as input devices, many users prefer to
+have physical push-buttons and/or knobs or dials. To this end, \pH can control push-buttons and rotary
 encoders connected to the GPIO (general purpose input/output)
 lines of a Raspberry Pi. At least two generations of such controllers have
-been put on the market by Apache labs, and I know of several projects where home-brewn controllers have
+been put on the market by Apache labs, and I know of several projects where home made controllers have
 successfully been made. As an alternative, MIDI devices can be used for user interaction. For desktop/laptop
 computers that do not have GPIO lines, MIDI offers an easy-to-use possibility of having push-buttons and
-dials that control piHPSDR. Apart from home-brew projects in which a micro-controller such as an Arduino
+dials that control \pH. Apart from home-brew projects in which a micro-controller such as an Arduino
 Micro controls the actual buttons/knobs and acts as a MIDI device to the computer to which it is connected
-via USB, there are low-cost so-called "DJ controllers" (DJ stands for disk jockey) from various brands which
-have successfully been used with piHPSDR. A third possibility to control piHPSDR is via a serial interface
-through CAT (computer aided transceiver) commands. The CAT model used by piHPSDR is based on the Kenwood
-TS-2000 command set with lots of PowerSDR extensions.
+via USB, there are low-cost so-called "DJ controllers" (DJ stands for disk jockey) from various brands
+which are sold by music stores and
+which
+have successfully been used with \pH. A third possibility to control \pH is via a serial interface
+through CAT (computer aided transceiver) commands. The CAT model used by \pH is based on the Kenwood
+TS-2000 command set with lots of PowerSDR extensions. The ANDROMEDA controller uses such CAT commands to
+communicate with piHPSDR, so using CAT is, in addition to MIDI, the second option to have buttons and knobs
+for general (non-GPIO) computers.
 
 Using a touch-screen instead of a mouse offers the possibility to put the actual radio hardware together
-with a Raspberry Pi running piHPSDR and an assortment of buttons/knobs into a single enclosure. This way,
+with a Raspberry Pi running \pH and an assortment of buttons/knobs into a single enclosure. This way,
 one can build an SDR radio which can be operated like a conventional analog one.
 
-The piHPSDR program has been written by John Melton G0ORX/N6LYT. It is free software that is licensed under
+The \pH program has been written by John Melton G0ORX/N6LYT. It is free software that is licensed under
 the GNU (free software foundation) general public license. Many other radio amateurs have contributed to
 the code. A lot of extensions and improvements have been added by myself, therefore this document refers
-to the version of piHPSDR that can be found on my GitHub account \texttt{https://github.com/dl1ycf/pihpsdr}.
+to the version of \pH that can be found on my GitHub account \texttt{https://github.com/dl1ycf/pihpsdr}.
 
-Because piHPSDR can be used on many different types of computers, and because operating systems change
-rather quickly over time, I do no longer offer a ,,binary installation'', that is, archive
-containing pre-compiled binaries. It is therefore necessary to build piHPSDR \textit{on the target system}
+Because \pH can be used on many different types of computers, and because operating systems change
+rather quickly over time, I do no longer have pre-compiled binaries in the repository. Such binaries
+usually only work on a specific hardware, and with a specific variant (e.g. 32-bit compared to 64-bit) of
+the operating system. It is therefore necessary to build \pH \textit{on the target system}
 from the sources. I know this sounds daunting to non-LINUX-nerds. But I have put much effort into making
 the installation/compilation procedure semi-automatic and easy-to-use for non-nerds.
 To this end, I provide so-called shell scripts which do all the work behind the scene.
 The procedure is described in some detail in Appendix \ref{sec:installsources} for Linux (including RaspPi)
 computers and in Appendix \ref{sec:installmacosx} for Mac OSX. Several ,,absolute beginners'' have meanwhile
-successfully downloaded and installed piHPSDR from the sources, so you will manage to do so as well.
+successfully downloaded and installed \pH from the sources, so you will manage to do so as well.
+The installation procedure also builds a Desktop icon such that \pH can be started just by double-clicking
+this icon.
+On MacOS,
+a so-called ,,app bundle'' is made (via ,,make app'') which can be moved to another place (e.g. the Desktop)
+but which will not run if transferred to other MacOS machines. Again, it is not overly difficult
+to bundle everything that is needed inside this ,,app bundle'', but this then will only run on certain
+MacOS versions and not on others. So also on MacOS, it is preferred to build \pH from the sources.
 
-This manual starts in its first chapter with the first invocation of a freshly compiled piHPSDR.
+This manual starts in its first chapter with the first invocation of a freshly compiled \pH.
 Within this manual, we shall use a typewriter font in red colour if we refer to a text or a button within
-a menu of within the VFO bar. piHPSDR menus and commands are indicated through a typewriter font
+a menu of within the VFO bar. \pH menus and commands are indicated through a typewriter font
 printed in blue. The author hopes that this improves readability. In some cases, if the name of a command
 or  menu is written on the screen, you may find the same string both typed in red and blue in the
 description, depending on whether the text refers to the command in an abstract sense or to the string as it
@@ -121,9 +137,9 @@ can be found on the screen. This may be confusing upon first reading, but I shal
  convention as laid out here.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Starting piHPSDR for the first time}
+\chapter{Starting \pH for the first time}
 Let us assume you have an SDR (say, an ANAN-7000 or a HermesLite-II) powered up and connected to an antenna,
-and you have piHPSDR installed on a computer (say, a Raspberry Pi or an Apple Macintosh), the first thing to
+and you have \pH installed on a computer (say, a Raspberry Pi or an Apple Macintosh), the first thing to
 do is to establish a proper connection between the computer and the radio. Although advocated at many
 places,
 I do highly recommend against a WiFi connection. WiFi routers often use optimisations where they hold
@@ -140,18 +156,18 @@ into the RJ45 jacks of the computer and of the radio (see Appendix
 \begin{figure}
 \center
 \includegraphics[width=12cm]{Planning.png}
-\caption{piHPSDR screen while completing the \textit{wisdom plans}.}
+\caption{\pH screen while completing the \textit{wisdom plans}.}
 \label{fig:Planning}
 \end{figure}
 
-If the piHPSDR program is started for the first time, it opens a window that looks like Fig. \ref{fig:Planning}.
-Besides stating a version number and the date piHPSDR was built, the list of optional features is
+If the \pH program is started for the first time, it opens a window that looks like Fig. \ref{fig:Planning}.
+Besides stating a version number and the date \pH was built, the list of optional features is
 documented (compile-time options,
 in this case  GPIO, MIDI, SATURN) as well as the audio module used (here: ALSA) for attaching headphones
-or microphones to the host computer running piHPSDR. Information about compile-time options and the
+or microphones to the host computer running \pH. Information about compile-time options and the
 audio modules available are given in Appendix \ref{sec:compiletime}.
 
-What is important here that you have to wait. This only applies to the very first time you start piHPSDR.
+What is important here that you have to wait. This only applies to the very first time you start \pH.
 On CPUs with a rather simple instruction set (like the ARM processor in the Raspberry Pi, or the Apple
 Silicon processor in recent Macintosh computers), this so-called  \textit{planning} step is quite fast. For
 example, on my
@@ -159,10 +175,10 @@ Apple M2 Mac mini, this step only takes 6 seconds, and you have to wait for 34 s
 On the contrary, on CPUs with
 complex instruction sets, more planning is necessary: on my other Mac mini with a 3 GHz x86 processor, it
 takes 16 minutes! But note
-this has only to be done once, in subsequent starts of piHPSDR, the wisdom will simply be read from
+this has only to be done once, in subsequent starts of \pH, the wisdom will simply be read from
 the file created during the \textit{planning}. These plans contain, for a large number of dimensions,
 the fastest way to perform FFTs (\textit{fast Fourier transformations}) on the given CPU.
-When this ,,wisdom'' is secured, piHPSDR tries to detect a radio on the network. If everything went well with
+When this ,,wisdom'' is secured, \pH tries to detect a radio on the network. If everything went well with
 the network connection, you then see a screen with a discovery menu (Fig. \ref{fig:Start}).
 
 \begin{figure}
@@ -174,12 +190,16 @@ the network connection, you then see a screen with a discovery menu (Fig. \ref{f
 
 It is possible that the \rett{Start} button is deactivated and shows another text. \rett{In Use} at
 this point means that the radio is already in use (connected by another SDR application), while
-\rett{Incompatible} denotes that the radio is not compatible with this version of piHPSDR. This
-is only the case if piHPDSR runs natively on the CM4 module inside the new ANAN Saturn/G2
+\rett{Incompatible} denotes that the radio is not compatible with this version of \pH. This
+is only the case if piHPDSR runs natively on the compute module inside the new ANAN Saturn/G2
 radios and the FPGA firmware is known to be too old (or too new)
-for direct (XDMA) data transfer between the CM4
-module and the FPGA. Updating both piHPSDR and the FPGA firmware to the latest version
-should help in this case.
+for direct (XDMA) data transfer between the compute
+module and the FPGA. Updating both \pH and the FPGA firmware to the latest version
+should help in this case. Should the start button read \rett{Subnet!}, then the IP address of the
+radio is outside the range of the network adapter which received the discovery packet.
+In most cases when you see this, it results from a radio being caught in the act of initialising
+itself, and pressing the \rett{Discover} button again to re-start the discovery process then
+usually lets the problem vanish.
 
 If more than one radio is available, or a radio can be connected via more than one network interface,
 you will see several \rett{Start} buttons.
@@ -187,7 +207,7 @@ If you see at least one \rett{Start} button, you can start the corresponding rad
 by clicking that button. But let us first explain the
 purpose of the other buttons! Easiest to explain is the \rett{Exit} button, this will simply terminate
 the program. Most likely, you may want to go into the \rett{Protocols} menu sooner or later.
-By default, piHPSDR tries to discover the presence of a radio using all protocols known to piHPSDR. However,
+By default, \pH tries to discover the presence of a radio using all protocols known to \pH. However,
 if you know that your radio, for example, uses Protocol-2, then trying to discover a Protocol-1
 radio is just a waste of time. So if you know which types of radio you want to connect to, you can enable
 (only) these in the \rett{Protocols} menu. The available protocols are
@@ -196,28 +216,28 @@ radio is just a waste of time. So if you know which types of radio you want to c
 \item[Protocol 1]{This is the "original" HPSDR protocol.}
 \item[Protocol 2]{This is the "new" HPSDR protocol.}
 \item[Saturn XDMA]{This is used to talk to a Saturn FPGA through the internal XDMA interface. Only available
-if piHPSDR is compiled with the \texttt{SATURN}  option.}
-\item[USB OZY]{This is used to talk to a radio using the legacy USB OZY interface. Only available if piHPSDR
+if \pH is compiled with the \texttt{SATURN}  option.}
+\item[USB OZY]{This is used to talk to a radio using the legacy USB OZY interface. Only available if \pH
 is compiled with the \texttt{USBOZY} option.}
 \item[SoapySDR]{This is used to talk to a radio through the SoapySDR library, for example to an AdalmPluto.
-Only available if piHPSDR is compiled with the \texttt{SOAPYSDR} option.}
+Only available if \pH is compiled with the \texttt{SOAPYSDR} option.}
 \item[STEMlab]{This is used to connect to RedPitaya based SDRs through the WEB interface. Only available if
-piHPSDR is compiled with the \texttt{STEMLAB\_DISCOVERY} option. Starting the radio using this protocol is a
+\pH is compiled with the \texttt{STEMLAB\_DISCOVERY} option. Starting the radio using this protocol is a
 two-step process:
 first, the RedPitaya's WEB interface is located, and the \texttt{Start} button then starts the SDR app
-on the RedPitaya. Then, piHPSDR tries to connect to this SDR app and upon success offers a new
+on the RedPitaya. Then, \pH tries to connect to this SDR app and upon success offers a new
 \texttt{Start} button to start the radio. If the RedPitaya is exclusively used as a radio, it is recommended
 to auto-start the SDR app
 when the RedPitaya is powered up. In this case, the STEMlab protocol is not used, because the SDR app can be started through Protocol-2.}
 \item[Autostart]{This is a very useful option. It indicates that if exactly one radio has been found, it is
-automatically started. So in normal operation, when starting piHPSDR subsequently, and all settings are
+automatically started. So in normal operation, when starting \pH subsequently, and all settings are
 still valid, the radio is started without user intervention. If this option is activated and one radio is
 present, you will not see this menu, so in order to make further changes here, you have to disconnect the
-radio from the ethernet cable, start piHPSDR until you see this menu, and update the \rett{Protocols}
+radio from the ethernet cable, start \pH until you see this menu, and update the \rett{Protocols}
 settings. Then you can re-discover using the \rett{Discover} button.}
 \end{itemize}
 
-Sometimes piHPSDR needs to know the IP address of the radio. This is, for example, the case for the
+Sometimes \pH needs to know the IP address of the radio. This is, for example, the case for the
 \texttt{STEMlab} discovery
 described above. In such a case the IP address in numerical form (xxx.xxx.xxx.xxx) can be entered in the box
 with the label \rett{Radio IP Addr:}. If a legal IP address is contained in this box, protocol-1 and
@@ -234,7 +254,7 @@ allow being discovered by such a routed packet.
 
 The \rett{Discover} button re-starts the discovery process. This is useful if the radio has been powered up
 too late and
-was not yet ready when piHPSDR was started. Simply press \rett{Discover} to start another attempt.
+was not yet ready when \pH was started. Simply press \rett{Discover} to start another attempt.
 
 The combo-box (pop-down menu) to the left of the \rett{Discover} button lets you choose which type of GPIO
 controller you
@@ -244,33 +264,33 @@ the menu lets you choose between
 
 \begin{itemize}[font=\texttt, left=80pt]
 \item[No Controller]{Choose this if no GPIO controller is wired to your Raspberry Pi. This is the default
-when you first start piHPSDR.}
-\item[Controller1]{Choose this if you have the original piHPSDR controller put to the market by ApacheLabs
+when you first start \pH.}
+\item[Controller1]{Choose this if you have the original \pH controller put to the market by ApacheLabs
 (or a clone thereof), called the Controller1 in the rest
 of this manual.}
 \item[Controller2 V1]{This option is valid for some early prototypes of the "version 2" controller with
 single encoders. This special case is not covered in this manual.}
-\item[Controller2 V2]{Choose this if you have a "version 2" piHPSDR controller from ApacheLabs (with double encoders
+\item[Controller2 V2]{Choose this if you have a "version 2" \pH controller from ApacheLabs (with double encoders
 on a single shaft), or a clone thereof.
 This controller is denoted Controller2 in the rest of this manual.}
 \item[G2 Front Panel]{Choose this if you have an ANAN G2 radio with a built-in controller.}
 \item[G2 Mk2 Panel]{Choose this if you have an ANAN G2 Mk2 radio (with LEDs in the front panel).}
 \end{itemize}
 
-If piHPSDR is compiles without GPIO support, you can only choose between \rett{No Controller} and
+If \pH is compiles without GPIO support, you can only choose between \rett{No Controller} and
 \rett{G2 Mk2 Panel} (the latter is controlled by a serial connection rather than by GPIO lines).
-The effect of choosing \rett{G2 Mk2 Panel} is that piHPSDR will then use a default when configuring
+The effect of choosing \rett{G2 Mk2 Panel} is that \pH will then use a default when configuring
 the serial lines that is suitable of an ANAN G2-MkII radio.
 
 \textbf{Attention.} Be sure to choose a controller only if such a controller is actually connected to your
 Raspberry Pi. Unexpected things can happen if you chose one type of controller here but have totally different
 hardware connected to the GPIO. For example, if you have a so-called ,,audio hat'' attached to the RaspPi
-GPIO, then it is safest to choose \texttt{No Controller} to avoid piHPSDR using GPIO lines actually used
+GPIO, then it is safest to choose \texttt{No Controller} to avoid \pH using GPIO lines actually used
 by the audio hat.
 
 All settings (protocols, controller, IP address) made in this menu are stored in the global (radio
 independent) settings
-and are restored when piHPSDR is started the next time.
+and are restored when \pH is started the next time.
 
 If all went well, a radio could be discovered and you hit the \rett{Start} button, the radio is started, and
 if this succeeds, you see something like shown in Fig. \ref{fig:FirstDisplay}.
@@ -292,7 +312,7 @@ VFOs A and B,
 as well as lots of further information, to be explained later. At the top right, there are two buttons
 \rett{Hide}
 and \rett{Menu} which will be explained in the next chapter. To the left of these two buttons, there is the
-meter bar which by default is a digital S-meter. At this point, you have started piHPSDR successfully for
+meter bar which by default is a digital S-meter. At this point, you have started \pH successfully for
 the first time.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -302,10 +322,10 @@ the first time.
 \section{One or two receivers}
 At the end of the previous chapter (Fig. \ref{fig:FirstDisplay}),
  there were two receiver panels in the
-piHPSDR window, stacked vertically, and both including a spectrum scope
+\pH window, stacked vertically, and both including a spectrum scope
 (the green-coloured noise floor) and a waterfall. The waterfall area
 is completely black in the above picture since there was no RF signal.
-piHPSDR can be switched between having one or two receivers in the
+\pH can be switched between having one or two receivers in the
 \texttt{Radio} menu. If there are two receivers (called RX1 and RX2),
  one of the two is the \textit{active receiver}. If you look closely
  at the above picture, you will note that the spectrum scope of
@@ -317,14 +337,14 @@ piHPSDR can be switched between having one or two receivers in the
 
  Many conventional rigs with two independent receivers discriminate
  between the \textit{main} and the \textit{sub} receiver. It is important that
- this is \textbf{not} the case for piHPSDR. In piHPDSR, both  receivers are
+ this is \textbf{not} the case for \pH. In piHPDSR, both  receivers are
  largely equivalent. For example, if you start transmitting in
  normal (non-split) mode, the TX frequency matches the frequency
  of the active receiver, no matter whether this is RX1 or RX2.
  Likewise, in split mode, the TX frequency matches the frequency
  of the non-active receiver. Most of the receiver-specific controls,
  for example adjusting the AF volume or the AGC gain, refer to the
- current active receiver. If piHPSDR runs with two receivers,
+ current active receiver. If \pH runs with two receivers,
  RX1 is always controlled by VFO-A while RX2 is controlled by VFO-B.
  The VFO settings not only include the frequency but also the
  current mode (e.g. LSB or CWU), the filter setting, the band and
@@ -336,7 +356,7 @@ piHPSDR can be switched between having one or two receivers in the
 
  RX1 and RX2 are largely independent. They can receive on different
  bands. They can receive from different antennas provided the radio
- has two RF frontend with two analog-to-digital converter4s (ADC,
+ has two RF frontend with two analog-to-digital converters (ADCs),
  as most modern radios do. In this case, one usually
  assigns the first ADC (ADC0) to RX1 and the second ADC (ADC1) to
  RX2. This can be done in the \bltt{RX} menu.
@@ -352,16 +372,16 @@ piHPSDR can be switched between having one or two receivers in the
 \begin{figure}[ht]
 \center
 \includegraphics[width=12cm]{SingleReceiver.png}
-\caption{piHPSDR with a single RX and all controls (Zoom/Pan,
+\caption{\pH with a single RX and all controls (Zoom/Pan,
 Sliders, Toolbar) at the  bottom.}
 \label{fig:SingleReceiver}
 \end{figure}
 
- Fig. \ref{fig:SingleReceiver} picture shows, for demonstration purpose, a piHPSDR
+ Fig. \ref{fig:SingleReceiver} picture shows, for demonstration purpose, a \pH
  window with a single receiver.
  The RX panel only contains a
  spectrum scope with a white line and no waterfall (this can be changed in the
- \bltt{Display} menu. In addition, you see the toolbar
+ \bltt{Display} menu). In addition, you see the toolbar
  with eight buttons at the lower edge of the window, and above
  it an area with sliders. Showing the sliders is the default
  (and necessary) if there is no GPIO or MIDI controller attached,
@@ -484,7 +504,7 @@ Note that the slider area can be hidden (removed) via the \bltt{Display} menu (s
 \begin{figure}[ht]
 \center
 \includegraphics[width=12cm]{Hidden.png}
-\caption{piHPSDR window with the Toolbar/Sliders/Zoom
+\caption{\pH window with the Toolbar/Sliders/Zoom
 area ,,hidden''.}
 \end{figure}
 
@@ -505,7 +525,7 @@ previous display.
 
 Look again at Fig. \ref{fig:SingleReceiver}! Starting from the
 top, you see the title bar of the window. This bar is not visible
-in full screen mode, where the size of the piHPSDR window matches
+in full screen mode, where the size of the \pH window matches
 the display size. The title bar contains some basis information
 about the radio, e.g.  its type, the protocol used, the  IP
 and the hardware address of the radio. If you are really interested
@@ -519,7 +539,7 @@ end of this area, you see two buttons \rett{Hide} (already
 discussed) and \rett{Menu}. Clicking on the latter button opens
 the main menu, which will be discussed in detail in the following
 chapters. The \rett{Menu} button is really important, since it
-enables access to one of the menus used for configuring piHPSDR.
+enables access to one of the menus used for configuring \pH.
 Between the VFO bar and the \rett{Hide}/\rett{Menu} buttons,
 you see the meter area where you find the S-meter (during RX)
 and information about output power, SWR, etc. during TX.
@@ -571,7 +591,7 @@ on display.
 At the very bottom of the window, there is the toolbar. This can also be
 individually hidden/shown via the \bltt{Display} menu. The toolbar consists
 of eight ,,buttons'' which you can click with a mouse or on a touchscreen.
-If you are using the original (V1) piHPSDR GPIO controller, is has eight
+If you are using the original (V1) \pH GPIO controller, is has eight
 push buttons below the screen and pressing those is equivalent to clicking
 the buttons on the screen. You might still want to keep the toolbar on display
 even if you are using the Controller1 since it shows you to which functions
@@ -599,7 +619,7 @@ clear, for example, that clicking the \rett{Hide} or
 toolbar buttons, will activate the function associated with
 these buttons. Furthermore, the sliders (and the squelch enable/disable
 checkbox) in the sliders and Zoom/Pan are are operated as usual.
-But there are additional functions coded into piHPSDR:
+But there are additional functions coded into \pH:
 
 If there are two receivers, a mouse click (press and release) into
 the panel of the non-active receiver makes it active. On the other
@@ -735,7 +755,7 @@ and a yellow \rett{TXEQ}  while  transmitting.
 
 The last indicator in the top row  is \rett{CAT} which indicates
 if the CAT module  (see the \bltt{RIGCTL}  menu) has accepted at least
-one connection. In total, piHPSDR can be CAT-controlled simultaneously
+one connection. In total, \pH can be CAT-controlled simultaneously
 by five different sources, two of them using a serial line and
 three of them a TCP connection.
 
@@ -830,7 +850,7 @@ during TX.
 By default, the width of the meter section is 200 pixels, but if the current
 choice of the VFO bar and the window width leaves enough space, the width
 of the meter is increased to 250 pixels which allows for displaying some information
-at a larger font size. For example, if the standard VFO bar for a piHPSDR
+at a larger font size. For example, if the standard VFO bar for a \pH
 window 800 pixels wide is chosen, and the width of the window exceeds 850
 pixels, the meter automatically widens.
 
@@ -871,11 +891,11 @@ opened by a button click (or a push-button on an external controller), e.g. hitt
 toolbar you have seen in the last picture. You already know that the VFO and Meter
 menus can be opened by clicking into the VFO or meter section at the top of the window.
 When operating with a mouse, a secondary click in the RX or TX pan-adapter opens the
-RX or TX menu. But there is one place from which \textit{all} piHPSDR menus are at hand,
+RX or TX menu. But there is one place from which \textit{all} \pH menus are at hand,
 and this is the "Main Menu". It can be opened by clicking into the \rett{Menu} button at the
-top right corner of the piHPSDR window, the outcome is shown in Fig. \ref{fig:MainMenu}.
+top right corner of the \pH window, the outcome is shown in Fig. \ref{fig:MainMenu}.
 
-Some remarks have to be made about menus in general. Since piHPSDR is optimised for
+Some remarks have to be made about menus in general. Since \pH is optimised for
 working with small screens, only one menu can be open at a time. If a menu is open
 and one tries to open another one, the first menu will be destroyed (closed) and the
 new one will be opened. For example, if you hit the \rett{FILT} button in the toolbar
@@ -898,26 +918,26 @@ There are some commands available here that do not directly affect the radio ope
 so these commands are found in the top and bottom line of the Main Menu. We first
 mention the \rett{Restart} button in the middle of the top line. This restarts the
 radio protocol. While not needed under normal circumstances, it my happen (especially
-with beta releases of radio FPGA firmware) that the data exchange between piHPSDR and
+with beta releases of radio FPGA firmware) that the data exchange between \pH and
 the radio gets out-of-sync. I observed such problems with early versions of the Protocol-2
 firmware for Orion2 boards and that is the reason the \rett{Restart} button is
 there, since this made a quick recovery possible without loosing the QSO.
 At the bottom right, there is the \rett{Iconify} button which ,,minimises'' the
-piHPSDR window. Normally, if needed, one can do so by standard methods of the
-operating system in the title bar of the piHPSDR window. If piHPSDR, however,
+\pH window. Normally, if needed, one can do so by standard methods of the
+operating system in the title bar of the \pH window. If \pH, however,
 runs in full-screen mode (this is the case on very small touch screens), then the
-\rett{Iconify} button to make the piHPSDR window temporarily disappear without
+\rett{Iconify} button to make the \pH window temporarily disappear without
 breaking the connection to the radio, do some work with the operating system, and
-get the piHPSDR window back. Note in earlier versions of piHPSDR this function was
+get the \pH window back. Note in earlier versions of \pH this function was
 associated with the "Hide" button in the top right corner of the main window.
 Then, there are two menus (\bltt{Exit} and \bltt{About}) which are described in due course and which
 one can open by clicking either \rett{Exit piHPDSR} or \rett{About} in the main menu.
 
-The other buttons, between the two horizontal separator lines, give access to piHPSDR
+The other buttons, between the two horizontal separator lines, give access to \pH
 control and fine tuning. They are organised in six columns, namely radio related
 menus (first column), VFO related menus (second column), RX and TX related menus (third
 and fourth column), menus affecting both RX and TX (fifth column) and, finally,
-menus for adjusting how you can control piHPSDR (sixth column), either via Toolbar,
+menus for adjusting how you can control \pH (sixth column), either via Toolbar,
 MIDI, or GPIO encoders or switches. \textbf{,,Encoders''} are knobs which you can turn, and which
 can be used to change AF volume or TX output power. \textbf{,,Switches''} are push-buttons which
 can be used to trigger a function such as transmitting a carrier for tuning, toggle
@@ -932,9 +952,9 @@ between RX and TX, open a menu, and so forth.
 \caption{The \bltt{Exit} menu.}
 \end{figure}
 
-Via the \bltt{Exit} menu, you can leave the piHPSDR program. When leaving the program,
+Via the \bltt{Exit} menu, you can leave the \pH program. When leaving the program,
 the radio protocol is stopped and all the settings are written to a preferences file. This
-file is located in the piHPSDR directory and takes the name XX-XX-XX-XX-XX-XX.props, where
+file is located in the \pH directory and takes the name XX-XX-XX-XX-XX-XX.props, where
 the XX are heaxdecimal numbers that encode the MAC address for the radio.
 So the preferences for different radios (if you
 have more than one) are stored in different files. To leave the program, just click the
@@ -942,11 +962,11 @@ have more than one) are stored in different files. To leave the program, just cl
 menu by clicking the "Cancel" button. This is the button which closes the menu and has
 the same position and look as the "Close" buttons in all the other menus.
 
-If piHPSDR runs with administrator privileges, you can even leave the program and either re-boot
+If \pH runs with administrator privileges, you can even leave the program and either re-boot
 or switch off the computer via the "Reboot" and "Shutdown" buttons. This makes sense for setups
-where a Raspberry Pi running piHPSDR, a small SDR radio, a touch-screen and several encoders
+where a Raspberry Pi running \pH, a small SDR radio, a touch-screen and several encoders
 and switches are built into a single common enclosure. On the other hand, when running
-piHPSDR on desktop or laptop computers, clicking "Reboot" or "Shutdown" both leave the piHPSDR
+\pH on desktop or laptop computers, clicking "Reboot" or "Shutdown" both leave the \pH
 program but no re-boot or shutdown takes place, due to missing administrator privileges.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -959,10 +979,10 @@ program but no re-boot or shutdown takes place, due to missing administrator pri
 \caption{The \bltt{About} menu.}
 \end{figure}
 
-The about menu gives you some information about piHPSDR, first the original author,
+The about menu gives you some information about \pH, first the original author,
 John Melton,
 and an (incomplete) list
-of persons who contributed to the code, and then a statement which version of piHPSDR
+of persons who contributed to the code, and then a statement which version of \pH
 is working here, and when it has been compiled. Here you also find the version number of the WDSP
  library which is the ,,engine''
 running under the hood, and which does nearly all of the signal processing. If you file a bug report,
@@ -978,8 +998,8 @@ some data on the radio, namely the device type and version numbers, and which pr
 For diagnostic purposes, you also see the MAC address of the radio, its IP address (here overwritten
 with xxx.xxx.xxx.xxx)
 and the
-IP address of the computer running piHPSDR (here overwritten with yyy.yyy.yyy.yyy). The IP and MAC address of
-the radio are also given in the piHPSDR main window title bar, the MAC address is of interest since the radio-specific
+IP address of the computer running \pH (here overwritten with yyy.yyy.yyy.yyy). The IP and MAC address of
+the radio are also given in the \pH main window title bar, the MAC address is of interest since the radio-specific
 preferences are stored in a file whose name derived from the MAC address of the radio, replacing
 the colons by dashes and appending ,,.props''.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1116,18 +1136,18 @@ cleared (the Hermes IO2 bit is used for Anan-7000/8000). For protocol 2, for mos
 radios the IO4 bit is used (Anan-7000/8000/G2 use the IO5 bit).
 If the \rett{Enable TxInhibit Input} box is checked, ,,TX Inhibit'' will be drawn
 in the top left corner of the RX1 pan-adapter if signalled. If TxInhibit is signalled
-while piHPSDR is transmitting, it will induce a TX/RX transition, and any RX/TX
+while \pH is transmitting, it will induce a TX/RX transition, and any RX/TX
 transition is suppressed while TxInhibit is active. Some radios (e.g. Anan-7000) have
 a RCA jack with an active-low input, and the TxInhibit bit follows that input.
 Note that for effective hardware protection, processing the TxInhibit bit must
-take place in the FPGA of the radio. This checkbox simply enables piHPSDR to tell
+take place in the FPGA of the radio. This checkbox simply enables \pH to tell
 the user about such an event.
 
 \rett{Enable AutoTune  input} his box only appears for HPSDR (and not for SoapySDR)
 radios. The AutoTune state is signalled for protocol 1 by the input bit IO3,
 and for protocol 2 by the user input bit IO6 (the active state is represented
 by the bit being cleared).
-If \rett{Enable AutoTune  input} checked, piHPSDR will initiate \bltt{TUNE}-ing if the
+If \rett{Enable AutoTune  input} checked, \pH will initiate \bltt{TUNE}-ing if the
 input bit becomes active, and stop \bltt{TUNE}-ing if it later on becomes inactive.
 For the Anan-7000, there is no RCA jack connected with the IO3/IO6 bit, but the
 input is available on the spread-out board (between the Orion-II and the PA board) and one
@@ -1221,15 +1241,15 @@ a radio) and used in some very early setups.
 be \texttt{No TX}, if this is a receive-only radio, \texttt{Penelope} or \texttt{Pennylane}.
 The \texttt{Pennylane} is a later version of the Penelope transmitter board, the essential
 difference is that it can control the output signal level. In the Penelope case,
-piHPSDR will scale the IQ samples to provide TX drive control.
+\pH will scale the IQ samples to provide TX drive control.
 
 \rett{Janus Only} This box is for ATLAS systems that only have a Janus ADC/DAC card,
 and will only appear for OZY (USB-connected) boards. While this hardware is not a radio,
 external hardware such as the SDR-1000 can be connected to the Janus card. If this
-option is checked, piHPSDR assumes that the radio is controlled outside piHPSDR, and
+option is checked, \pH assumes that the radio is controlled outside \pH, and
 will thus only process the data stream but not try to send any commands to the radio.
 
-Note that I have no access to such legacy radios, so the piHPSDR code to handle these radios
+Note that I have no access to such legacy radios, so the \pH code to handle these radios
 is partly built on speculation (that is, studying the specs) and exchanging e-mails with
 people who still run such hardware. If you meet any inconsistencies, please contact
 the author.
@@ -1237,7 +1257,7 @@ the author.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The \texttt{Screen} Menu}
 
-The \bltt{Screen} menu lets you dynamically change the size of the piHPSDR main
+The \bltt{Screen} menu lets you dynamically change the size of the \pH main
 window, and choose between different VFO bar layouts. Furthermore, one
 can select whether the Zoom/Pan, the Sliders, or the Toolbar area are shown or hidden.
 The possibility to adjust
@@ -1255,16 +1275,16 @@ via the main menu and the \bltt{Screen} button and is shown in Fig. \ref{fig:Scr
 The window width and height can be chosen with the spin buttons shown. The minimum
 values for width and height are 640 and 400, the maximum values are determined by
 the resolution of the monitor. If more than one monitor is attached, the dimension
-of the monitor on which the initial piHPSDR window was opened determines
+of the monitor on which the initial \pH window was opened determines
 the maximum width and height. Changes made in the spin buttons become effective
-immediately. If piHPSDR is in full screen mode (see below), you can change the
+immediately. If \pH is in full screen mode (see below), you can change the
 values of the window width and height, but they do not become effective until
 you leave the full screen mode.
 
 \begin{figure}[ht!]
 \center
 \includegraphics[width=12cm]{VFObarChoice.png}
-\caption{Five choices for the VFO bar built into piHPSDR.}
+\caption{Five choices for the VFO bar built into \pH.}
 \label{fig:VFObarChoice}
 \end{figure}
 
@@ -1290,18 +1310,18 @@ the screen dimensions.
 \begin{figure}[ht!]
 \center
 \includegraphics[width=10cm]{640x400.png}
-\caption{piHPSDR running in a 640 x 400 window.}
+\caption{\pH running in a 640 x 400 window.}
 \label{fig:640x400}
 \end{figure}
 
-Fig. \ref{fig:640x400} shows, as an example, piHPSDR running in a window as small
+Fig. \ref{fig:640x400} shows, as an example, \pH running in a window as small
 as 640*400 pixels. It is admitted that this looks rather squeezed, and this
 will only be useful if a single receiver is run with no waterfall. However, for
 portable operations such small windows are often desired,
-if piHPSDR is to be run alongside with a logbook and/or digi mode program on a small laptop.
-Note that the piHPSDR menus are designed to fit on a window 800*480 pixels large, so
-it is not recommended to run piHPSDR on a \textit{screen} that small. On the other hand,
-if piHPSDR is run on a laptop in a small 640*400 window, then menus may be larger than
+if \pH is to be run alongside with a logbook and/or digi mode program on a small laptop.
+Note that the \pH menus are designed to fit on a window 800*480 pixels large, so
+it is not recommended to run \pH on a \textit{screen} that small. On the other hand,
+if \pH is run on a laptop in a small 640*400 window, then menus may be larger than
 that but still fit well on the screen (thus hiding, momentarily, the window of,
 say, your logbook program) and are perfectly usable.
 
@@ -1309,11 +1329,11 @@ say, your logbook program) and are perfectly usable.
 of the two receivers (if two receivers are used) side-by-side instead of on top
 of each other.
 
-\rett{Full Screen Mode}. If you check this option, piHPSDR goes to full screen mode.
-In this mode, the window width and height is ignore, instead, piHPSDR occupies
+\rett{Full Screen Mode}. If you check this option, \pH goes to full screen mode.
+In this mode, the window width and height is ignore, instead, \pH occupies
 the whole area of the screen. In a multi-monitor setup, the area of the monitor
-on which the piHPSDR window was opened upon program start is filled.
-If you leave full screen mode, the size of the piHPSDR window is again
+on which the \pH window was opened upon program start is filled.
+If you leave full screen mode, the size of the \pH window is again
 determined by the width and height chosen above.
 
  \rett{Display Zoom/Pan} This option can be used to show/hide the Zoom and
@@ -1329,7 +1349,7 @@ determined by the width and height chosen above.
 
  \rett{Display Toolbar} This option can be used to show/hide the toolbar. This
  only makes sense of using an external GPIO or MIDI controller. Note that
- when using the piHPSDR Controller1, the toolbar should remain on display since
+ when using the \pH Controller1, the toolbar should remain on display since
  this then serves as an indication which function is associated with each of
  the 8 push buttons immediately below the screen.
 
@@ -1360,7 +1380,7 @@ are shown while transmitting. This data is only available for Orion-II and SATUR
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The \texttt{Display} Menu}
 
-The \bltt{Display} menu is used to customise the overall layout of the piHPSDR
+The \bltt{Display} menu is used to customise the overall layout of the \pH
 window and the pan-adapters of the active receiver. Adjustments
 for the TX pan-adapter must be done in the \bltt{TX} menu. The menu is shown
 in Fig. \ref{fig:DisplayMenu}.
@@ -1424,7 +1444,7 @@ on the RX panels. With the pan-adapter enabled, you can have the waterfall alone
 
  \rett{Display Waterfall}. This option enables/disables the waterfall display
  of the RX panels. Note if both the waterfall and the pan-adapter is disabled,
- there will simply be a large ,,hole'' in the piHPSDR window. This makes little sense
+ there will simply be a large ,,hole'' in the \pH window. This makes little sense
  except on machines with very weak CPUs, since \textit{not} displaying neither waterfall
  nor pan-adapter saves some CPU time in the graphics back-end.
 
@@ -1462,7 +1482,7 @@ S-meter readings.
 \rett{TX ALC reading:} Here, the possible values are Peak, Average, and
 ALC gain. For a two-tone signal with maximum audio amplitude the Average
 ALC value is -3.0 dB, while the Peak value is 0.0 dB. Therefore I personally
-prefer the Peak value here and made it the default in piHPSDR:
+prefer the Peak value here and made it the default in \pH:
  if the value is less than zero, one can and should
 increase either the amplitude of the incoming audio signal (e.g. boost the
 microphone preamp) or move the Mic gain slider to the right. The reason is,
@@ -1567,7 +1587,7 @@ a screen shot from operation with an Adalm PLUTO, where the 70 MHz (4 m) band is
 \begin{figure}[ht]
 \center
 \includegraphics[width=12cm]{QO100-Waterfall.png}
-\caption{Working QO100 with piHPSDR and the Pluto.}
+\caption{Working QO100 with \pH and the Pluto.}
 \label{fig:QO100-Waterfall}
 \end{figure}
 
@@ -1698,7 +1718,7 @@ button of the current band) but instead will cycle through the band stack of tha
 
 
 Note that the band menu may look different from the one shown here: there are many bands
-(24 bands plus up to 8 transverter bands) defined in piHPSDR. However, the bands that
+(24 bands plus up to 8 transverter bands) defined in \pH. However, the bands that
 are outside of the radio's frequency limits are not shown. For example, a radio
 whose maximum frequency is 30 MHz will not show the 6m band. The \rett{GEN} (General)
 band encompasses the whole frequency range of the radio. If you set the frequency
@@ -1813,7 +1833,7 @@ receiver settings.
 Invoking the \bltt{RX} menu through the main menu always implies that the settings
 of the active receiver are to be modified. Using a mouse, you can also open the menu
 by a secondary click (using the right mouse button) into the receiver panel. This way,
-if piHPSDR is running two receivers, you can open the \bltt{RX} menu for both receivers
+if \pH is running two receivers, you can open the \bltt{RX} menu for both receivers
 (the active receiver as well as the other one), depending on in which panel you have
 right-clicked. Note secondary clicks are usually not possible with a touch screen.
 The menu is shown in Fig. \ref{fig:RXMenu}.
@@ -2024,7 +2044,7 @@ capabilities (SNB, ANF, NR1, NR2).
 
 \rett{NR2 Artefact Elimination} The NR2 noise reduction algorithm is prone to producing
 artefacts, so there is an option to reduce such artefacts.
-Although piHPSDR allows you to play with it, this option should nearly always be
+Although \pH allows you to play with it, this option should nearly always be
 checked (artefact elimination ,,enabled'').
 
 \rett{NR2 Trained Thresh}. This spin-box sets a threshold (between $-5$ and $5$)
@@ -2054,7 +2074,7 @@ Sample\&Hold, Mean Hold, Hold Sample, and Interpolate.
 
 \rett{NB Slew time/NB Lag time/NB Lead time/NB Threshold}.\\
  These parameters apply both to NB and NB2.
-piHPSDR currently does not allow to have a separate set of parameters for NB and NB2.
+\pH currently does not allow to have a separate set of parameters for NB and NB2.
 The times are in the range $0\ldots0.1$ msec, and 0.01 msec is a good starting point. The Threshold
 can vary from 15 to 500. If normal signals are blanked out (erroneously treated as impulse noise),
 then this threshold should be increased. On the other hand, a too high value will prevent the
@@ -2276,7 +2296,7 @@ radio. The available values are 1, 5, 10, 30, 50, 100, 200, and
 500 Watt. If your radio has a different maximum power, choose the
 next largest value. The choice of this value only affects the
 watt meter calibration (see below). If the  box
-\rett{Transmit out of band} is checked, this allows piHPSDR
+\rett{Transmit out of band} is checked, this allows \pH
 to go TX if you are outside of the amateur radio bands.
 
 
@@ -2288,7 +2308,7 @@ and you need a dummy load and a watt meter to do so. Most watt meters
 used by radio amateurs are not highly accurate, so if you can borrow
 an accurate one, do so. The PA calibration values are the fictive
 amplification of the PA. If the value is \textit{increased},
-piHPSDR assumes a higher amplification and will thus \textit{decrease}
+\pH assumes a higher amplification and will thus \textit{decrease}
 the output power of the HPSDR board. Thus, \textit{increasing} the
 PA calibration value will \textit{decrease} the output power. A calibration
 value of 38.8 dB corresponds to the maximum RF output of the HPSDR board,
@@ -2317,7 +2337,7 @@ as the low-power TX output (if the Xvtr port is active as RX antenna).
 
 \textbf{Watt meter calibration.} When PA calibration is complete,
 you can calibrate the power reading within the meter section of
-the piHPSDR window. If you open the \bltt{PA} menu and click
+the \pH window. If you open the \bltt{PA} menu and click
 on the text \rett{Watt Meter Calibrate}, the menu changes
 and looks like in Fig. \ref{fig:PAMenuWatt}.
 
@@ -2337,7 +2357,7 @@ the values of the spin buttons beside the Watt ratings have the nominal value.
 The calibration values can always be re-set to these nominal values by hitting
 the \rett{Reset} button. Watt meter calibration is not done separately for all
 bands, so it is suggested to perform the following procedure on the 20m band.
-piHPSDR will convert the ,,measured'' into the ,,reported'' value by linear
+\pH will convert the ,,measured'' into the ,,reported'' value by linear
 interpolation between two adjacent calibration values.
 
 Start with resetting the value by hitting the \rett{Reset} button. Then, move the
@@ -2345,7 +2365,7 @@ drive slider to 100 (the unit of the drive slider is per cent, not Watt!) and hi
 \texttt{TUNE} in the toolbar.
  After the PA calibration described above, your (external) Watt meter should
 show the nominal PA output power (e.g. 100 Watt for an ANAN-7000). Now look at the
-forward power reported in the meter section (top right of the piHPSDR window).
+forward power reported in the meter section (top right of the \pH window).
 Suppose you read "250 W" there although your output is 200 Watt. Then simply
 insert the number 250 in the spin button to the right of the string
 \rett{200W}. Now your watt meter reading should be close to 200W, you can fine-tune
@@ -2359,11 +2379,11 @@ the 200W spin button, then the value in the 100W spin button will read 125. So i
 single shot, you have roughly calibrated the Watt meter.
 
 A finer calibration only makes sense if you have a highly accurate Watt meter, since
-the (uncalibrated) reading in piHPSDR may actually be more accurate than your
+the (uncalibrated) reading in \pH may actually be more accurate than your
 Watt meter. Using your highly accurate Watt meter,
 you can now move the drive slider until your Watt meter exactly reads one of the
 lower power values, and use the corresponding spin button to change the calibration
-until piHPSDR exactly reports the correct power.
+until \pH exactly reports the correct power.
 The procedures is  virtually the same if our nominal output power is different.
 The only complication arises if your radio has a nominal power that is not in the menu,
 for example 150 Watt.
@@ -2372,8 +2392,8 @@ In this case, choose 200W (the next largest value)
 in the top line of the PA menu. TUNE and move the drive
 slider until your Watt meter reads the largest value possible that occurs
 in the Watt meter calibration menu (in this example, it is 140W). Adjust the
-140W spin button until piHPSDR reports 140 Watt. Then go to full power
-(150W) and adjust the 200W spin button until piHPSDR reports 150 Watt.
+140W spin button until \pH reports 140 Watt. Then go to full power
+(150W) and adjust the 200W spin button until \pH reports 150 Watt.
 Then, proceed with 120, 100, 80, etc. Watts.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2382,7 +2402,7 @@ Then, proceed with 120, 100, 80, etc. Watts.
 VOX (voice control) means that you can just speak into the microphone and the
 radio goes TX, without the need to press a PTT button. VOX can also be used
 in digital modes, if there is no possibility that the digi-mode program can
-put piHPSDR into TX mode via CAT commands or hardware lines. The VOX menu
+put \pH into TX mode via CAT commands or hardware lines. The VOX menu
 is shown in Fig. \ref{fig:VOXMenu}.
 
 \begin{figure}[ht]
@@ -2467,7 +2487,7 @@ it has been stopped.
 the signal sent to the PA (MON button not highlighted) or whether the feedback signal
 from the antenna is shown (MON button highlighted). Note that feedback data is only
 available if PURESIGNAL is enabled. Without PS being enabled, the TX pan-adapter will
-show the TX signal as it leaves piHPSDR no matter if \rett{MON} is checked or not.
+show the TX signal as it leaves \pH no matter if \rett{MON} is checked or not.
 
 \rett{PS Feedback ANT}. Here it must be specified which antenna jack is used for the
 PS feedback signal. It can be \rett{Internal} which means internal feedback
@@ -2539,14 +2559,14 @@ Note that if \texttt{PURESIGNAL} is not enabled, the RF input attenuators
 will automatically be set to maximum attenuation while transmitting with the PA enabled.
 
 \rett{SetPk}. This field shows the currently assumed value of the peak value of the TX DAC
-feedback signal. piHPSDR chooses is automatically, depending on the radio hardware.
+feedback signal. \pH chooses is automatically, depending on the radio hardware.
 The standard value for Protocol-1 and Protocol-2 radios are 0.407 and 0.290. Notable exceptions are
 the HermesLite-II running Protocol-1 (SetPK=0.240) and the ANAN-G2 running Protocol-2 (SetPK=0.612).
 The SetPK value is determined by the FPGA firmware of the radio can can experimentally
 be determined by comparing the outgoing TX and the incoming TX feedback signal.
  It should match the value reported
 by the calibration algorithm in the GetPk field. The  value
-chosen by piHPSDR can be incorrect if you use a highly experimental firmware on your
+chosen by \pH can be incorrect if you use a highly experimental firmware on your
 HPSDR board with modified TX DAC filters, but this should normally not happen.
 
 If you want to use PURESIGNAL, it is required to enable PURESIGNAL by checking the
@@ -2616,7 +2636,7 @@ Many radios have a connection for a paddle or at least for
 a straight key, and contain firmware to do CW. CW handling by
 the radio firmware is enabled by the \rett{CW handled in Radio}
 check box. If unchecked, CW (that is, generating and forming
-the RF pulses) is done by piHPSDR. For most radios, you can
+the RF pulses) is done by \pH. For most radios, you can
 still use the Morse paddle connected to the radio since the
 radio sends the dash/dot paddle press events to the host
 computer, but it is more versatile to connect
@@ -2625,8 +2645,8 @@ to the host computer (see Appendix \ref{sec:ConnectCW}).
 
 \rett{CW Speed}. Here the speed (in wpm) can be chosen. If CW is
 handled in the Radio, the value is simply sent to the radio firmware,
-which implements the (iambic) keyer. If CW is done within piHPSDR,
-this value is used by piHPSDR's built-in iambic keyer. If using
+which implements the (iambic) keyer. If CW is done within \pH,
+this value is used by \pH's built-in iambic keyer. If using
 a straight key, or an external keyer whose output is then treated
 like a straight key, the speed has no meaning.
 
@@ -2643,10 +2663,10 @@ last Morse key closure.
 \rett{Sidetone Level}. This is the level of the side tone,
 either generated by the radio (if CW is handled there and the radio
 has an audio codec) or
-by piHPSDR (if CW is not handled in the radio). The allowed range
+by \pH (if CW is not handled in the radio). The allowed range
 is 0--127, typical values are between 10 and 20. The side tone level
 is usually set to zero if, for example, a low latency sidetone is
-produced outside piHPSDR. In this case, one usually wants to hear
+produced outside \pH. In this case, one usually wants to hear
 the tone from CAT CW messages being sent, so if the side tone is
 zero, a default side tone level (12) is used while transmitting
 via CAT.
@@ -2677,10 +2697,10 @@ offsets from the carrier frequency. The
 width is the rise/fall time of the pulse envelope, using the default value
 (9 msec) you will meet ARRL's CSI (clean signal initiative) specification
 for all CW speeds up to 40 wpm. Ramp widths can be chosen from
-5 to 16 msec (piHPSDR does not allow values smaller than 5 msec
+5 to 16 msec (\pH does not allow values smaller than 5 msec
 to ensure that your CW signal does not produce overly strong clicks).
 If the RF pulse is shaped
-by piHPSDR (\rett{CW handled in Radio} \textit{not} checked),
+by \pH (\rett{CW handled in Radio} \textit{not} checked),
 you will get
 the optimized ramp function an the chosen ramp width.
 A very recent Protocol-2 update
@@ -2695,7 +2715,7 @@ To make sure that the delay of the CW side tone is
 as small as possible, a ramp with a raised cosine shape
 and a constant width of 5 msec (independent of the ramp width
 used for RF) is used when \rett{CW handled in Radio} \textit{not} checked
-such that piHPSDR shapes the side tone.
+such that \pH shapes the side tone.
 
 \rett{Paddle Mode:} Here the choice is Iambic Mode A, Iambic Mode B,
 and  Straight Key. In Straight Key mode, the key has to be connected
@@ -2753,7 +2773,7 @@ But note that there is a lot of latency in the HPSDR data
 processing which you cannot avoid, so ,,low'' latency
 is not really low. Therefore, the default option
 is \rett{Linear Phase}, and there should be little reason
-to change this. Note that piHPSDR does not allow low latency
+to change this. Note that \pH does not allow low latency
 filters for TX, since in this case the TX compressor
 could not be used with the CESSB overshoot correction.
 
@@ -2761,7 +2781,7 @@ could not be used with the CESSB overshoot correction.
 filter. Increasing this size will inevitably increase the latency,
 but makes the filter edges steeper. The allowed values are
 powers of 2, and the minimum value equals the buffer size, which
-is hard-coded in piHPSDR to be 1024 (except for the transmitter in Protocol-2,
+is hard-coded in \pH to be 1024 (except for the transmitter in Protocol-2,
 where it is reduced to 512). The default value of 2048 should be
 fine in almost all cases, if you increase it, you can notice that
 the filter edges become little more ,,brick wall'' like.
@@ -2909,9 +2929,9 @@ with the \rett{CW handled in Radio} box checked in the \bltt{CW} menu.
 In this case, starting CW transmission lets the FPGA (processing unit
 inside the radio) put the
 radio into TX mode, start forming the first RF pulse, and informs the
-host computer running piHPSDR that a RX/TX transition has been made.
+host computer running \pH that a RX/TX transition has been made.
 
-Only then, piHPSDR can start telling the radio to switch the relays that
+Only then, \pH can start telling the radio to switch the relays that
 connect the Ant jacks with the TX circuitry.
 
 As as result, a small part (few milli-secs) of the first RF pulse (dot or dash)
@@ -2924,7 +2944,7 @@ only.
 
 A very recent (Jan 2024) update of the Protocol-2 definition offers the possibility to
 tell the radio which antenna settings is must use when it goes TX on its
-own behalf. piHPSDR fully supports this, and if you have an updated
+own behalf. \pH fully supports this, and if you have an updated
 Protocol-2 firmware in your radio then the problem disappears. For Protocol-1,
 there is no such update so the problem remains.
 
@@ -2958,7 +2978,7 @@ For non-HPSDR radios, the \bltt{OC} menu does not appear in the main menu.
 
 To facilitate control of an automatic tuner, there are seven \rett{TUNE}
 bits which are OR-ed with the bit pattern chosen for TX on the actual band,
-as long as you are TUNE-ing with piHPSDR. Besides the \bltt{TUNE} action,
+as long as you are TUNE-ing with \pH. Besides the \bltt{TUNE} action,
 there are the \bltt{Full TUNE} and \bltt{Memory Tune} actions which are
 functionally equivalent, except that the open collector tuning pattern
 is removed for \bltt{Full Tune} after the full tune delay, and for \bltt{Memory Tune}
@@ -2976,13 +2996,13 @@ you enable the \texttt{N2ADR} filter board in the \bltt{Radio} menu.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter[Controlling piHPSDR]{The Main Menu: controlling piHPSDR}
+\chapter[Controlling \pH]{The Main Menu: controlling \pH}
 
-In this chapter, the customisation of the toolbar (at the bottom of the piHPSDR window),
+In this chapter, the customisation of the toolbar (at the bottom of the \pH window),
 as well as how to configure GPIO and MIDI controllers, is described. Furthermore, in this
-chapter we discuss the RIGCTL menu which allows controlling piHPSDR by some external program
+chapter we discuss the RIGCTL menu which allows controlling \pH by some external program
 such as a logbook or contest program, via standardised CAT commands that can be sent to
-piHPSDR either over a serial line or via TCP.
+\pH either over a serial line or via TCP.
 
 \textbf{Note for Controller1 owners:} The eight switches (push-buttons) of the controller,
 that a positioned below the screen, are bound to the eight toolbar buttons on the screen.
@@ -3069,17 +3089,17 @@ function, one is stuck and can no longer cycle through the function layers.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The \texttt{RigCtl} (Rig control, or CAT) Menu}
 
-piHPSDR has a built-in rig control or CAT (computer aided transceiver) facility. This can be used to control
-piHPSDR from other programs or even other computers. You can have up to three simultaneous CAT connections
-via TCP, and three additional CAT connections via serial lines (provided the host computer running piHPSDR
+\pH has a built-in rig control or CAT (computer aided transceiver) facility. This can be used to control
+\pH from other programs or even other computers. You can have up to three simultaneous CAT connections
+via TCP, and three additional CAT connections via serial lines (provided the host computer running \pH
 has those serial interfaces available). Note that on the new ANAN G2MkII radios, one of the serial lines
 is used for controlling the front panel.
 It is also possible to use FIFOs (also known as named pipes) instead of real serial devices, which offers a
 hardware-free connection
-of, say, a logbook program running on the same computer to piHPSDR, even if the logbook program cannot use
+of, say, a logbook program running on the same computer to \pH, even if the logbook program cannot use
 TCP. On my Macintosh computer for example, using a named pipe and the Kenwood TS-2000 radio model,
-I can connect the MacLogger DX logbook program with piHPSDR.
-piHPSDR fully supports (thanks Rick!) the ANDROMEDA controller (see \texttt{github.com/laurencebarker/
+I can connect the MacLogger DX logbook program with \pH.
+\pH fully supports (thanks Rick!) the ANDROMEDA controller (see \texttt{github.com/laurencebarker/
 Andromeda\_front\_panel}).
 This controller (or rather the Arduino inside) is connected to the host computer via USB and appears as a
 USB-to-serial
@@ -3089,7 +3109,7 @@ the Kenwood TS-2000 as the radio model would do it, if the digi mode or laptop p
 interface with
 radios, either choose TS-2000 or (preferably) the ,,OpenHPSDR PiHPSDR'' radio model because this uses time-
 out values
-adapted to piHPSDR. The \bltt{RigCtl} menu is shown in Fig. \ref{fig:RigCtlMenu}.
+adapted to \pH. The \bltt{RigCtl} menu is shown in Fig. \ref{fig:RigCtlMenu}.
 
 \begin{figure}[ht]
 \center
@@ -3103,7 +3123,7 @@ is rather standard, using another one is only necessary if you are running more 
 SDR program on the host computer at the same time.
 This port number must match the port number used in the (digi-mode or logbook) program that wants to connect.
 
-\rett{Serial}. piHPSDR support up two three CAT connections over serial lines or named pipes.
+\rett{Serial}. \pH support up two three CAT connections over serial lines or named pipes.
 In the text field, enter the device name of the serial port or the named pipe to use.
 Which names to use
 is highly operating system dependent. On a RaspPi,  USB-to-serial
@@ -3114,27 +3134,27 @@ is used on the ANAN G2-MkII radios for communicating with the front panel. If yo
 \rett{G2 Mk2 Panel} in the discovery menu, this port will be assigned by default to the third
 slot and it is also enabled, this can be changed in the RigCtl menu and will then also be written to
 the props file.
- It is important to know that piHPSDR does not try to ,,detect'' serial
+ It is important to know that \pH does not try to ,,detect'' serial
 ports, you must know the proper name (e.g. by looking at the contents of the \texttt{/dev} directory).
 Named pipes can be created everywhere in the file system hierarchy using the command
-,,\texttt{mkdir -p <some\_arbitrary\_name>}''. Names pipes can be used for the communication between piHPSDR
+,,\texttt{mkdir -p <some\_arbitrary\_name>}''. Names pipes can be used for the communication between \pH
 and another program running on the same computer, and are only meaningful if that other programm does not
 support CAT-over-TCP.
 
 To the right of the serial port text field, there is a pop-down menu for choosing the baud rate. Only 4800,
 9600, 19200, and 38400 baud are offered, but this should cover most cases.
 
-\rett{Enable}. This checkbox enables or disables the piHPSDR CAT subsystem for that particular case.
+\rett{Enable}. This checkbox enables or disables the \pH CAT subsystem for that particular case.
 Enabling and disabling can be done separately for the TCP subsystem and each of the serial
 connections.
 
 \rett{Andromeda}. This checkbox enables the connection for use with ANDROMEDA consoles
 of the G2-MkII front panel. Serial lines are
-forced to 9600 baud if enabled for ANDROMEDA. Furthermore, status changes of piHPSDR (e.g. RIT on/off) are
+forced to 9600 baud if enabled for ANDROMEDA. Furthermore, status changes of \pH (e.g. RIT on/off) are
 automatically reported via ZZZI CAT commands (see Appendix \ref{sec:catcommands}). These messages are
 used by the ANDROMEDA console or the G2-MkII front panel
 to switch LED indicators such that they reflect the current state
-of piHPSDR. Note that the \rett{Andromeda} flag is only inspected when the connection is opened. Serial CAT connections
+of \pH. Note that the \rett{Andromeda} flag is only inspected when the connection is opened. Serial CAT connections
 are established when successfully opened upon program start or via this menu.
 TCP CAT connections are established when the \textit{client} successfully connects.
 
@@ -3146,8 +3166,8 @@ are transmitted via FA and FB CAT messages. The main use for auto reporting mode
 is connected via a serial line that needs frequency info via CAT. If you do not have hardware that depends
 on such unsolicited (without requesting them via ZZAI or AI commands) messages, this box should never be checked.
 
-\rett{Enable RigCtl Debug Logging}. If enabled, the piHPSDR CAT subsystem sends lots of debug messages to the standard output. If
-piHPSDR is run
+\rett{Enable RigCtl Debug Logging}. If enabled, the \pH CAT subsystem sends lots of debug messages to the standard output. If
+\pH is run
 from within a terminal window, these messages appear in the terminal window. If it is run from double-
 clicking a desktop icon,
 these messages can be found in a log file within the piHSPDR working directory (this is the directory where
@@ -3162,16 +3182,16 @@ not be checked for normal use.
 MIDI (musical instrument digital interface) is a protocol designed for the communication of
 musical instruments, such as keyboards and tone generators. Because of its widespread use,
 support in all major operating systems, and it inherent ability to deliver real-time ,,events'',
-it is also an ideal protocol to control an SDR program. The only MIDI messages piHPSDR processes
+it is also an ideal protocol to control an SDR program. The only MIDI messages \pH processes
 are NoteOn, NoteOff, and ControllerChange messages. Typically, a NoteOn message is sent if
 a key on a keyboard is hit. The first parameter of a NoteOn/Off message is the key
 it refers to. Although keyboards rarely have more than 88 keys, the allowed range for
 the key is 0-127. There is an additional parameter (,,velocity'', range 0-127) that tells how
 fast the key has been hit (this makes the difference between a soft and loud tone on the piano).
 NoteOn/Off messages are ideally suited for indicating button press and release events. In principle,
-piHPSDR does not need the velocity. However, several MIDI consoles, in a sloppy interpretation of
+\pH does not need the velocity. However, several MIDI consoles, in a sloppy interpretation of
 the MIDI standard, send a NoteOn value with zero velocity if a button is released. Therefore,
-piHPSDR interprets a NoteOn message with a velocity different from zero as a ,,button press'',
+\pH interprets a NoteOn message with a velocity different from zero as a ,,button press'',
 and interprets both a NoteOn messages with zero velocity and a NoteOff message as a ,,button release''.
 
 The original MIDI standard was built upon a daisy-chained serial connection. Each device
@@ -3191,7 +3211,7 @@ an expression pedal, if it has changed. A ControllerChange message also has two 
 namely the number of the controller (0-127) and the value (0-127). A ControllerChange
 message could be sent if the MIDI controller has a potentiometer, to report its position,
 encoded from 0 (full counter clock wise) to 127 (full clock wise). Such a message could then be
-used to control in piHPSDR, say, the AF volume or the TX drive. Such a potentiometer is
+used to control in \pH, say, the AF volume or the TX drive. Such a potentiometer is
 not suited to become a ,,VFO knob''. Here one uses rotary encoders, a piece of hardware which
 you can turn (as long as you like) in either direction, and which reports (by hardware pulses)
 how fast and it which direction it is turned. Unfortunately, there is no standard how to
@@ -3201,7 +3221,7 @@ and 63, 62, 61, $\ldots$ for counter clock wise rotations, and further encodes t
 rotation in how far the value differs from 64. Other brands interpret the 7-bit number
 as a signed quantity, such that values 0, 1, 2, $\ldots$ correspond to clockwise,
 and numbers 127, 126, 125, $\ldots$ to counter-clockwise rotations. It is clear that
-the piHPSDR MIDI configuration menu must be flexible enough to handle all these situations.
+the \pH MIDI configuration menu must be flexible enough to handle all these situations.
 
 \begin{figure}[ht]
 \center
@@ -3210,22 +3230,22 @@ the piHPSDR MIDI configuration menu must be flexible enough to handle all these 
 \label{fig:MIDImenu1}
 \end{figure}
 
-From this it is clear that within piHPSDR, we have to distinguish three types of sources
+From this it is clear that within \pH, we have to distinguish three types of sources
 of MIDI commands:
 
-\rett{KEY}. This type is generated by NoteOn/Off MIDI events. piHPSDR functions (,,Actions'') that
+\rett{KEY}. This type is generated by NoteOn/Off MIDI events. \pH functions (,,Actions'') that
 can be assigned to this type are typically those which can also be assigned to toolbar
 buttons.
 
 \rett{KNOB/SLIDER}. This type is generated by ControllerChange MIDI events. It can be used
-for piHPSDR functions that are usually controlled by a slider, such as adjusting the AF
+for \pH functions that are usually controlled by a slider, such as adjusting the AF
 volume, setting the TX drive, setting the AGC gain, etc.
 
 \rett{WHEEL}. This type is also generated by ControllerChange MIDI events. This means
 that if such an event is configured, the user has to decide whether this event
-originated from a potentiometer or from a rotary encoder. The prototypical piHPSDR
+originated from a potentiometer or from a rotary encoder. The prototypical \pH
 function controlled by a WHEEL is a VFO knob, which you can spin forever. However,
-you can also assign to to the AF volume control. piHPSDR takes care that the
+you can also assign to to the AF volume control. \pH takes care that the
 AF volume stops at the extreme cases (-40 and 0 dB for AF volume) even if you continue
 spinning.
 
@@ -3240,7 +3260,7 @@ which have a 32U4 microcontroller which has built-in MIDI capability. With such 
 microcontroller, you can build your own "DJ controller". Let the 32U4 control
 lots of push buttons and rotary encoders, and send the MIDI messages via USB to the
 computer. Using such a micro controller is also the most convenient and general way
-to connect a Morse key or paddle to the host computer running piHPSDR (see
+to connect a Morse key or paddle to the host computer running \pH (see
 Appendix \ref{sec:ConnectCW}, you can but need not use the same micro controller
 for taking care of the buttons/encoders and the CW key).
 
@@ -3253,7 +3273,7 @@ At the top of the menu, besides the close button, you find a list of MIDI device
 in the system, each of which with a check box. In Fig. \ref{fig:MIDImenu1}, there is only
 one such device with name ,,CMD PL-1 MIDI 1''. You will find all MIDI devices attached
 to the host computer here. With the check box(es), enable those you want to use.
-This way it is possible to run two instances of piHPSDR on the same computer, both
+This way it is possible to run two instances of \pH on the same computer, both
 connected to different radios, and control them independently with two different MIDI
 consoles. The first thing you have to do is to check all MIDI devices you want to use.
 
@@ -3267,9 +3287,9 @@ speaking,
 a pair of ControllerChange events sets a 14-bit value for the lower controller.
 Some MIDI consoles
 from the music market (for example, the Hercules DJ200 controller)
-use this mechanism. piHPSDR, especially the MIDI menu, gets confused
+use this mechanism. \pH, especially the MIDI menu, gets confused
 by these "controller pairs". Checking the \rett{Ignore Controller Pairs} box just tells
-piHPSDR to ignore MIDI ControllerChange event if the controller number is between 32 and 63.
+\pH to ignore MIDI ControllerChange event if the controller number is between 32 and 63.
 As a consequence, only the most significant 7 bits of the 14-bit value are used, which
 is fine for most applications.
 
@@ -3324,7 +3344,7 @@ to a right turn.
 \caption{The MIDI menu, VFO action selected}
 \label{fig:MIDImenu4}
 \end{figure}
-Now we have to specify which piHPSDR function should be triggered when moving the wheel.
+Now we have to specify which \pH function should be triggered when moving the wheel.
 The current action is shown in a button below the string \rett{Action} and defaults to \bltt{NONE}.
 By clicking this button, a dialog to choose the function opens as described for the
 \bltt{Toolbar} menu (chapter \ref{sec:toolbarmenu}), with the current choice (\bltt{NONE})
@@ -3360,7 +3380,7 @@ to change the VFO frequency.
 \label{fig:EncoderMenuG2}
 \end{figure}
 The encoders menu can be used to assign functions to the encoders of a
-piHPSDR Controller1, Controller2 or the G2 front panel controller.
+\pH Controller1, Controller2 or the G2 front panel controller.
 If \texttt{No Controller} has been chosen in the initial discovery screen
 (Fig. \ref{fig:Start}), this menu is not available.
 Note that the ,,large knob'' of these controllers
@@ -3401,7 +3421,7 @@ on the enclosure (see Fig. \ref{fig:g2_frontpanel}).
 The Controller2 (see Fig. \ref{fig:Apache_Controller2}
 has (besides the VFO knob at the bottom right) three knobs (arranged horizontally) at the bottom left,
 and a fourth knob at the top right, all of which are double encoders with a switch.
-So if you run piHPSDR with a Controller2, then the menu looks different (Fig. \ref{fig:EncoderMenuV2}).
+So if you run \pH with a Controller2, then the menu looks different (Fig. \ref{fig:EncoderMenuV2}).
  The menu shows
 for groups with three buttons each, and it should be clear which group belongs to which button. The
 \rett{Default} button again re-installs the default functions (those shown in Fig. \ref{fig:EncoderMenuV2}).
@@ -3442,7 +3462,7 @@ function printed on the enclosure.
 \section{The \texttt{Switches} Menu}
 
 The encoders menu can be used to assign functions to the push buttons of a
-piHPSDR  Controller2 or the G2 front panel controller.
+\pH  Controller2 or the G2 front panel controller.
 If \texttt{No Controller} or \texttt{Controller1} has been chosen in the initial discovery screen
 (Fig. \ref{fig:Start}), this menu is not available. This menu is not available
 for the Controller1 because the eight push buttons of this controller are hard-wired to
@@ -3494,10 +3514,10 @@ shown in Fig. \ref{fig:SwitchMenuV2} which match the functions printed on the en
 \appendix
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{List of piHPSDR ,,Actions''}
+\chapter{List of \pH ,,Actions''}
 \label{sec:actionlist}
 
-In this chapter, we give a list of ,,actions'' implemented in the piHPSDR program. These actions can be
+In this chapter, we give a list of ,,actions'' implemented in the \pH program. These actions can be
 assigned to toolbar buttons on the screen, or pushbuttons/encoders of a GPIO-connected or MIDI controller.
 Not all actions can be assigned to all control elements. Changing the AF volume, for example, can only be
 assigned to a knob
@@ -3758,14 +3778,14 @@ receive.}
 \action{CW Left}{CWL}{B}
 {This action indicates the closure/opening of the left paddle of a CW key. It is usually assigned to a GPIO
 line or a MIDI
-controller to which a Morse paddle is attached, and works with the iambic keyer that is built into piHPSDR.
+controller to which a Morse paddle is attached, and works with the iambic keyer that is built into \pH.
 This keyer
 is only active if CW is \textit{not} handled in the radio (see CW menu).}
 
 \action{CW Right}{CWR}{B}
 {This action indicates the closure/opening of the right paddle of a CW key. It is usually assigned to a GPIO
 line or a MIDI
-controller to which a Morse paddle is attached, and works with the iambic keyer that is built into piHPSDR.
+controller to which a Morse paddle is attached, and works with the iambic keyer that is built into \pH.
 This keyer
 is only active if CW is \textit{not} handled in the radio (see CW menu).}
 
@@ -3781,9 +3801,9 @@ to TX, so it must
 be used together with either manual RX/TX switching, or with the "\texttt{PTT (CW Keyer)}" action.}
 
 \action{PTT (keyer)}{CWKyPTT}{B}{This very similar to the \texttt{PTT} action (see below) with the exception
-that CW handling in the radio is temporarily disabled (thus, CW handling in piHPSDR is enabled). This allows
+that CW handling in the radio is temporarily disabled (thus, CW handling in \pH is enabled). This allows
 to have, e.g. a paddle attached
-to the radio while a contest logging program ,,talks'' to piHPSDR.}
+to the radio while a contest logging program ,,talks'' to \pH.}
 
 \action{DIV On/Off}{DIVT}{B}{Toggles (enabled/disabled) DIVERSITY reception.}
 
@@ -3848,11 +3868,11 @@ filter is one of the two variable filters
 
  \action{VFO Menu}{FREQ}{B}{This opens the \texttt{FREQ} (VFO) menu.}
 
- \action{Function}{FUNC}{B}{Cycle through the six toolbar sets. For the piHPSDR GPIO Controller1, where
+ \action{Function}{FUNC}{B}{Cycle through the six toolbar sets. For the \pH GPIO Controller1, where
  the eight switches follow the toolbar buttons, this also affects the function
  of the switches. Note that this action is \textit{always} connected with the right-most toolbar button.}
 
-  \action{FuncRev}{FUNC-}{B}{Cycle backwards through the six toolbar sets. For the piHPSDR GPIO Controller1,
+  \action{FuncRev}{FUNC-}{B}{Cycle backwards through the six toolbar sets. For the \pH GPIO Controller1,
    where the eight switches follow the toolbar buttons, this also affects the function
  of the switches. When using a mouse, this action can be invoked by a secondary mouse click
  on the rightmost toolbar button.}
@@ -4010,7 +4030,7 @@ this has no effect in current radio models since the preamp is hard-wired ,,on''
 button is released. This is
 one of the few actions where a button release event is significant. When attaching, say, the PTT contact of
 a microphone to
-a GPIO line for this purpose, take care of proper debouncing, since piHPSDR is not good at debouncing
+a GPIO line for this purpose, take care of proper debouncing, since \pH is not good at debouncing
 switches where both
 the press and release events are significant.}
 
@@ -4218,8 +4238,9 @@ already 8, this is a no-op.}
 \chapter{The MULTI encoder}
 \label{sec:multiencoder}
 
-When using a GPIO or MIDI controller, one (and only one) of the encoders can be chosen as \textit{the}
-multi-function encoder by assigning the \bltt{Multi} action.
+When using a controller (GPIO, MIDI or G2 front panel), one (and only one) of the encoders can be chosen as
+\textit{the} multi-function encoder by assigning the \bltt{Multi} action (For the G2 Mk2, the assignment
+is fixed, as for all other encoders an push-buttos there).
  This means that an action (say, changing the AF volume, the TX drive or
 the step attenuator of the RF front-end) can be dynamically assigned to that encoder, making it very
 facile to use a single ,,knob'' for various purposes. One has to sacrifice either another encoder
@@ -4265,32 +4286,45 @@ turns red in the ,,select'' state. This text is not shown until the first multi 
 (\bltt{MULTI}, \bltt{Multi Select}, or \bltt{Multi Toggle}) is executed such that it is not
 shown as long as no multi function encoder is defined or used. The \bltt{Multi} action is not
 stored in the preferences file, the default action at program startup always is the first in the list,
-namely \bltt{AG gain}.
+namely \bltt{AF gain}.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter[Keyboard bindings]{piHPSDR keyboard bindings}
+\chapter[Keyboard bindings]{\pH keyboard bindings}
 
-There are a lot of keyboard bindings effective if you run piHPSDR. Most of them are
+There are a lot of keyboard bindings effective if you run \pH. Most of them are
 standard key bindings of the GTK user interface. For example, when using a normal
 slider, you can use the up-arrow and down-arrow keys to fine adjust the value. In this
-section we will only list the keyboard binding that are captured and processed by piHPSDR.
+section we will only list the keyboard binding that are captured and processed by \pH.
 
 \section{Accessability for the Blind}
 
-piHPSDR has built-in support for making operating easier for those with very limited
+\pH has built-in support for making operating easier for those with very limited
 eye-sight. The idea is that pressing one of the function keys generates a message that
 is read aloud and that informs about frequency, mode, etc.
 
-Integrating a text-to-speech functionality inside piHPSDR is beyond the scope of the program,
-but there are programs around, e.g. \texttt{eSpeak} or \texttt{festi\-val},
- that one can use. The ,,hook'' implemented
-in piHPSDR is as follows (now it becomes technical): a message that is to be read aloud is
+Integrating a text-to-speech functionality inside \pH is beyond the scope of the program,
+but there are programs around, e.g. \texttt{eSpeak} (both for LINUX and MacOS) and
+\texttt{say} (a program that comes with MacOS). Note that the version of \texttt{eSpeak}
+that is currently being maintained seems to be called \texttt{espeak-ng}.
+
+The ,,hook'' actually used 
+in \pH is as follows (now it becomes technical): a message that is to be read aloud is
 simply sent out as a ,,promiscuous'' (a.k.a. broadcast) UDP packet to port number 19080.
 A program running on the same computer, or even on another computer on the same network, can
 then receive the packet and take care of the reading. A sample program that does so 
-is included in the piHPSDR source code tree (\texttt{udplistener.c}) for demonstration purposes.
-This program can either use the \texttt{eSpeak} or \texttt{festival} programs.
-The function key events implemented are
+is included in the \pH source code tree (\texttt{udplistener.c}) for demonstration purposes.
+This program is instrumented to use either the \texttt{eSpeak} program, or the text-to-speech
+program \texttt{/usr/bin/say} that comes with MacOS. Although \texttt{eSpeak} can
+be installed on MacOS via HomeBrew, using  \texttt{/usr/bin/say}  is the preferred option there.
+
+For MacOS, the language and the voice used by the \texttt{say} program can be chosen in
+the usual "Accessibility" preferences pane. For \texttt{espeak-ng}, there is a plethora of
+command-line options fine-tuning its behavior (which are not used by the \texttt{udplistener}
+program since it is simply a demo), but I have not seen how to customize \texttt{espeak-ng}
+through a preferences file (I might be wrong on this). How to handle the audio output
+is up to the user, on a Macintosh, you can easily have the RX audio and the text-to-speech
+audio on the same audio device. For LINUX, there are so many audio options that I could
+not dwell into this deeper.
 
 \rett{F1} Hitting the F1 function key reads the frequency of the active receiver.
 
@@ -4299,11 +4333,11 @@ The function key events implemented are
 \rett{F3} Hitting the F3 function key reads the filter width of the active receiver.
 
 \rett{F4} Hitting the F4 function key reads the S-meter value of the active receiver.
-Note there may be strong fluctuation in the reported value.
+Note there may be strong fluctuations in the reported value.
 
 \rett{F5} Hitting the F5 function key reads the value of the TX drive slider.
 
-\rett{F6} Hitting the F6 function key reads the gain or the attenuation in the front
+\rett{F6} Hitting the F6 function key reads the RF gain/attenuation in the front
 end of the active receiver.
 
 
@@ -4354,13 +4388,13 @@ command which will enter the frequency entered (in MHz) to the VFO of the active
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{piHPSDR CAT commands}
+\chapter{\pH CAT commands}
 \label{sec:catcommands}
-The CAT model of piHPSDR largely follows that for other SDR programs. It is based upon the Kenwood TS-2000
+The CAT model of \pH largely follows that for other SDR programs. It is based upon the Kenwood TS-2000
 CAT command
 set, which can easily be found on the internet (see the Appendix of the Kenwood TS-2000 instruction manual)
 So if you want to connect a logbook
-or contest logging program to piHPSDR, you will normally tell this program that it has to control a Kenwood
+or contest logging program to \pH, you will normally tell this program that it has to control a Kenwood
 TS-2000. Modern version of these programs are not restricted to serial lines and can use TCP as well.
 
 Many digi mode programs (and perhaps others as well) use the \texttt{hamlib} library for radio control. The digi mode
@@ -4370,15 +4404,15 @@ using CAT commands. piHPDSR is supported by \texttt{hamlib}, the radio model nam
 In the SDR community, there exist a heavily extended TS-2000 CAT command set known as the ,,PowerSDR CAT
 command set''. In contrast to the two-letter commands characteristic for the original (TS-2000) CAT
 command set, the extended commands have four letters and begin with two 'Z'.
-A small subset of the extended commands  has been implemented in piHPSDR. This set has later been extended
+A small subset of the extended commands  has been implemented in \pH. This set has later been extended
 somewhat to support the  ANDROMEDA open-source radio controller developed by Laurence Barker G8NJJ, see
 
 \texttt{https://github.com/laurencebarker/Andromeda\_front\_panel}
 
 and the additional commands have been implemented in
-the RIGCTL module of piHPSDR by Rick Koch N1GP (thanks Rick).
+the RIGCTL module of \pH by Rick Koch N1GP (thanks Rick).
  Furthermore, if "Andromeda" is selected in the RIGCTL menu,
-piHPSDR will constantly
+\pH will constantly
 \textit{send} status information to the ANDROMEDA controller using. Status information is
 sent if something
 changes (active receiver,  diversity status, PTT status, TUNE mode, PS status, CTUN mode, RIT and XIT
@@ -4396,7 +4430,7 @@ The ANDROMEDA protocol is also used for the communication with the panel of the 
 
 
 
-\section[Kenwood CAT commands]{Kenwood (two-letter) CAT commands supported by piHPSDR}
+\section[Kenwood CAT commands]{Kenwood (two-letter) CAT commands supported by \pH}
 
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
@@ -4570,7 +4604,7 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: AGC OFF, p
 $\phantom{\Big|}$\textbf{\large ID} & Get radio model ID \\\cline{1-2}
 $\phantom{\Big|}${\large Read} & {ID;} \\\hline
 $\phantom{\Big|}${\large Response} & {IDp$_1$p$_1$p$_1$;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{piHPSDR responds ID019; (so does the Kenwood TS-2000)} \\
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{\pH responds ID019; (so does the Kenwood TS-2000)} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -4980,7 +5014,7 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: XIT disabl
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section[Extended CAT commands]{Extended CAT commands supported by piHPSDR}
+\section[Extended CAT commands]{Extended CAT commands supported by \pH}
 
 \begin{center}
 \begin{tabular}{|p{2cm}|p{11cm}|}
@@ -5590,12 +5624,12 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{ANDROMEDA extension
 \label{sec:ConnectCW}
 
 \section{CW priorities}
-As detailed in the next section, there are many ways to produce CW with piHPSDR,
+As detailed in the next section, there are many ways to produce CW with \pH,
 namely
 \begin{itemize}
 \item[a)]{A key/paddle attached to the radio, and CW handled in the radio FPGA.}
-\item[b)]{A key/paddle attached to the radio, but using piHPSDR's built-in iambic keyer}
-\item[c)]{A key/paddle attached via GPIO/MIDI controlling piHPSDR's built-in iambic keyer}
+\item[b)]{A key/paddle attached to the radio, but using \pH's built-in iambic keyer}
+\item[c)]{A key/paddle attached via GPIO/MIDI controlling \pH's built-in iambic keyer}
 \item[d)]{An external keyer attached via GPIO/MIDI}
 \item[e)]{Sending CW using CAT messages (see Appendix \ref{sec:catcommands}).}
 \end{itemize}
@@ -5606,11 +5640,11 @@ d) and e) work in either case. This implies that with \rett{CW handled in Radio}
 you can still operate CW via CAT messages or via a keyer attached to GPIO or MIDI
 (this is a standard setup while contesting).
 
-For example, a contest logger might key piHPSDR using CAT commands, while the CW key is
+For example, a contest logger might key \pH using CAT commands, while the CW key is
 attached to the radio. In this case, one wants to be able to abort the message from the contest
 logger just by hitting the key and smoothly continue CW transmission using the key. This
 makes clear that one has to prioritise the CW sources such that a CW event with a higher
-priority aborts a CW event running a lower priority. piHPSDR assigns CAT CW (case e)
+priority aborts a CW event running a lower priority. \pH assigns CAT CW (case e)
 the lowest priority, a key attached to the radio (cases a, b, c) the highest priority
 and an external, GPIO or MIDI attached keyer (case d) intermediate priority. In other words,
 hitting a key attached to the radio aborts a CW message being sent either by CAT CW or
@@ -5634,10 +5668,10 @@ output with the audio that you feed to your headphone. This gives a hardware gen
 latency side tone.
 
 It is only slightly more difficult if you have to connect the Morse key to the host computer running
-piHPSDR. This is necessary, for example, if there is a considerable distance between the
-radio and the host computer running piHPSDR. Imagine, for example, that the radio is
+\pH. This is necessary, for example, if there is a considerable distance between the
+radio and the host computer running \pH. Imagine, for example, that the radio is
 in the attic close to the antenna feed point, but that you are sitting in your living room
-in front of the host computer running piHPSDR, and that there is a long ethernet cable
+in front of the host computer running \pH, and that there is a long ethernet cable
 between your computer and your radio.
 
 \textbf{RaspPi GPIO.} If your host computer is a RaspPi, and if you are running either no controller
@@ -5667,11 +5701,11 @@ is used by which controller option.
 All lines are active-low lines with a pull-up, so the active state is reached
 by connecting the input line to ground. See Appendix \ref{sec:actionlist} for
 an explanation of the commands. Briefly, use \bltt{CW Left} and \bltt{CW Right}
-when using piHPSDR's internal iambic keyer, and use \bltt{PTT (keyer)} and
+when using \pH's internal iambic keyer, and use \bltt{PTT (keyer)} and
 \bltt{CW Key (keyer)} when using an external keyer. Note when using an external
 keyer, it must generate both a key-down and a PTT signal, and it must be configured
 such that the PTT signal arrives earlier than the first key-down. The required time
-delay between PTT and the first key-down depends  on how fast piHPSDR can do the
+delay between PTT and the first key-down depends  on how fast \pH can do the
 RX/TX transition, and this for examples depends on whether you have one or two receivers
 running. A delay in the range 100-150 msec is usually long enough.
 K1EL ,,WinKey'' keyers and Arduino clones thereof, which are the most frequently
@@ -5685,7 +5719,7 @@ The ALSA audio module for Linux, as well as the PortAudio audio  module for MacO
  mixed with the audio from piHPDSR.
 
 \textbf{MIDI.}
-If running piHPSDR on non-RaspPi Linux or Macintosh computers, there are no GPIO
+If running \pH on non-RaspPi Linux or Macintosh computers, there are no GPIO
 lines. The same problem arises for piHPDSR running on a RaspPi if using the
 Controller2 or the G2 front panel, simply because nearly all GPIO lines are
 reserved for the controller.
@@ -5700,7 +5734,7 @@ PTT on/off sends MIDI NoteOn/Off messages to the computer. Then, use the
 can even show up at the computer as a MIDI input device \textit{and} a serial port,
 in this case you can even connect from a contest logging program to  the keyer
 via the WinKey protocol over the serial port, and get the key-up/down messages
-via MIDI back to piHPSDR. The Teensy4 is even so powerful that it can act, in
+via MIDI back to \pH. The Teensy4 is even so powerful that it can act, in
 addition to a MIDI device and a serial port, as a USB audio sound card.
 Using all these three components together you can route the RX audio to the
 Teensy, which then takes care of mixing the CW side tone with this audio
@@ -5727,7 +5761,7 @@ You must install the MIDIUSB library from within the Arduino IDE, through the
 input lines (0, 1, 2, 3 in the example) with debouncing. You can connect a CW paddle
 to lines 0 and 1, or the Key and PTT outputs of a Keyer to lines 2 and 3.
 If you are experienced, you can combine this code with a ,,WinKey'' compatible
-Arduino sketch and thus build an external keyer which then communicates with piHPSDR
+Arduino sketch and thus build an external keyer which then communicates with \pH
 via MIDI over the USB cable.
 
 \begin{small}
@@ -5891,7 +5925,7 @@ void loop() {
 \clearpage
 Copy-and-Paste from an PDF file often does not give you what you think, so
 this sketch is available under the name \texttt{MIDI.ino} in the \texttt{release}
-directory in the piHPSDR repository. Note you can
+directory in the \pH repository. Note you can
 also use this sketch to connect a microphone PTT button to input line 3. Once the
 Leonardo has been programmed,
 it will show up as an ,,Arduino Leonardo'' in the \bltt{MIDI} menu. As a basic test,
@@ -5901,61 +5935,61 @@ that a ,,NOTE'' event on channel 10 with a note 10 occurred, which you can then
 (by clicking the \rett{Action} button) assign to, say, \bltt{CW Left}.
 
 \textbf{Note}. It should be obvious how to extend this sketch to monitor additional
-input lines where you can then connect push buttons to which you can assign piHPSDR
+input lines where you can then connect push buttons to which you can assign \pH
 functions via the MIDI menu. Monitoring rotary encoders is more difficult and not
 shown here.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter[piHPSDR and digi mode programs]{Running piHPSDR alongside with DigiMode programs}
+\chapter[\pH and digi mode programs]{Running \pH alongside with DigiMode programs}
 
 In this section, we will cover four different scenarios, namely
 \begin{itemize}
 \item{piHPDSR and digi mode program running on different computers.}
-\item{piHPSDR and digi mode program running on the same LINUX computer
+\item{\pH and digi mode program running on the same LINUX computer
 (including RaspPi) using ALSA.}
-\item{piHPSDR and digi mode program running on the same LINUX computer
+\item{\pH and digi mode program running on the same LINUX computer
 (including RaspPi) using PulseAudio or PipeWire. {\color{red} In the most recent Linux distributions,
  PulseAudio has been abandoned and is replaced by
 PipeWire. From the user's perspective the difference is marginal.
 The manual covers both cases separately but they are essentially the same.}}
-\item{piHPSDR and digi mode program running on the same MacOS computer.}
+\item{\pH and digi mode program running on the same MacOS computer.}
 \end{itemize}
 
 
 
-\section[piHPSDR and Digi on different computers]{Running piHPSDR and Digi on different computers}
+\section[\pH and Digi on different computers]{Running \pH and Digi on different computers}
 
-This typically is the situation if piHPSDR is running on a computer with a very small
-screen, such as it is the case if you are using a piHPSDR controller or the G2 front panel.
+This typically is the situation if \pH is running on a computer with a very small
+screen, such as it is the case if you are using a \pH controller or the G2 front panel.
 This situation also occurs if you want to run the digi mode program on a Windows computer,
-since (as far as I know) piHPSDR has not yet been adapted to run with the Windows operating
+since (as far as I know) \pH has not yet been adapted to run with the Windows operating
 system.
 
 There is not much to say here, because this setup is largely the same as for conventional
 (analog) rigs: you need a sound interface connected to the computer running the digi program,
 and then you connect the sound interface either to the headphone and mic jacks of the radio,
-or to the input/output of a sound card connected to the computer running piHPSDR. In the
+or to the input/output of a sound card connected to the computer running \pH. In the
 latter case, you have to select this sound-card for local audio output in the \bltt{RX} menu,
 and for local microphone input in the \bltt{TX} menu.
 
 Unless you are using VOX, you also need a CAT command connection between the digi mode program
-and piHPSDR. Via CAT commands, the digi mode program can induce RX/TX transitions in piHPSDR,
+and \pH. Via CAT commands, the digi mode program can induce RX/TX transitions in \pH,
 change frequencies or modes, etc. If both computers are connected via ethernet,
-TCP is the method of choice for such a connection. piHPSDR listens on port 19090 (by default,
+TCP is the method of choice for such a connection. \pH listens on port 19090 (by default,
 can be changed in the \bltt{RigCtl} menu). For standard digi mode operation, choose the
 Kenwood TS-2000 radio model. If your digi mode program can use the \texttt{hamlib} CAT connection
 library (for example, both FLdigi and WSJTX can), choose the ,,OpenHPSDR PiHPSDR'' radio
 model.
 
-If there is no ethernet connection between the computer running piHPSDR and the computer
+If there is no ethernet connection between the computer running \pH and the computer
 running the digi mode program, you need two USB-to-serial interfaces and must connect them
-via a null modem. Then use the serial port both in piHPSDR (\bltt{RigCtl} menu) and the
+via a null modem. Then use the serial port both in \pH (\bltt{RigCtl} menu) and the
 digi mode program.
 
-\section[piHPSDR and Digi on same computer]{Running piHPSDR and Digi on the same computer}
+\section[\pH and Digi on same computer]{Running \pH and Digi on the same computer}
 In this case it is strongly recommended that the audio never goes analog, but is
 exchanged (transferred to and from)
-as digital data between piHPSDR and the digi mode program. To this end, you need
+as digital data between \pH and the digi mode program. To this end, you need
 virtual audio devices known as {\color{red} virtual audio cables} or {\color{red}
 loopbacks}. A virtual audio cable is a pair of connected (virtual) audio devices,
 one input (,,microphone'') device and one output (,,headphone'') device. You can,
@@ -5973,8 +6007,8 @@ flows through the RXcable upon RX and through the TXcable while transmitting. Ha
 it is clear that
 
 \begin{itemize}
-\item{In the piHPSDR \bltt{RX} menu, chose the output device of RXcable for local audio output.}
-\item{In the piHPSDR \bltt{TX} menu, chose the input device of TXcable for local microphone input.}
+\item{In the \pH \bltt{RX} menu, chose the output device of RXcable for local audio output.}
+\item{In the \pH \bltt{TX} menu, chose the input device of TXcable for local microphone input.}
 \item{In the audio menu of the digi mode program, choose the input device of RXcable for audio input.}
 \item{In the audio menu of the digi mode program, choose the output device of TXcable for output output.}
 \end{itemize}
@@ -5982,7 +6016,7 @@ it is clear that
 With this, the only question remaining is, how to create virtual audio cables, and how to access them.
 This is not only different between Linux and MacOS, but also is different on Linux depending on
 whether the ALSA compile time option (see Appendix \ref{sec:compiletime}) was activated during
-compilation of piHPSDR. If compiling from the sources you get the PulseAudio module if you
+compilation of \pH. If compiling from the sources you get the PulseAudio module if you
 do not change the Makefile (see Appendix \ref{sec:compiletime}).
 
 
@@ -6024,17 +6058,17 @@ card 6: TXcable [Loopback], device 1: Loopback PCM [Loopback PCM]
 \end{verbatim}
 \end{small}
 Remember that the device with index 5 is our RXcable and index 6 belongs to TXcable since
-not all programs (including piHPSDR) report the names (RXcable, TXcable) assigned. It is
+not all programs (including \pH) report the names (RXcable, TXcable) assigned. It is
 important to realise that each ,,cable'' offers two devices: the first one (0) is
 the input device and the second one (1) is the output device.
 Note that
 the two devices created by ,,modprobe'' only exist until the next shut-down of the computer and
 you have to re-create them each time after booting. There are ways to make this permanent (search
 the internet) or to include the ,,modprobe'' in a startup script that is executed once after each
-boot (again, search the internet). Now we show how to set this up and show piHPSDR's \bltt{RX} and
+boot (again, search the internet). Now we show how to set this up and show \pH's \bltt{RX} and
 \bltt{TX} menu, as well as the audio menu of WSJTX.
 
-We begin with the piHPSDR settings in the \bltt{RX} (Fig. \ref{fig:rx_settings_alsa_audio}) and
+We begin with the \pH settings in the \bltt{RX} (Fig. \ref{fig:rx_settings_alsa_audio}) and
 \bltt{TX} (Fig. \ref{fig:tx_settings_alsa_audio}) menu:
 
 \begin{figure}[ht]
@@ -6072,7 +6106,7 @@ tab for establishing the CAT connection, although this is not specific to ALSA
 \begin{figure}[ht]
 \center
 \includegraphics[width=12cm]{wsjtx_settings_radio.png}
-\caption{WSJTX radio settings for CAT connection to piHPSDR.}
+\caption{WSJTX radio settings for CAT connection to \pH.}
 \label{fig:wsjtx_settings_radio}
 \end{figure}
 
@@ -6080,7 +6114,7 @@ Important here is to choose the correct rig model \rett{OpenHPSDR PiHPSDR} and
 port \rett{:19090} (note the colon!). The other parameters in the left side of the tab
 have no meaning for a TCP connection. In the right tab, choose \rett{CAT} as
 the PTT method (TRX transition controlled by CAT commands). Checking \rett{Data/Pkt}
-takes care WSJTX switches piHPSDR to DIGU mode, and using \rett{Fake It} for the Split
+takes care WSJTX switches \pH to DIGU mode, and using \rett{Fake It} for the Split
 Operation method is just my personal preference.
 
 \subsection[PulseAudio: NullSink modules]{PulseAudio: Null-Sink modules as virtual audio cables}
@@ -6166,8 +6200,8 @@ the machine or restarting PulseAudio, the devices can be made permanent but you 
 search the internet on how to do this. My recommendation is to include such command in a
 shell script that is automatically executed when you start the computer.
 
-The necessary configuration for piHPSDR and WSJTX is  almost evident. The
-piHPSDR settings are shown in Fig. \ref{fig:rx_settings_pa_audio} (\bltt{RX} menu)
+The necessary configuration for \pH and WSJTX is  almost evident. The
+\pH settings are shown in Fig. \ref{fig:rx_settings_pa_audio} (\bltt{RX} menu)
 and in Fig. \ref{fig:tx_settings_pa_audio} (\bltt{TX} menu): RXcable has been selected
 for local RX audio output, while the Monitor of TXcable is chosen as the local
 microphone.
@@ -6188,7 +6222,7 @@ microphone.
 \end{figure}
 
 In the WSJTX audio tab, the input/output assignments are just reversed, as shown
-in Fig. \ref{fig:wstx_settings_pa_audio}. The CAT connection between WSJTX and piHPSDR is
+in Fig. \ref{fig:wstx_settings_pa_audio}. The CAT connection between WSJTX and \pH is
 the same as in the ALSA case.
 
 \begin{figure}[ht]
@@ -6290,7 +6324,7 @@ to buy a third-party product,  ,,loopback'' from RogueAmoeba
 Note I have no connections with that company, I am just using this product and
 can recommend it. It can not only be used to create loopback devices, but you get
 a patch panel so you can, for example, send the RX audio both to a headphone device
-and to a virtual cable, thus eliminating the need to change piHPSDR menu settings
+and to a virtual cable, thus eliminating the need to change \pH menu settings
 when switching between SSB and digi. The following picture just shows my setup
 (Figs. \ref{fig:loopback_rx} and \ref{fig:loopback_tx}).
 
@@ -6314,13 +6348,13 @@ output sent to RXcable is further routed to the Build-in Output (headphone
 connector) of the Macintosh. One could also modify the TXcable to accept a
 microphone as a second input, but then the microphone must be mutable
 (On/Off switch) such that it does not pickup noise while doing digi mode.
-In piHPSDR, simply choose RXcable and local RX output in the \bltt{RX} menu,
+In \pH, simply choose RXcable and local RX output in the \bltt{RX} menu,
 and a local microphone with device TXcable in the \bltt{TX} menu. In WSJTX,
 simply choose RXcable as the input and TXcable as the output device.
 
 As an additional bonus, loopback can also mix output devices. For example, one can create
 an additional loopback device with, say, name RX2, which can also be connected to
-the headphone output as shown for RXcable. If piHPSDR is running two receivers,
+the headphone output as shown for RXcable. If \pH is running two receivers,
 one can use the \bltt{RX} menu to send the audio output of the first receiver to RXcable
 and the audio output of the second receiver to RX2. Additionally one can activate only
 the left channel for the first and only the right channel for the second receiver
@@ -6340,8 +6374,8 @@ There is a number of compile-time options that are shown on the initial screen. 
 version,
 you have what you have. If you compile from the sources, you can choose which options you want (or want
 not).
-It is possible to change the options without actually changing one of the files in the piHPSDR repository.
-Simply go (in a terminal window) to the directory where you compile piHPSDR and type in
+It is possible to change the options without actually changing one of the files in the \pH repository.
+Simply go (in a terminal window) to the directory where you compile \pH and type in
 
 \grtt{cp Makefile GNUmakefile}
 
@@ -6365,38 +6399,38 @@ the option is not activated. The exception is the \texttt{AUDIO} option, which m
 
 \rett{GPIO}. (default: enabled)
 This option is needed on a RaspberryPi if you want to use GPIO input/output lines from
-within piHPSDR, for example since you have a controller (Controller1, Controller2, of G2 front panel)
+within \pH, for example since you have a controller (Controller1, Controller2, of G2 front panel)
 attached or want to use GPIO lines for CW or PTT. \textbf{It is important to deactivate this option
 if you compile for a Desktop PC running LINUX!}. This is so because Desktop PCs/Laptops do not
 have GPIO lines. For MacOS, this option is automatically disabled.
 
-If you do not plan to let piHPSDR control any of the GPIO I/O lines you better compile without this option.
+If you do not plan to let \pH control any of the GPIO I/O lines you better compile without this option.
 This is especially true if you plan to attach some third-party hardware (such as sound card ,,hats'')
 to the GPIO.
 
 \rett{MIDI}. (default: enabled)
-This option activates the possibility to control piHPSDR via MIDI devices. It should normally be
-activated, unless you port piHPSDR to some other operating system without MIDI support.
+This option activates the possibility to control \pH via MIDI devices. It should normally be
+activated, unless you port \pH to some other operating system without MIDI support.
 
 \rett{SATURN}. (default: enabled)
-This option is for piHPSDR running on the CM4 module within a SATURN/G2 radio. It allows
-piHPSDR to directly communicate with the FPGA via XDMA. While it does no harm to have this option activated
+This option is for \pH running on the CM4 module within a SATURN/G2 radio. It allows
+\pH to directly communicate with the FPGA via XDMA. While it does no harm to have this option activated
 on other systems, it also has no function there.
 
 \rett{USBOZY}. (default: disabled)
 This option includes support for legacy HPSDR hardware connected via USB.
 
 \rett{SOAPYSDR}. (default: disabled)
-This option enables piHPSDR to communicate with radios through the SoapySDR library.
+This option enables \pH to communicate with radios through the SoapySDR library.
 
 \rett{STEMLAB}. (default: disabled)
 This is an option for RedPitaya based radios. These have an SDR app that must be
 started before one can connect. If you have a RedPitaya exclusively being used as a radio, this
 app is most likely auto-started when powering up the RedPitaya so you do not need the STEMLAB
 option. This option allows to start the SDR application on the RedPitaya through the web interface.
-If you have a RedPitay and no autostart of the SDR application there, and not compiled piHPSDR
+If you have a RedPitay and no autostart of the SDR application there, and not compiled \pH
 with the STEMLAB option, you can open a web browser, start the SDR application on the RedPitaya,
-and then start piHPSDR. With the STEMLAB option, this can all be done by piHPSDR.
+and then start \pH. With the STEMLAB option, this can all be done by \pH.
 
 \rett{AUDIO}. (default value is empty)
 On Linux systems (including the Raspberry PI), if setting the value to \texttt{ALSA},
@@ -6409,22 +6443,22 @@ module is used no matter what the \texttt{AUDIO} setting is.
 There is a special version of the WDSP library that contains additional noise
 reduction facilities which are based on  \texttt{rnnnoise} and \texttt{libspecbleach}, see
  \texttt{https://github.com/vu3rdd/wdsp}. If you have such a version of WDSP installed, these
- extended noise reduction facilities can be used with piHPSDR if this option is \texttt{ON}.
+ extended noise reduction facilities can be used with \pH if this option is \texttt{ON}.
  Note that activating this option implies that the modified WDSP version is installed such
  that the WDSP include file can be found by the compiler, and that the WDSP (shared)
  library can be linked with the ,,\texttt{-lwdsp}'' linker option. This normally means
  that the WDSP shared library is installed in /usr/local/lib, while the WDSP header file
  is installed in /usr/local/include. The \texttt{wdsp} directory which is part of
- the piHPSDR repository is not used if \texttt{EXTENDED\_NR} is activated.
+ the \pH repository is not used if \texttt{EXTENDED\_NR} is activated.
 
  \rett{SERVER}. (default: disabled)
  This is not yet completed but is mentioned here anyway. There are plans to have
- a client/server model in piHPSDR such that you can have a ,,distant'' radio with a computer
- running piHPDSR connected to that radio, and a ,,local'' computer running piHPSDR, and an
+ a client/server model in \pH such that you can have a ,,distant'' radio with a computer
+ running piHPDSR connected to that radio, and a ,,local'' computer running \pH, and an
  internet connection between the two computers. All the time-critical data exchange happens
  between the ,,distant'' radio and the ,,distant'' computer using a straight internet
  cable connection, while the user interface data is exchanged between the two copies of
- piHPSDR running on the two computers.
+ \pH running on the two computers.
 
  After you have copied \texttt{Makefile} to \texttt{GNUmakefile} and modified the compile time
  options, the two commands
@@ -6438,8 +6472,8 @@ most of the files need be recompiled after the compile time options have changed
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter[RaspPi GPIO lines]{GPIO Lines for Controllers, CW, PTT}
 \label{sec:gpio}
-This section is only for piHPSDR running on RaspberryPi or similar systems with a GPIO (general purpose
-input/output) header. piHPSDR uses \texttt{libgpiod} to access the GPIO, so this may also apply to
+This section is only for \pH running on RaspberryPi or similar systems with a GPIO (general purpose
+input/output) header. \pH uses \texttt{libgpiod} to access the GPIO, so this may also apply to
 other single-board computers with a GPIO.
 
 \begin{figure}[ht]
@@ -6458,17 +6492,17 @@ devices). The four last columns indicate the use of this GPIO pin in four differ
 with no controller, with the Controller1, with the Controller2 equipped with single encoders, and
 finally with the Controller2 equipped with double encoders. The last case is electrically identical to
 the G2 front panel. In red, with the string \texttt{do not use!}, GPIO pins are marked which one should
-not use from within piHPSDR for the case at hand. For the controllers, these are the pins associated
+not use from within \pH for the case at hand. For the controllers, these are the pins associated
 with the I2C interface(s). If there is no controller, we could, in principle, use all GPIO pins at our
 discretion, but all those often used by other hardware are marked as not to use. This ensures that,
-for example, piHPSDR even if compiled with the GPIO option will run smoothly together with additional
+for example, \pH even if compiled with the GPIO option will run smoothly together with additional
 hardware such as ,,audio hats''.
 
 The function of GPIO lines actually used by the controllers are indicated in black colour. No detailed
 explanation is needed since these are hard wired and one therefore should not change this assignment.
 
-Lines which are available but are not used by piHPSDR are marked as \texttt{available} in blue colour.
-{\color{red} Note that no GPIO lines are accessible and available if piHPSDR runs inside the Saturn G2 radios.}
+Lines which are available but are not used by \pH are marked as \texttt{available} in blue colour.
+{\color{red} Note that no GPIO lines are accessible and available if \pH runs inside the Saturn G2 radios.}
 Then there are up to four input lines (\texttt{CWL}, \texttt{CWR}, \texttt{CWKEY}, and \texttt{PTTIN})
 and two output lined (\texttt{PTTOUT}, \texttt{CWOUT}) which can be assigned to available (blue-coloured)
 GPIO lines. Shown in Fig. \ref{fig:GPIO} is the default assignment done in the program, but any of the
@@ -6479,13 +6513,13 @@ to assign all six possible functions to GPIO lines. The six additional functions
 
 \rett{CWL} (Input with pull-up, active low). This input triggers a "left paddle pressed/
 released" event for the
-iambic keyer built into piHPSDR. Note that to use the built-in iambic keyer, the checkbox
+iambic keyer built into \pH. Note that to use the built-in iambic keyer, the checkbox
 \bltt{CW handled in Radio} has to be unchecked. This input is typically connected to
 a Morse paddle key.
 
 \rett{CWR} (Input with pull-up, active low). This input triggers a "right paddle pressed/
 released" event for the
-iambic keyer built into piHPSDR. Note that to use the built-in iambic keyer, the checkbox
+iambic keyer built into \pH. Note that to use the built-in iambic keyer, the checkbox
 \bltt{CW handled in Radio} has to be unchecked. This input is typically connected to
 a Morse paddle key.
 
@@ -6504,7 +6538,7 @@ one needs both a KEY and PTT connection to the keyer. To avoid chopping of the f
 lead-in time''). This lead-in time can normally be adjusted for external CW keyers, I mostly use
 150 msec to be on the safe side.
 
-\rett{PTTOUT} (Output, active low). This output indicates with a low level that piHPSDR is in the
+\rett{PTTOUT} (Output, active low). This output indicates with a low level that \pH is in the
 TX state. This output is typically used together with radios such as the Adalm Pluto to activate
 a RF amplifier, because there is no hardware output at the Adalm which indicates that the device
 transmits. The output can also be used to activate an external power amplifier if the radio has
@@ -6524,7 +6558,7 @@ resistor is, however,
 nearly indistinguishable from an output line with high level.
 
 If you are not happy with the default assignment of the ,,extra'' GPIO lines, this can be changed
-but you have to modify the file \texttt{src/gpio.c} and recompile piHPSDR (there is no user interface
+but you have to modify the file \texttt{src/gpio.c} and recompile \pH (there is no user interface
 for GPIO line assignment). To give an example, suppose you are using the Controller2 V2 (with double
 encoders) with an Adalm Pluto and need a hardware PTT out signal. This controller a single spare GPIO line
 (GPIO14) which by default is assigned to \rett{PTTIN}. Locate the function \texttt{gpio\_set\_defaults}
@@ -6574,7 +6608,7 @@ To use GPIO14 for \texttt{PTTOUT}, simply modify the assignment such that the va
  \texttt{PTTIN\_LINE} is assigned the
 value \texttt{-1} and \texttt{PTTOUT\_LINE} gets the value \texttt{14}.
  That's all except that you have to recompile
-simply by typing in the command ,,make'' in the piHPSDR directory (see Appendix \ref{sec:installsources}).
+simply by typing in the command ,,make'' in the \pH directory (see Appendix \ref{sec:installsources}).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -6595,7 +6629,7 @@ must be enabled. This is done by opening \texttt{Menu}$\to$\texttt{Preferences}$
 (shown in Fig. \ref{fig:piEnableI2C}. In the I2C line, move the button to the right
 (marked by the red arrows).
 
-If you need the piHPSDR built-in serial port, activate the \rett{Serial Port} button and deactivate
+If you need the \pH built-in serial port, activate the \rett{Serial Port} button and deactivate
 the \rett{Serial Console} button. Note that the built-in serial port uses GPIO lines that may
 conflict with GPIO lines used for the controller, so
 you should only activate it when you a) need it and b) have checked \rett{No Controller} in the
@@ -6608,7 +6642,7 @@ using the screen and keyboard and mouse from that other computer to control the 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter[Linux: piHPDSR install from sources]{Installation of piHPSDR from the sources (Linux, RaspPi)}
+\chapter[Linux: piHPDSR install from sources]{Installation of \pH from the sources (Linux, RaspPi)}
 \label{sec:installsources}
 \textit{This procedure has been tested on a Pi 4B, with a fresh and plain vanilla operating
 system (32-bit ,,BullsEye'', released May 3rd 2023, Kernel version 6.1) obtained from} \\
@@ -6657,14 +6691,14 @@ execute \grtt{sudo} commands without being asked a password.
 }
 \end{center}
 
-\textbf{Install piHPSDR from the internet.}
+\textbf{Install \pH from the internet.}
 To install from the sources, open a terminal window. If you do so, you get
 a prompt and are in your home directory. It is assumed that no directory named \texttt{pihpsdr}
 exists. If it does, then this is likely a left-over from some previous
 attempt to install the program and then it should be moved elsewhere, since it may contain
 files with saved preferences (\texttt{*.props}) which you may want to re-use.
 
-The piHPSDR repository is downloaded, and support libraries are installed, with the commands
+The \pH repository is downloaded, and support libraries are installed, with the commands
 
 \grtt{git clone https://github.com/dl1ycf/pihpsdr} \\
 \grtt{cd pihpsdr} \\
@@ -6676,7 +6710,7 @@ The piHPSDR repository is downloaded, and support libraries are installed, with 
 \begin{center}
 \textbf{\color{red} ----- Release and Development version -----}
 \end{center}
-Proceeding as shown above will provide an up-to-date ,,snap shot'' of the piHPSDR repository.
+Proceeding as shown above will provide an up-to-date ,,snap shot'' of the \pH repository.
 This ensures that you have the latest (development) version which corresponds to the present
 version of the manual, but there is a chance that there is a recently introduced bug
 which has not yet been found and fixed. Currently, the development version has version number 2.4.
@@ -6700,10 +6734,10 @@ to switch between version with the \texttt{git} command can be given in this man
 
 
 Depending on the internet speed (and the speed of your SD card or hard disk), the first and the
-last command my take some time. The first command loads the complete piHPSDR repository from
+last command my take some time. The first command loads the complete \pH repository from
 my GitHub account. The last command (\texttt{libinstall.sh}) contains all the magic,
 it not only loads all required RaspberryPi OS packages,
-but also loads and installs further libraries piHPSDR depends on,
+but also loads and installs further libraries \pH depends on,
 including the SoapySDR library as well as SoapySDR modules for the Adalm Pluto and RTL SDR sticks.
 
 \textbf{Note.} The SoapySDR library, and all SoapySDR modules, must be compiled from the sources
@@ -6712,14 +6746,14 @@ is quite outdated (version 0.7) while piHPDSR requires a more recent version (0.
 SoapySDR API has changed from 0.7 to 0.8.
 
 The libinstall procedure also does some other things for you, including creating a desktop icon
-for piHPSDR. If you are on a Desktop PC running LINUX, you will get error messages about
+for \pH. If you are on a Desktop PC running LINUX, you will get error messages about
 libraries such as libgpiod that are missing in the repository, which you can ignore.
 
 \textbf{Note:} If you install on a Desktop PC running LINUX, or if you are on a RaspPi but use
 the GPIO I/O lines for some other purpose, you must de-activate the GPIO compile time option
 first, as described in Appendix \ref{sec:compiletime}.
 
-It is clear that double-clicking the piHPSDR desktop icon at this stage leads nowhere,
+It is clear that double-clicking the \pH desktop icon at this stage leads nowhere,
 since first you need to compile the program.
 However,
 this is simply done by the two commands
@@ -6738,18 +6772,18 @@ directory and recompile by executing ,,make''.
 \begin{figure}[ht]
 \center
 \includegraphics[width=9cm]{piDontAsk.png}
-\caption{Suppress being asked options when clicking the piHPSDR desktop icon.}
+\caption{Suppress being asked options when clicking the \pH desktop icon.}
 \label{fig:piDontAsk}
 \end{figure}
 
-At this stage, double-clicking the piHPSDR desktop icon should start the program.
+At this stage, double-clicking the \pH desktop icon should start the program.
 With the default settings of the RaspPi desktop, usually a window pops up that
 asks you whether you want to start the program directly (of course you want).
 To get rid of this question, open the file manager
 and go to
 \texttt{Edit}$\to$\texttt{Preferences} (Fig. \ref{fig:piDontAsk}). Activate the check
 box where it is indicated by the red arrow and that's it.
-Immediately after running the install script, the piHPSDR desktop icon
+Immediately after running the install script, the \pH desktop icon
 looks quite generic and does not show the HPSDR logo. Log out and then log in again
 and the logo is there.
 
@@ -6847,14 +6881,14 @@ Found device 0
 \end{small}
 
 and this shows that the SoapySDR library has recognised the Pluto. Note then name \texttt{pluto.local}
-is hard-wired into piHPSDR, so if the Pluto shows up with some other name, it is possible that
-piHPSDR must be updated accordingly. There is no way for piHPDSR to connect
+is hard-wired into \pH, so if the Pluto shows up with some other name, it is possible that
+\pH must be updated accordingly. There is no way for piHPDSR to connect
 to a SoapySDR device that has not been recognised by the SoapySDR library. If such a problem arises, this
-stems from missing, corrupt, or outdated SoapySDR libraries which are not part of piHPSDR.
+stems from missing, corrupt, or outdated SoapySDR libraries which are not part of \pH.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter[MacOS: piHPDSR install from sources]{Installation of piHPSDR from the sources (MacOS)}
+\chapter[MacOS: piHPDSR install from sources]{Installation of \pH from the sources (MacOS)}
 \label{sec:installmacosx}
 
 \textit{This procedure has been tested on several Macintosh models, including a MacBook Air with an
@@ -6863,7 +6897,7 @@ In the last year, MacOS operating systems from version 10.15 (,,Catalina'') thro
 have been used. Very old MacOS systems (e.g. Catalina) are no longer supported by HomeBrew.}
 
 If you want to run piHPDSR on an Apple Macintosh computer (iMac, Mac Mini, iBook Air, PowerBook), then
-you \textit{have to} compile piHPSDR from the sources. Producing a pre-compiled binary that can be
+you \textit{have to} compile \pH from the sources. Producing a pre-compiled binary that can be
 distributed and run simply by double-clicking is overly complicated for applications using the GTK
 graphical user interface (as piHSPDR does). But fear not, the proceduce is actually very simple because
 all the difficult things are avoided by using the HomeBrew toolkit.
@@ -6877,7 +6911,7 @@ all the difficult things are avoided by using the HomeBrew toolkit.
 The whole installation procedure depends on that your user account is an administrator account,
 such that you can execute ,,sudo'' commands in the terminal window. You may be asked the administrator
 password. If your user account does not qualify for administrator work, then you are simply not allowed
-to install the ,,HomeBrew'' universe which is the prerequisite for compiling piHPSDR. In normal cases
+to install the ,,HomeBrew'' universe which is the prerequisite for compiling \pH. In normal cases
 (you own the Mac) you should have administrator privileges.
 }
 }
@@ -6893,16 +6927,16 @@ released in January 26, 2023. The package is good both for Intel and Silicon Mac
 file (e.g. XQuartz-2.8.5.pkg) to your desktop and run it by double-clicking.
 
 
-Compiling piHPSDR on a Mac requires some basic LINUX/Unix skills. The most important program to use is
+Compiling \pH on a Mac requires some basic LINUX/Unix skills. The most important program to use is
 the Terminal application (\texttt{Terminal.app}), that can be found in the Utilities folder that resides
 in the Applications folder. It is suggested to drag this application into the ,,dock'' so you have quick
 access.
 Although MacOS has a complete Unix ,,under the hood'', one needs additional software to to Linux-style
 programming. The most popular such ,,Unix enabler'' packages are \texttt{MacPorts} and \texttt{HomeBrew}, I
 am using
-\texttt{HomeBrew} but I know that piHPSDR can be compiled and run successfully with \texttt{MacPorts}
+\texttt{HomeBrew} but I know that \pH can be compiled and run successfully with \texttt{MacPorts}
 as well. The deal is as simply as follows: if you use \texttt{MacPorts} then you are on your own, or
-have to rely on piHPSDR installations done by the \texttt{MacPorts} folks. For \texttt{HomeBrew},
+have to rely on \pH installations done by the \texttt{MacPorts} folks. For \texttt{HomeBrew},
 I provide semi-automatic installation scripts that do all the complicated stuff for you. The choice,
 \texttt{HomeBrew} vs. \texttt{MacPorts}, is up to you, but my recommendation is to go for \texttt{HomeBrew}.
 
@@ -6912,7 +6946,7 @@ exists. If it does, then this is likely a left-over from some previous
 attempt to install the program and then it should be moved elsewhere, since it may contain
 files with saved preferences (\texttt{*.props}) which you may want to re-use.
 
-The piHPSDR repository is downloaded, and support libraries are installed, with the commands
+The \pH repository is downloaded, and support libraries are installed, with the commands
 
 \grtt{git clone https://github.com/dl1ycf/pihpsdr} \\
 \grtt{cd pihpsdr} \\
@@ -6925,7 +6959,7 @@ The piHPSDR repository is downloaded, and support libraries are installed, with 
 \begin{center}
 \textbf{\color{red} ----- Release and Development version -----}
 \end{center}
-Proceeding as shown above will provide an up-to-date ,,snap shot'' of the piHPSDR repository.
+Proceeding as shown above will provide an up-to-date ,,snap shot'' of the \pH repository.
 This ensures that you have the latest (development) version which corresponds to the present
 version of the manual, but there is a chance that there is a recently introduced bug
 which has not yet been found and fixed. Currently, the development version has version number 2.4.
@@ -6958,7 +6992,7 @@ installed, which you can safely ignore. Then, the
 
 Do not worry if \texttt{HomeBrew} was already installed on your computer, the installation
 procedure works in this case as well and does no harm. In addition to
- the \texttt{HomeBrew} core, additional libraries that piHPSDR depends on (e.g. GTK\texttt{+}3), the SoapySDR
+ the \texttt{HomeBrew} core, additional libraries that \pH depends on (e.g. GTK\texttt{+}3), the SoapySDR
  core and SoapySDR modules for several radios are installed.
 
  In case something went wrong, or simply to check that \texttt{HomeBrew} has been correctly installed,
@@ -6975,7 +7009,7 @@ procedure works in this case as well and does no harm. In addition to
  since in the originally opened window the update of the command search path is not yet effective.
 
 If anything went wrong with the SoapySDR installation, you can safely ignore this is
-you do not plan to compile piHPSDR with the SOAPYSDR option. You also do not need
+you do not plan to compile \pH with the SOAPYSDR option. You also do not need
 to manually disable the GPIO option since on MacOS, the GPIO and SATURN options
 do not apply and are automatically deactivated. Without changing the compile time
 options (see Appendix \ref{sec:compiletime}) the MIDI option is the only one you get
@@ -6993,19 +7027,19 @@ Appendix \ref{sec:compiletime}, or apply some code modifications)
 and want to re-compile later, this sequence of commands is the safest way to create a new binary.
 
 Note that saying \texttt{make app} instead of just saying \texttt{make} has the bonus
-that a MacOS ,,app'' bundle is automatically created within the piHPSDR directory.
-You can drag this bundle in the Finder, say, from the piHPSDR directory in your
+that a MacOS ,,app'' bundle is automatically created within the \pH directory.
+You can drag this bundle in the Finder, say, from the \pH directory in your
 home directory, to the Desktop, this can also be accomplished with the additional command
 
 \grtt{mv pihpsdr.app \$HOME/Desktop}
 
-(take care that any older piHPSDR application on the Desktop is moved or deleted first).
+(take care that any older \pH application on the Desktop is moved or deleted first).
 
 \begin{center}
 \fbox{
 \parbox{\textwidth - 1cm}{
 \begin{center}
-\textbf{\color{red} -------- A note on Macs with Apple Processors --------}
+\textbf{\color{red} -------- A note on Macs with Apple Silicon CPUs --------}
 \end{center}
 On Mac computers with Intel processors, \texttt{HomeBrew} is installed in \texttt{/usr/local},
 while on Mac computers with Silicon (M1, M2, M2 pro) processors, it is installed in
@@ -7017,14 +7051,18 @@ procedure, after completing the \texttt{HomeBrew} installation, looks whether
  certain directories exist in \texttt{/usr/local} and, if not, places symbolic links
 there that point to
 
+\begin{align*}
 \vspace{0.5cm}
-\texttt{/usr/local/lib\ \ \ \ } $\quad\to\quad$ \texttt{/opt/homebrew/lib} \\
-\texttt{/usr/local/include} $\quad\to\quad$ \texttt{/opt/homebrew/include} \\
-\texttt{/usr/local/bin\ \ \ \ } $\quad\to\quad$ \texttt{/opt/homebrew/bin} \\
+\texttt{/usr/local/lib}     &\quad\to\quad \texttt{/opt/homebrew/lib} \\
+\texttt{/usr/local/include} &\quad\to\quad \texttt{/opt/homebrew/include} \\
+\texttt{/usr/local/bin}     &\quad\to\quad \texttt{/opt/homebrew/bin} \\
+\texttt{/usr/local/share}   &\quad\to\quad \texttt{/opt/homebrew/share} \\
+\end{align*}
 
-Meanwhile, the WDSP library is integrated into the piHPSDR source code tree,
-so this may no longer be necessary for installing piHPSDR, but is probably
-helpful for other projects.
+For some packages (e.g. SoapySDR) to be compiled from the source code, these symbolic
+links may be necessary, and certainly having them does not harm. Note that
+\textit{directories} that already reside in \texttt{/usr/local} are never removed,
+but \textit{symbolic links} residing there might get replaced.
 }
 }
 \end{center}
@@ -7108,12 +7146,12 @@ Found device 0
 and this shows that the SoapySDR library has recognised the Pluto.
 There is no way for piHPDSR to connect
 to a SoapySDR device that has not been recognised by the SoapySDR library. If such a problem arises, this
-stems from missing, corrupt, or outdated SoapySDR libraries which are not part of piHPSDR.
+stems from missing, corrupt, or outdated SoapySDR libraries which are not part of \pH.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter[Connecting the Computer and the Radio]{Connecting Computer and Radio}
 \label{sec:dhcp}
-\textit{This section applies if you run piHPSDR on a
+\textit{This section applies if you run \pH on a
 RaspPi or aDesktop or Laptop computer running Linux or MacOS, and if this computer connects to the
 radio via ethernet, and the radio is running HPSDR protocol-1 or protocol-2. This class of radios
 encompasses the original HPSDR radios but also the HermesLite-II (which runs a variant of the HPSDR
@@ -7122,7 +7160,7 @@ protocol-1) and RedPitayas (if it runs a hpsdr radio emulator).}
 \textit{This section also does not apply to SoapySDR radios (Adalm Pluto, RTL sticks, etc.). In most
 cases they use an USB connection so you can just plug and play.}
 
-\textit{This section further does \textbf{not} apply to the new Saturn/G2 radios when running piHPSDR on the
+\textit{This section further does \textbf{not} apply to the new Saturn/G2 radios when running \pH on the
 internal RaspPi compute module. In this case, the internal RaspPi
 is directly connected to the radio via an XDMA interface.}
 
@@ -7167,7 +7205,7 @@ is relatively easy to locate on the internet. For MacOS it is even easier since 
 can be chosen in the network setup tool.
 
 \textbf{If you plan to run your own DHCP server.}\\
-In principle, one can have a DHCP server running on the computer that also runs piHPSDR, and thi8
+In principle, one can have a DHCP server running on the computer that also runs \pH, and thi8
 will then assign an IP address to the wired interface of the computer and to the
 radio. Therefore, the problem of how to "burn" a fixed IP address into the radio does not arise. For MacOS, this
 is indeed relatively easy. For Linux computers, I experienced problems doing so because I ran into a
@@ -7184,7 +7222,7 @@ IP address in the radio whenever possible.
 \fbox{
 \parbox{\textwidth - 4cm}{
 \begin{center}
-\textbf{\color{red} ----- End of the piHPSDR manual -----}
+\textbf{\color{red} ----- End of the \pH manual -----}
 \end{center}
 }
 }

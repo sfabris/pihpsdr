@@ -214,7 +214,7 @@ int audio_open_input() {
   }
 
   g_mutex_lock(&audio_mutex);
-  bzero( &inputParameters, sizeof( inputParameters ) ); //not necessary if you are filling in all the fields
+  bzero(&inputParameters, sizeof(inputParameters)); //not necessary if you are filling in all the fields
   inputParameters.channelCount = 1;   // MONO
   inputParameters.device = padev;
   inputParameters.hostApiSpecificStreamInfo = NULL;
@@ -446,7 +446,7 @@ int audio_open_output(RECEIVER *rx) {
   }
 
   g_mutex_lock(&rx->local_audio_mutex);
-  bzero( &outputParameters, sizeof( outputParameters ) ); //not necessary if you are filling in all the fields
+  bzero(&outputParameters, sizeof(outputParameters)); //not necessary if you are filling in all the fields
   outputParameters.channelCount = 2;   // audio output is stereo
   outputParameters.device = padev;
   outputParameters.hostApiSpecificStreamInfo = NULL;

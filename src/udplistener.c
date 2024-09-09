@@ -18,26 +18,30 @@
 
 //
 // Stand-alone "UDP listener" program for use with the piHPSDR
-// Text-to-Speech hook. It makes use of either eSpeak or festival
-// as the text-to-speech backend.
+// Text-to-Speech hook.
 //
 // This program will grap UDP packets (which may be broadcast)
 // to port 19080.  The contents are interpreted as a text and
 // fed to the text-to-speech program, which must be configured
 // to produce audio on a suitable device.
 //
-// ESPEAK or FESTIVAL must be defined and indicate the full
-// pathname of the text-to-speech application. If both are defined,
-// ESPEAK is used. On many systems, espeak is actually named espeak-ng.
+// ESPEAK or SAY must be defined and indicate the full
+// pathname of the text-to-speech application.
+// If both options are defined SAY is tried first and
+// ESPEAK is exec'd if SAY fails.
 //
-// On MacOS, I installed espeak via homebrew, and the program is then
-// actually /usr/local/bin/espeak.
+// The preferred variant for Linux is espeak (called espeak-ng
+// in some distros).
+// On MacOS, it is possible to install espeak via homebrew,
+// but on MacOS it is preferable to use the built-in text-to-speech generator /usr/bin/say.
+//
+// Assuming /usr/bin/say does not exist on LINUX machines, the setting below should work
+// both on MacOS (using /usr/bin/say) and LINUX (failing on /usr/bin/say thus using
+// /usr/bin/espeak-ng).
 //
 
-//#define ESPEAK    "/usr/bin/espeak-ng"
-//#define FESTIVAL  "/usr/bin/festival"
-
-#define ESPEAK "/usr/local/bin/espeak"
+#define SAY       "/usr/bin/say"
+#define ESPEAK    "/usr/bin/espeak-ng"
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -48,70 +52,84 @@
 #include <netinet/in.h>
 
 int main() {
-  int optval = 1;
+  int optval;
   int udpsock;                   // UDP listening socket
   struct sockaddr_in addr;       // address to listen to
   struct sockaddr_in from;       // filled in recvfrm: where the packet came from
   socklen_t lenaddr;
   ssize_t bytes;                  // size (in bytes) of a received packet
-  char msg[130];                 // buffer for message from piHPSDR
-  char cmd[256];                 // buffer for a command for festival
-  int pipefd[2];                 // communication path to festival
+  char msg[130];                 // buffer for message from piHPSDR, with extra space for EOL
   struct timeval tv;             // timeout for UDP receives
-
-  pipe(pipefd);
+  //
+  // On MacOS, the /bin/say program will ONLY process the input
+  // line-by-line if stdin is a TTY. So we need not just a simple
+  // pipe, but a pair of pseudo-tty file descriptors to "feed" data
+  // packet-by-packet to the text-to-speech program.
+  //
+  // This also works with eSpeak although it is not necessary there.
+  //
+  int ptyfd = posix_openpt(O_RDWR);
+  grantpt(ptyfd);
+  unlockpt(ptyfd);
 
   if (fork() == 0) {
     //
     // Child process: connect pipe to stdin
     // connect stdout and stderr to /dev/null
-    // run festival program from /usr/bin/festival
     //
-    int fd1=open("/dev/null", O_WRONLY);
-    int fd2=open("/dev/null", O_WRONLY);
+    char *pts = ptsname(ptyfd);
+    int stdinfd = open(pts, O_RDWR);
+    int fd1 = open("/dev/null", O_WRONLY);
+    int fd2 = open("/dev/null", O_WRONLY);
     close (0);
     close (1);
     close (2);
-    dup(pipefd[0]);    // assigned to stdin
+    dup(stdinfd);      // assigned to stdin
     dup(fd1);          // assigned to stdout
     dup(fd2);          // assigned to stderr
-#ifdef ESPEAK
-    execl(ESPEAK, ESPEAK, (char *) NULL);
-#else
-    execl(FESTIVAL, FESTIVAL, "--interactive", (char *) NULL);
+    close(ptyfd);      // close unused fd
+    close(fd1);        // close unused fd
+    close(fd2);        // close unused fd
+#ifdef SAY
+    execl(SAY, SAY, (char *) NULL);
 #endif
     //
-    // We should not arrive at this point
-    // TODO: a signal handler in the original process
-    // that kills the forked-off process if the main program
-    // terminates. However, this program is meant to be invoked
-    // once and run forever in the background.
+    // If we arrive here, there is probably no SAY program
+    // available (e.g., because we are on LINUX).
+    // Silently fall through to ESPEAK.
+    //
+#ifdef ESPEAK
+    execl(ESPEAK, ESPEAK, (char *) NULL);
+#endif
+    //
+    // We should not arrive at this point.
+    // Note if this program is terminated, it is expected that
+    // the forked-off program (say or espeak) "sees" EOF on
+    // stdin and then also terminates.
     //
     exit(1);
   }
-  sleep(1);
-  snprintf(cmd, sizeof(cmd), "Welcome to UDP listener\n");                  // one line espeak input
-  write (pipefd[1], cmd, strlen(cmd));                      // write command to espeak/festival
 
   //
-  // Prepeare UDP listener on port 19080
+  // Let things settle for one second, then prepeare for UDP listening
   //
+  sleep(1);
+
   if ((udpsock = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
     perror("SOCKET:");
     exit(1);
   }
 
   memset(&addr, 0, sizeof(addr));
-  addr.sin_family=AF_INET;
+  addr.sin_family = AF_INET;
   addr.sin_addr.s_addr = htonl(INADDR_ANY);
   addr.sin_port = htons(19080);
-
+  optval = 1;
   setsockopt(udpsock, SOL_SOCKET, SO_BROADCAST, &optval, sizeof(optval));
   setsockopt(udpsock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
   setsockopt(udpsock, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
-
   tv.tv_sec = 0;
-  tv.tv_usec = 10000;
+  tv.tv_usec = 50000;
   setsockopt(udpsock, SOL_SOCKET, SO_RCVTIMEO, (void *)&tv, sizeof(tv));
 
   if (bind(udpsock, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
@@ -123,20 +141,18 @@ int main() {
     //
     // Infinite loop: get UDP packet,
     //                send the text to the Text-to-Speech process
-    //                exec'ed above.
+    //                forked off at the beginning.
+    //                Add end-of-line to each packet contents
     //
     lenaddr = sizeof(from);
-    bytes=recvfrom(udpsock, msg, 128, 0, (struct sockaddr *)&from, &lenaddr);
+    bytes = recvfrom(udpsock, msg, 128, 0, (struct sockaddr *)&from, &lenaddr);
+
     if (bytes <= 0) {
       usleep(100000);
       continue;
     }
-    msg[bytes]=0;                                             // form null-terminated string
-#ifdef ESPEAK
-    snprintf(cmd, sizeof(cmd), "%s\n", msg);                  // espeak: one line of text
-#else
-    snprintf(cmd, sizeof(cmd), "(SayText \"%s\")\n", msg);    // festival SayText command
-#endif
-    write (pipefd[1], cmd, strlen(cmd));                      // write command to stdin of espeak/festival
+
+    msg[bytes++] = '\n';                                  // form EOL terminated string
+    write (ptyfd, msg, bytes);                            // send it to TTS application
   }
 }

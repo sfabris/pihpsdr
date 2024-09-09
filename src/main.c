@@ -130,21 +130,27 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data) {
   case GDK_KEY_F1:
     tts_freq();
     break;
+
   case GDK_KEY_F2:
     tts_mode();
     break;
+
   case GDK_KEY_F3:
     tts_filter();
     break;
+
   case GDK_KEY_F4:
     tts_smeter();
     break;
+
   case GDK_KEY_F5:
     tts_txdrive();
     break;
+
   case GDK_KEY_F6:
     tts_atten();
     break;
+
   case GDK_KEY_space:
     if (can_transmit) {
       if (radio_get_tune() == 1) {
