@@ -845,7 +845,6 @@ static gboolean andromeda_handler(gpointer data) {
   //
   CLIENT *client = (CLIENT *)data;
   char reply[256];
-  int new;
 
   if (!client->running) {
     return FALSE;
@@ -861,7 +860,7 @@ static gboolean andromeda_handler(gpointer data) {
   }
 
   for (int led = 0; led < MAX_ANDROMEDA_LEDS; led++) {
-    new = client->last_led[led];
+    int new = client->last_led[led];
 
     if (client->andromeda_type == 1) {
       //

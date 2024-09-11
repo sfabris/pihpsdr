@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "property.h"
+#include "radio.h"
 #include "message.h"
 
 PROPERTY* properties = NULL;
@@ -54,6 +55,32 @@ void loadProperties(const char* filename) {
   PROPERTY* property;
   t_print("loadProperties: %s\n", filename);
   clearProperties();
+
+  /////////////////////////////////////////////////////////////////////////////////////////
+  //
+  // TEMPORARY HOOK:
+  // On Saturn XDMA, the name of the props file has originally been derived from
+  // the mac address of its eth0 card. This has been changed to a fixed name now,
+  // namely saturn.xdma.props.
+  //
+  // So, if this file does not exists, we try to load from a file derived from the mac
+  // address. saveProperties later will use the new file name so this hook should be
+  // used only once. So after some time, all users will have their props file
+  // converted to the new name.
+  //
+  if (f == NULL && !strcmp(filename, "saturn.xdma.props")) {
+    char oldstyle_path[128];
+    snprintf(oldstyle_path, sizeof(oldstyle_path), "%02X-%02X-%02X-%02X-%02X-%02X.props",
+             radio->info.network.mac_address[0],
+             radio->info.network.mac_address[1],
+             radio->info.network.mac_address[2],
+             radio->info.network.mac_address[3],
+             radio->info.network.mac_address[4],
+             radio->info.network.mac_address[5]);
+    f = fopen(oldstyle_path, "r");
+  }
+  //
+  /////////////////////////////////////////////////////////////////////////////////////////
 
   if (f) {
     const char* value;

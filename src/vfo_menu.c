@@ -78,9 +78,9 @@ static gboolean close_cb () {
   return TRUE;
 }
 
+// cppcheck-suppress constParameterCallback
 static gboolean vfo_num_pad_cb(GtkWidget *widget, GdkEventButton *event, gpointer data) {
   int val = GPOINTER_TO_INT(data);
-  char output[64];
 
   //
   // A "double click" with the mouse actually generates THREE button press
@@ -88,6 +88,7 @@ static gboolean vfo_num_pad_cb(GtkWidget *widget, GdkEventButton *event, gpointe
   // This one has to be ignored.
   //
   if (event->type != GDK_2BUTTON_PRESS) {
+    char output[64];
     vfo_num_pad(btn_actions[val], myvfo);
 
     if (vfo[myvfo].entered_frequency[0]) {

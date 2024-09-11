@@ -1207,7 +1207,6 @@ void radio_start_radio() {
   g_mutex_init(&property_mutex);
   char p[32];
   char version[32];
-  char mac[32];
   char ip[32];
   char iface[64];
   char text[1024];
@@ -1218,13 +1217,6 @@ void radio_start_radio() {
     snprintf(version, 32, "v%d.%d)",
              radio->software_version / 10,
              radio->software_version % 10);
-    snprintf(mac, 32, "%02X:%02X:%02X:%02X:%02X:%02X",
-             radio->info.network.mac_address[0],
-             radio->info.network.mac_address[1],
-             radio->info.network.mac_address[2],
-             radio->info.network.mac_address[3],
-             radio->info.network.mac_address[4],
-             radio->info.network.mac_address[5]);
     snprintf(ip, 32, "%s", inet_ntoa(radio->info.network.address.sin_addr));
     snprintf(iface, 64, "%s", radio->info.network.interface_name);
     break;
@@ -1234,13 +1226,6 @@ void radio_start_radio() {
     snprintf(version, 32, "v%d.%d)",
              radio->software_version / 10,
              radio->software_version % 10);
-    snprintf(mac, 32, "%02X:%02X:%02X:%02X:%02X:%02X",
-             radio->info.network.mac_address[0],
-             radio->info.network.mac_address[1],
-             radio->info.network.mac_address[2],
-             radio->info.network.mac_address[3],
-             radio->info.network.mac_address[4],
-             radio->info.network.mac_address[5]);
     snprintf(ip, 32, "%s", inet_ntoa(radio->info.network.address.sin_addr));
     snprintf(iface, 64, "%s", radio->info.network.interface_name);
     break;
@@ -1281,7 +1266,7 @@ void radio_start_radio() {
                radio->software_version,
                iface);
     } else if (device == DEVICE_OZY) {
-      // radio has no ip, mac, and name is "Ozy USB"
+      // radio has no ip, and name is "Ozy USB"
       snprintf(text, 1024, "piHPSDR: %s (%s %s)",
                radio->name,
                p,
@@ -1324,13 +1309,17 @@ void radio_start_radio() {
     break;
 
   default:
-    snprintf(property_path, sizeof(property_path), "%02X-%02X-%02X-%02X-%02X-%02X.props",
-             radio->info.network.mac_address[0],
-             radio->info.network.mac_address[1],
-             radio->info.network.mac_address[2],
-             radio->info.network.mac_address[3],
-             radio->info.network.mac_address[4],
-             radio->info.network.mac_address[5]);
+    if (have_saturn_xdma) {
+      snprintf(property_path, sizeof(property_path), "saturn.xdma.props");
+    } else {
+      snprintf(property_path, sizeof(property_path), "%02X-%02X-%02X-%02X-%02X-%02X.props",
+               radio->info.network.mac_address[0],
+               radio->info.network.mac_address[1],
+               radio->info.network.mac_address[2],
+               radio->info.network.mac_address[3],
+               radio->info.network.mac_address[4],
+               radio->info.network.mac_address[5]);
+    }
     break;
   }
 

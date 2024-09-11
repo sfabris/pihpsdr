@@ -98,20 +98,26 @@ void about_menu(GtkWidget *parent) {
       char addr[64];
       STRLCPY(addr, inet_ntoa(radio->info.network.address.sin_addr), 64);
       STRLCPY(interface_addr, inet_ntoa(radio->info.network.interface_address.sin_addr), 64);
-      snprintf(line, 512, "Device: %s, Protocol %s, v%d.%d\n"
-               "    Mac Address: %02X:%02X:%02X:%02X:%02X:%02X\n"
-               "    IP Address: %s on %s (%s)",
-               radio->name, radio->protocol == ORIGINAL_PROTOCOL ? "1" : "2",
-               radio->software_version / 10, radio->software_version % 10,
-               radio->info.network.mac_address[0],
-               radio->info.network.mac_address[1],
-               radio->info.network.mac_address[2],
-               radio->info.network.mac_address[3],
-               radio->info.network.mac_address[4],
-               radio->info.network.mac_address[5],
-               addr,
-               radio->info.network.interface_name,
-               interface_addr);
+      if (have_saturn_xdma) {
+        snprintf(line, 512, "Device: Saturn (via XDMA), Protocol %s, v%d.%d\n",
+                 radio->protocol == ORIGINAL_PROTOCOL ? "1" : "2",
+                 radio->software_version / 10, radio->software_version % 10);
+      } else {
+        snprintf(line, 512, "Device: %s, Protocol %s, v%d.%d\n"
+                 "    Mac Address: %02X:%02X:%02X:%02X:%02X:%02X\n"
+                 "    IP Address: %s on %s (%s)",
+                 radio->name, radio->protocol == ORIGINAL_PROTOCOL ? "1" : "2",
+                 radio->software_version / 10, radio->software_version % 10,
+                 radio->info.network.mac_address[0],
+                 radio->info.network.mac_address[1],
+                 radio->info.network.mac_address[2],
+                 radio->info.network.mac_address[3],
+                 radio->info.network.mac_address[4],
+                 radio->info.network.mac_address[5],
+                 addr,
+                 radio->info.network.interface_name,
+                 interface_addr);
+      }
       STRLCAT(text, line, 1024);
     }
 
