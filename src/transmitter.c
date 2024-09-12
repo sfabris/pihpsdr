@@ -1703,22 +1703,49 @@ void tx_set_ps(TRANSMITTER *tx, int state) {
   //
   // Switch PureSignal on (state !=0) or off (state==0)
   //
-  // The following rules must be obeyed:
+  // The following rules must be taken into account:
   //
-  // a.) do not call SetPSControl unless you know the feedback
-  //     data streams are flowing. Otherwise, these calls may
-  //     be have no effect (experimental observation)
+  // a.) The SetPSControl RESET call only becomes effective
+  //     if feedback samples continue to flow, otherwise
+  //     there will be no state change in pscc
+  //     (experimental observation)
   //
-  // b.  in the old protocol, do not change the value of
+  // b.) This means when switching OFF PureSignal, we
+  //     have to feed several bunches feedback samples
+  //     otherwise the correction part will not be
+  //     switched off.
+  //
+  // c.) Switching off PS while TXing: just wait 100 msec
+  //     before proceeding.
+  //
+  // d.) Switching off PS while RXing: feed some dumm
+  //     feedback samples into pscc to induce the state
+  //     change.
+  //
+  // e.) in the old protocol, do not change the value of
   //     tx->puresignal unless the protocol is stopped.
   //     (to have a safe re-configuration of the number of
   //     RX streams)
   //
   if (!state) {
-    // if switching off, stop PS engine first, keep feedback
-    // streams flowing for a while to be sure SetPSControl works.
+    // see above. Ensure some feedback samples still flow into
+    // pscc after resetting.
     SetPSControl(tx->id, 1, 0, 0, 0);
-    usleep(100000);
+    if (radio_is_transmitting()) {
+     usleep(100000);
+    } else {
+      RECEIVER *rx_feedback = receiver[PS_RX_FEEDBACK];
+      if (rx_feedback != 0) {
+        memset(rx_feedback->iq_input_buffer, 0, rx_feedback->buffer_size*sizeof(double));
+        //
+        // In principle we could call pscc and GetPSINfo and repeat this until
+        // info[15] becomes zero (LRESET)
+        //
+        for (int i=0; i<7; i++) {
+          pscc(tx->id, rx_feedback->buffer_size, rx_feedback->iq_input_buffer, rx_feedback->iq_input_buffer);
+        }
+      }
+    }
   }
 
   switch (protocol) {
