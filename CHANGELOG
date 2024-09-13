@@ -1,6 +1,13 @@
 LIST OF RECENT PIHPSDR CHANGES
 ==============================
 
+September 2024:
+---------------
+
+Non-default compile time options are now in a local file
+make.config.pihpsdr, such that the Makefile need not
+be changed any more.
+
 August 2024:
 ------------
 

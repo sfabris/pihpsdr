@@ -1,20 +1,28 @@
 #######################################################################################
-#
-# Compile-time options, to be modified by end user.
-# To activate an option, just change to XXXX=ON except for the AUDIO option,
-# which reads AUDIO=YYYY with YYYY=ALSA or YYYY=PULSE.
+# IMPORTANT NOTE:
+# This file is no longer meant to be changed by the end user.
+# To use non-default compile-time options please create a file4
+# make.config.pihpsdr (see below)
 #
 #######################################################################################
+
+#######################################################################################
+#
+# Default Compile-time options
+#
+#######################################################################################
+
 GPIO=ON
 MIDI=ON
 SATURN=ON
-USBOZY=
-SOAPYSDR=
-STEMLAB=
+USBOZY=OFF
+SOAPYSDR=OFF
+STEMLAB=OFF
 EXTENDED_NR=
-SERVER=
-AUDIO=
+SERVER=OFF
+AUDIO=PULSE
 
+#######################################################################################
 #
 # Explanation of compile time options
 #
@@ -27,12 +35,18 @@ AUDIO=
 # EXTENDED_NR  | If ON, piHPSDR can use extended noise reduction (VU3RDD WDSP version)
 # SERVER       | If ON, include client/server code (still far from being complete)
 # AUDIO        | If AUDIO=ALSA, use ALSA rather than PulseAudio on Linux
+#
+# If you want to use a non-default compile time option, write them
+# into a file "make.pihpsdr.config". So, for example, if you want to
+# disable GPIO and have AUDIO=ALSA, create a file make.config.pihpsdr in
+# the pihpsdr directory with two lines that read
+#
+# GPIO=OFF
+# AUDIO=ALSA
+#
+#######################################################################################
 
-#######################################################################################
-#
-# No end-user changes below this line!
-#
-#######################################################################################
+-include make.config.pihpsdr
 
 # get the OS Name
 UNAME_S := $(shell uname -s)

@@ -237,6 +237,8 @@ radio from the ethernet cable, start \pH until you see this menu, and update the
 settings. Then you can re-discover using the \rett{Discover} button.}
 \end{itemize}
 
+See Appendix \ref{sec:compiletime} on how to specify the compile time options.
+
 Sometimes \pH needs to know the IP address of the radio. This is, for example, the case for the
 \texttt{STEMlab} discovery
 described above. In such a case the IP address in numerical form (xxx.xxx.xxx.xxx) can be entered in the box
@@ -6370,34 +6372,37 @@ Transceiver control (CAT connection) in MacOS is the same as described for Linux
 \chapter{Compile-time options}
 \label{sec:compiletime}
 
-There is a number of compile-time options that are shown on the initial screen. If you are using a binary
-version,
-you have what you have. If you compile from the sources, you can choose which options you want (or want
-not).
-It is possible to change the options without actually changing one of the files in the \pH repository.
-Simply go (in a terminal window) to the directory where you compile \pH and type in
+There is a number of compile-time options that are shown on the initial screen. 
+When compiling from the sources, you can choose which options you want (or do not want).
+To have compile-time options different from the default ones, you have to create a text
+file within the \pH directory which has the name \grtt{make.config.pihpdsr}.
 
-\grtt{cp Makefile GNUmakefile}
-
-Then you can change the file \texttt{GNUmakefile} and recompile the program (see end of this section!).
-This ,,trick'' takes care the further compilations use the file \texttt{GNUmakefile} rather than
-\texttt{Makefile},
-and changing the compile time options is accomplished by changing the file \texttt{GNUmakefile} with a text
-editor. This procedure takes care that the file \texttt{Makefile} is left unchanged,
- which is important because as soon as you  modify
-one of the files in the repository, the qualifier ,,\texttt{-dirty}'' will be appended to the version number,
-and this is  not what you want if you have not made a real change.
-In the file \texttt{GNUmakefile} at the beginning, you will find a lot of assignments of the form
+If this file does not exist, compilation proceeds with the default options.
+If you create this file, it should lines of the form
 
 \texttt{OPTION=VALUE}
 
-(\texttt{VALUE} may be empty). This assigns a value to an option. In most cases, if the value equals
-\texttt{ON} this activates the compile time option. If the value is empty, or different from \texttt{ON},
-the option is not activated. The exception is the \texttt{AUDIO} option, which may take various values
-(see below).
+which then assigns a value to the option. The value may be empty, in this case no value is assigned
+to the option. In most cases, the value is either \texttt{ON} or \texttt{OFF} depending on whether
+the compile-time option shall be activated or not.
+The exception is the \texttt{AUDIO} option, which may take various values
+(see below). For example, for compilation without GPIO support the file \grtt{make.config.pihpdsr}
+has to contain the line
+
+\texttt{GPIO=OFF}
+
+After modifying the file \grtt{make.config.pihpdsr}, you have to recompile the
+whole program using the commands
 
 
-\rett{GPIO}. (default: enabled)
+\grtt{make clean} \\
+\grtt{make}
+
+
+Here is a list of options with their default values.
+
+\begin{itemize}
+\item[\rett{GPIO}] {(default: \texttt{ON})
 This option is needed on a RaspberryPi if you want to use GPIO input/output lines from
 within \pH, for example since you have a controller (Controller1, Controller2, of G2 front panel)
 attached or want to use GPIO lines for CW or PTT. \textbf{It is important to deactivate this option
@@ -6407,23 +6412,28 @@ have GPIO lines. For MacOS, this option is automatically disabled.
 If you do not plan to let \pH control any of the GPIO I/O lines you better compile without this option.
 This is especially true if you plan to attach some third-party hardware (such as sound card ,,hats'')
 to the GPIO.
+}
 
-\rett{MIDI}. (default: enabled)
+\item[\rett{MIDI}] {(default: \texttt{ON})
 This option activates the possibility to control \pH via MIDI devices. It should normally be
 activated, unless you port \pH to some other operating system without MIDI support.
+}
 
-\rett{SATURN}. (default: enabled)
+\item[\rett{SATURN}] {(default: \texttt{ON})
 This option is for \pH running on the CM4 module within a SATURN/G2 radio. It allows
 \pH to directly communicate with the FPGA via XDMA. While it does no harm to have this option activated
 on other systems, it also has no function there.
+}
 
-\rett{USBOZY}. (default: disabled)
+\item[\rett{USBOZY}] {(default: \texttt{OFF})
 This option includes support for legacy HPSDR hardware connected via USB.
+}
 
-\rett{SOAPYSDR}. (default: disabled)
+\item[\rett{SOAPYSDR}] {(default: \texttt{OFF})
 This option enables \pH to communicate with radios through the SoapySDR library.
+}
 
-\rett{STEMLAB}. (default: disabled)
+\item[\rett{STEMLAB}] {(default: \texttt{OFF})
 This is an option for RedPitaya based radios. These have an SDR app that must be
 started before one can connect. If you have a RedPitaya exclusively being used as a radio, this
 app is most likely auto-started when powering up the RedPitaya so you do not need the STEMLAB
@@ -6431,15 +6441,17 @@ option. This option allows to start the SDR application on the RedPitaya through
 If you have a RedPitay and no autostart of the SDR application there, and not compiled \pH
 with the STEMLAB option, you can open a web browser, start the SDR application on the RedPitaya,
 and then start \pH. With the STEMLAB option, this can all be done by \pH.
+}
 
-\rett{AUDIO}. (default value is empty)
+\item[\rett{AUDIO}] {(default: \texttt{PULSE})
 On Linux systems (including the Raspberry PI), if setting the value to \texttt{ALSA},
 the standard Linux ALSA sound library is used for local audio
 output and local microphone input. In all other cases
 PulseAudio is used. On MacOS, the \texttt{AUDIO} choice has no effect since the PortAudio
 module is used no matter what the \texttt{AUDIO} setting is.
+}
 
-\rett{EXTENDED\_NR}. (default: disabled)
+\item[\rett{EXTENDED\_NR}] {(default: \texttt{OFF})
 There is a special version of the WDSP library that contains additional noise
 reduction facilities which are based on  \texttt{rnnnoise} and \texttt{libspecbleach}, see
  \texttt{https://github.com/vu3rdd/wdsp}. If you have such a version of WDSP installed, these
@@ -6450,8 +6462,9 @@ reduction facilities which are based on  \texttt{rnnnoise} and \texttt{libspecbl
  that the WDSP shared library is installed in /usr/local/lib, while the WDSP header file
  is installed in /usr/local/include. The \texttt{wdsp} directory which is part of
  the \pH repository is not used if \texttt{EXTENDED\_NR} is activated.
+}
 
- \rett{SERVER}. (default: disabled)
+\item[\rett{SERVER}] {(default: \texttt{OFF})
  This is not yet completed but is mentioned here anyway. There are plans to have
  a client/server model in \pH such that you can have a ,,distant'' radio with a computer
  running piHPDSR connected to that radio, and a ,,local'' computer running \pH, and an
@@ -6459,15 +6472,9 @@ reduction facilities which are based on  \texttt{rnnnoise} and \texttt{libspecbl
  between the ,,distant'' radio and the ,,distant'' computer using a straight internet
  cable connection, while the user interface data is exchanged between the two copies of
  \pH running on the two computers.
+}
 
- After you have copied \texttt{Makefile} to \texttt{GNUmakefile} and modified the compile time
- options, the two commands
-
-\grtt{make clean} \\
-\grtt{make}
-
-are necessary to re-compile the program. Do not forget the ,,\texttt{make clean}'', since
-most of the files need be recompiled after the compile time options have changed!
+\end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter[RaspPi GPIO lines]{GPIO Lines for Controllers, CW, PTT}
@@ -6743,7 +6750,8 @@ including the SoapySDR library as well as SoapySDR modules for the Adalm Pluto a
 \textbf{Note.} The SoapySDR library, and all SoapySDR modules, must be compiled from the sources
 (and the libinstall.sh script does so). The reason is, that SoapySDR in the standard repository
 is quite outdated (version 0.7) while piHPDSR requires a more recent version (0.8) because the
-SoapySDR API has changed from 0.7 to 0.8.
+SoapySDR API has changed from 0.7 to 0.8. This note is obsolete if in your Linux distribution
+SoapySDR is already updated to version 0.8.
 
 The libinstall procedure also does some other things for you, including creating a desktop icon
 for \pH. If you are on a Desktop PC running LINUX, you will get error messages about
