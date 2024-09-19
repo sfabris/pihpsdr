@@ -221,7 +221,6 @@ gboolean rx_scroll_event(GtkWidget *widget, const GdkEventScroll *event, gpointe
 }
 
 void rx_save_state(RECEIVER *rx) {
-  t_print("%s: RX=%d\n", __FUNCTION__, rx->id);
   SetPropI1("receiver.%d.alex_antenna", rx->id,                 rx->alex_antenna);
   SetPropI1("receiver.%d.adc", rx->id,                          rx->adc);
 

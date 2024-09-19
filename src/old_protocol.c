@@ -35,7 +35,6 @@
 #include <errno.h>
 #include <math.h>
 #include <signal.h>
-#include <wdsp.h>
 
 #include "MacOS.h"
 #include "audio.h"

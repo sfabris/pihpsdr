@@ -39,8 +39,6 @@
 #include <sys/select.h>
 #include <signal.h>
 
-#include <wdsp.h>
-
 #include "alex.h"
 #include "audio.h"
 #include "band.h"

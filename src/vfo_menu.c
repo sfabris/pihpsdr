@@ -24,8 +24,6 @@
 #include <stdint.h>
 #include <locale.h>
 
-#include <wdsp.h>
-
 #include "new_menu.h"
 #include "band.h"
 #include "filter.h"
@@ -70,6 +68,7 @@ static void cleanup() {
     sub_menu = NULL;
     active_menu  = NO_MENU;
     vfo_num_pad(-1, myvfo);
+    radio_save_state();
   }
 }
 

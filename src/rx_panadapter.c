@@ -25,8 +25,6 @@
 #include <semaphore.h>
 #include <arpa/inet.h>
 
-#include <wdsp.h>
-
 #include "appearance.h"
 #include "agc.h"
 #include "band.h"

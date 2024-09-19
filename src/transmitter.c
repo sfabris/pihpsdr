@@ -315,7 +315,6 @@ void tx_reconfigure(TRANSMITTER *tx, int width, int height) {
 }
 
 void tx_save_state(const TRANSMITTER *tx) {
-  t_print("%s: TX=%d\n", __FUNCTION__, tx->id);
   SetPropI1("transmitter.%d.fft_size",          tx->id,               tx->fft_size);
   SetPropI1("transmitter.%d.fps",               tx->id,               tx->fps);
   SetPropI1("transmitter.%d.filter_low",        tx->id,               tx->filter_low);

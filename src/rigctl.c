@@ -48,7 +48,6 @@
 #include "sliders.h"
 #include "transmitter.h"
 #include "agc.h"
-#include <wdsp.h>
 #include "store.h"
 #include "ext.h"
 #include "rigctl_menu.h"

@@ -681,18 +681,6 @@ void radio_reconfigure() {
   }
 }
 
-#if 0
-//
-// used to regularly write props file, currently not active
-//
-static guint save_timer_id;
-static gboolean save_cb(gpointer data) {
-  radio_save_state();
-  return TRUE;
-}
-
-#endif
-
 //
 // These variables are set in hideall_cb and read
 // in radio_save_state.
@@ -1501,9 +1489,6 @@ void radio_start_radio() {
   radio_change_region(region);
   radio_create_visual();
   radio_reconfigure_screen();
-
-  // save every 30 seconds
-  // save_timer_id=gdk_threads_add_timeout(30000, save_cb, NULL);
 
   if (rigctl_tcp_enable) {
     launch_tcp_rigctl();

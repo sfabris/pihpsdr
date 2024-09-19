@@ -61,6 +61,7 @@ static void cleanup() {
     gtk_widget_destroy(tmp);
     sub_menu = NULL;
     active_menu  = NO_MENU;
+    radio_save_state();
   }
 }
 

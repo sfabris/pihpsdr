@@ -29,7 +29,6 @@
 #include <net/if_arp.h>
 #include <net/if.h>
 #include <ifaddrs.h>
-#include <wdsp.h>
 
 #include "appearance.h"
 #include "discovered.h"

@@ -30,7 +30,6 @@ PROPERTY* properties = NULL;
 static double version = 0.0;
 
 void clearProperties() {
-  t_print("clearProperties\n");
 
   if (properties != NULL) {
     // free all the properties
@@ -126,7 +125,6 @@ void saveProperties(const char* filename) {
   PROPERTY* property;
   FILE* f = fopen(filename, "w+");
   char line[512];
-  t_print("saveProperties: %s\n", filename);
 
   if (!f) {
     t_print("can't open %s\n", filename);

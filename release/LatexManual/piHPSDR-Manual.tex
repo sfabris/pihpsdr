@@ -429,6 +429,7 @@ is nov gradient option.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Zoom and Pan}
+\label{sec:ZoomPanArea}
 
 \begin{figure}[ht]
 \center
@@ -474,6 +475,7 @@ when the TX spectrum is shown in a small separate window.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The slider area}
+\label{sec:SliderArea}
 Looking at Fig. \ref{fig:SingleReceiver}, one sees more sliders below the \rett{Zoom} and \rett{Pan}
 sliders. Although they are largely self-explanatory, I take the occasion to describe them shortly.
 
@@ -945,6 +947,10 @@ can be used to change AF volume or TX output power. \textbf{,,Switches''} are pu
 can be used to trigger a function such as transmitting a carrier for tuning, toggle
 between RX and TX, open a menu, and so forth.
 
+Whenever one of the sub-menus is closed, piHPSDR writes its settings to the props file. This is not done
+automatically (that is, periodically) because on some systems I/O operations affect
+network traffic and may cause audio cracks. So restricting this action to situations
+where ,,much happens'' anyway in the GUI seems a good compromise.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The \texttt{Exit} Menu}
 
@@ -2834,11 +2840,14 @@ By default, the equalisers are four-channel equalisers, but
 you can individually change each of the three to a ten-band
 one if you check the \rett{Ten Bands} box. If you do so, additional
 spin buttons and sliders appear to the right of those already
-seen (see Fig. \ref{fig:TenBandEqualizer}), such that the menu
-window gets quite broad (about 900 pixels) so the use of ten-
+seen (see Fig. \ref{fig:TenBandEqualizer}). The horizontal
+space required to display all the spin buttons an sliders is
+quite large (about 900 pixels) such that the use of ten-
 band equalizers may become cumbersome for very small screens.
 In normal situations, where the audio band width is usually 3 kHz
-or less, a four-channel equaliser is usually sufficient. The possibility
+or less, a four-channel equaliser is usually sufficient and all
+controls relevant to the four-channel equalizers are in the left half
+of th e menu window. The possibility
 to have (up to) ten channels can be useful for wide band (AM or eSSB) operation.
 
 \begin{figure}[ht]
@@ -2859,22 +2868,33 @@ The top left slider does not have a spin button but is
 labeled \rett{Preamp},
 which indicates that this slider applies an
 additional, frequency-independent gain or attenuation.
-
+Note that all corner frequency are strictly
+kept in ascending order, so it may happen that when increasing
+a corner frequency, frequencies of the higher channels are
+increased to keep the order. Likewise, when reducing a corner
+frequency, frequencies of the lower channels might get reduced
+as well. The allowed range for corner frequencies is 50 to
+16000 Hz.
 
 Equaliser settings are saved with the mode, so
-if you adjust the Equalisers when doing LSB, and then switch to
-DIGU, the equalisers are disabled and they resume their LSB
-settings upon going back to LSB. This also applies to other
+if you adjust the equalisers when doing LSB, and then switch to
+DIGU, the equaliser settings for DIGU become effective
+(normally, equalizers are disabled for digital modes).
+They resume their LSB
+settings upon switching back to LSB. This also applies to other
 modes such as CWU/CWL, where the TX equaliser has no meaning
 anyway, and where the RX equaliser is normally not needed.
 
 If the radio currently runs only a single receiver, RX2 cannot
 be selected with the top right combo-box. Likewise, if the
 radio does not have transmitter, the TX settings cannot be
-selected. The corner frequencies cannot ,,cross'', that is,
-the spin buttons are programmed such that
-corner frequencies of the (four or ten) channels are kept
-strictly in ascending order.
+selected. 
+
+%Note that on some systems, adjusting the window size when
+%switching between four-band and ten-band equalizers took
+%very long, so the menu window in four-band mode appears too wide
+%since it contains much blank space in its right half, where
+%the controls of the bands 5 through 10 are located.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The \texttt{Ant} (Antenna) Menu}
 
@@ -3382,8 +3402,11 @@ to change the VFO frequency.
 \label{fig:EncoderMenuG2}
 \end{figure}
 The encoders menu can be used to assign functions to the encoders of a
-\pH Controller1, Controller2 or the G2 front panel controller.
-If \texttt{No Controller} has been chosen in the initial discovery screen
+\pH Controller1, Controller2 or the G2 front panel (first version without LEDs)
+controller. For the second-generation G2 front panels (with LEDs), the functions
+of the knobs and buttons are hard-wired. 
+This implies that if \texttt{No Controller} or \texttt{G2 Mk2 Panel} has been chosen
+in the initial discovery screen
 (Fig. \ref{fig:Start}), this menu is not available.
 Note that the ,,large knob'' of these controllers
 cannot be assigned a function, it is hard-wired to the \bltt{VFO} function.
@@ -3465,7 +3488,8 @@ function printed on the enclosure.
 
 The encoders menu can be used to assign functions to the push buttons of a
 \pH  Controller2 or the G2 front panel controller.
-If \texttt{No Controller} or \texttt{Controller1} has been chosen in the initial discovery screen
+If \texttt{No Controller}, \texttt{Controller1} or \texttt{G2 Mk2 Panel}
+has been chosen in the initial discovery screen
 (Fig. \ref{fig:Start}), this menu is not available. This menu is not available
 for the Controller1 because the eight push buttons of this controller are hard-wired to
 the toolbar buttons and their functions as thus assigned via the \bltt{Toolbar} menu
@@ -3550,6 +3574,13 @@ To give an example, controlling the TX drive can be down both with a slider and 
 a slider/potentiometer, the values from min to max are simple mapped to the TX drive values from 0 to 100,
 the signals from an encoder will just increase or decrease the value until one of a limits has been reached.
 
+All ,,button'' actions can be assigned to toolbar buttons via the \bltt{TOOLBAR} menu
+(see Sec. \ref{sec:toolbarmenu}). Some of the ,,potentiometer'' actions are by default connected
+with sliders in the Zoom/Pan or the Slider area (see Sec. \ref{sec:ZoomPanArea} and \ref{sec:SliderArea}).
+This is then indicated in the following description in red colour. Note that some ,,button''actions
+can also be triggered through check-boxes in the menus, and some ,,potentiometer'' actions can be controlled
+by sliders in the menus. This is described in the preceding sections.
+
 In the following, the actions are alphabetically sorted by their long name, with the "empty" action listed
 first.
 
@@ -3580,16 +3611,23 @@ associated with that VFO, such as mode, filter, CTUN, and RIT settings.}
 
 \action{A>B}{A>B}{B}{Copy VFO A to VFO B.}
 
-\action{AF Gain}{AFGAIN}{PE}{Change the AF gain (headphone volume, $-40\ldots 0$ dB) of the active receiver.}
+\action{AF Gain}{AFGAIN}{PE}{
+{\color{red} This action is connected to the \texttt{AF Gain} slider in the slider area.}
+Change the AF gain (headphone volume, $-40\ldots 0$ dB) of the active receiver.}
 
 \action{AF Gain RX1}{AFGAIN1}{PE}{Change the AF gain (headphone volume, $-40\ldots 0$ dB) of the RX1 receiver.}
 
 \action{AF Gain RX2}{AFGAIN2}{PE}{Change the AF gain (headphone volume, $-40\ldots 0$ dB) of the RX2 receiver. This operation is
 a no-op if only one receiver is running.}
 
-\action{AGC}{AGCT}{B}{Cycle through the AGC modes (slow, medium, fast, $\ldots$) of the current receiver.}
+\action{AGC}{AGCT}{B}{
+Cycle through the AGC modes (slow, medium, fast, $\ldots$) of the current receiver.}
 
-\action{AGC Gain}{AGCGain}{PE}{Change AGC gain ($-20\ldots 120$ dB) of the active receiver.}
+\action{AGC Gain}{AGCGain}{PE}{
+{\color{red} This action is connected to the \texttt{AGC} slider in the slider area.}
+Change AGC gain ($-20\ldots 120$ dB) of the active receiver. Changing the AGC gain moves the
+horizontal green line (doted by a green 'G') on the panadapter. Its optimal position is
+at or slightly below the noise floor level.}
 
 \action{AGC Gain RX1}{AGCGain1}{PE}{Change AGC gain ($-20\ldots 120$ dB) of RX1.}
 
@@ -3600,8 +3638,11 @@ only one receiver is running.}
 
 \action{ANF}{ANF}{B}{Toggles the state (on/off) of the automatic notch filter for the active receiver.}
 
-\action{Atten}{ATTEN}{PE}{Changes the value (0-31 dB) of the step attenuator of the active receiver.
-This function is only available for radios that have such an attenuator.}
+\action{Atten}{ATTEN}{PE}{
+{\color{red} This action is connected to the \texttt{ATT} slider in the slider area.}
+Changes the value (0-31 dB) of the step attenuator of the active receiver.
+This function is only available for radios that have such an attenuator. Increasing the attenuation
+is required if ADC overload occurs, otherwise there is little reason for having high attenuation.}
 
 \action{Band 10}{10}{B}
 {Change band of the active receiver to the 10m band. If already on that band, move to
@@ -3914,7 +3955,9 @@ are still possible, though. The command is intended to guard against accidentall
 
 \action{Memory Menu}{MEM}{B}{Open the \texttt{MEM} (Memory) menu (see Chapter \ref{sec:memmenu}).}
 
-\action{Mic Gain}{MICGAIN}{PE}{Change the mic gain (from -12 to 50 dB). The amplification of the microphone
+\action{Mic Gain}{MICGAIN}{PE}{
+{\color{red} This action is connected to the \texttt{Mic Gain} slider in the slider area.}
+Change the mic gain (from -12 to 50 dB). The amplification of the microphone
 audio data is done in software, and applies to the TX audio
 input samples wherever they come from. (See the discussion of local microphones in the \texttt{TX} menu.}
 
@@ -3999,7 +4042,9 @@ For example, to go to 7.040 MHz, one can enter the
 sequence ,,7'',  ,,0'', ,,4'', ,,0'', ,,0'', ,,0'', ,,0''. This
 is rarely used but offers Hz-resolution for the direct frequency entry.}
 
-\action{PanZoom}{PAN}{E}{Change the Pan value. This control is only effective when the Zoom value is larger
+\action{PanZoom}{PAN}{E}{
+{\color{red} This action is connected to the \texttt{Pan} slider in the Zoom/Pan area.}
+Change the Pan value. This control is only effective when the Zoom value is larger
 than 1.}
 
 \action{Pan-}{PAN-}{B}{Decrease the PAN value by 100. This control is only effective when the Zoom value is
@@ -4041,26 +4086,28 @@ the press and release events are significant.}
 \action{Rcl 1$\ldots$Rcl 9}{RCL1$\ldots$RCL9}{B}{The same as \bltt{Rcl 0}, except that memory slots 1 through 9
 are referred to.}
 
-\action{RF Gain}{RFGAIN}{PE}{Set the gain of the RF front end of the active receiver. Only effective for
+\action{RF Gain}{RFGAIN}{PE}{
+{\color{red} This action is connected to the \texttt{RF Gain} slider in the slider area.}
+Set the gain of the RF front end of the active receiver. Only effective for
 radios that have such a
 gain control. Most HPSDR radios do not have RF  gain, they have a step attenuator in the RF front end
 instead. Small SDR radios
 using the AD9866 chip (HermesLite, RadioBerry) and radios connected via the SoapySDR library usually do have
-an RF gain control.}
+an RF gain control. If ADC overload occurs, one has to decrease the RF gain.}
 
 \action{RF Gain RX1}{RFGAIN1}{PE}{Set the gain of the RF front end of RX1. Only effective for radios that
 have such a
 gain control. Most HPSDR radios do not have RF  gain, they have a step attenuator in the RF front end
 instead. Small SDR radios
 using the AD9866 chip (HermesLite, RadioBerry) and radios connected via the SoapySDR library usually do have
-an RF gain control.}
+an RF gain control. If ADC overload occurs, one has to decrease the RF gain.}
 
 \action{RF Gain RX2}{RFGAIN2}{PE}{Set the gain of the RF front end of RX2. Only effective for radios that
 have such a
 gain control. Most HPSDR radios do not have RF  gain, they have a step attenuator in the RF front end
 instead. Small SDR radios
 using the AD9866 chip (HermesLite, RadioBerry) and radios connected via the SoapySDR library usually do have
-an RF gain control.}
+an RF gain control. If ADC overload occurs, one has to decrease the RF gain.}
 
 \action{RIT}{RIT}{E}{Change the RIT value of the active receiver in the range -9999 to 9999 Hz. If a zero
 value is set, RIT is
@@ -4116,7 +4163,9 @@ all VFO frequency \textit{changes} applied to one of the two VFOs will be applie
 
 \action{Split}{SPLIT}{B}{Toggle (on/off) the  split status of the radio.}
 
-\action{Squelch}{SQUELCH}{PE}{Change the squelch threshold value of the active receiver. Squelch is
+\action{Squelch}{SQUELCH}{PE}{
+{\color{red} This action is connected to the \texttt{Sqlch} slider in the slider area.}
+Change the squelch threshold value of the active receiver. Squelch is
 automatically enabled (disabled) if
 the resulting value  is non-zero (zero).}
 
@@ -4147,7 +4196,9 @@ assigned to the TUNE state,
 it will be cleared (go  high again)  550 msec after starting TUNE (this  time can also be adjusted  in the
 OC menu).}
 
-\action{TX Drive}{TXDRV}{PE}{Set the TX drive level (0-100).}
+\action{TX Drive}{TXDRV}{PE}{
+{\color{red} This action is connected to the \texttt{TX Drv} slider in the slider area.}
+Set the TX drive level (0-100).}
 
 \action{TX Menu}{TX}{B}{Opens the \texttt{TX} menu.}
 
@@ -4227,7 +4278,9 @@ on the toolbar, or on a GPIO or MIDI console), there is an auto-repeat such that
 every 250 msec until
 the XIT+ button is released.}
 
-\action{Zoom}{ZOOM}{PE}{Change the ZOOM value (1...8) of the active receiver.}
+\action{Zoom}{ZOOM}{PE}{
+{\color{red} This action is connected to the \texttt{Zoom} slider in the Zoom/Pan area.}
+Change the ZOOM value (1...8) of the active receiver.}
 
 \action{Zoom -}{ZOOM-}{B}{Decrease the ZOOM value of the active receiver by one. If the ZOOM value was
 already 1, this is a no-op.}

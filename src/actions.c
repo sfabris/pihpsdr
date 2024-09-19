@@ -18,7 +18,6 @@
 
 #include <gtk/gtk.h>
 #include <math.h>
-#include <wdsp.h>
 
 #include "main.h"
 #include "discovery.h"
@@ -454,22 +453,13 @@ int process_action(void *data) {
   case ANF:
     if (a->mode == PRESSED) {
       int id = active_receiver->id;
+      int anf = NOT(active_receiver->anf);
 
-      if (active_receiver->anf == 0) {
-        active_receiver->anf = 1;
-
-        if (id == 0) {
-          mode_settings[vfo[id].mode].anf = 1;
-        }
-      } else {
-        active_receiver->anf = 0;
-
-        if (id == 0) {
-          mode_settings[vfo[id].mode].anf = 0;
-        }
+      if (id == 0) {
+          mode_settings[vfo[id].mode].anf = anf;
       }
 
-      SetRXAANFRun(active_receiver->id, active_receiver->anf);
+      update_noise();
       g_idle_add(ext_vfo_update, NULL);
     }
 
