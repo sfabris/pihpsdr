@@ -44,6 +44,7 @@ static GtkWidget *dialog = NULL;
 
 static GtkWidget *scale[11];
 static GtkWidget *freqspin[11];
+static gulong freq_signal_id[11];
 static GtkWidget *enable_b;
 static GtkWidget *tenband_b;
 
@@ -170,23 +171,22 @@ static void freq_changed_cb (GtkWidget *widget, gpointer data) {
   int i = GPOINTER_TO_INT(data);
   double val = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
 
-  //
-  // The frequency of the current button can be moved in wide limits,
-  // but the other frequencies possibly need update in order to avoid
-  // crossings.
-  //
   double valmin = 10.0*(i+4);
   double valmax = 15900.0 + 10.0*i;
 
   if (val > valmax) { val = valmax; }
   if (val < valmin) { val = valmin; }
+  g_signal_handler_block(G_OBJECT(freqspin[i]), freq_signal_id[i]);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(freqspin[i]), val);
+  g_signal_handler_unblock(G_OBJECT(freqspin[i]), freq_signal_id[i]);
 
   for (int j = i - 1; j > 0; j--) {
     double x1 = gtk_spin_button_get_value(GTK_SPIN_BUTTON(freqspin[j+1]));
     double x2 = gtk_spin_button_get_value(GTK_SPIN_BUTTON(freqspin[j]));
     if (x2 >= x1) {
+      g_signal_handler_block(G_OBJECT(freqspin[j]), freq_signal_id[j]);
       gtk_spin_button_set_value(GTK_SPIN_BUTTON(freqspin[j]), x1 - 10.0);
+      g_signal_handler_unblock(G_OBJECT(freqspin[j]), freq_signal_id[j]);
     }
   }
 
@@ -194,7 +194,9 @@ static void freq_changed_cb (GtkWidget *widget, gpointer data) {
     double x1 = gtk_spin_button_get_value(GTK_SPIN_BUTTON(freqspin[j-1]));
     double x2 = gtk_spin_button_get_value(GTK_SPIN_BUTTON(freqspin[j]));
     if (x1 >= x2) {
+      g_signal_handler_block(G_OBJECT(freqspin[j]), freq_signal_id[j]);
       gtk_spin_button_set_value(GTK_SPIN_BUTTON(freqspin[j]), x1 + 10.0);
+      g_signal_handler_unblock(G_OBJECT(freqspin[j]), freq_signal_id[j]);
     }
   }
       
@@ -279,7 +281,9 @@ static void eqid_changed_cb(GtkWidget *widget, gpointer data) {
       }
 
       for (int i = 1; i < 11; i++) {
+        g_signal_handler_block(G_OBJECT(freqspin[i]), freq_signal_id[i]);
         gtk_spin_button_set_value(GTK_SPIN_BUTTON(freqspin[i]), receiver[eqid]->eq_freq[i]);
+        g_signal_handler_unblock(G_OBJECT(freqspin[i]), freq_signal_id[i]);
       }
     } else {
       gtk_combo_box_set_active(GTK_COMBO_BOX(widget), 0);
@@ -295,7 +299,9 @@ static void eqid_changed_cb(GtkWidget *widget, gpointer data) {
       }
 
       for (int i = 1; i < 11; i++) {
+        g_signal_handler_block(G_OBJECT(freqspin[i]), freq_signal_id[i]);
         gtk_spin_button_set_value(GTK_SPIN_BUTTON(freqspin[i]), transmitter->eq_freq[i]);
+        g_signal_handler_unblock(G_OBJECT(freqspin[i]), freq_signal_id[i]);
       }
     } else {
       gtk_combo_box_set_active(GTK_COMBO_BOX(widget), 0);
@@ -383,7 +389,7 @@ void equalizer_menu(GtkWidget *parent) {
     } else {
       freqspin[i] = gtk_spin_button_new_with_range(50.0, 16000.0, 10.0);
       gtk_spin_button_set_value(GTK_SPIN_BUTTON(freqspin[i]), receiver[0]->eq_freq[i]);
-      g_signal_connect(freqspin[i], "value-changed", G_CALLBACK(freq_changed_cb), GINT_TO_POINTER(i));
+      freq_signal_id[i] = g_signal_connect(freqspin[i], "value-changed", G_CALLBACK(freq_changed_cb), GINT_TO_POINTER(i));
 
       if (i < 5) {
         gtk_grid_attach(GTK_GRID(grid), freqspin[i], 0, 2 * i + 2, 1, 1);
