@@ -452,11 +452,10 @@ int process_action(void *data) {
 
   case ANF:
     if (a->mode == PRESSED) {
-      int id = active_receiver->id;
-      int anf = NOT(active_receiver->anf);
+      active_receiver->anf = NOT(active_receiver->anf);
 
-      if (id == 0) {
-          mode_settings[vfo[id].mode].anf = anf;
+      if (active_receiver->id == 0) {
+          mode_settings[vfo[id].mode].anf = active_receiver->anf;
       }
 
       update_noise();
