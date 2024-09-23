@@ -290,7 +290,7 @@ void display_menu(GtkWidget *parent) {
     break;
 
   case DETECTOR_MODE_SAMPLE:
-    gtk_combo_box_set_active(GTK_COMBO_BOX(detector_combo), 2);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(detector_combo), 3);
     break;
   }
 
