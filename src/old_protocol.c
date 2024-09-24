@@ -37,6 +37,7 @@
 #include <signal.h>
 
 #include "MacOS.h"
+#include "main.h"
 #include "audio.h"
 #include "band.h"
 #include "discovered.h"
@@ -618,8 +619,8 @@ static void open_udp_socket() {
   tmp = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
   if (tmp < 0) {
-    t_perror("old_protocol: create socket failed for data_socket\n");
-    exit(-1);
+    t_perror("P1 create data socket:");
+    g_idle_add(fatal_error,"P1: could not create data socket");
   }
 
   int optval = 1;
@@ -713,8 +714,8 @@ static void open_udp_socket() {
           ntohs(radio->info.network.interface_address.sin_port));
 
   if (bind(tmp, (struct sockaddr * )&radio->info.network.interface_address, radio->info.network.interface_length) < 0) {
-    t_perror("old_protocol: bind socket failed for data_socket\n");
-    exit(-1);
+    t_perror("P1: bind socket:");
+    g_idle_add(fatal_error,"P1: could not bind data socket");
   }
 
   memcpy(&data_addr, &radio->info.network.address, radio->info.network.address_length);
@@ -744,8 +745,8 @@ static void open_tcp_socket() {
   tmp = socket(AF_INET, SOCK_STREAM, 0);
 
   if (tmp < 0) {
-    t_perror("tcp_socket: create socket failed for TCP socket");
-    exit(-1);
+    t_perror("P1: create TCP socket:");
+    g_idle_add(fatal_error,"P1: could not create TCP socket");
   }
 
   int optval = 1;
@@ -2942,7 +2943,7 @@ static void metis_send_buffer(unsigned char* buffer, int length) {
   if (tcp_socket >= 0) {
     if (length != 1032) {
       t_print("PROGRAMMING ERROR: TCP LENGTH != 1032\n");
-      exit(-1);
+      g_idle_add(fatal_error,"Programming Error in metis_send_buffer");
     }
 
     if (sendto(tcp_socket, buffer, length, 0, NULL, 0) != length) {
@@ -2959,6 +2960,6 @@ static void metis_send_buffer(unsigned char* buffer, int length) {
   } else {
     // This should not happen
     t_print("METIS send: neither UDP nor TCP socket available!\n");
-    exit(-1);
+    g_idle_add(fatal_error,"P1: neither UDP nor TCP socket available");
   }
 }

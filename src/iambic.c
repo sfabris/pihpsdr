@@ -185,6 +185,7 @@
 #include <time.h>
 #include <sys/mman.h>
 
+#include "main.h"
 #include "gpio.h"
 #include "radio.h"
 #include "new_protocol.h"
@@ -635,8 +636,7 @@ int keyer_init() {
   rc = pthread_create(&keyer_thread_id, NULL, keyer_thread, NULL);
 
   if (rc < 0) {
-    t_print("pthread_create for keyer_thread failed %d\n", rc);
-    exit(-1);
+    g_idle_add(fatal_error,"Could not start keyer thread");
   }
 
   return 0;

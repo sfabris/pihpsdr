@@ -511,3 +511,38 @@ int main(int argc, char **argv) {
   g_object_unref(pihpsdr);
   return rc;
 }
+
+int fatal_error(void *data) {
+  //
+  // This replaces the calls to exit. It now emits
+  // a GTK modal dialog waiting for user response.
+  // After this response, the program exits.
+  //
+  // The red color chosen for the first string should
+  // work both on the dark and light themes.
+  //
+  // Note this must only be called from the "main thread", that is,
+  // you can only invoke this function via g_idle_add()
+  //
+  const gchar *msg = (gchar *) data;
+  static int quit = 0;
+
+  if (quit) {
+    return 0;
+  }
+
+  quit = 1;
+  if (top_window) {
+    GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
+    GtkWidget *dialog = gtk_message_dialog_new_with_markup (GTK_WINDOW(top_window),
+          flags,
+          GTK_MESSAGE_ERROR,
+          GTK_BUTTONS_CLOSE,
+          "<span color='red' size='x-large' weight='bold'>piHPSDR termination due to fatal error:</span>"
+          "\n\n<span size='x-large'>   %s</span>\n\n",
+          msg);
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+  }
+  exit(1);
+}
