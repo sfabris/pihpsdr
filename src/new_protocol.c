@@ -858,8 +858,13 @@ static void new_protocol_high_priority() {
   //
   // RigCtl CAT port
   //
-  high_priority_buffer_to_radio[1398] = (rigctl_tcp_port >> 8) & 0xFF;
-  high_priority_buffer_to_radio[1399] = (rigctl_tcp_port     ) & 0xFF;
+  if (rigctl_tcp_running()) {
+    high_priority_buffer_to_radio[1398] = (rigctl_tcp_port >> 8) & 0xFF;
+    high_priority_buffer_to_radio[1399] = (rigctl_tcp_port     ) & 0xFF;
+  } else {
+    high_priority_buffer_to_radio[1398] = 0;
+    high_priority_buffer_to_radio[1399] = 0;
+  }
 
   //
   // band specific OpenCollector outputs

@@ -37,19 +37,13 @@ typedef struct _SERIALPORT SERIALPORT;
 extern SERIALPORT SerialPorts[MAX_SERIAL];
 extern gboolean rigctl_debug;
 
-void launch_tcp_rigctl (void);
-int launch_serial_rigctl (int id);
-void disable_serial_rigctl (int id);
+extern void launch_tcp_rigctl (void);
+extern int launch_serial_rigctl (int id);
+extern void disable_serial_rigctl (int id);
+extern int rigctl_tcp_running();
+extern void  shutdown_tcp_rigctl(void);
 
-void  shutdown_tcp_rigctl(void);
-int   rigctlGetMode(void);
-int   lookup_band(int);
-char * rigctlGetFilter(void);
-void set_freqB(long long);
 extern int cat_control;
-int set_alc(gpointer);
-extern int rigctl_busy;
-
 extern unsigned int rigctl_tcp_port;
 extern int rigctl_tcp_enable;
 extern int rigctl_tcp_andromeda;

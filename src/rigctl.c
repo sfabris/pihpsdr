@@ -45,7 +45,6 @@
 #include "bandstack.h"
 #include "filter_menu.h"
 #include "vfo.h"
-#include "sliders.h"
 #include "transmitter.h"
 #include "agc.h"
 #include "store.h"
@@ -148,6 +147,10 @@ static gpointer rigctl_client (gpointer data);
 #define RXCHECK_ERR(id, what) if (id >= 0 && id < receivers) { what; } else { implemented = FALSE; }
 #define RXCHECK(id, what)     if (id >= 0 && id < receivers) { what; }
 
+int rigctl_tcp_running() {
+  return (server_socket >= 0);
+}
+
 void shutdown_tcp_rigctl() {
   struct linger linger = { 0 };
   linger.l_onoff = 1;
@@ -175,7 +178,7 @@ void shutdown_tcp_rigctl() {
       t_print("%s: setting SO_LINGER to 0 for client_socket: %d\n", __FUNCTION__, tcp_client[id].fd);
 
       if (setsockopt(tcp_client[id].fd, SOL_SOCKET, SO_LINGER, (const char *)&linger, sizeof(linger)) == -1) {
-        t_perror("setsockopt(...,SO_LINGER,...) failed for client");
+        t_perror("setsockopt(...,SO_LINGER,...) failed for client:");
       }
 
       t_print("%s: closing client socket: %d\n", __FUNCTION__, tcp_client[id].fd);
@@ -190,16 +193,16 @@ void shutdown_tcp_rigctl() {
   }
 
   //
-  // Close server socket. Possibly join with rigctl_server_thread_id
+  // Close server socket
   //
   if (server_socket >= 0) {
     t_print("%s: setting SO_LINGER to 0 for server_socket: %d\n", __FUNCTION__, server_socket);
 
     if (setsockopt(server_socket, SOL_SOCKET, SO_LINGER, (const char *)&linger, sizeof(linger)) == -1) {
-      t_perror("setsockopt(...,SO_LINGER,...) failed for server");
+      t_perror("setsockopt(...,SO_LINGER,...) failed for server:");
     }
 
-    t_print("s: closing server_socket: %d\n", __FUNCTION__, server_socket);
+    t_print("%s: closing server_socket: %d\n", __FUNCTION__, server_socket);
     close(server_socket);
     server_socket = -1;
   }
@@ -1157,7 +1160,7 @@ static gpointer rigctl_client (gpointer data) {
     linger.l_linger = 0;
 
     if (setsockopt(client->fd, SOL_SOCKET, SO_LINGER, (const char *)&linger, sizeof(linger)) == -1) {
-      t_perror("setsockopt(...,SO_LINGER,...) failed for client");
+      t_perror("setsockopt(...,SO_LINGER,...) failed for client:");
     }
 
     if (client->andromeda_timer != 0) {
