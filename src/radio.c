@@ -2479,6 +2479,7 @@ static void radio_restore_state() {
   GetPropI0("radio.display_warnings",                        display_warnings);
   GetPropI0("radio.display_pacurr",                          display_pacurr);
   GetPropI0("rigctl_tcp_enable",                             rigctl_tcp_enable);
+  GetPropI0("rigctl_tcp_andromeda",                          rigctl_tcp_andromeda);
   GetPropI0("rigctl_tcp_autoreporting",                      rigctl_tcp_autoreporting);
   GetPropI0("rigctl_port_base",                              rigctl_tcp_port);
   GetPropI0("mute_spkr_amp",                                 mute_spkr_amp);
@@ -2685,6 +2686,7 @@ void radio_save_state() {
   SetPropI0("radio.display_warnings",                        display_warnings);
   SetPropI0("radio.display_pacurr",                          display_pacurr);
   SetPropI0("rigctl_tcp_enable",                             rigctl_tcp_enable);
+  SetPropI0("rigctl_tcp_andromeda",                          rigctl_tcp_andromeda);
   SetPropI0("rigctl_tcp_autoreporting",                      rigctl_tcp_autoreporting);
   SetPropI0("rigctl_port_base",                              rigctl_tcp_port);
   SetPropI0("mute_spkr_amp",                                 mute_spkr_amp);
