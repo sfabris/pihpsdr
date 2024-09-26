@@ -204,6 +204,7 @@ ACTION_TABLE ActionTable[] = {
   {RIT_RX2,             "RIT\nRX2",             "RIT2",         MIDI_WHEEL | CONTROLLER_ENCODER},
   {RIT_STEP,            "RIT\nStep",            "RITST",        MIDI_KEY   | CONTROLLER_SWITCH},
   {RSAT,                "RSAT",                 "RSAT",         MIDI_KEY   | CONTROLLER_SWITCH},
+  {MENU_RX,             "RX\nMenu",             "RX",           MIDI_KEY   | CONTROLLER_SWITCH},
   {RX1,                 "RX1",                  "RX1",          MIDI_KEY   | CONTROLLER_SWITCH},
   {RX2,                 "RX2",                  "RX2",          MIDI_KEY   | CONTROLLER_SWITCH},
   {SAT,                 "SAT",                  "SAT",          MIDI_KEY   | CONTROLLER_SWITCH},
@@ -1048,6 +1049,13 @@ int process_action(void *data) {
   case MENU_PS:
     if (a->mode == PRESSED) {
       start_ps();
+    }
+
+    break;
+
+  case MENU_RX:
+    if (a->mode == PRESSED) {
+      start_rx();
     }
 
     break;
