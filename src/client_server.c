@@ -394,10 +394,17 @@ void send_vfo_data(const REMOTE_CLIENT *client, int v) {
   }
 }
 
+//
+// server_thread is running on the "local" computer
+// (with direct cable connection to the radio hardware)
+//
 static void *server_thread(void *arg) {
   REMOTE_CLIENT *client = (REMOTE_CLIENT *)arg;
   HEADER header;
   t_print("Client connected on port %d\n", client->address.sin_port);
+  //
+  // The server starts with sending much of the radio data
+  //
   send_radio_data(client);
   send_adc_data(client, 0);
   send_adc_data(client, 1);
@@ -2052,6 +2059,10 @@ void start_vfo_timer() {
   t_print("check_vfo_timer_id %d\n", check_vfo_timer_id);
 }
 
+//
+// client_thread is running on the "remote"  computer
+// (which communicates with the server on the "local" computer)
+//
 static void *client_thread(void* arg) {
   int bytes_read;
   HEADER header;
