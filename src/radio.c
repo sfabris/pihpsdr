@@ -30,8 +30,6 @@
 #include <netdb.h>
 #include <termios.h>
 
-#include <wdsp.h>
-
 #include "appearance.h"
 #include "adc.h"
 #include "dac.h"
@@ -169,8 +167,6 @@ int classE = 0;
 
 int tx_out_of_band_allowed = 0;
 
-int alc = TXA_ALC_PK;
-
 int filter_board = ALEX;
 int pa_enabled = 1;
 int pa_power = PA_1W;
@@ -275,7 +271,6 @@ int OCmemory_tune_time = 550; // ms
 long long tune_timeout;
 
 int analog_meter = 0;
-int smeter = RXA_S_AV;
 
 int eer_pwm_min = 100;
 int eer_pwm_max = 800;
@@ -285,8 +280,6 @@ int tx_filter_high = 2850;
 
 static int pre_tune_mode;
 static int pre_tune_cw_internal;
-
-int pre_emphasize = 0;
 
 int vox_enabled = 0;
 double vox_threshold = 0.001;
@@ -335,21 +328,18 @@ static void radio_restore_state();
 void radio_stop() {
   if (can_transmit) {
     t_print("radio_stop: TX: stop display update\n");
-    tx_set_displaying(transmitter, 0);
-    t_print("radio_stop: TX: CloseChannel: %d\n", transmitter->id);
-    CloseChannel(transmitter->id);
+    transmitter->displaying = 0;
+    tx_set_displaying(transmitter);
+    t_print("radio_stop: TX id=%d: close\n", transmitter->id);
+    tx_close(transmitter);
   }
 
-  t_print("radio_stop: RX1: stop display update\n");
-  rx_set_displaying(receiver[0], 0);
-  t_print("radio_stop: RX1: CloseChannel: %d\n", receiver[0]->id);
-  CloseChannel(receiver[0]->id);
-
-  if (RECEIVERS == 2) {
-    t_print("radio_stop: RX2: stop display update\n");
-    rx_set_displaying(receiver[1], 0);
-    t_print("radio_stop: RX2: CloseChannel: %d\n", receiver[1]->id);
-    CloseChannel(receiver[1]->id);
+  for (int i = 0; i < RECEIVERS; i++) {
+    t_print("radio_stop: RX id=%d: stop display update\n", receiver[i]->id);
+    receiver[i]->displaying = 0;
+    rx_set_displaying(receiver[i]);
+    t_print("radio_stop: RX id=%d: close\n", receiver[i]->id);
+    rx_close(receiver[i]);
   }
 }
 
@@ -793,7 +783,8 @@ static void radio_create_visual() {
     // Upon startup, if RIT or CTUN is active, tell WDSP.
 
     if (!radio_is_remote) {
-      rx_set_displaying(receiver[i], 1);
+      receiver[i]->displaying = 1;
+      rx_set_displaying(receiver[i]);
       rx_set_offset(receiver[i], vfo[i].offset);
     }
 
@@ -845,8 +836,7 @@ static void radio_create_visual() {
       radio_calc_drive_level();
 
       if (protocol == NEW_PROTOCOL || protocol == ORIGINAL_PROTOCOL) {
-        double pk;
-        tx_set_ps_sample_rate(transmitter, protocol == NEW_PROTOCOL ? 192000 : active_receiver->sample_rate);
+        tx_ps_set_sample_rate(transmitter, protocol == NEW_PROTOCOL ? 192000 : active_receiver->sample_rate);
         receiver[PS_TX_FEEDBACK] = rx_create_pure_signal_receiver(PS_TX_FEEDBACK,
                                    protocol == ORIGINAL_PROTOCOL ? active_receiver->sample_rate : 192000, my_width, transmitter->fps);
         receiver[PS_RX_FEEDBACK] = rx_create_pure_signal_receiver(PS_RX_FEEDBACK,
@@ -862,12 +852,12 @@ static void radio_create_visual() {
         case NEW_PROTOCOL:
           switch (device) {
           case NEW_DEVICE_SATURN:
-            pk = 0.6121;
+            tx_ps_setpk(transmitter, 0.6121);
             break;
 
           default:
             // recommended "new protocol value"
-            pk = 0.2899;
+            tx_ps_setpk(transmitter, 0.2899);
             break;
           }
 
@@ -877,17 +867,17 @@ static void radio_create_visual() {
           switch (device) {
           case DEVICE_HERMES_LITE2:
             // measured value: 0.2386
-            pk = 0.2400;
+            tx_ps_setpk(transmitter, 0.2400);
             break;
 
           case DEVICE_STEMLAB:
             // measured value: 0.4155
-            pk = 0.4160;
+            tx_ps_setpk(transmitter, 0.4160);
             break;
 
           default:
             // recommended "old protocol" value
-            pk = 0.4067;
+            tx_ps_setpk(transmitter, 0.4067);
             break;
           }
 
@@ -895,11 +885,9 @@ static void radio_create_visual() {
 
         default:
           // NOTREACHED
-          pk = 1.000;
+          tx_ps_setpk(transmitter, 1.0000);
           break;
         }
-
-        SetPSHWPeak(transmitter->id, pk);
       }
     }
   }
@@ -1487,7 +1475,7 @@ void radio_start_radio() {
     radio_calc_drive_level();
 
     if (transmitter->puresignal) {
-      tx_set_ps(transmitter, transmitter->puresignal);
+      tx_ps_onoff(transmitter, 1);
     }
   }
 
@@ -1566,7 +1554,6 @@ void radio_change_receivers(int r) {
   // When changing the number of receivers, restart the
   // old protocol
   //
-
   if (!radio_is_remote) {
     if (protocol == ORIGINAL_PROTOCOL) {
       old_protocol_stop();
@@ -1575,14 +1562,16 @@ void radio_change_receivers(int r) {
 
   switch (r) {
   case 1:
-    rx_set_displaying(receiver[1], 0);
+    receiver[1]->displaying = 0;
+    rx_set_displaying(receiver[1]);
     gtk_container_remove(GTK_CONTAINER(fixed), receiver[1]->panel);
     receivers = 1;
     break;
 
   case 2:
     gtk_fixed_put(GTK_FIXED(fixed), receiver[1]->panel, 0, 0);
-    rx_set_displaying(receiver[1], 1);
+    receiver[1]->displaying = 1;
+    rx_set_displaying(receiver[1]);
     receivers = 2;
 
     //
@@ -1628,7 +1617,7 @@ void radio_change_sample_rate(int rate) {
       radio_protocol_run();
 
       if (can_transmit) {
-        tx_set_ps_sample_rate(transmitter, rate);
+        tx_ps_set_sample_rate(transmitter, rate);
       }
     }
 
@@ -1673,8 +1662,9 @@ static void rxtx(int state) {
         // (especially with PureSignal or DIVERSITY).
         // Therefore, wait for *all* receivers to complete
         // their slew-down before going TX.
-        SetChannelState(receiver[i]->id, 0, 1);
-        rx_set_displaying(receiver[i], 0);
+        rx_off(receiver[i]);
+        receiver[i]->displaying = 0;
+        rx_set_displaying(receiver[i]);
         g_object_ref((gpointer)receiver[i]->panel);
 
         if (receiver[i]->panadapter != NULL) {
@@ -1700,11 +1690,12 @@ static void rxtx(int state) {
     }
 
     if (transmitter->puresignal) {
-      SetPSMox(transmitter->id, 1);
+      tx_ps_mox(transmitter, 1);
     }
 
-    SetChannelState(transmitter->id, 1, 0);
-    tx_set_displaying(transmitter, 1);
+    tx_on(transmitter);
+    transmitter->displaying = 1;
+    tx_set_displaying(transmitter);
 
     switch (protocol) {
 #ifdef SOAPYSDR
@@ -1748,11 +1739,12 @@ static void rxtx(int state) {
     }
 
     if (transmitter->puresignal) {
-      SetPSMox(transmitter->id, 0);
+      tx_ps_mox(transmitter, 0);
     }
 
-    SetChannelState(transmitter->id, 0, 1);
-    tx_set_displaying(transmitter, 0);
+    tx_off(transmitter);
+    transmitter->displaying = 0;
+    tx_set_displaying(transmitter);
 
     if (transmitter->dialog) {
       gtk_window_get_position(GTK_WINDOW(transmitter->dialog), &transmitter->dialog_x, &transmitter->dialog_y);
@@ -1803,8 +1795,9 @@ static void rxtx(int state) {
 
       for (i = 0; i < receivers; i++) {
         gtk_fixed_put(GTK_FIXED(fixed), receiver[i]->panel, receiver[i]->x, receiver[i]->y);
-        SetChannelState(receiver[i]->id, 1, 0);
-        rx_set_displaying(receiver[i], 1);
+        rx_on(receiver[i]);
+        receiver[i]->displaying = 1;
+        rx_set_displaying(receiver[i]);
         //
         // There might be some left-over samples in the RX buffer that were filled in
         // *before* going TX, delete them
@@ -1950,7 +1943,7 @@ void radio_set_tune(int state) {
         //
         // So before start tuning: Reset PS engine
         //
-        SetPSControl(transmitter->id, 1, 0, 0, 0);
+        tx_ps_reset(transmitter);
         usleep(50000);
       }
 
@@ -1982,8 +1975,9 @@ void radio_set_tune(int state) {
           // (especially with PureSignal or DIVERSITY)
           // Therefore, wait for *all* receivers to complete
           // their slew-down before going TX.
-          SetChannelState(receiver[i]->id, 0, 1);
-          rx_set_displaying(receiver[i], 0);
+          rx_off(receiver[i]);
+          receiver[i]->displaying = 0;
+          rx_set_displaying(receiver[i]);
           schedule_high_priority();
         }
       }
@@ -2053,7 +2047,7 @@ void radio_set_tune(int state) {
         // If we have done a "PS reset" when we started tuning,
         // resume PS engine now.
         //
-        SetPSControl(transmitter->id, 0, 0, 1, 0);
+        tx_ps_resume(transmitter);
       }
 
       tune = state;
@@ -2426,10 +2420,7 @@ static void radio_restore_state() {
   GetPropI0("OCfull_tune_time",                              OCfull_tune_time);
   GetPropI0("OCmemory_tune_time",                            OCmemory_tune_time);
   GetPropI0("analog_meter",                                  analog_meter);
-  GetPropI0("smeter",                                        smeter);
-  GetPropI0("alc",                                           alc);
   GetPropI0("rit_increment",                                 rit_increment);
-  GetPropI0("pre_emphasize",                                 pre_emphasize);
   GetPropI0("vox_enabled",                                   vox_enabled);
   GetPropF0("vox_threshold",                                 vox_threshold);
   GetPropF0("vox_hang",                                      vox_hang);
@@ -2530,7 +2521,6 @@ static void radio_restore_state() {
 }
 
 void radio_save_state() {
-  t_print("%s: path=%s\n", __FUNCTION__, property_path);
   g_mutex_lock(&property_mutex);
   clearProperties();
 
@@ -2633,10 +2623,7 @@ void radio_save_state() {
   SetPropI0("OCfull_tune_time",                              OCfull_tune_time);
   SetPropI0("OCmemory_tune_time",                            OCmemory_tune_time);
   SetPropI0("analog_meter",                                  analog_meter);
-  SetPropI0("smeter",                                        smeter);
-  SetPropI0("alc",                                           alc);
   SetPropI0("rit_increment",                                 rit_increment);
-  SetPropI0("pre_emphasize",                                 pre_emphasize);
   SetPropI0("vox_enabled",                                   vox_enabled);
   SetPropF0("vox_threshold",                                 vox_threshold);
   SetPropF0("vox_hang",                                      vox_hang);
@@ -2969,10 +2956,14 @@ void radio_start_auto_tune() {
 //
 void radio_start_capture() {
   //
-  // - turn off  equalizers for both RX
+  // - turn off  equalizers for both RX but keep the state in rx
   //
-  SetRXAEQRun(0, 0);
-  SetRXAEQRun(1, 0);
+  for (int i = 0; i < receivers; i++) {
+    int eq = receiver[i]->eq_enable;
+    receiver[i]->eq_enable = 0;
+    rx_set_equalizer(receiver[i]);
+    receiver[i]->eq_enable = eq;
+  }
 }
 
 void radio_end_capture() {
@@ -3007,8 +2998,12 @@ void radio_end_capture() {
     }
   }
 
-  SetRXAEQRun(0, receiver[0]->eq_enable);
-  SetRXAEQRun(1, receiver[1]->eq_enable);
+  //
+  // re-activate equalizers if they had been active before
+  //
+  for (int i = 0; i < receivers; i++) {
+    rx_set_equalizer(receiver[i]);
+  }
 }
 
 void radio_start_playback() {
@@ -3020,9 +3015,12 @@ void radio_start_playback() {
   int  comp   = transmitter->compressor;
   int  eq     = transmitter->eq_enable;
   double gain = transmitter->mic_gain;
+  transmitter->eq_enable = 0;
+  transmitter->compressor = 0;
+  transmitter->mic_gain = 0.0;
   tx_set_equalizer(transmitter);
-  tx_set_mic_gain(transmitter, 0.0);
-  tx_set_compressor(transmitter, 0);
+  tx_set_mic_gain(transmitter);
+  tx_set_compressor(transmitter);
   transmitter->compressor = comp;
   transmitter->eq_enable  = eq;
   transmitter->mic_gain = gain;
@@ -3036,7 +3034,6 @@ void radio_end_playback() {
   // - TX mic gain setting
   //
   tx_set_equalizer(transmitter);
-  tx_set_mic_gain(transmitter, transmitter->mic_gain);
-  tx_set_compressor(transmitter, transmitter->compressor);
+  tx_set_mic_gain(transmitter);
+  tx_set_compressor(transmitter);
 }
-

@@ -81,6 +81,27 @@ enum _capture_state {
   CAP_REPLAY_DONE          // all audio has been sent
 };
 
+//
+// WDSP-independent constants used for display, detector and alc modes
+// We start at 100 so we can apply defaults is values are read from
+// "old" props files.
+//
+enum _display_enum {
+  SMETER_PEAK     = 100,
+  SMETER_AVERAGE,
+  ALC_PEAK,
+  ALC_AVERAGE,
+  ALC_GAIN,
+  DET_PEAK,
+  DET_AVERAGE,
+  DET_ROSENFELL,
+  DET_SAMPLEHOLD,
+  AVG_NONE,
+  AVG_RECURSIVE,
+  AVG_LOGRECURSIVE,
+  AVG_TIMEWINDOW
+};
+
 extern int region;
 
 extern int RECEIVERS;
@@ -212,8 +233,6 @@ extern int OCmemory_tune_time;
 extern long long tune_timeout;
 
 extern int analog_meter;
-extern int smeter;
-extern int alc;
 
 extern int eer_pwm_min;
 extern int eer_pwm_max;
@@ -222,8 +241,6 @@ extern int tx_filter_low;
 extern int tx_filter_high;
 
 extern int ctun;
-
-extern int pre_emphasize;
 
 extern int vox_enabled;
 extern double vox_threshold;

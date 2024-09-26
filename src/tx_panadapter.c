@@ -23,7 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <semaphore.h>
-#include <wdsp.h>
 
 #include "appearance.h"
 #include "agc.h"
@@ -289,6 +288,10 @@ void tx_panadapter_update(TRANSMITTER *tx) {
 
     cairo_stroke(cr);
     /*
+     * Controller1:
+     * Draw at the right edge of the TX panadapter the
+     * functions associated with the three encoders.
+     *
     #ifdef GPIO
       if(controller==CONTROLLER1 && tx->dialog == NULL) {
         char text[64];
@@ -329,7 +332,7 @@ void tx_panadapter_update(TRANSMITTER *tx) {
       cairo_move_to(cr, mywidth / 2 + 10, myheight - 10);
       cairo_show_text(cr, "PureSignal");
       int info[16];
-      GetPSInfo(tx->id, &info[0]);
+      tx_ps_getinfo(tx, info);
 
       if (info[14] == 0) {
         cairo_set_source_rgba(cr, COLOUR_ALARM);

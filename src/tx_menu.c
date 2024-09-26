@@ -59,8 +59,8 @@ static void linein_value_changed(GtkWidget *widget, gpointer data) {
 }
 
 static void frames_per_second_value_changed_cb(GtkWidget *widget, gpointer data) {
-  int fps = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
-  tx_set_framerate(transmitter, fps);
+  transmitter->fps = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+  tx_set_framerate(transmitter);
 }
 
 static void filled_cb(GtkWidget *widget, gpointer data) {
@@ -68,14 +68,16 @@ static void filled_cb(GtkWidget *widget, gpointer data) {
 }
 
 static void comp_enable_cb(GtkWidget *widget, gpointer data) {
-  tx_set_compressor(transmitter, gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget)));
+  transmitter->compressor = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
   mode_settings[vfo_get_tx_mode()].compressor = transmitter->compressor;
+  tx_set_compressor(transmitter);
   g_idle_add(ext_vfo_update, NULL);
 }
 
 static void comp_cb(GtkWidget *widget, gpointer data) {
-  tx_set_compressor_level(transmitter, gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget)));
+  transmitter->compressor_level = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
   mode_settings[vfo_get_tx_mode()].compressor_level = transmitter->compressor_level;
+  tx_set_compressor(transmitter);
   g_idle_add(ext_vfo_update, NULL);
 }
 
@@ -130,14 +132,14 @@ static void am_carrier_level_value_changed_cb(GtkWidget *widget, gpointer data) 
 }
 
 static void ctcss_cb (GtkWidget *widget, gpointer data) {
-  int state = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
-  tx_set_ctcss(transmitter, state, transmitter->ctcss);
+  transmitter->ctcss_enabled = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
+  tx_set_ctcss(transmitter);
   g_idle_add(ext_vfo_update, NULL);
 }
 
 static void ctcss_frequency_cb(GtkWidget *widget, gpointer data) {
-  int i = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
-  tx_set_ctcss(transmitter, transmitter->ctcss_enabled, i);
+  transmitter->ctcss = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+  tx_set_ctcss(transmitter);
   g_idle_add(ext_vfo_update, NULL);
 }
 
@@ -212,8 +214,8 @@ static void local_input_changed_cb(GtkWidget *widget, gpointer data) {
 }
 
 static gboolean emp_cb (GtkWidget *widget, gpointer data) {
-  pre_emphasize = !gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
-  tx_set_pre_emphasize(transmitter, pre_emphasize);
+  transmitter->pre_emphasize = !gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
+  tx_set_pre_emphasize(transmitter);
   return FALSE;
 }
 
@@ -448,7 +450,7 @@ void tx_menu(GtkWidget *parent) {
   col++;
   GtkWidget *emp_b = gtk_check_button_new_with_label("FM PreEmp/ALC");
   gtk_widget_set_name(emp_b, "boldlabel");
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (emp_b), !pre_emphasize);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (emp_b), !transmitter->pre_emphasize);
   gtk_grid_attach(GTK_GRID(grid), emp_b, col, row, 1, 1);
   g_signal_connect(emp_b, "toggled", G_CALLBACK(emp_cb), NULL);
   col++;

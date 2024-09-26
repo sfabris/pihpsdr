@@ -21,7 +21,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <wdsp.h>
 
 #include "appearance.h"
 #include "receiver.h"
@@ -352,7 +351,7 @@ static void agcgain_value_changed_cb(GtkWidget *widget, gpointer data) {
                   active_receiver->agc_thresh, active_receiver->agc_hang_threshold);
 #endif
   } else {
-    rx_set_agc(active_receiver, active_receiver->agc);
+    rx_set_agc(active_receiver);
   }
 }
 
@@ -361,7 +360,7 @@ void set_agc_gain(int rx, double value) {
   if (rx >= receivers) { return; }
 
   receiver[rx]->agc_gain = value;
-  rx_set_agc(receiver[rx], receiver[rx]->agc);
+  rx_set_agc(receiver[rx]);
 
   if (display_sliders && active_receiver->id == rx) {
     gtk_range_set_value (GTK_RANGE(agc_scale), receiver[rx]->agc_gain);
@@ -373,42 +372,23 @@ void set_agc_gain(int rx, double value) {
 }
 
 static void afgain_value_changed_cb(GtkWidget *widget, gpointer data) {
-  double amplitude;
   active_receiver->volume = gtk_range_get_value(GTK_RANGE(af_gain_scale));
 
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
     send_volume(client_socket, active_receiver->id, active_receiver->volume);
 #endif
-  } else {
-    if (active_receiver->volume < -39.5) {
-      amplitude = 0.0;
-    } else {
-      amplitude = pow(10.0, 0.05 * active_receiver->volume);
-    }
-
-    SetRXAPanelGain1 (active_receiver->id, amplitude);
+    return;
   }
+
+  rx_set_af_gain(active_receiver);
 }
 
 void set_af_gain(int rx, double value) {
-  double amplitude;
-
   if (rx >= receivers) { return; }
 
   receiver[rx]->volume = value;
-
-  if (value < -39.5) {
-    amplitude = 0.0;
-    value = -40.0;
-  } else if (value > 0.0 ) {
-    amplitude = 1.0;
-    value = 0.0;
-  } else {
-    amplitude = pow(10.0, 0.05 * value);
-  }
-
-  SetRXAPanelGain1 (receiver[rx]->id, amplitude);
+  rx_set_af_gain(receiver[rx]);
 
   if (display_sliders && rx == active_receiver->id) {
     gtk_range_set_value (GTK_RANGE(af_gain_scale), value);
@@ -502,8 +482,8 @@ void set_filter_shift(int rx, int shift) {
 
 static void micgain_value_changed_cb(GtkWidget *widget, gpointer data) {
   if (can_transmit) {
-    double gain = gtk_range_get_value(GTK_RANGE(widget));
-    tx_set_mic_gain(transmitter, gain);
+    transmitter->mic_gain = gtk_range_get_value(GTK_RANGE(widget));
+    tx_set_mic_gain(transmitter);
   }
 }
 
@@ -516,7 +496,8 @@ void set_linein_gain(double value) {
 void set_mic_gain(double value) {
   //t_print("%s value=%f\n",__FUNCTION__, value);
   if (can_transmit) {
-    tx_set_mic_gain(transmitter, value);
+    transmitter->mic_gain = value;
+    tx_set_mic_gain(transmitter);
 
     if (display_sliders) {
       gtk_range_set_value (GTK_RANGE(mic_gain_scale), value);

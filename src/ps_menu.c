@@ -21,7 +21,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <wdsp.h>
 
 #include "new_menu.h"
 #include "radio.h"
@@ -100,7 +99,7 @@ static void setpk_cb(GtkWidget *widget, gpointer data) {
 
   if (newpk > 0.01 && newpk < 1.01 && fabs(newpk - pk_val) > 0.001) {
     pk_val = newpk;
-    SetPSHWPeak(transmitter->id, pk_val);
+    tx_ps_setpk(transmitter, pk_val);
   }
 
   // Display new value
@@ -176,7 +175,7 @@ int ps_calibration_timer(gpointer arg) {
       tx_att_max = 31;
     }
 
-    GetPSInfo(transmitter->id, &info[0]);
+    tx_ps_getinfo(transmitter, info);
     //
     // newcal is set to 1 if we have a new calibration value
     // (info[5] is the calibration counter)
@@ -232,7 +231,7 @@ int ps_calibration_timer(gpointer arg) {
           // Actually, we first adjust the attenuation (state=0),
           // then do a PS reset (state=1), and then restart PS (state=2).
           if (transmitter->attenuation != new_att) {
-            SetPSControl(transmitter->id, 1, 0, 0, 0);
+            tx_ps_reset(transmitter);
             transmitter->attenuation = new_att;
             schedule_transmit_specific();
             state = 1;
@@ -244,19 +243,13 @@ int ps_calibration_timer(gpointer arg) {
       case 1:
         // Perform a PS reset and proceed to a PS restart
         state = 2;
-        SetPSControl(transmitter->id, 1, 0, 0, 0);
+        tx_ps_reset(transmitter);
         break;
 
       case 2:
         // Perform a PS restart and proceed to the calibration loop
         state = 0;
-
-        if (transmitter->ps_oneshot) {
-          SetPSControl(transmitter->id, 0, 1, 0, 0);
-        } else {
-          SetPSControl(transmitter->id, 0, 0, 1, 0);
-        }
-
+        tx_ps_resume(transmitter);
         break;
       }
     }
@@ -272,7 +265,6 @@ int ps_calibration_timer(gpointer arg) {
 //
 static int info_thread(gpointer arg) {
   int info[INFO_SIZE];
-  double pk;
 
   if (!running) {
     return G_SOURCE_REMOVE;
@@ -280,10 +272,11 @@ static int info_thread(gpointer arg) {
 
   if (transmitter->puresignal) {
     gchar label[20];
+    double pk;
     static int old5 = 0;  // used to detect an increase of the calibration count
     static int old14 = 0; // used to detect change of "Correcting" status
-    GetPSInfo(transmitter->id, &info[0]);
-    GetPSMaxTX(transmitter->id, &pk);
+    tx_ps_getinfo(transmitter, info);
+    pk = tx_ps_getmx(transmitter);
     //
     // Set newcal if there is a new calibration
     // Set newcorr if "Correcting" status changed
@@ -395,14 +388,9 @@ static int info_thread(gpointer arg) {
 //
 static void ps_off_on() {
   if (transmitter->puresignal) {
-    SetPSControl(transmitter->id, 1, 0, 0, 0);
+    tx_ps_reset(transmitter);
     usleep(100000);
-
-    if (transmitter->ps_oneshot) {
-      SetPSControl(transmitter->id, 0, 1, 0, 0);
-    } else {
-      SetPSControl(transmitter->id, 0, 0, 1, 0);
-    }
+    tx_ps_resume(transmitter);
   }
 }
 
@@ -433,7 +421,7 @@ static void enable_cb(GtkWidget *widget, gpointer data) {
   if (can_transmit) {
     int val = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
     clear_fields();
-    tx_set_ps(transmitter, val);
+    tx_ps_onoff(transmitter, val);
 
     if (val) {
       if ( transmitter->auto_on) {
@@ -456,20 +444,20 @@ static void enable_cb(GtkWidget *widget, gpointer data) {
 }
 
 static void tol_cb(GtkWidget *widget, gpointer data) {
-  int tol = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
-  transmitter->ps_ptol = tol ? 0.4 : 0.8;
-  SetPSPtol(transmitter->id, transmitter->ps_ptol);
+  transmitter->ps_ptol = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
+  tx_ps_setparams(transmitter);
   ps_off_on();
 }
 
 static void oneshot_cb(GtkWidget *widget, gpointer data) {
   transmitter->ps_oneshot = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
+  tx_ps_setparams(transmitter);
   ps_off_on();
 }
 
 static void map_cb(GtkWidget *widget, gpointer data) {
   transmitter->ps_map = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
-  SetPSMapMode(transmitter->id, transmitter->ps_map);
+  tx_ps_setparams(transmitter);
   ps_off_on();
 }
 
@@ -516,7 +504,7 @@ static void resume_cb(GtkWidget *widget, gpointer data) {
   }
 
   if (transmitter->puresignal) {
-    SetPSControl(transmitter->id, 0, 0, 1, 0);
+    tx_ps_resume(transmitter);
   }
 }
 
@@ -527,7 +515,7 @@ static void feedback_cb(GtkWidget *widget, gpointer data) {
 // cppcheck-suppress constParameterCallback
 static void reset_cb(GtkWidget *widget, gpointer data) {
   if (transmitter->puresignal) {
-    SetPSControl(transmitter->id, 1, 0, 0, 0);
+    tx_ps_reset(transmitter);
   }
 }
 
@@ -729,7 +717,7 @@ void ps_menu(GtkWidget *parent) {
   gtk_widget_set_name(lbl, "boldlabel");
   gtk_grid_attach(GTK_GRID(grid), lbl, col, row, 1, 1);
   col++;
-  GetPSHWPeak(transmitter->id, &pk_val);
+  pk_val = tx_ps_getpk(transmitter);
   snprintf(pk_text, 16, "%6.3f", pk_val);
   set_pk = gtk_entry_new();
   gtk_entry_set_text(GTK_ENTRY(set_pk), pk_text);

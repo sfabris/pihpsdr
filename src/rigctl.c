@@ -2131,7 +2131,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         int agc = atoi(&command[4]);
         // update RX1 AGC
         receiver[0]->agc = agc;
-        rx_set_agc(receiver[0], agc);
+        rx_set_agc(receiver[0]);
         g_idle_add(ext_vfo_update, NULL);
       }
 
@@ -2154,7 +2154,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         // update RX2 AGC
         RXCHECK(1,
                 receiver[1]->agc = agc;
-                rx_set_agc(receiver[1], agc);
+                rx_set_agc(receiver[1]);
                 g_idle_add(ext_vfo_update, NULL);
                )
       }
@@ -2248,7 +2248,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
           send_resp(client->fd, reply) ;
         } else {
           int ps = atoi(&command[4]);
-          tx_set_ps(transmitter, ps);
+          tx_ps_onoff(transmitter, ps);
         }
 
         g_idle_add(ext_vfo_update, NULL);
@@ -2356,7 +2356,8 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
           send_resp(client->fd, reply);
         } else if (command[7] == ';') {
           int val = atoi(&command[4]);
-          tx_set_mic_gain(transmitter, ((double) val * 0.8857) - 12.0);
+          transmitter->mic_gain = ((double) val * 0.8857) - 12.0;
+          tx_set_mic_gain(transmitter);
         }
       } else {
         implemented = FALSE;
@@ -2409,10 +2410,20 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
       //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
-        snprintf(reply, 256, "ZZMR%d;", smeter + 1);
+        snprintf(reply, 256, "ZZMR%d;", active_receiver->smetermode + 1);
         send_resp(client->fd, reply);
       } else if (command[5] == ';') {
-        smeter = atoi(&command[4]) - 1;
+        int val = atoi(&command[4]) - 1;
+
+        switch (val) {
+        case 0:
+          active_receiver->smetermode = SMETER_PEAK;
+          break;
+
+        case 1:
+          active_receiver->smetermode = SMETER_AVERAGE;
+          break;
+        }
       }
 
       break;
@@ -2762,7 +2773,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
       //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[5] == ';') {
-        snprintf(reply, 256, "ZZRM%d%20d;", smeter, (int)receiver[0]->meter);
+        snprintf(reply, 256, "ZZRM%d%20d;", active_receiver->smetermode, (int)receiver[0]->meter);
         send_resp(client->fd, reply);
       }
 
@@ -3337,28 +3348,12 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
               break;
 
             case 59: // RIT of the VFO of the active receiver
-              if (vfo[active_receiver->id].rit_enabled) {
-                // cannot use schedule_action because we inspect rit_enabled immediately,
-                // but the scheduled action may be deferred
-                vfo_rit_incr(active_receiver->id, (v == 0) ? rit_increment : -rit_increment);
-
-                if (!vfo[active_receiver->id].rit_enabled) {
-                  snprintf(reply, 256, "ZZZI080;");
-                  send_resp(client->fd, reply);
-                }
-              }
+              if (vfo[active_receiver->id].rit_enabled) { schedule_action(RIT, RELATIVE, (v == 0) ? 1 : -1); }
 
               break;
 
             case 60: // XIT
-              if (vfo[vfo_get_tx_vfo()].xit_enabled) {
-                vfo_xit_incr((v == 0) ? rit_increment : -rit_increment);
-
-                if (!vfo[vfo_get_tx_vfo()].xit_enabled) {
-                  snprintf(reply, 256, "ZZZI090;");
-                  send_resp(client->fd, reply);
-                }
-              }
+              if (vfo[vfo_get_tx_vfo()].xit_enabled) { schedule_action(XIT, RELATIVE, (v == 0) ? 1 : -1); }
 
               break;
 
@@ -3769,7 +3764,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
                   longpress = 0;
                 } else {
                   if (can_transmit) {
-                    tx_set_ps(transmitter, transmitter->puresignal ^ 1);
+                    tx_ps_onoff(transmitter, NOT(transmitter->puresignal));
                     snprintf(reply, 256, "ZZZI04%d;", transmitter->puresignal);
                     send_resp(client->fd, reply);
                   }
@@ -4320,8 +4315,8 @@ int parse_cmd(void *data) {
           snprintf(reply, 256, "CN%02d;", transmitter->ctcss + 1);
           send_resp(client->fd, reply) ;
         } else if (command[4] == ';') {
-          int i = atoi(&command[2]) - 1;
-          tx_set_ctcss(transmitter, transmitter->ctcss_enabled, i);
+          transmitter->ctcss = atoi(&command[2]) - 1;
+          tx_set_ctcss(transmitter);
           g_idle_add(ext_vfo_update, NULL);
         }
       }
@@ -4342,8 +4337,8 @@ int parse_cmd(void *data) {
           snprintf(reply, 256, "CT%d;", transmitter->ctcss_enabled);
           send_resp(client->fd, reply) ;
         } else if (command[3] == ';') {
-          int state = SET(command[2] == '1');
-          tx_set_ctcss(transmitter, state, transmitter->ctcss);
+          transmitter->ctcss_enabled = SET(command[2] == '1');
+          tx_set_ctcss(transmitter);
           g_idle_add(ext_vfo_update, NULL);
         }
       }
@@ -4633,7 +4628,7 @@ int parse_cmd(void *data) {
         send_resp(client->fd, reply) ;
       } else if (command[5] == ';') {
         receiver[0]->agc = atoi(&command[2]) / 5;
-        rx_set_agc(receiver[0], receiver[0]->agc);
+        rx_set_agc(receiver[0]);
         g_idle_add(ext_vfo_update, NULL);
       }
 
@@ -4961,7 +4956,8 @@ int parse_cmd(void *data) {
 
           if (gain > 50.0) { gain = 50.0; }
 
-          tx_set_mic_gain(transmitter, gain);
+          transmitter->mic_gain = gain;
+          tx_set_mic_gain(transmitter);
         }
       } else {
         implemented = FALSE;
@@ -5171,7 +5167,8 @@ int parse_cmd(void *data) {
           command[5] = '\0';
           double level = (double)atoi(&command[2]);
           level = 0.2 * level;
-          tx_set_compressor_level(transmitter, level);
+          transmitter->compressor_level = level;
+          tx_set_compressor(transmitter);
           g_idle_add(ext_vfo_update, NULL);
         }
       }

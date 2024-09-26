@@ -421,7 +421,7 @@ static void *server_thread(void *arg) {
     int bytes_read = recv_bytes(client->socket, (char *)&header.sync, sizeof(header.sync));
 
     if (bytes_read <= 0) {
-      t_print("server_thread: short read for HEADER SYNC\n");
+      t_print("%s: short read for HEADER SYNC\n", __FUNCTION__);
       t_perror("server_thread");
       client->running = FALSE;
       continue;
@@ -439,7 +439,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&c, 1);
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for HEADER RESYNC\n");
+          t_print("%: short read for HEADER RESYNC\n", __FUNCTION__);
           t_perror("server_thread");
           client->running = FALSE;
           continue;
@@ -456,13 +456,13 @@ static void *server_thread(void *arg) {
     bytes_read = recv_bytes(client->socket, (char *)&header.data_type, sizeof(header) - sizeof(header.sync));
 
     if (bytes_read <= 0) {
-      t_print("server_thread: short read for HEADER\n");
+      t_print("%s: short read for HEADER\n", __FUNCTION__);
       t_perror("server_thread");
       client->running = FALSE;
       continue;
     }
 
-    t_print("server_thread: received header: type=%d\n", ntohs(header.data_type));
+    t_print("%s: received header: type=%d\n", __FUNCTION__, ntohs(header.data_type));
 
     switch (ntohs(header.data_type)) {
     case CMD_RESP_SPECTRUM: {
@@ -470,7 +470,7 @@ static void *server_thread(void *arg) {
       bytes_read = recv_bytes(client->socket, (char *)&spectrum_command.id, sizeof(SPECTRUM_COMMAND) - sizeof(header));
 
       if (bytes_read <= 0) {
-        t_print("server_thread: short read for SPECTRUM_COMMAND\n");
+        t_print("%s: short read for SPECTRUM_COMMAND\n", __FUNCTION__);
         t_perror("server_thread");
         // dialog box?
         return NULL;
@@ -480,7 +480,7 @@ static void *server_thread(void *arg) {
       int rx = spectrum_command.id;
       // cppcheck-suppress uninitvar
       int state = spectrum_command.start_stop;
-      t_print("server_thread: CMD_RESP_SPECTRUM rx=%d state=%d timer_id=%d\n", rx, state,
+      t_print("%s: CMD_RESP_SPECTRUM rx=%d state=%d timer_id=%d\n", __FUNCTION__, rx, state,
               client->spectrum_update_timer_id);
 
       if (state) {
@@ -504,7 +504,7 @@ static void *server_thread(void *arg) {
     break;
 
     case CMD_RESP_RX_FREQ:
-      t_print("server_thread: CMD_RESP_RX_FREQ\n");
+      t_print("%s: CMD_RESP_RX_FREQ\n", __FUNCTION__);
       {
         FREQ_COMMAND *freq_command = g_new(FREQ_COMMAND, 1);
         freq_command->header.data_type = header.data_type;
@@ -513,7 +513,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&freq_command->id, sizeof(FREQ_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for FREQ_COMMAND\n");
+          t_print("%s: short read for FREQ_COMMAND\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -525,7 +525,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_RX_STEP:
-      t_print("server_thread: CMD_RESP_RX_STEP\n");
+      t_print("%s: CMD_RESP_RX_STEP\n", __FUNCTION__);
       {
         STEP_COMMAND *step_command = g_new(STEP_COMMAND, 1);
         step_command->header.data_type = header.data_type;
@@ -534,7 +534,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&step_command->id, sizeof(STEP_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for STEP_COMMAND\n");
+          t_print("%s: short read for STEP_COMMAND\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -546,7 +546,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_RX_MOVE:
-      t_print("server_thread: CMD_RESP_RX_MOVE\n");
+      t_print("%s: CMD_RESP_RX_MOVE\n", __FUNCTION__);
       {
         MOVE_COMMAND *move_command = g_new(MOVE_COMMAND, 1);
         move_command->header.data_type = header.data_type;
@@ -555,7 +555,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&move_command->id, sizeof(MOVE_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for MOVE_COMMAND\n");
+          t_print("%s: short read for MOVE_COMMAND\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -567,7 +567,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_RX_MOVETO:
-      t_print("server_thread: CMD_RESP_RX_MOVETO\n");
+      t_print("%s: CMD_RESP_RX_MOVETO\n", __FUNCTION__);
       {
         MOVE_TO_COMMAND *move_to_command = g_new(MOVE_TO_COMMAND, 1);
         move_to_command->header.data_type = header.data_type;
@@ -576,7 +576,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&move_to_command->id, sizeof(MOVE_TO_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for MOVE_TO_COMMAND\n");
+          t_print("%s: short read for MOVE_TO_COMMAND\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -588,7 +588,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_RX_ZOOM:
-      t_print("server_thread: CMD_RESP_RX_ZOOM\n");
+      t_print("%s: CMD_RESP_RX_ZOOM\n", __FUNCTION__);
       {
         ZOOM_COMMAND *zoom_command = g_new(ZOOM_COMMAND, 1);
         zoom_command->header.data_type = header.data_type;
@@ -597,7 +597,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&zoom_command->id, sizeof(ZOOM_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for ZOOM_COMMAND\n");
+          t_print("%s: short read for ZOOM_COMMAND\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -609,7 +609,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_RX_PAN:
-      t_print("server_thread: CMD_RESP_RX_PAN\n");
+      t_print("%s: CMD_RESP_RX_PAN\n", __FUNCTION__);
       {
         PAN_COMMAND *pan_command = g_new(PAN_COMMAND, 1);
         pan_command->header.data_type = header.data_type;
@@ -618,7 +618,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&pan_command->id, sizeof(PAN_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for PAN_COMMAND\n");
+          t_print("%s: short read for PAN_COMMAND\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -630,7 +630,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_RX_VOLUME:
-      t_print("server_thread: CMD_RESP_RX_VOLUME\n");
+      t_print("%s: CMD_RESP_RX_VOLUME\n", __FUNCTION__);
       {
         VOLUME_COMMAND *volume_command = g_new(VOLUME_COMMAND, 1);
         volume_command->header.data_type = header.data_type;
@@ -639,7 +639,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&volume_command->id, sizeof(VOLUME_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for VOLUME_COMMAND\n");
+          t_print("%s: short read for VOLUME_COMMAND\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -651,7 +651,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_RX_AGC:
-      t_print("server_thread: CMD_RESP_RX_AGC\n");
+      t_print("%s: CMD_RESP_RX_AGC\n", __FUNCTION__);
       {
         AGC_COMMAND *agc_command = g_new(AGC_COMMAND, 1);
         agc_command->header.data_type = header.data_type;
@@ -660,7 +660,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&agc_command->id, sizeof(AGC_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for AGC_COMMAND\n");
+          t_print("%s: short read for AGC_COMMAND\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -673,7 +673,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_RX_AGC_GAIN:
-      t_print("server_thread: CMD_RESP_RX_AGC_GAIN\n");
+      t_print("%s: CMD_RESP_RX_AGC_GAIN\n", __FUNCTION__);
       {
         AGC_GAIN_COMMAND *agc_gain_command = g_new(AGC_GAIN_COMMAND, 1);
         agc_gain_command->header.data_type = header.data_type;
@@ -682,7 +682,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&agc_gain_command->id, sizeof(AGC_GAIN_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for AGC_GAIN_COMMAND\n");
+          t_print("%s: short read for AGC_GAIN_COMMAND\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -694,7 +694,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_RX_GAIN:
-      t_print("server_thread: CMD_RESP_RX_GAIN\n");
+      t_print("%s: CMD_RESP_RX_GAIN\n", __FUNCTION__);
       {
         RFGAIN_COMMAND *command = g_new(RFGAIN_COMMAND, 1);
         command->header.data_type = header.data_type;
@@ -703,7 +703,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&command->id, sizeof(RFGAIN_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for RFGAIN_COMMAND\n");
+          t_print("%s: short read for RFGAIN_COMMAND\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -715,7 +715,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_RX_ATTENUATION:
-      t_print("server_thread: CMD_RESP_RX_ATTENUATION\n");
+      t_print("%s: CMD_RESP_RX_ATTENUATION\n", __FUNCTION__);
       {
         ATTENUATION_COMMAND *attenuation_command = g_new(ATTENUATION_COMMAND, 1);
         attenuation_command->header.data_type = header.data_type;
@@ -724,7 +724,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&attenuation_command->id, sizeof(ATTENUATION_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for ATTENUATION_COMMAND\n");
+          t_print("%s: short read for ATTENUATION_COMMAND\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -736,7 +736,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_RX_SQUELCH:
-      t_print("server_thread: CMD_RESP_RX_SQUELCH\n");
+      t_print("%s: CMD_RESP_RX_SQUELCH\n", __FUNCTION__);
       {
         SQUELCH_COMMAND *squelch_command = g_new(SQUELCH_COMMAND, 1);
         squelch_command->header.data_type = header.data_type;
@@ -745,7 +745,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&squelch_command->id, sizeof(SQUELCH_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for SQUELCH_COMMAND\n");
+          t_print("%s: short read for SQUELCH_COMMAND\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -757,7 +757,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_RX_NOISE:
-      t_print("server_thread: CMD_RESP_RX_NOISE\n");
+      t_print("%s: CMD_RESP_RX_NOISE\n", __FUNCTION__);
       {
         NOISE_COMMAND *noise_command = g_new(NOISE_COMMAND, 1);
         noise_command->header.data_type = header.data_type;
@@ -766,7 +766,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&noise_command->id, sizeof(NOISE_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for NOISE_COMMAND\n");
+          t_print("%s: short read for NOISE_COMMAND\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -778,7 +778,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_RX_BAND:
-      t_print("server_thread: CMD_RESP_RX_BAND\n");
+      t_print("%s: CMD_RESP_RX_BAND\n", __FUNCTION__);
       {
         BAND_COMMAND *band_command = g_new(BAND_COMMAND, 1);
         band_command->header.data_type = header.data_type;
@@ -787,7 +787,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&band_command->id, sizeof(BAND_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for BAND_COMMAND\n");
+          t_print("%s: short read for BAND_COMMAND\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -799,7 +799,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_RX_MODE:
-      t_print("server_thread: CMD_RESP_RX_MODE\n");
+      t_print("%s: CMD_RESP_RX_MODE\n", __FUNCTION__);
       {
         MODE_COMMAND *mode_command = g_new(MODE_COMMAND, 1);
         mode_command->header.data_type = header.data_type;
@@ -808,7 +808,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&mode_command->id, sizeof(MODE_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for MODE_COMMAND\n");
+          t_print("%s: short read for MODE_COMMAND\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -820,7 +820,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_RX_FILTER:
-      t_print("server_thread: CMD_RESP_RX_FILTER\n");
+      t_print("%s: CMD_RESP_RX_FILTER\n", __FUNCTION__);
       {
         FILTER_COMMAND *filter_command = g_new(FILTER_COMMAND, 1);
         filter_command->header.data_type = header.data_type;
@@ -829,7 +829,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&filter_command->id, sizeof(FILTER_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for FILTER_COMMAND\n");
+          t_print("%s: short read for FILTER_COMMAND\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -841,7 +841,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_SPLIT:
-      t_print("server_thread: CMD_RESP_RX_SPLIT\n");
+      t_print("%s: CMD_RESP_RX_SPLIT\n", __FUNCTION__);
       {
         SPLIT_COMMAND *split_command = g_new(SPLIT_COMMAND, 1);
         split_command->header.data_type = header.data_type;
@@ -850,7 +850,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&split_command->split, sizeof(SPLIT_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for SPLIT_COMMAND\n");
+          t_print("%s: short read for SPLIT_COMMAND\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -862,7 +862,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_SAT:
-      t_print("server_thread: CMD_RESP_RX_SAT\n");
+      t_print("%s: CMD_RESP_RX_SAT\n", __FUNCTION__);
       {
         SAT_COMMAND *sat_command = g_new(SAT_COMMAND, 1);
         sat_command->header.data_type = header.data_type;
@@ -871,7 +871,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&sat_command->sat, sizeof(SAT_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for SAT_COMMAND\n");
+          t_print("%s: short read for SAT_COMMAND\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -883,7 +883,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_DUP:
-      t_print("server_thread: CMD_RESP_DUP\n");
+      t_print("%s: CMD_RESP_DUP\n", __FUNCTION__);
       {
         DUP_COMMAND *dup_command = g_new(DUP_COMMAND, 1);
         dup_command->header.data_type = header.data_type;
@@ -892,7 +892,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&dup_command->dup, sizeof(DUP_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for DUP\n");
+          t_print("%s: short read for DUP\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -904,7 +904,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_LOCK:
-      t_print("server_thread: CMD_RESP_LOCK\n");
+      t_print("%s: CMD_RESP_LOCK\n", __FUNCTION__);
       {
         LOCK_COMMAND *lock_command = g_new(LOCK_COMMAND, 1);
         lock_command->header.data_type = header.data_type;
@@ -913,7 +913,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&lock_command->lock, sizeof(LOCK_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for LOCK\n");
+          t_print("%s: short read for LOCK\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -925,7 +925,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_CTUN:
-      t_print("server_thread: CMD_RESP_CTUN\n");
+      t_print("%s: CMD_RESP_CTUN\n", __FUNCTION__);
       {
         CTUN_COMMAND *ctun_command = g_new(CTUN_COMMAND, 1);
         ctun_command->header.data_type = header.data_type;
@@ -934,7 +934,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&ctun_command->id, sizeof(CTUN_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for CTUN\n");
+          t_print("%s: short read for CTUN\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -946,7 +946,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_RX_FPS:
-      t_print("server_thread: CMD_RESP_RX_FPS\n");
+      t_print("%s: CMD_RESP_RX_FPS\n", __FUNCTION__);
       {
         FPS_COMMAND *fps_command = g_new(FPS_COMMAND, 1);
         fps_command->header.data_type = header.data_type;
@@ -955,7 +955,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&fps_command->id, sizeof(FPS_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for FPS\n");
+          t_print("%s: short read for FPS\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -967,7 +967,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_RX_SELECT:
-      t_print("server_thread: CMD_RESP_RX_SELECT\n");
+      t_print("%s: CMD_RESP_RX_SELECT\n", __FUNCTION__);
       {
         RX_SELECT_COMMAND *rx_select_command = g_new(RX_SELECT_COMMAND, 1);
         rx_select_command->header.data_type = header.data_type;
@@ -976,7 +976,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&rx_select_command->id, sizeof(RX_SELECT_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for RX_SELECT\n");
+          t_print("%s: short read for RX_SELECT\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -988,7 +988,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_VFO:
-      t_print("server_thread: CMD_RESP_VFO\n");
+      t_print("%s: CMD_RESP_VFO\n", __FUNCTION__);
       {
         VFO_COMMAND *vfo_command = g_new(VFO_COMMAND, 1);
         vfo_command->header.data_type = header.data_type;
@@ -997,7 +997,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&vfo_command->id, sizeof(VFO_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for VFO\n");
+          t_print("%s: short read for VFO\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -1009,7 +1009,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_RIT_TOGGLE:
-      t_print("server_thread: CMD_RESP_RIT_TOGGLE\n");
+      t_print("%s: CMD_RESP_RIT_TOGGLE\n", __FUNCTION__);
       {
         RIT_TOGGLE_COMMAND *rit_toggle_command = g_new(RIT_TOGGLE_COMMAND, 1);
         rit_toggle_command->header.data_type = header.data_type;
@@ -1018,7 +1018,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&rit_toggle_command->id, sizeof(RIT_TOGGLE_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for RIT_TOGGLE\n");
+          t_print("%s: short read for RIT_TOGGLE\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -1030,7 +1030,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_RIT_CLEAR:
-      t_print("server_thread: CMD_RESP_RIT_CLEAR\n");
+      t_print("%s: CMD_RESP_RIT_CLEAR\n", __FUNCTION__);
       {
         RIT_CLEAR_COMMAND *rit_clear_command = g_new(RIT_CLEAR_COMMAND, 1);
         rit_clear_command->header.data_type = header.data_type;
@@ -1039,7 +1039,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&rit_clear_command->id, sizeof(RIT_CLEAR_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for RIT_CLEAR\n");
+          t_print("%s: short read for RIT_CLEAR\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -1051,7 +1051,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_RIT:
-      t_print("server_thread: CMD_RESP_RIT\n");
+      t_print("%s: CMD_RESP_RIT\n", __FUNCTION__);
       {
         RIT_COMMAND *rit_command = g_new(RIT_COMMAND, 1);
         rit_command->header.data_type = header.data_type;
@@ -1060,7 +1060,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&rit_command->id, sizeof(RIT_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for RIT\n");
+          t_print("%s: short read for RIT\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -1072,7 +1072,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_XIT_TOGGLE:
-      t_print("server_thread: CMD_RESP_XIT_TOGGLE\n");
+      t_print("%s: CMD_RESP_XIT_TOGGLE\n", __FUNCTION__);
       {
         XIT_TOGGLE_COMMAND *xit_toggle_command = g_new(XIT_TOGGLE_COMMAND, 1);
         xit_toggle_command->header.data_type = header.data_type;
@@ -1084,7 +1084,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_XIT_CLEAR:
-      t_print("server_thread: CMD_RESP_XIT_CLEAR\n");
+      t_print("%s: CMD_RESP_XIT_CLEAR\n", __FUNCTION__);
       {
         XIT_CLEAR_COMMAND *xit_clear_command = g_new(XIT_CLEAR_COMMAND, 1);
         xit_clear_command->header.data_type = header.data_type;
@@ -1096,7 +1096,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_XIT:
-      t_print("server_thread: CMD_RESP_XIT\n");
+      t_print("%s: CMD_RESP_XIT\n", __FUNCTION__);
       {
         XIT_COMMAND *xit_command = g_new(XIT_COMMAND, 1);
         xit_command->header.data_type = header.data_type;
@@ -1105,7 +1105,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&xit_command->xit, sizeof(XIT_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for XIT\n");
+          t_print("%s: short read for XIT\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -1117,7 +1117,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_SAMPLE_RATE:
-      t_print("server_thread: CMD_RESP_SAMPLE_RATE\n");
+      t_print("%s: CMD_RESP_SAMPLE_RATE\n", __FUNCTION__);
       {
         SAMPLE_RATE_COMMAND *sample_rate_command = g_new(SAMPLE_RATE_COMMAND, 1);
         sample_rate_command->header.data_type = header.data_type;
@@ -1126,7 +1126,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&sample_rate_command->id, sizeof(SAMPLE_RATE_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for SAMPLE_RATE\n");
+          t_print("%s: short read for SAMPLE_RATE\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -1138,7 +1138,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_RECEIVERS:
-      t_print("server_thread: CMD_RESP_RECEIVERS\n");
+      t_print("%s: CMD_RESP_RECEIVERS\n", __FUNCTION__);
       {
         RECEIVERS_COMMAND *receivers_command = g_new(RECEIVERS_COMMAND, 1);
         receivers_command->header.data_type = header.data_type;
@@ -1148,7 +1148,7 @@ static void *server_thread(void *arg) {
                                 sizeof(RECEIVERS_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for RECEIVERS\n");
+          t_print("%s: short read for RECEIVERS\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -1160,7 +1160,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_RIT_INCREMENT:
-      t_print("server_thread: CMD_RESP_RIT_INCREMENT\n");
+      t_print("%s: CMD_RESP_RIT_INCREMENT\n", __FUNCTION__);
       {
         RIT_INCREMENT_COMMAND *rit_increment_command = g_new(RIT_INCREMENT_COMMAND, 1);
         rit_increment_command->header.data_type = header.data_type;
@@ -1170,7 +1170,7 @@ static void *server_thread(void *arg) {
                                 sizeof(RIT_INCREMENT_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for RIT_INCREMENT\n");
+          t_print("%s: short read for RIT_INCREMENT\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -1182,7 +1182,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_FILTER_BOARD:
-      t_print("server_thread: CMD_RESP_FILTER_BOARD\n");
+      t_print("%s: CMD_RESP_FILTER_BOARD\n", __FUNCTION__);
       {
         FILTER_BOARD_COMMAND *filter_board_command = g_new(FILTER_BOARD_COMMAND, 1);
         filter_board_command->header.data_type = header.data_type;
@@ -1192,7 +1192,7 @@ static void *server_thread(void *arg) {
                                 sizeof(FILTER_BOARD_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for FILTER_BOARD\n");
+          t_print("%s: short read for FILTER_BOARD\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -1204,7 +1204,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_SWAP_IQ:
-      t_print("server_thread: CMD_RESP_SWAP_IQ\n");
+      t_print("%s: CMD_RESP_SWAP_IQ\n", __FUNCTION__);
       {
         SWAP_IQ_COMMAND *swap_iq_command = g_new(SWAP_IQ_COMMAND, 1);
         swap_iq_command->header.data_type = header.data_type;
@@ -1213,7 +1213,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&swap_iq_command->iqswap, sizeof(SWAP_IQ_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for SWAP_IQ\n");
+          t_print("%s: short read for SWAP_IQ\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -1225,7 +1225,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_REGION:
-      t_print("server_thread: CMD_RESP_REGION\n");
+      t_print("%s: CMD_RESP_REGION\n", __FUNCTION__);
       {
         REGION_COMMAND *region_command = g_new(REGION_COMMAND, 1);
         region_command->header.data_type = header.data_type;
@@ -1234,7 +1234,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&region_command->region, sizeof(REGION_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for REGION\n");
+          t_print("%s: short read for REGION\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -1246,7 +1246,7 @@ static void *server_thread(void *arg) {
       break;
 
     case CMD_RESP_MUTE_RX:
-      t_print("server_thread: CMD_RESP_MUTE_RX\n");
+      t_print("%s: CMD_RESP_MUTE_RX\n", __FUNCTION__);
       {
         MUTE_RX_COMMAND *mute_rx_command = g_new(MUTE_RX_COMMAND, 1);
         mute_rx_command->header.data_type = header.data_type;
@@ -1255,7 +1255,7 @@ static void *server_thread(void *arg) {
         bytes_read = recv_bytes(client->socket, (char *)&mute_rx_command->mute, sizeof(MUTE_RX_COMMAND) - sizeof(header));
 
         if (bytes_read <= 0) {
-          t_print("server_thread: short read for MUTE_RX\n");
+          t_print("%s: short read for MUTE_RX\n", __FUNCTION__);
           t_perror("server_thread");
           // dialog box?
           return NULL;
@@ -1267,7 +1267,7 @@ static void *server_thread(void *arg) {
       break;
 
     default:
-      t_print("server_thread: UNKNOWN command: %d\n", ntohs(header.data_type));
+      t_print("%s: UNKNOWN command: %d\n", __FUNCTION__, ntohs(header.data_type));
       break;
     }
   }
@@ -2952,7 +2952,7 @@ static int remote_command(void *data) {
     CHECK_RX(r);
     RECEIVER *rx = receiver[r];
     rx->agc = ntohs(agc_command->agc);
-    rx_set_agc(rx, rx->agc);
+    rx_set_agc(rx);
     send_agc(client->socket, rx->id, rx->agc);
     g_idle_add(ext_vfo_update, NULL);
   }
@@ -2967,7 +2967,7 @@ static int remote_command(void *data) {
     rx->agc_thresh = ntohd(agc_gain_command->thresh);
     rx->agc_hang_threshold = ntohd(agc_gain_command->hang_thresh);
     set_agc_gain(r, ntohd(agc_gain_command->gain));
-    rx_set_agc(rx, rx->agc);
+    rx_set_agc(rx);
     send_agc_gain(client->socket, rx->id, rx->agc_gain, rx->agc_hang, rx->agc_thresh, rx->agc_hang_threshold);
   }
   break;
@@ -3014,8 +3014,9 @@ static int remote_command(void *data) {
       mode_settings[vfo[id].mode].snb = rx->snb;
     }
 
-    set_noise();
+    rx_set_noise(rx);
     send_noise(client->socket, rx->id, rx->nb, rx->nr, rx->anf, rx->snb);
+    g_idle_add(ext_vfo_update, NULL);
   }
   break;
 
@@ -3110,7 +3111,8 @@ static int remote_command(void *data) {
     const FPS_COMMAND *fps_command = (FPS_COMMAND *)data;
     int rx = fps_command->id;
     CHECK_RX(rx);
-    rx_set_framerate(receiver[rx], fps_command->fps);
+    receiver[rx]->fps = fps_command->fps;
+    rx_set_framerate(receiver[rx]);
     send_fps(client->socket, rx, receiver[rx]->fps);
   }
   break;

@@ -58,7 +58,7 @@ static void agc_hang_threshold_value_changed_cb(GtkWidget *widget, gpointer data
                   active_receiver->agc_thresh, active_receiver->agc_hang_threshold);
 #endif
   } else {
-    rx_set_agc(active_receiver, active_receiver->agc);
+    rx_set_agc(active_receiver);
   }
 }
 
@@ -71,7 +71,7 @@ static void agc_cb (GtkToggleButton *widget, gpointer data) {
     send_agc(client_socket, active_receiver->id, active_receiver->agc);
 #endif
   } else {
-    rx_set_agc(active_receiver, active_receiver->agc);
+    rx_set_agc(active_receiver);
   }
 
   g_idle_add(ext_vfo_update, NULL);

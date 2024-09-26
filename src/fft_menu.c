@@ -22,7 +22,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <wdsp.h>
 
 #include "new_menu.h"
 #include "fft_menu.h"
@@ -51,7 +50,7 @@ static void binaural_cb(GtkWidget *widget, gpointer data) {
   int id = GPOINTER_TO_INT(data);
   RECEIVER *rx = receiver[id];
   rx->binaural = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
-  SetRXAPanelBinaural(rx->id, rx->binaural);
+  rx_set_af_binaural(rx);
 }
 
 static void filter_type_cb(GtkToggleButton *widget, gpointer data) {
@@ -62,14 +61,11 @@ static void filter_type_cb(GtkToggleButton *widget, gpointer data) {
   case 0:
   case 1:
     receiver[channel]->low_latency = type;
-    RXASetMP(channel, type);
+    rx_set_fft_latency(receiver[channel]);
     break;
 
   case 8:
-    if (can_transmit) {
-      TXASetMP(transmitter->id, 0);
-    }
-
+    // NOTREACHED
     break;
   }
 
@@ -88,13 +84,13 @@ static void filter_size_cb(GtkWidget *widget, gpointer data) {
   case 0:
   case 1:
     receiver[channel]->fft_size = size;
-    RXASetNC(channel, size);
+    rx_set_fft_size(receiver[channel]);
     break;
 
   case 8:
     if (can_transmit) {
-      transmitter->fft_size = size;;
-      TXASetNC(transmitter->id, size);
+      transmitter->fft_size = size;
+      tx_set_fft_size(transmitter);
     }
 
     break;

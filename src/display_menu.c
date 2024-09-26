@@ -22,7 +22,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <wdsp.h>
 
 #include "main.h"
 #include "new_menu.h"
@@ -54,23 +53,23 @@ static void detector_cb(GtkToggleButton *widget, gpointer data) {
 
   switch (val) {
   case 0:
-    active_receiver->display_detector_mode = DETECTOR_MODE_PEAK;
+    active_receiver->display_detector_mode = DET_PEAK;
     break;
 
   case 1:
-    active_receiver->display_detector_mode = DETECTOR_MODE_ROSENFELL;
+    active_receiver->display_detector_mode = DET_ROSENFELL;
     break;
 
   case 2:
-    active_receiver->display_detector_mode = DETECTOR_MODE_AVERAGE;
+    active_receiver->display_detector_mode = DET_AVERAGE;
     break;
 
   case 3:
-    active_receiver->display_detector_mode = DETECTOR_MODE_SAMPLE;
+    active_receiver->display_detector_mode = DET_SAMPLEHOLD;
     break;
   }
 
-  SetDisplayDetectorMode(active_receiver->id, 0, active_receiver->display_detector_mode);
+  rx_set_detector(active_receiver);
 }
 
 static void average_cb(GtkToggleButton *widget, gpointer data) {
@@ -78,36 +77,28 @@ static void average_cb(GtkToggleButton *widget, gpointer data) {
 
   switch (val) {
   case 0:
-    active_receiver->display_average_mode = AVERAGE_MODE_NONE;
+    active_receiver->display_average_mode = AVG_NONE;
     break;
 
   case 1:
-    active_receiver->display_average_mode = AVERAGE_MODE_RECURSIVE;
+    active_receiver->display_average_mode = AVG_RECURSIVE;
     break;
 
   case 2:
-    active_receiver->display_average_mode = AVERAGE_MODE_TIME_WINDOW;
+    active_receiver->display_average_mode = AVG_TIMEWINDOW;
     break;
 
   case 3:
-    active_receiver->display_average_mode = AVERAGE_MODE_LOG_RECURSIVE;
+    active_receiver->display_average_mode = AVG_LOGRECURSIVE;
     break;
   }
 
-  //
-  // I observed artifacts when changing the mode from "Log Recursive"
-  // to "Time Window", so I generally switch to NONE first, and then
-  // to the target averaging mode
-  //
-  SetDisplayAverageMode(active_receiver->id, 0, AVERAGE_MODE_NONE);
-  usleep(50000);
-  SetDisplayAverageMode(active_receiver->id, 0, active_receiver->display_average_mode);
-  rx_calculate_display_average(active_receiver);
+  rx_set_average(active_receiver);
 }
 
 static void time_value_changed_cb(GtkWidget *widget, gpointer data) {
   active_receiver->display_average_time = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
-  rx_calculate_display_average(active_receiver);
+  rx_set_average(active_receiver);
 }
 
 static void filled_cb(GtkWidget *widget, gpointer data) {
@@ -119,8 +110,8 @@ static void gradient_cb(GtkWidget *widget, gpointer data) {
 }
 
 static void frames_per_second_value_changed_cb(GtkWidget *widget, gpointer data) {
-  int fps = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
-  rx_set_framerate(active_receiver, fps);
+  active_receiver->fps = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+  rx_set_framerate(active_receiver);
 }
 
 static void panadapter_high_value_changed_cb(GtkWidget *widget, gpointer data) {
@@ -277,19 +268,19 @@ void display_menu(GtkWidget *parent) {
   gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(detector_combo), NULL, "Sample");
 
   switch (active_receiver->display_detector_mode) {
-  case DETECTOR_MODE_PEAK:
+  case DET_PEAK:
     gtk_combo_box_set_active(GTK_COMBO_BOX(detector_combo), 0);
     break;
 
-  case DETECTOR_MODE_ROSENFELL:
+  case DET_ROSENFELL:
     gtk_combo_box_set_active(GTK_COMBO_BOX(detector_combo), 1);
     break;
 
-  case DETECTOR_MODE_AVERAGE:
+  case DET_AVERAGE:
     gtk_combo_box_set_active(GTK_COMBO_BOX(detector_combo), 2);
     break;
 
-  case DETECTOR_MODE_SAMPLE:
+  case DET_SAMPLEHOLD:
     gtk_combo_box_set_active(GTK_COMBO_BOX(detector_combo), 3);
     break;
   }
@@ -308,19 +299,19 @@ void display_menu(GtkWidget *parent) {
   gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(average_combo), NULL, "Log Recursive");
 
   switch (active_receiver->display_average_mode) {
-  case AVERAGE_MODE_NONE:
+  case AVG_NONE:
     gtk_combo_box_set_active(GTK_COMBO_BOX(average_combo), 0);
     break;
 
-  case AVERAGE_MODE_RECURSIVE:
+  case AVG_RECURSIVE:
     gtk_combo_box_set_active(GTK_COMBO_BOX(average_combo), 1);
     break;
 
-  case AVERAGE_MODE_TIME_WINDOW:
+  case AVG_TIMEWINDOW:
     gtk_combo_box_set_active(GTK_COMBO_BOX(average_combo), 2);
     break;
 
-  case AVERAGE_MODE_LOG_RECURSIVE:
+  case AVG_LOGRECURSIVE:
     gtk_combo_box_set_active(GTK_COMBO_BOX(average_combo), 3);
     break;
   }

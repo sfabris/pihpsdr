@@ -442,7 +442,7 @@ int process_action(void *data) {
         active_receiver->agc = 0;
       }
 
-      rx_set_agc(active_receiver, active_receiver->agc);
+      rx_set_agc(active_receiver);
       g_idle_add(ext_vfo_update, NULL);
     }
 
@@ -765,8 +765,9 @@ int process_action(void *data) {
 
   case COMP_ENABLE:
     if (can_transmit && a->mode == PRESSED) {
-      tx_set_compressor(transmitter, NOT(transmitter->compressor));
+      TOGGLE(transmitter->compressor);
       mode_settings[vfo_get_tx_mode()].compressor = transmitter->compressor;
+      tx_set_compressor(transmitter);
       g_idle_add(ext_vfo_update, NULL);
     }
 
@@ -775,10 +776,11 @@ int process_action(void *data) {
   case COMPRESSION:
     if (can_transmit) {
       value = KnobOrWheel(a, transmitter->compressor_level, 0.0, 20.0, 1.0);
-      tx_set_compressor_level(transmitter, value);
-      tx_set_compressor(transmitter, value > 0.5);
+      transmitter->compressor = SET(value > 0.5);
+      transmitter->compressor_level = value;
       mode_settings[vfo_get_tx_mode()].compressor = transmitter->compressor;
       mode_settings[vfo_get_tx_mode()].compressor_level = transmitter->compressor_level;
+      tx_set_compressor(transmitter);
       g_idle_add(ext_vfo_update, NULL);
     }
 
@@ -862,7 +864,7 @@ int process_action(void *data) {
     //
     if (can_transmit && !radio_is_transmitting() && a->mode == PRESSED) {
       TOGGLE(duplex);
-      g_idle_add(ext_set_duplex, NULL);    // can just use setDuplex ?
+      g_idle_add(ext_set_duplex, NULL);  // can just use setDuplex ?
     }
 
     break;
@@ -1369,9 +1371,9 @@ int process_action(void *data) {
     if (a->mode == PRESSED) {
       if (can_transmit) {
         if (transmitter->puresignal == 0) {
-          tx_set_ps(transmitter, 1);
+          tx_ps_onoff(transmitter, 1);
         } else {
-          tx_set_ps(transmitter, 0);
+          tx_ps_onoff(transmitter, 0);
         }
       }
     }

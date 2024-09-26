@@ -21,8 +21,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <wdsp.h>
-
 #include "new_menu.h"
 #include "noise_menu.h"
 #include "band.h"
@@ -57,68 +55,6 @@ static gboolean close_cb () {
   return TRUE;
 }
 
-void set_noise() {
-  //
-  // Set/Update all parameters associated with the "QRM fighters"
-  //
-  // a) NB
-  //
-  SetEXTANBTau(active_receiver->id, active_receiver->nb_tau);
-  SetEXTANBHangtime(active_receiver->id, active_receiver->nb_hang);
-  SetEXTANBAdvtime(active_receiver->id, active_receiver->nb_advtime);
-  SetEXTANBThreshold(active_receiver->id, active_receiver->nb_thresh);
-  SetEXTANBRun(active_receiver->id, (active_receiver->nb == 1));
-  //
-  // b) NB2
-  //
-  SetEXTNOBMode(active_receiver->id, active_receiver->nb2_mode);
-  SetEXTNOBTau(active_receiver->id, active_receiver->nb_tau);
-  SetEXTNOBHangtime(active_receiver->id, active_receiver->nb_hang);
-  SetEXTNOBAdvtime(active_receiver->id, active_receiver->nb_advtime);
-  SetEXTNOBThreshold(active_receiver->id, active_receiver->nb_thresh);
-  SetEXTNOBRun(active_receiver->id, (active_receiver->nb == 2));
-  //
-  // c) NR
-  //
-  SetRXAANRVals(active_receiver->id, 64, 16, 16e-4, 10e-7);
-  SetRXAANRPosition(active_receiver->id, active_receiver->nr_agc);
-  SetRXAANRRun(active_receiver->id, (active_receiver->nr == 1));
-  //
-  // d) NR2
-  //
-  SetRXAEMNRPosition(active_receiver->id, active_receiver->nr_agc);
-  SetRXAEMNRgainMethod(active_receiver->id, active_receiver->nr2_gain_method);
-  SetRXAEMNRnpeMethod(active_receiver->id, active_receiver->nr2_npe_method);
-  SetRXAEMNRtrainZetaThresh(active_receiver->id, active_receiver->nr2_trained_threshold);
-  SetRXAEMNRaeRun(active_receiver->id, active_receiver->nr2_ae);
-  SetRXAEMNRRun(active_receiver->id, (active_receiver->nr == 2));
-  //
-  // e) ANF
-  //
-  SetRXAANFRun(active_receiver->id, active_receiver->anf);
-  SetRXAANFPosition(active_receiver->id, active_receiver->nr_agc);
-  //
-  // f) SNB
-  //
-  SetRXASNBARun(active_receiver->id, active_receiver->snb);
-#ifdef EXTNR
-  //
-  // g) NR3
-  //
-  SetRXARNNRRun(active_receiver->id, (active_receiver->nr == 3));
-  //
-  // NR4
-  //
-  SetRXASBNRreductionAmount(active_receiver->id,     active_receiver->nr4_reduction_amount);
-  SetRXASBNRsmoothingFactor(active_receiver->id,     active_receiver->nr4_smoothing_factor);
-  SetRXASBNRwhiteningFactor(active_receiver->id,     active_receiver->nr4_whitening_factor);
-  SetRXASBNRnoiseRescale(active_receiver->id,        active_receiver->nr4_noise_rescale);
-  SetRXASBNRpostFilterThreshold(active_receiver->id, active_receiver->nr4_post_filter_threshold);
-  SetRXASBNRRun(active_receiver->id, (active_receiver->nr == 4));
-#endif
-  g_idle_add(ext_vfo_update, NULL);
-}
-
 void update_noise() {
   //
   // TODO: include NR2 and NB2 parameters
@@ -131,7 +67,8 @@ void update_noise() {
     return;
   }
 
-  set_noise();
+  rx_set_noise(active_receiver);
+  g_idle_add(ext_vfo_update, NULL);
 }
 
 static void nb_cb(GtkToggleButton *widget, gpointer data) {

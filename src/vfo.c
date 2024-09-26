@@ -436,14 +436,15 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
       transmitter->eq_freq[i]       = mode_settings[m].tx_eq_freq[i];
     }
 
-    tx_set_compressor_level(transmitter, mode_settings[m].compressor_level);
-    tx_set_compressor      (transmitter, mode_settings[m].compressor      );
+    transmitter->compressor = mode_settings[m].compressor;
+    transmitter->compressor_level = mode_settings[m].compressor_level;
+    tx_set_compressor      (transmitter);
   }
 
   //
   // make changes effective and put them on the VFO display
   //
-  rx_set_agc(rx, rx->agc);
+  rx_set_agc(rx);
   update_noise();
   update_eq();
   g_idle_add(ext_vfo_update, NULL);
@@ -521,7 +522,9 @@ void vfo_band_changed(int id, int b) {
   }
 
   if (can_transmit) {
-    tx_set_ctcss(transmitter, entry->ctcss_enabled, entry->ctcss);
+    transmitter->ctcss_enabled = entry->ctcss_enabled;
+    transmitter->ctcss         = entry->ctcss;
+    tx_set_ctcss(transmitter);
   }
 
   //
@@ -562,7 +565,9 @@ void vfo_bandstack_changed(int b) {
   }
 
   if (can_transmit) {
-    tx_set_ctcss(transmitter, entry->ctcss_enabled, entry->ctcss);
+    transmitter->ctcss_enabled = entry->ctcss_enabled;
+    transmitter->ctcss         = entry->ctcss;
+    tx_set_ctcss(transmitter);
   }
 
   if (id < receivers && oldmode != vfo[id].mode) {

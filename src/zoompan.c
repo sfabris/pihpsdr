@@ -74,15 +74,13 @@ static void zoom_value_changed_cb(GtkWidget *widget, gpointer data) {
   //t_print("zoom_value_changed_cb\n");
   g_mutex_lock(&pan_zoom_mutex);
   g_mutex_lock(&active_receiver->display_mutex);
+  active_receiver->zoom = (int)(gtk_range_get_value(GTK_RANGE(zoom_scale)) + 0.5);
 
   if (radio_is_remote) {
-    int zoom = (int)gtk_range_get_value(GTK_RANGE(zoom_scale));
-    active_receiver->zoom = zoom;
 #ifdef CLIENT_SERVER
-    send_zoom(client_socket, active_receiver->id, zoom);
+    send_zoom(client_socket, active_receiver->id, active_receiver->zoom);
 #endif
   } else {
-    active_receiver->zoom = (int)(gtk_range_get_value(GTK_RANGE(zoom_scale)) + 0.5);;
     rx_update_zoom(active_receiver);
   }
 
@@ -142,18 +140,15 @@ void remote_set_zoom(int rx, double value) {
 static void pan_value_changed_cb(GtkWidget *widget, gpointer data) {
   //t_print("pan_value_changed_cb\n");
   g_mutex_lock(&pan_zoom_mutex);
-  int pan = (int)(gtk_range_get_value(GTK_RANGE(pan_scale)) + 0.5);
-
-  if (radio_is_remote) {
-#ifdef CLIENT_SERVER
-    send_pan(client_socket, active_receiver->id, pan);
-#endif
-    g_mutex_unlock(&pan_zoom_mutex);
-    return;
-  }
 
   if (active_receiver->zoom > 1) {
-    active_receiver->pan = pan;
+    active_receiver->pan = (int)(gtk_range_get_value(GTK_RANGE(pan_scale)) + 0.5);
+
+    if (radio_is_remote) {
+#ifdef CLIENT_SERVER
+      send_pan(client_socket, active_receiver->id, active_receiver->pan);
+#endif
+    }
   }
 
   g_mutex_unlock(&pan_zoom_mutex);

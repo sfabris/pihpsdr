@@ -88,8 +88,6 @@ double ctcss_frequencies[CTCSS_FREQUENCIES] = {
 static int p1radio = 0, p2radio = 0; // sine tone to the radio
 static int p1local = 0, p2local = 0; // sine tone to local audio
 
-static void tx_init_analyzer(TRANSMITTER *tx);
-
 static gboolean close_cb() {
   // there is nothing to clean up
   return TRUE;
@@ -168,44 +166,6 @@ void tx_set_out_of_band(TRANSMITTER *tx) {
   g_idle_add(ext_vfo_update, NULL);
   tx->out_of_band_timer_id = gdk_threads_add_timeout_full(G_PRIORITY_HIGH_IDLE, 1000,
                              clear_out_of_band_warning, tx, NULL);
-}
-
-void tx_set_am_carrier_level(const TRANSMITTER *tx) {
-  SetTXAAMCarrierLevel(tx->id, tx->am_carrier_level);
-}
-
-void tx_set_ctcss(TRANSMITTER *tx, int state, int i) {
-  //t_print("tx_set_ctcss: state=%d i=%d frequency=%0.1f\n",state,i,ctcss_frequencies[i]);
-  tx->ctcss_enabled = state;
-  tx->ctcss = i;
-  SetTXACTCSSFreq(tx->id, ctcss_frequencies[tx->ctcss]);
-  SetTXACTCSSRun(tx->id, tx->ctcss_enabled);
-}
-
-void tx_set_compressor_level(TRANSMITTER *tx, double level) {
-  tx->compressor_level = level;
-  SetTXACompressorGain(tx->id, tx->compressor_level);
-}
-
-void tx_set_compressor(TRANSMITTER *tx, int state) {
-  //
-  // The CESSB overshoot filter (on/off) automatically follows
-  // the Compressor on/off setting. This we can do because we
-  // do not allow low-latency filters in the TX.
-  //
-  // The compressor only works well if the mic level peaks at
-  // 0 dB, therefore, the auto-leveler is also automatically
-  // activated when en/dis-abling the compressor(de-)
-  //
-  tx->compressor = state;
-  SetTXACompressorRun(tx->id, state);
-  SetTXAosctrlRun(tx->id, state);
-  SetTXALevelerSt(tx->id, state);
-}
-
-void tx_set_mic_gain(TRANSMITTER *tx, double gain) {
-  tx->mic_gain = gain;
-  SetTXAPanelGain1(tx->id, pow(10.0, gain * 0.05));
 }
 
 static void init_audio_ramp(double *ramp, int width) {
@@ -288,10 +248,42 @@ static void init_ve3nea_ramp(double *ramp, int width) {
 
 #endif
 
+void tx_set_ramps(TRANSMITTER *tx) {
+  //t_print("%s: new width=%d\n", __FUNCTION__, cw_ramp_width);
+  //
+  // Calculate a new CW ramp. This may be called from the CW menu
+  // if the ramp width changes.
+  //
+  g_mutex_lock(&tx->cw_ramp_mutex);
+
+  //
+  // For the side tone, a RaisedCosine profile with a width of 5 msec
+  // seems to be standard.
+  //
+  if (tx->cw_ramp_audio) { g_free(tx->cw_ramp_audio); }
+
+  tx->cw_ramp_audio_ptr = 0;
+  tx->cw_ramp_audio_len = 240;
+  tx->cw_ramp_audio = g_new(double, tx->cw_ramp_audio_len + 1);
+  init_audio_ramp(tx->cw_ramp_audio, tx->cw_ramp_audio_len);
+
+  //
+  // For the RF pulse envelope, use a BlackmanHarris ramp with a
+  // user-specified width
+  //
+  if (tx->cw_ramp_rf) { g_free(tx->cw_ramp_rf); }
+
+  tx->cw_ramp_rf_ptr = 0;
+  tx->cw_ramp_rf_len = 48 * tx->ratio * cw_ramp_width;
+  tx->cw_ramp_rf = g_new(double, tx->cw_ramp_rf_len + 1);
+  init_dl1ycf_ramp(tx->cw_ramp_rf, tx->cw_ramp_rf_len);
+  g_mutex_unlock(&tx->cw_ramp_mutex);
+}
+
 void tx_reconfigure(TRANSMITTER *tx, int width, int height) {
   if (width != tx->width || height != tx->height) {
     g_mutex_lock(&tx->display_mutex);
-    t_print("reconfigure_transmitter: width=%d height=%d\n", width, height);
+    t_print("%s: width=%d height=%d\n", __FUNCTION__, width, height);
     tx->width = width;
     tx->height = height;
     gtk_widget_set_size_request(tx->panel, width, height);
@@ -315,6 +307,7 @@ void tx_reconfigure(TRANSMITTER *tx, int width, int height) {
 }
 
 void tx_save_state(const TRANSMITTER *tx) {
+  SetPropI1("transmitter.%d.alcmode",           tx->id,               tx->alcmode);
   SetPropI1("transmitter.%d.fft_size",          tx->id,               tx->fft_size);
   SetPropI1("transmitter.%d.fps",               tx->id,               tx->fps);
   SetPropI1("transmitter.%d.filter_low",        tx->id,               tx->filter_low);
@@ -342,6 +335,7 @@ void tx_save_state(const TRANSMITTER *tx) {
   SetPropI1("transmitter.%d.ctcss_enabled",     tx->id,               tx->ctcss_enabled);
   SetPropI1("transmitter.%d.ctcss",             tx->id,               tx->ctcss);
   SetPropI1("transmitter.%d.deviation",         tx->id,               tx->deviation);
+  SetPropI1("transmitter.%d.pre_emphasize",     tx->id,               tx->pre_emphasize);
   SetPropF1("transmitter.%d.am_carrier_level",  tx->id,               tx->am_carrier_level);
   SetPropI1("transmitter.%d.drive",             tx->id,               tx->drive);
   SetPropF1("transmitter.%d.mic_gain",          tx->id,               tx->mic_gain);
@@ -369,6 +363,7 @@ void tx_save_state(const TRANSMITTER *tx) {
 
 static void tx_restore_state(TRANSMITTER *tx) {
   t_print("%s: id=%d\n", __FUNCTION__, tx->id);
+  GetPropI1("transmitter.%d.alcmode",           tx->id,               tx->alcmode);
   GetPropI1("transmitter.%d.fft_size",          tx->id,               tx->fft_size);
   GetPropI1("transmitter.%d.fps",               tx->id,               tx->fps);
   GetPropI1("transmitter.%d.filter_low",        tx->id,               tx->filter_low);
@@ -396,6 +391,7 @@ static void tx_restore_state(TRANSMITTER *tx) {
   GetPropI1("transmitter.%d.ctcss_enabled",     tx->id,               tx->ctcss_enabled);
   GetPropI1("transmitter.%d.ctcss",             tx->id,               tx->ctcss);
   GetPropI1("transmitter.%d.deviation",         tx->id,               tx->deviation);
+  GetPropI1("transmitter.%d.pre_emphasize",     tx->id,               tx->pre_emphasize);
   GetPropF1("transmitter.%d.am_carrier_level",  tx->id,               tx->am_carrier_level);
   GetPropI1("transmitter.%d.drive",             tx->id,               tx->drive);
   GetPropF1("transmitter.%d.mic_gain",          tx->id,               tx->mic_gain);
@@ -462,7 +458,7 @@ static gboolean tx_update_display(gpointer data) {
     if (tx->puresignal && tx->feedback) {
       RECEIVER *rx_feedback = receiver[PS_RX_FEEDBACK];
       g_mutex_lock(&rx_feedback->display_mutex);
-      GetPixels(rx_feedback->id, 0, rx_feedback->pixel_samples, &rc);
+      rc = rx_get_pixels(rx_feedback);
 
       if (rc) {
         int full  = rx_feedback->pixels;  // number of pixels in the feedback spectrum
@@ -511,7 +507,7 @@ static gboolean tx_update_display(gpointer data) {
 
       g_mutex_unlock(&rx_feedback->display_mutex);
     } else {
-      GetPixels(tx->id, 0, tx->pixel_samples, &rc);
+      rc = tx_get_pixels(tx);
     }
 
     if (rc) {
@@ -519,7 +515,7 @@ static gboolean tx_update_display(gpointer data) {
     }
 
     g_mutex_unlock(&tx->display_mutex);
-    tx->alc = GetTXAMeter(tx->id, alc);
+    tx->alc = tx_get_alc(tx);
     double constant1;
     double constant2;
     double rconstant2;  // allow different C2 values for calculating fwd and ref power
@@ -727,60 +723,17 @@ static gboolean tx_update_display(gpointer data) {
   return FALSE; // no more timer events
 }
 
-static void tx_init_analyzer(TRANSMITTER *tx) {
-  int flp[] = {0};
-  const double keep_time = 0.1;
-  const int n_pixout = 1;
-  const int spur_elimination_ffts = 1;
-  const int data_type = 1;
-  const double kaiser_pi = 14.0;
-  const double fscLin = 0;
-  const double fscHin = 0;
-  const int stitches = 1;
-  const int calibration_data_set = 0;
-  const double span_min_freq = 0.0;
-  const double span_max_freq = 0.0;
-  const int clip = 0;
-  const int window_type = 5;
-  const int afft_size = 16384;
-  const int pixels = tx->pixels;
-  int overlap;
-  int max_w = afft_size + (int) min(keep_time * (double) tx->iq_output_rate,
-                                    keep_time * (double) afft_size * (double) tx->fps);
-  overlap = (int)max(0.0, ceil(afft_size - (double)tx->iq_output_rate / (double)tx->fps));
-  t_print("SetAnalyzer id=%d buffer_size=%d overlap=%d pixels=%d\n", tx->id, tx->output_samples, overlap, tx->pixels);
-  SetAnalyzer(tx->id,                // id of the TXA channel
-              n_pixout,              // 1 = "use same data for scope and waterfall"
-              spur_elimination_ffts, // 1 = "no spur elimination"
-              data_type,             // 1 = complex input data (I & Q)
-              flp,                   // vector with one elt for each LO frequency, 1 if high-side LO, 0 otherwise
-              afft_size,             // size of the fft, i.e., number of input samples
-              tx->output_samples,    // number of samples transferred for each OpenBuffer()/CloseBuffer()
-              window_type,           // 4 = Hamming
-              kaiser_pi,             // PiAlpha parameter for Kaiser window
-              overlap,               // number of samples each fft (other than the first) is to re-use from the previous
-              clip,                  // number of fft output bins to be clipped from EACH side of each sub-span
-              fscLin,                // number of bins to clip from low end of entire span
-              fscHin,                // number of bins to clip from high end of entire span
-              pixels,                // number of pixel values to return.  may be either <= or > number of bins
-              stitches,              // number of sub-spans to concatenate to form a complete span
-              calibration_data_set,  // identifier of which set of calibration data to use
-              span_min_freq,         // frequency at first pixel value8192
-              span_max_freq,         // frequency at last pixel value
-              max_w                  // max samples to hold in input ring buffers
-             );
-  //
-  // This cannot be changed for the TX panel,
-  // use peak mode
-  //
-  SetDisplayDetectorMode (tx->id,  0, DETECTOR_MODE_PEAK);
-  SetDisplayAverageMode  (tx->id,  0, AVERAGE_MODE_LOG_RECURSIVE);
-  SetDisplayNumAverage   (tx->id,  0, 4);
-  SetDisplayAvBackmult   (tx->id,  0, 0.4000);
-}
-
 void tx_create_dialog(TRANSMITTER *tx) {
-  //t_print("create_dialog\n");
+  //
+  // This creates a small separate window to hold a "small"
+  // TX panadapter. This is done at start-up via
+  // tx_create_visual() only if DUPLEX is set at startup, and
+  // via setDuplex() whenever DUPLEX is engaged later.
+  //
+  if (tx->dialog != NULL) {
+    gtk_widget_destroy(tx->dialog);
+  }
+
   tx->dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(tx->dialog), GTK_WINDOW(top_window));
   GtkWidget *headerbar = gtk_header_bar_new();
@@ -798,8 +751,16 @@ void tx_create_dialog(TRANSMITTER *tx) {
 }
 
 static void tx_create_visual(TRANSMITTER *tx) {
-  t_print("transmitter: tx_create_visual: id=%d width=%d height=%d\n", tx->id, tx->width, tx->height);
-  tx->dialog = NULL;
+  //
+  // This creates a panadapter within the main window
+  //
+  t_print("%s: id=%d width=%d height=%d\n", __FUNCTION__, tx->id, tx->width, tx->height);
+
+  if (tx->dialog != NULL) {
+    gtk_widget_destroy(tx->dialog);
+    tx->dialog = NULL;
+  }
+
   tx->panel = gtk_fixed_new();
   gtk_widget_set_size_request (tx->panel, tx->width, tx->height);
 
@@ -817,7 +778,6 @@ static void tx_create_visual(TRANSMITTER *tx) {
 }
 
 TRANSMITTER *tx_create_transmitter(int id, int width, int height) {
-  int rc;
   TRANSMITTER *tx = g_new(TRANSMITTER, 1);
   tx->id = id;
   tx->dac = 0;
@@ -825,6 +785,7 @@ TRANSMITTER *tx_create_transmitter(int id, int width, int height) {
   tx->display_filled = 0;
   tx->dsp_size = 2048;
   tx->fft_size = 2048;
+  tx->alcmode = ALC_PEAK;
   g_mutex_init(&tx->display_mutex);
   tx->update_timer_id = 0;
   tx->out_of_band_timer_id = 0;
@@ -883,7 +844,8 @@ TRANSMITTER *tx_create_transmitter(int id, int width, int height) {
   tx->panadapter_step = 10;
   tx->displaying = 0;
   tx->alex_antenna = 0; // default: ANT1
-  t_print("create_transmitter: id=%d buffer_size=%d mic_sample_rate=%d mic_dsp_rate=%d iq_output_rate=%d output_samples=%d width=%d height=%d\n",
+  t_print("%s: id=%d buffer_size=%d mic_sample_rate=%d mic_dsp_rate=%d iq_output_rate=%d output_samples=%d width=%d height=%d\n",
+          __FUNCTION__,
           tx->id, tx->buffer_size, tx->mic_sample_rate, tx->mic_dsp_rate, tx->iq_output_rate, tx->output_samples,
           tx->width, tx->height);
   tx->filter_low = tx_filter_low;
@@ -911,6 +873,7 @@ TRANSMITTER *tx_create_transmitter(int id, int width, int height) {
   tx->ctcss = 11;
   tx->ctcss_enabled = FALSE;
   tx->deviation = 2500;
+  tx->pre_emphasize = 0;
   tx->am_carrier_level = 0.5;
   tx->drive = 50;
   tx->tune_drive = 10;
@@ -954,12 +917,22 @@ TRANSMITTER *tx_create_transmitter(int id, int width, int height) {
   tx->eq_gain[8]  = 0.0;
   tx->eq_gain[9]  = 0.0;
   tx->eq_gain[10] = 0.0;
+  //
+  // Some of these values cannot be changed.
+  // If using PURESIGNAL and displaying the feedback signal,
+  // these settings (including fps) should be the same in
+  // the PS feedback receiver.
+  //
+  tx->display_detector_mode = DET_PEAK;
+  tx->display_average_time  = 120.0;
+  tx->display_average_mode  = AVG_LOGRECURSIVE;
+  //
+  // Modify these values from the props file
+  //
   tx_restore_state(tx);
   //
   // allocate buffers
   //
-  t_print("transmitter: allocate buffers: mic_input_buffer=%d iq_output_buffer=%d pixels=%d\n", tx->buffer_size,
-          tx->output_samples, tx->pixels);
   tx->mic_input_buffer = g_new(double, 2 * tx->buffer_size);
   tx->iq_output_buffer = g_new(double, 2 * tx->output_samples);
   tx->cw_sig_rf = g_new(double, tx->output_samples);
@@ -969,7 +942,8 @@ TRANSMITTER *tx_create_transmitter(int id, int width, int height) {
   tx->cw_ramp_audio = NULL;
   tx->cw_ramp_rf    = NULL;
   tx_set_ramps(tx);
-  t_print("create_transmitter: OpenChannel id=%d buffer_size=%d dsp_size=%d fft_size=%d sample_rate=%d dspRate=%d outputRate=%d\n",
+  t_print("%s: OpenChannel id=%d buffer_size=%d dsp_size=%d fft_size=%d sample_rate=%d dspRate=%d outputRate=%d\n",
+          __FUNCTION__,
           tx->id,
           tx->buffer_size,
           tx->dsp_size,
@@ -987,175 +961,54 @@ TRANSMITTER *tx_create_transmitter(int id, int width, int height) {
               0,                         // state (do not run yet)
               0.010, 0.025, 0.0, 0.010,  // DelayUp, SlewUp, DelayDown, SlewDown
               1);                        // Wait for data in fexchange0
-  TXASetNC(tx->id, tx->fft_size);
-  TXASetMP(tx->id, 0);  // Use "linear phase" for TX *always*
-  SetTXABandpassWindow(tx->id, 1);
-  SetTXABandpassRun(tx->id, 1);
-  SetTXAFMEmphPosition(tx->id, pre_emphasize);
-  SetTXACFIRRun(tx->id, SET(protocol == NEW_PROTOCOL)); // turned on if new protocol
+  //
+  // Some WDSP settings that are never changed.
+  // Most of these are the default anyway.
+  // The "pre" generator is not used in this program anyway
+  // ... and switch off "post" generator (this should not be necessary)
+  //
+  SetTXABandpassWindow(tx->id, 1);                      // 7-term Blackman-Harris
+  SetTXABandpassRun(tx->id, 1);                         // enable TX bandpass
+  SetTXACFIRRun(tx->id, SET(protocol == NEW_PROTOCOL)); // P2 firmware requires this
+  SetTXAAMSQRun(tx->id, 0);                             // disable microphone noise gate
+  SetTXAALCAttack(tx->id, 1);                           // ALC attac time-constant 1 msec
+  SetTXAALCDecay(tx->id, 10);                           // ALC decay time-constant 10 msec
+  SetTXAALCSt(tx->id, 1);                               // TX ALC on (never switch it off!)
+  SetTXAPreGenMode(tx->id, 0);                          // PreGen mode is "tone"
+  SetTXAPreGenToneMag(tx->id, 0.0);                     // PreGen tone amplitude
+  SetTXAPreGenToneFreq(tx->id, 0.0);                    // PreGen tone frequency
+  SetTXAPreGenRun(tx->id, 0);                           // disable "pre" generator
+  SetTXAPanelRun(tx->id, 1);                            // activate TX patch panel
+  SetTXAPanelSelect(tx->id, 2);                         // use Mic I sample
+  SetTXAPostGenRun(tx->id, 0);                          // Switch off "post" generator
+  //
+  // Now we have set up the transmitter, apply the
+  // parameters stored in tx
+  //
+  tx_set_bandpass(tx);
+  tx_set_deviation(tx);
   tx_set_equalizer(tx);
-  tx_set_ctcss(tx, tx->ctcss_enabled, tx->ctcss);
-  SetTXAAMSQRun(tx->id, 0);
-  SetTXAALCAttack(tx->id, 1);
-  SetTXAALCDecay(tx->id, 10);
-  SetTXAALCSt(tx->id, 1); // turn it on (always on)
-  SetTXAPreGenMode(tx->id, 0);
-  SetTXAPreGenToneMag(tx->id, 0.0);
-  SetTXAPreGenToneFreq(tx->id, 0.0);
-  SetTXAPreGenRun(tx->id, 0);
-  SetTXAPostGenMode(tx->id, 0);
-  SetTXAPostGenToneMag(tx->id, 0.2);
-  SetTXAPostGenTTMag(tx->id, 0.2, 0.2);
-  SetTXAPostGenToneFreq(tx->id, 0.0);
-  SetTXAPostGenRun(tx->id, 0);
-  SetTXAPanelGain1(tx->id, pow(10.0, tx->mic_gain * 0.05));
-  SetTXAPanelRun(tx->id, 1);
-  SetTXAFMDeviation(tx->id, (double)tx->deviation);
-  SetTXAAMCarrierLevel(tx->id, tx->am_carrier_level);
-  SetTXACompressorGain(tx->id, tx->compressor_level);
-  //
-  // The compressor is *always* used together with the
-  // CESSB overshoot control and the TX leveler
-  //
-  SetTXACompressorRun(tx->id, tx->compressor);
-  SetTXAosctrlRun(tx->id, tx->compressor);
-  SetTXALevelerAttack(tx->id, 1);
-  SetTXALevelerDecay(tx->id, 500);
-  SetTXALevelerTop(tx->id, 6.0);
-  SetTXALevelerSt(tx->id, tx->compressor);
+  tx_set_ctcss(tx);
+  tx_set_am_carrier_level(tx);
+  tx_set_ctcss(tx);
+  tx_set_fft_size(tx);
+  tx_set_pre_emphasize(tx);
+  tx_set_mic_gain(tx);
+  tx_set_compressor(tx);
   tx_set_mode(tx, vfo_get_tx_mode());
-  XCreateAnalyzer(tx->id, &rc, 262144, 1, 1, "");
-
-  if (rc != 0) {
-    t_print("XCreateAnalyzer id=%d failed: %d\n", tx->id, rc);
-  } else {
-    tx_init_analyzer(tx);
-  }
-
+  tx_create_analyzer(tx);
+  tx_set_detector(tx);
+  tx_set_average(tx);
   tx_create_visual(tx);
   return tx;
 }
 
-void tx_set_mode(TRANSMITTER* tx, int mode) {
-  if (tx != NULL) {
-    if (mode == modeDIGU || mode == modeDIGL) {
-      if (tx->drive > drive_digi_max + 0.5) {
-        set_drive(drive_digi_max);
-      }
-    }
-
-    SetTXAMode(tx->id, mode);
-    tx_set_filter(tx);
-  }
-}
-
-void tx_set_equalizer(TRANSMITTER *tx) {
-  int nfreq = tx->eq_tenband ? 10 : 4;
-  SetTXAEQProfile(tx->id, nfreq, tx->eq_freq, tx->eq_gain);
-  SetTXAEQRun(tx->id, tx->eq_enable);
-}
-
-void tx_set_filter(TRANSMITTER *tx) {
-  int txmode = vfo_get_tx_mode();
-  // load default values
-  int low  = tx_filter_low;
-  int high = tx_filter_high;  // 0 < low < high
-  int txvfo = vfo_get_tx_vfo();
-  int rxvfo = active_receiver->id;
-  tx->deviation = vfo[txvfo].deviation;
-
-  if (tx->use_rx_filter) {
-    //
-    // Use only 'compatible' parts of RX filter settings
-    // to change TX values (important for split operation)
-    //
-    int rxmode = vfo[rxvfo].mode;
-    FILTER *mode_filters = filters[rxmode];
-    const FILTER *filter = &mode_filters[vfo[rxvfo].filter];
-
-    switch (rxmode) {
-    case modeDSB:
-    case modeAM:
-    case modeSAM:
-    case modeSPEC:
-      high =  filter->high;
-      break;
-
-    case modeLSB:
-    case modeDIGL:
-      high = -filter->low;
-      low  = -filter->high;
-      break;
-
-    case modeUSB:
-    case modeDIGU:
-      high = filter->high;
-      low  = filter->low;
-      break;
-    }
-  }
-
-  switch (txmode) {
-  case modeCWL:
-  case modeCWU:
-    // Our CW signal is always at zero in IQ space, but note
-    // WDSP is by-passed anyway.
-    tx->filter_low  = -150;
-    tx->filter_high = 150;
-    break;
-
-  case modeDSB:
-  case modeAM:
-  case modeSAM:
-  case modeSPEC:
-    // disregard the "low" value and use (-high, high)
-    tx->filter_low = -high;
-    tx->filter_high = high;
-    break;
-
-  case modeLSB:
-  case modeDIGL:
-    // in IQ space, the filter edges are (-high, -low)
-    tx->filter_low = -high;
-    tx->filter_high = -low;
-    break;
-
-  case modeUSB:
-  case modeDIGU:
-    // in IQ space, the filter edges are (low, high)
-    tx->filter_low = low;
-    tx->filter_high = high;
-    break;
-
-  case modeFMN:
-
-    // calculate filter size from deviation,
-    // assuming that the highest AF frequency is 3000
-    if (tx->deviation == 2500) {
-      tx->filter_low = -5500; // Carson's rule: +/-(deviation + max_af_frequency)
-      tx->filter_high = 5500; // deviation=2500, max freq = 3000
-    } else {
-      tx->filter_low = -8000; // deviation=5000, max freq = 3000
-      tx->filter_high = 8000;
-    }
-
-    break;
-
-  case modeDRM:
-    tx->filter_low = 7000;
-    tx->filter_high = 17000;
-    break;
-  }
-
-  double fl = tx->filter_low;
-  double fh = tx->filter_high;
-  SetTXAFMDeviation(tx->id, (double)tx->deviation);
-  SetTXABandpassFreqs(tx->id, fl, fh);
-}
-
-void tx_set_pre_emphasize(const TRANSMITTER *tx, int state) {
-  SetTXAFMEmphPosition(tx->id, state);
-}
+//////////////////////////////////////////////////////////////////////////
+//
+// tx_add_mic_sample, tx_full_buffer,  tx_add_ps_iq_samples form the
+// "TX engine"
+//
+//////////////////////////////////////////////////////////////////////////
 
 static void tx_full_buffer(TRANSMITTER *tx) {
   long isample;
@@ -1670,10 +1523,8 @@ void tx_add_ps_iq_samples(const TRANSMITTER *tx, double i_sample_tx, double q_sa
   }
 }
 
-void tx_set_displaying(TRANSMITTER *tx, int state) {
-  tx->displaying = state;
-
-  if (state) {
+void tx_set_displaying(TRANSMITTER *tx) {
+  if (tx->displaying) {
     if (tx->update_timer_id > 0) {
       g_source_remove(tx->update_timer_id);
     }
@@ -1688,23 +1539,246 @@ void tx_set_displaying(TRANSMITTER *tx, int state) {
   }
 }
 
-//
-// When changing the TX display frame rate, the TX display update timer
-// has to be restarted, as well as the initializer
-//
-void tx_set_framerate(TRANSMITTER *tx, int fps) {
-  tx->fps = fps;
-  tx_init_analyzer(tx);
-  tx_set_displaying(tx, tx->displaying);
+void tx_set_filter(TRANSMITTER *tx) {
+  int txmode = vfo_get_tx_mode();
+  // load default values
+  int low  = tx_filter_low;
+  int high = tx_filter_high;  // 0 < low < high
+  int txvfo = vfo_get_tx_vfo();
+  int rxvfo = active_receiver->id;
+  tx->deviation = vfo[txvfo].deviation;
+
+  if (tx->use_rx_filter) {
+    //
+    // Use only 'compatible' parts of RX filter settings
+    // to change TX values (important for split operation)
+    //
+    int rxmode = vfo[rxvfo].mode;
+    FILTER *mode_filters = filters[rxmode];
+    const FILTER *filter = &mode_filters[vfo[rxvfo].filter];
+
+    switch (rxmode) {
+    case modeDSB:
+    case modeAM:
+    case modeSAM:
+    case modeSPEC:
+      high =  filter->high;
+      break;
+
+    case modeLSB:
+    case modeDIGL:
+      high = -filter->low;
+      low  = -filter->high;
+      break;
+
+    case modeUSB:
+    case modeDIGU:
+      high = filter->high;
+      low  = filter->low;
+      break;
+    }
+  }
+
+  switch (txmode) {
+  case modeCWL:
+  case modeCWU:
+    // Our CW signal is always at zero in IQ space, but note
+    // WDSP is by-passed anyway.
+    tx->filter_low  = -150;
+    tx->filter_high = 150;
+    break;
+
+  case modeDSB:
+  case modeAM:
+  case modeSAM:
+  case modeSPEC:
+    // disregard the "low" value and use (-high, high)
+    tx->filter_low = -high;
+    tx->filter_high = high;
+    break;
+
+  case modeLSB:
+  case modeDIGL:
+    // in IQ space, the filter edges are (-high, -low)
+    tx->filter_low = -high;
+    tx->filter_high = -low;
+    break;
+
+  case modeUSB:
+  case modeDIGU:
+    // in IQ space, the filter edges are (low, high)
+    tx->filter_low = low;
+    tx->filter_high = high;
+    break;
+
+  case modeFMN:
+
+    // calculate filter size from deviation,
+    // assuming that the highest AF frequency is 3000
+    if (tx->deviation == 2500) {
+      tx->filter_low = -5500; // Carson's rule: +/-(deviation + max_af_frequency)
+      tx->filter_high = 5500; // deviation=2500, max freq = 3000
+    } else {
+      tx->filter_low = -8000; // deviation=5000, max freq = 3000
+      tx->filter_high = 8000;
+    }
+
+    break;
+
+  case modeDRM:
+    tx->filter_low = 7000;
+    tx->filter_high = 17000;
+    break;
+  }
+
+  tx_set_bandpass(tx);
+  tx_set_deviation(tx);
 }
 
-void tx_set_ps(TRANSMITTER *tx, int state) {
+void tx_set_framerate(TRANSMITTER *tx) {
+  //
+  // When changing the TX display frame rate, the TX display update timer
+  // has to be restarted, as well as the initializer
+  //
+  tx_init_analyzer(tx);
+  tx_set_displaying(tx);
+}
+
+///////////////////////////////////////////////////////
+//
+// WDSP wrappers.
+// Calls to WDSP functions above this line should be
+// kept to a minimum, and in general a call to a WDSP
+// function should only occur *once* in the program,
+// at best in a wrapper.
+//
+// TODO: If the radio is remote, make them a no-op.
+//
+////////////////////////////////////////////////////////
+
+void tx_close(const TRANSMITTER *tx) {
+  CloseChannel(tx->id);
+}
+
+void tx_create_analyzer(const TRANSMITTER *tx) {
+  int rc;
+  XCreateAnalyzer(tx->id, &rc, 262144, 1, 1, NULL);
+
+  if (rc != 0) {
+    t_print("CreateAnalyzer failed for TXid=%d\n", tx->id);
+  } else {
+    tx_init_analyzer(tx);
+  }
+}
+
+double tx_get_alc(const TRANSMITTER *tx) {
+  double alc;
+
+  switch (tx->alcmode) {
+  case ALC_PEAK:
+  default:
+    alc = GetTXAMeter(tx->id, TXA_ALC_PK);
+    break;
+
+  case ALC_AVERAGE:
+    alc = GetTXAMeter(tx->id, TXA_ALC_AV);
+    break;
+
+  case ALC_GAIN:
+    alc = GetTXAMeter(tx->id, TXA_ALC_GAIN);
+    break;
+  }
+
+  return alc;
+}
+
+int tx_get_pixels(TRANSMITTER *tx) {
+  int rc;
+  GetPixels(tx->id, 0, tx->pixel_samples, &rc);
+  return rc;
+}
+
+void tx_init_analyzer(const TRANSMITTER *tx) {
+  int flp[] = {0};
+  const double keep_time = 0.1;
+  const int n_pixout = 1;
+  const int spur_elimination_ffts = 1;
+  const int data_type = 1;
+  const double kaiser_pi = 14.0;
+  const double fscLin = 0;
+  const double fscHin = 0;
+  const int stitches = 1;
+  const int calibration_data_set = 0;
+  const double span_min_freq = 0.0;
+  const double span_max_freq = 0.0;
+  const int clip = 0;
+  const int window_type = 5;
+  const int afft_size = 16384;
+  const int pixels = tx->pixels;
+  int overlap;
+  int max_w = afft_size + (int) min(keep_time * (double) tx->iq_output_rate,
+                                    keep_time * (double) afft_size * (double) tx->fps);
+  overlap = (int)max(0.0, ceil(afft_size - (double)tx->iq_output_rate / (double)tx->fps));
+  t_print("SetAnalyzer id=%d buffer_size=%d overlap=%d pixels=%d\n", tx->id, tx->output_samples, overlap, tx->pixels);
+  SetAnalyzer(tx->id,                // id of the TXA channel
+              n_pixout,              // 1 = "use same data for scope and waterfall"
+              spur_elimination_ffts, // 1 = "no spur elimination"
+              data_type,             // 1 = complex input data (I & Q)
+              flp,                   // vector with one elt for each LO frequency, 1 if high-side LO, 0 otherwise
+              afft_size,             // size of the fft, i.e., number of input samples
+              tx->output_samples,    // number of samples transferred for each OpenBuffer()/CloseBuffer()
+              window_type,           // 4 = Hamming
+              kaiser_pi,             // PiAlpha parameter for Kaiser window
+              overlap,               // number of samples each fft (other than the first) is to re-use from the previous
+              clip,                  // number of fft output bins to be clipped from EACH side of each sub-span
+              fscLin,                // number of bins to clip from low end of entire span
+              fscHin,                // number of bins to clip from high end of entire span
+              pixels,                // number of pixel values to return.  may be either <= or > number of bins
+              stitches,              // number of sub-spans to concatenate to form a complete span
+              calibration_data_set,  // identifier of which set of calibration data to use
+              span_min_freq,         // frequency at first pixel value8192
+              span_max_freq,         // frequency at last pixel value
+              max_w                  // max samples to hold in input ring buffers
+             );
+}
+
+void tx_off(const TRANSMITTER *tx) {
+  // switch TX OFF, wait until slew-down completed
+  SetChannelState(tx->id, 0, 1);
+}
+
+void tx_on(const TRANSMITTER *tx) {
+  // switch TX ON
+  SetChannelState(tx->id, 1, 0);
+}
+
+void tx_ps_getinfo(const TRANSMITTER *tx, int *info) {
+  GetPSInfo(tx->id, info);
+}
+
+double tx_ps_getmx(const TRANSMITTER *tx) {
+  double mx;
+  GetPSMaxTX(tx->id, &mx);
+  return mx;
+}
+
+double tx_ps_getpk(const TRANSMITTER *tx) {
+  double pk;
+  GetPSHWPeak(tx->id, &pk);
+  return pk;
+}
+
+void tx_ps_mox(const TRANSMITTER *tx, int state) {
+  SetPSMox(tx->id, state);
+}
+
+void tx_ps_onoff(TRANSMITTER *tx, int state) {
   //
   // Switch PureSignal on (state !=0) or off (state==0)
   //
   // The following rules must be taken into account:
   //
-  // a.) The SetPSControl RESET call only becomes effective
+  // a.) The PS RESET call only becomes effective
   //     if feedback samples continue to flow, otherwise
   //     there will be no state change in pscc
   //     (experimental observation)
@@ -1729,7 +1803,7 @@ void tx_set_ps(TRANSMITTER *tx, int state) {
   if (!state) {
     // see above. Ensure some feedback samples still flow into
     // pscc after resetting.
-    SetPSControl(tx->id, 1, 0, 0, 0);
+    tx_ps_reset(tx);
 
     if (radio_is_transmitting()) {
       usleep(100000);
@@ -1776,30 +1850,190 @@ void tx_set_ps(TRANSMITTER *tx, int state) {
     // if switching on: wait a while to get the feedback
     // streams flowing, then start PS engine
     usleep(100000);
-
-    if (tx->ps_oneshot) {
-      SetPSControl(tx->id, 0, 1, 0, 0);
-    } else {
-      SetPSControl(tx->id, 0, 0, 1, 0);
-    }
-
-    // Set PS 2.0 parameters
-    SetPSIntsAndSpi(transmitter->id, transmitter->ps_ints, transmitter->ps_spi);
-    SetPSStabilize(transmitter->id, transmitter->ps_stbl);
-    SetPSMapMode(transmitter->id, transmitter->ps_map);
-    SetPSPinMode(transmitter->id, transmitter->ps_pin);
-    SetPSPtol(transmitter->id, transmitter->ps_ptol);
-    SetPSMoxDelay(transmitter->id, transmitter->ps_moxdelay);
-    // Note that the TXDelay is internally stored in NanoSeconds
-    SetPSTXDelay(transmitter->id, 1E-9 * transmitter->ps_ampdelay);
-    SetPSLoopDelay(transmitter->id, transmitter->ps_loopdelay);
+    tx_ps_resume(tx);
+    tx_ps_setparams(tx);
   }
 
-  // update screen
   g_idle_add(ext_vfo_update, NULL);
 }
 
-void tx_set_singletone(TRANSMITTER *tx, int state, double freq) {
+void tx_ps_reset(const TRANSMITTER *tx) {
+  SetPSControl(tx->id, 1, 0, 0, 0);
+}
+
+void tx_ps_resume(const TRANSMITTER *tx) {
+  if (tx->ps_oneshot) {
+    SetPSControl(tx->id, 0, 1, 0, 0);
+  } else {
+    SetPSControl(tx->id, 0, 0, 1, 0);
+  }
+}
+
+void tx_ps_set_sample_rate(const TRANSMITTER *tx, int rate) {
+  SetPSFeedbackRate (tx->id, rate);
+}
+
+void tx_ps_setparams(const TRANSMITTER *tx) {
+  SetPSMapMode(tx->id, tx->ps_map);
+  SetPSPtol(tx->id, tx->ps_ptol ? 0.4 : 0.8);
+  SetPSIntsAndSpi(tx->id, tx->ps_ints, tx->ps_spi);
+  SetPSStabilize(tx->id, tx->ps_stbl);
+  SetPSMapMode(tx->id, tx->ps_map);
+  SetPSPinMode(tx->id, tx->ps_pin);
+  SetPSPtol(tx->id, tx->ps_ptol);
+  SetPSMoxDelay(tx->id, tx->ps_moxdelay);
+  // Note that the TXDelay is internally stored in NanoSeconds
+  SetPSTXDelay(tx->id, 1E-9 * tx->ps_ampdelay);
+  SetPSLoopDelay(tx->id, tx->ps_loopdelay);
+}
+
+void tx_ps_setpk(const TRANSMITTER *tx, double peak) {
+  SetPSHWPeak(tx->id, peak);
+}
+
+void tx_set_am_carrier_level(const TRANSMITTER *tx) {
+  SetTXAAMCarrierLevel(tx->id, tx->am_carrier_level);
+}
+
+void tx_set_average(const TRANSMITTER *tx) {
+  //
+  // avgmode refers to the _display_enum, while
+  // wdspmode reflects the internal encoding in WDSP
+  //
+  int wdspmode;
+  double t = 0.001 * tx->display_average_time;
+  double display_avb = exp(-1.0 / ((double)tx->fps * t));
+  int display_average = max(2, (int)fmin(60, (double)tx->fps * t));
+  SetDisplayAvBackmult(tx->id, 0, display_avb);
+  SetDisplayNumAverage(tx->id, 0, display_average);
+
+  switch (tx->display_average_mode) {
+  case AVG_NONE:
+    wdspmode = AVERAGE_MODE_NONE;
+    break;
+
+  case AVG_RECURSIVE:
+    wdspmode = AVERAGE_MODE_RECURSIVE;
+    break;
+
+  case AVG_LOGRECURSIVE:
+  default:
+    wdspmode = AVERAGE_MODE_LOG_RECURSIVE;
+    break;
+
+  case AVG_TIMEWINDOW:
+    wdspmode = AVERAGE_MODE_TIME_WINDOW;
+    break;
+  }
+
+  //
+  // I observed artifacts when changing the mode from "Log Recursive"
+  // to "Time Window", so I generally switch to NONE first, and then
+  // to the target averaging mode
+  //
+  SetDisplayAverageMode(tx->id, 0, AVERAGE_MODE_NONE);
+  usleep(50000);
+  SetDisplayAverageMode(tx->id, 0, wdspmode);
+}
+
+void tx_set_bandpass(const TRANSMITTER *tx) {
+  SetTXABandpassFreqs(tx->id, (double) tx->filter_low, (double) tx->filter_high);
+}
+
+void tx_set_compressor(const TRANSMITTER *tx) {
+  //
+  // The CESSB overshoot filter (on/off) automatically follows
+  // the Compressor on/off setting. This we can do because we
+  // do not allow low-latency filters in the TX.
+  //
+  // The compressor only works well if the mic level peaks at
+  // 0 dB, therefore, the auto-leveler is also automatically
+  // activated when en/dis-abling the compressor(de-)
+  //
+  SetTXACompressorRun(tx->id, tx->compressor);
+  SetTXACompressorGain(tx->id, tx->compressor_level);
+  SetTXAosctrlRun(tx->id, tx->compressor);
+  SetTXALevelerSt(tx->id, tx->compressor);
+  SetTXALevelerAttack(tx->id, 1);
+  SetTXALevelerDecay(tx->id, 500);
+  SetTXALevelerTop(tx->id, 6.0);
+}
+
+void tx_set_ctcss(const TRANSMITTER *tx) {
+  //
+  // Apply CTCSS settings stored in tx
+  //
+  SetTXACTCSSFreq(tx->id, ctcss_frequencies[tx->ctcss]);
+  SetTXACTCSSRun(tx->id, tx->ctcss_enabled);
+}
+
+void tx_set_detector(const TRANSMITTER *tx) {
+  //
+  // Apply display detector mode stored in tx
+  //
+  int wdspmode;
+
+  switch (tx->display_detector_mode) {
+  case DET_PEAK:
+  default:
+    wdspmode = DETECTOR_MODE_PEAK;
+    break;
+
+  case DET_AVERAGE:
+    wdspmode = DETECTOR_MODE_AVERAGE;
+    break;
+
+  case DET_ROSENFELL:
+    wdspmode = DETECTOR_MODE_ROSENFELL;
+    break;
+
+  case DET_SAMPLEHOLD:
+    wdspmode = DETECTOR_MODE_SAMPLE;
+    break;
+  }
+
+  SetDisplayDetectorMode(tx->id, 0, wdspmode);
+}
+
+void tx_set_deviation(const TRANSMITTER *tx) {
+  SetTXAFMDeviation(tx->id, (double)tx->deviation);
+}
+
+void tx_set_equalizer(TRANSMITTER *tx) {
+  int nfreq = tx->eq_tenband ? 10 : 4;
+  SetTXAEQProfile(tx->id, nfreq, tx->eq_freq, tx->eq_gain);
+  SetTXAEQRun(tx->id, tx->eq_enable);
+}
+
+void tx_set_fft_size(const TRANSMITTER *tx) {
+  TXASetNC(tx->id, tx->fft_size);
+}
+
+void tx_set_mic_gain(const TRANSMITTER *tx) {
+  SetTXAPanelGain1(tx->id, pow(10.0, tx->mic_gain * 0.05));
+}
+
+void tx_set_mode(TRANSMITTER* tx, int mode) {
+  if (tx != NULL) {
+    if (mode == modeDIGU || mode == modeDIGL) {
+      if (tx->drive > drive_digi_max + 0.5) {
+        set_drive(drive_digi_max);
+      }
+    }
+
+    SetTXAMode(tx->id, mode);
+    tx_set_filter(tx);
+  }
+}
+
+void tx_set_pre_emphasize(const TRANSMITTER *tx) {
+  SetTXAFMEmphPosition(tx->id, tx->pre_emphasize);
+}
+
+void tx_set_singletone(const TRANSMITTER *tx, int state, double freq) {
+  //
+  // Produce the TX signal for TUNEing
+  //
   if (state) {
     SetTXAPostGenToneFreq(tx->id, freq);
     SetTXAPostGenToneMag(tx->id, 0.99999);
@@ -1824,20 +2058,19 @@ void tx_set_singletone(TRANSMITTER *tx, int state, double freq) {
   }
 }
 
-
 void tx_set_twotone(TRANSMITTER *tx, int state) {
-  static guint timer = 0;
-
-  if (state == tx->twotone) { return; }
-
-  tx->twotone = state;
-
   //
   // During a two-tone experiment, call a function periodically
   // (every 100 msec) that calibrates the TX attenuation value
   // if PureSignal is running with AutoCalibration. The timer will
   // automatically be removed
   //
+  static guint timer = 0;
+
+  if (state == tx->twotone) { return; }
+
+  tx->twotone = state;
+
   if (state) {
     // set frequencies and levels
     switch (vfo_get_tx_mode()) {
@@ -1880,37 +2113,3 @@ void tx_set_twotone(TRANSMITTER *tx, int state) {
   g_idle_add(ext_mox_update, GINT_TO_POINTER(state));
 }
 
-void tx_set_ps_sample_rate(const TRANSMITTER *tx, int rate) {
-  SetPSFeedbackRate (tx->id, rate);
-}
-
-void tx_set_ramps(TRANSMITTER *tx) {
-  //t_print("%s: new width=%d\n", __FUNCTION__, cw_ramp_width);
-  //
-  // Calculate a new CW ramp
-  //
-  g_mutex_lock(&tx->cw_ramp_mutex);
-
-  //
-  // For the side tone, a RaisedCosine profile with a width of 5 msec
-  // seems to be standard.
-  //
-  if (tx->cw_ramp_audio) { g_free(tx->cw_ramp_audio); }
-
-  tx->cw_ramp_audio_ptr = 0;
-  tx->cw_ramp_audio_len = 240;
-  tx->cw_ramp_audio = g_new(double, tx->cw_ramp_audio_len + 1);
-  init_audio_ramp(tx->cw_ramp_audio, tx->cw_ramp_audio_len);
-
-  //
-  // For the RF pulse envelope, use a BlackmanHarris ramp with a
-  // user-specified width
-  //
-  if (tx->cw_ramp_rf) { g_free(tx->cw_ramp_rf); }
-
-  tx->cw_ramp_rf_ptr = 0;
-  tx->cw_ramp_rf_len = 48 * tx->ratio * cw_ramp_width;
-  tx->cw_ramp_rf = g_new(double, tx->cw_ramp_rf_len + 1);
-  init_dl1ycf_ramp(tx->cw_ramp_rf, tx->cw_ramp_rf_len);
-  g_mutex_unlock(&tx->cw_ramp_mutex);
-}

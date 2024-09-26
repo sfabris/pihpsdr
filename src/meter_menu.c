@@ -22,8 +22,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <wdsp.h>
-
 #include "new_menu.h"
 #include "receiver.h"
 #include "meter_menu.h"
@@ -53,11 +51,11 @@ static void smeter_select_cb (GtkToggleButton *widget, gpointer        data) {
 
   switch (val) {
   case 0:
-    smeter = RXA_S_PK;
+    active_receiver->smetermode = SMETER_PEAK;
     break;
 
   case 1:
-    smeter = RXA_S_AV;
+    active_receiver->smetermode = SMETER_AVERAGE;
     break;
   }
 }
@@ -71,15 +69,15 @@ static void alc_select_cb(GtkToggleButton *widget, gpointer data) {
 
   switch (val) {
   case 0:
-    alc = TXA_ALC_PK;
+    transmitter->alcmode = ALC_PEAK;
     break;
 
   case 1:
-    alc = TXA_ALC_AV;
+    transmitter->alcmode = ALC_AVERAGE;
     break;
 
   case 2:
-    alc = TXA_ALC_GAIN;
+    transmitter->alcmode = ALC_GAIN;
     break;
   }
 }
@@ -121,12 +119,12 @@ void meter_menu (GtkWidget *parent) {
   gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(w), NULL, "Peak");
   gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(w), NULL, "Average");
 
-  switch (smeter) {
-  case RXA_S_PK:
+  switch (active_receiver->smetermode) {
+  case SMETER_PEAK:
     gtk_combo_box_set_active(GTK_COMBO_BOX(w), 0);
     break;
 
-  case RXA_S_AV:
+  case SMETER_AVERAGE:
     gtk_combo_box_set_active(GTK_COMBO_BOX(w), 1);
     break;
   }
@@ -144,16 +142,16 @@ void meter_menu (GtkWidget *parent) {
     gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(w), NULL, "Average");
     gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(w), NULL, "Gain");
 
-    switch (alc) {
-    case TXA_ALC_PK:
+    switch (transmitter->alcmode) {
+    case ALC_PEAK:
       gtk_combo_box_set_active(GTK_COMBO_BOX(w), 0);
       break;
 
-    case TXA_ALC_AV:
+    case ALC_AVERAGE:
       gtk_combo_box_set_active(GTK_COMBO_BOX(w), 1);
       break;
 
-    case TXA_ALC_GAIN:
+    case ALC_GAIN:
       gtk_combo_box_set_active(GTK_COMBO_BOX(w), 2);
       break;
     }
