@@ -48,7 +48,7 @@ static gulong freq_signal_id[11];
 static GtkWidget *enable_b;
 static GtkWidget *tenband_b;
 
-static int eqid=0;        // 0: RX1, 1: RX2, 2: TX
+static int eqid = 0;      // 0: RX1, 1: RX2, 2: TX
 static int have_tenband;  // 0: four-band on display, 1: ten-band on display
 
 static void cleanup() {
@@ -68,7 +68,6 @@ static gboolean close_cb () {
 }
 
 void update_eq() {
-
   if (radio_is_remote) {
     //
     // insert here any function to inform the client of equalizer setting
@@ -163,19 +162,21 @@ static void enable_cb (GtkWidget *widget, gpointer data) {
 static void freq_changed_cb (GtkWidget *widget, gpointer data) {
   int i = GPOINTER_TO_INT(data);
   double val = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
-
-  double valmin = 10.0*(i+4);
-  double valmax = 15900.0 + 10.0*i;
+  double valmin = 10.0 * (i + 4);
+  double valmax = 15900.0 + 10.0 * i;
 
   if (val > valmax) { val = valmax; }
+
   if (val < valmin) { val = valmin; }
+
   g_signal_handler_block(G_OBJECT(freqspin[i]), freq_signal_id[i]);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(freqspin[i]), val);
   g_signal_handler_unblock(G_OBJECT(freqspin[i]), freq_signal_id[i]);
 
   for (int j = i - 1; j > 0; j--) {
-    double x1 = gtk_spin_button_get_value(GTK_SPIN_BUTTON(freqspin[j+1]));
+    double x1 = gtk_spin_button_get_value(GTK_SPIN_BUTTON(freqspin[j + 1]));
     double x2 = gtk_spin_button_get_value(GTK_SPIN_BUTTON(freqspin[j]));
+
     if (x2 >= x1) {
       g_signal_handler_block(G_OBJECT(freqspin[j]), freq_signal_id[j]);
       gtk_spin_button_set_value(GTK_SPIN_BUTTON(freqspin[j]), x1 - 10.0);
@@ -184,8 +185,9 @@ static void freq_changed_cb (GtkWidget *widget, gpointer data) {
   }
 
   for (int j = i + 1; j < 11; j++) {
-    double x1 = gtk_spin_button_get_value(GTK_SPIN_BUTTON(freqspin[j-1]));
+    double x1 = gtk_spin_button_get_value(GTK_SPIN_BUTTON(freqspin[j - 1]));
     double x2 = gtk_spin_button_get_value(GTK_SPIN_BUTTON(freqspin[j]));
+
     if (x1 >= x2) {
       g_signal_handler_block(G_OBJECT(freqspin[j]), freq_signal_id[j]);
       gtk_spin_button_set_value(GTK_SPIN_BUTTON(freqspin[j]), x1 + 10.0);
@@ -198,8 +200,10 @@ static void freq_changed_cb (GtkWidget *widget, gpointer data) {
   case 1:
     if (eqid < receivers) {
       int m = vfo[eqid].mode;
+
       for (int j = 1; j < 11; j++) {
         receiver[eqid]->eq_freq[j] = gtk_spin_button_get_value(GTK_SPIN_BUTTON(freqspin[j]));
+
         if (eqid == 0) {
           mode_settings[m].rx_eq_freq[j] = receiver[eqid]->eq_freq[j];
         }
@@ -211,6 +215,7 @@ static void freq_changed_cb (GtkWidget *widget, gpointer data) {
   case 2:
     if (can_transmit) {
       int m = vfo[vfo_get_tx_vfo()].mode;
+
       for (int j = 1; j < 11; j++) {
         transmitter->eq_freq[j] = gtk_spin_button_get_value(GTK_SPIN_BUTTON(freqspin[j]));
         mode_settings[m].tx_eq_freq[j] = transmitter->eq_freq[j];
@@ -284,7 +289,6 @@ static void eqid_changed_cb(GtkWidget *widget, gpointer data) {
 
     have_tenband = receiver[eqid]->eq_tenband;
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (enable_b), receiver[eqid]->eq_enable);
-
     break;
 
   case 2:
@@ -300,7 +304,6 @@ static void eqid_changed_cb(GtkWidget *widget, gpointer data) {
 
     have_tenband = transmitter->eq_tenband;
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (enable_b), transmitter->eq_enable);
-
     break;
   }
 
@@ -324,7 +327,6 @@ void equalizer_menu(GtkWidget *parent) {
   // Start the menu with the "old" eqid, but if it refers to RX2 and
   // this one is no longer running, set it to RX1
   //
-
   if ((eqid == 1 && receivers == 1) || (eqid == 2 && !can_transmit)) {
     eqid = 0;
   }
@@ -411,32 +413,38 @@ void equalizer_menu(GtkWidget *parent) {
     g_signal_connect(enable_b, "toggled", G_CALLBACK(enable_cb), GINT_TO_POINTER(0));
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(tenband_b), receiver[eqid]->eq_tenband);
     g_signal_connect(tenband_b, "toggled", G_CALLBACK(tenband_cb), GINT_TO_POINTER(0));
-    for (int i = 0; i< 11; i++) {
+
+    for (int i = 0; i < 11; i++) {
       if (i > 0) {
         gtk_spin_button_set_value(GTK_SPIN_BUTTON(freqspin[i]), receiver[eqid]->eq_freq[i]);
         freq_signal_id[i] = g_signal_connect(freqspin[i], "value-changed", G_CALLBACK(freq_changed_cb), GINT_TO_POINTER(i));
       }
+
       gtk_range_set_value(GTK_RANGE(scale[i]), receiver[eqid]->eq_gain[i]);
       g_signal_connect(scale[i], "value-changed", G_CALLBACK(gain_changed_cb), GINT_TO_POINTER(i));
     }
+
     break;
+
   case 2:
     have_tenband = transmitter->eq_tenband;
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (enable_b), transmitter->eq_enable);
     g_signal_connect(enable_b, "toggled", G_CALLBACK(enable_cb), GINT_TO_POINTER(0));
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(tenband_b), transmitter->eq_tenband);
     g_signal_connect(tenband_b, "toggled", G_CALLBACK(tenband_cb), GINT_TO_POINTER(0));
-    for (int i = 0; i< 11; i++) {
+
+    for (int i = 0; i < 11; i++) {
       if (i > 0) {
         gtk_spin_button_set_value(GTK_SPIN_BUTTON(freqspin[i]), transmitter->eq_freq[i]);
         freq_signal_id[i] = g_signal_connect(freqspin[i], "value-changed", G_CALLBACK(freq_changed_cb), GINT_TO_POINTER(i));
       }
+
       gtk_range_set_value(GTK_RANGE(scale[i]), transmitter->eq_gain[i]);
       g_signal_connect(scale[i], "value-changed", G_CALLBACK(gain_changed_cb), GINT_TO_POINTER(i));
     }
+
     break;
   }
-
 
   gtk_container_add(GTK_CONTAINER(content), grid);
   sub_menu = dialog;

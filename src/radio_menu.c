@@ -166,9 +166,9 @@ void setDuplex() {
 }
 
 static void duplex_cb(GtkWidget *widget, gpointer data) {
-   //
-   // While transmitting, ignore the click
-   //
+  //
+  // While transmitting, ignore the click
+  //
   if (radio_is_transmitting()) {
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), duplex);
     return;

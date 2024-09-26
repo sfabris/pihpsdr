@@ -994,10 +994,10 @@ void gpioRestoreState() {
   // If not compiled for GPIO, we can only have the G2Mk2 or  none
   //
   if (controller != G2_V2) {
-     controller = NO_CONTROLLER;
+    controller = NO_CONTROLLER;
   }
-#endif
 
+#endif
   gpio_set_defaults(controller);
 
   for (int i = 0; i < MAX_ENCODERS; i++) {

@@ -450,7 +450,6 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
 }
 
 void vfo_band_changed(int id, int b) {
-
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
     send_band(client_socket, id, b);
@@ -579,7 +578,6 @@ void vfo_mode_changed(int m) {
 }
 
 void vfo_id_mode_changed(int id, int m) {
-
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
     send_mode(client_socket, id, m);
@@ -629,7 +627,6 @@ void vfo_filter_changed(int f) {
 }
 
 void vfo_id_filter_changed(int id, int f) {
-
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
     send_filter(client_socket, id, f);
@@ -787,7 +784,6 @@ void vfo_step(int steps) {
 }
 
 void vfo_id_step(int id, int steps) {
-
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
     update_vfo_step(id, steps);
@@ -1007,7 +1003,6 @@ void vfo_move_to(long long hz) {
 }
 
 void vfo_id_move_to(int id, long long hz) {
-
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
     send_vfo_move_to(client_socket, id, hz);

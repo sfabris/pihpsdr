@@ -513,7 +513,7 @@ void new_protocol_init() {
 
     if (data_socket < 0) {
       t_perror("Could not create data socket:");
-      g_idle_add(fatal_error,"P2: could not create data socket");
+      g_idle_add(fatal_error, "P2: could not create data socket");
     }
 
     int optval = 1;
@@ -585,7 +585,7 @@ void new_protocol_init() {
     if (bind(data_socket, (struct sockaddr * )&radio->info.network.interface_address,
              radio->info.network.interface_length) < 0) {
       t_perror("bind socket failed for data_socket:");
-      g_idle_add(fatal_error,"Bind failed for data socket");
+      g_idle_add(fatal_error, "Bind failed for data socket");
     }
 
     t_print("new_protocol_init: data_socket %d bound to interface %s:%d\n", data_socket,
@@ -674,7 +674,7 @@ static void new_protocol_general() {
   } else {
     if ((rc = sendto(data_socket, general_buffer, sizeof(general_buffer), 0, (struct sockaddr * )&base_addr,
                      base_addr_length)) < 0) {
-      g_idle_add(fatal_error,"GP send failed (Network down?)");
+      g_idle_add(fatal_error, "GP send failed (Network down?)");
       P2running = 0;
     }
 
@@ -855,6 +855,7 @@ static void new_protocol_high_priority() {
   }
 
   high_priority_buffer_to_radio[345] = power & 0xFF;
+
   //
   // RigCtl CAT port
   //
@@ -1376,7 +1377,7 @@ static void new_protocol_high_priority() {
 
     if ((rc = sendto(data_socket, high_priority_buffer_to_radio, sizeof(high_priority_buffer_to_radio), 0,
                      (struct sockaddr * )&high_priority_addr, high_priority_addr_length)) < 0) {
-      g_idle_add(fatal_error,"HP send failed (Network down?)");
+      g_idle_add(fatal_error, "HP send failed (Network down?)");
       P2running = 0;
     }
 
@@ -1510,7 +1511,7 @@ static void new_protocol_transmit_specific() {
 
     if ((rc = sendto(data_socket, transmit_specific_buffer, sizeof(transmit_specific_buffer), 0,
                      (struct sockaddr * )&transmitter_addr, transmitter_addr_length)) < 0) {
-      g_idle_add(fatal_error,"TxSpec send failed (Network down?)");
+      g_idle_add(fatal_error, "TxSpec send failed (Network down?)");
       P2running = 0;
     }
 
@@ -1620,7 +1621,7 @@ static void new_protocol_receive_specific() {
 
     if ((rc = sendto(data_socket, receive_specific_buffer, sizeof(receive_specific_buffer), 0,
                      (struct sockaddr * )&receiver_addr, receiver_addr_length)) < 0) {
-      g_idle_add(fatal_error,"RxSpec send failed (Network down?)");
+      g_idle_add(fatal_error, "RxSpec send failed (Network down?)");
       P2running = 0;
     }
 
@@ -1850,7 +1851,7 @@ static gpointer new_protocol_rxaudio_thread(gpointer data) {
       int rc = sendto(data_socket, audiobuffer, sizeof(audiobuffer), 0, (struct sockaddr*)&audio_addr, audio_addr_length);
 
       if (rc < 0) {
-        g_idle_add(fatal_error,"Audio send failed (Network down?)");
+        g_idle_add(fatal_error, "Audio send failed (Network down?)");
         P2running = 0;
       }
 
@@ -1943,7 +1944,7 @@ static gpointer new_protocol_txiq_thread(gpointer data) {
       FIFO += 240.0;  // number of samples in THIS packet
 
       if (sendto(data_socket, iqbuffer, sizeof(iqbuffer), 0, (struct sockaddr * )&iq_addr, iq_addr_length) < 0) {
-        g_idle_add(fatal_error,"TX IQ send failed (Network down?)");
+        g_idle_add(fatal_error, "TX IQ send failed (Network down?)");
         P2running = 0;
       }
     }
@@ -1984,7 +1985,7 @@ static gpointer new_protocol_thread(gpointer data) {
 
     if (bytesread < 0) {
       t_perror("recvfrom socket failed for new_protocol_thread:");
-      g_idle_add(fatal_error,"P2 receive (Network problem?)");
+      g_idle_add(fatal_error, "P2 receive (Network problem?)");
       P2running = 0;
       break;
     }

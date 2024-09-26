@@ -857,7 +857,6 @@ static void rx_init_analyzer(const RECEIVER *rx) {
 // re-calculating the averaging.
 //
 void rx_set_framerate(RECEIVER *rx, int fps) {
-
   if (radio_is_remote) {
     return;
   }
@@ -1516,7 +1515,7 @@ static void rx_process_buffer(RECEIVER *rx) {
         // when using AGC, the samples of strong s9 signals are about 0.8
         //
         double scale = 0.6 * pow(10.0, -0.05 * rx->volume);
-        capture_data[capture_record_pointer++] = scale*(left_sample + right_sample);
+        capture_data[capture_record_pointer++] = scale * (left_sample + right_sample);
       } else {
         // switching the state to RECORD_DONE takes care that the
         // CAPTURE switch is "pressed" only once
@@ -1662,7 +1661,6 @@ void rx_update_zoom(RECEIVER *rx) {
   }
 
   if (!radio_is_remote) {
-
     if (rx->pixel_samples != NULL) {
       g_free(rx->pixel_samples);
     }

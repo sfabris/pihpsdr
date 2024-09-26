@@ -381,7 +381,6 @@ static void afgain_value_changed_cb(GtkWidget *widget, gpointer data) {
     send_volume(client_socket, active_receiver->id, active_receiver->volume);
 #endif
   } else {
-
     if (active_receiver->volume < -39.5) {
       amplitude = 0.0;
     } else {

@@ -472,7 +472,7 @@ int process_action(void *data) {
       TOGGLE(active_receiver->anf);
 
       if (id == 0) {
-          mode_settings[vfo[id].mode].anf = active_receiver->anf;
+        mode_settings[vfo[id].mode].anf = active_receiver->anf;
       }
 
       update_noise();
@@ -979,7 +979,6 @@ int process_action(void *data) {
 
   case LOCK:
     if (a->mode == PRESSED) {
-
       if (radio_is_remote) {
 #ifdef CLIENT_SERVER
         send_lock(client_socket, NOT(locked));
@@ -1732,7 +1731,7 @@ int process_action(void *data) {
 
   case XIT_MINUS:
     if (a->mode == PRESSED) {
-      vfo_xit_incr(-10*rit_increment);
+      vfo_xit_incr(-10 * rit_increment);
 
       if (repeat_timer == 0) {
         repeat_action = *a;
@@ -1747,7 +1746,7 @@ int process_action(void *data) {
 
   case XIT_PLUS:
     if (a->mode == PRESSED) {
-      vfo_xit_incr(10*rit_increment);
+      vfo_xit_incr(10 * rit_increment);
 
       if (repeat_timer == 0) {
         repeat_action = *a;

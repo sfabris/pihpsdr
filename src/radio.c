@@ -787,6 +787,7 @@ static void radio_create_visual() {
       receiver[i] = rx_create_receiver(CHANNEL_RX0 + i, my_width, my_width, rx_height / RECEIVERS);
       rx_set_squelch(receiver[i]);
     }
+
     receiver[i]->x = 0;
     receiver[i]->y = y;
     // Upon startup, if RIT or CTUN is active, tell WDSP.
@@ -910,7 +911,6 @@ static void radio_create_visual() {
   }
 
   if (!radio_is_remote) {
-
     switch (protocol) {
     case ORIGINAL_PROTOCOL:
       old_protocol_init(receiver[0]->sample_rate);
@@ -1287,6 +1287,7 @@ void radio_start_radio() {
                radio->info.network.mac_address[4],
                radio->info.network.mac_address[5]);
     }
+
     break;
   }
 
@@ -1603,7 +1604,6 @@ void radio_change_receivers(int r) {
     if (protocol == ORIGINAL_PROTOCOL) {
       old_protocol_run();
     }
-
   }
 }
 
@@ -2228,7 +2228,6 @@ void radio_set_drive(double value) {
 }
 
 void radio_set_satmode(int mode) {
-
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
     send_sat(client_socket, mode);

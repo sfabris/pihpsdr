@@ -1730,17 +1730,20 @@ void tx_set_ps(TRANSMITTER *tx, int state) {
     // see above. Ensure some feedback samples still flow into
     // pscc after resetting.
     SetPSControl(tx->id, 1, 0, 0, 0);
+
     if (radio_is_transmitting()) {
-     usleep(100000);
+      usleep(100000);
     } else {
       RECEIVER *rx_feedback = receiver[PS_RX_FEEDBACK];
+
       if (rx_feedback != 0) {
-        memset(rx_feedback->iq_input_buffer, 0, rx_feedback->buffer_size*sizeof(double));
+        memset(rx_feedback->iq_input_buffer, 0, rx_feedback->buffer_size * sizeof(double));
+
         //
         // In principle we could call pscc and GetPSINfo and repeat this until
         // info[15] becomes zero (LRESET)
         //
-        for (int i=0; i<7; i++) {
+        for (int i = 0; i < 7; i++) {
           pscc(tx->id, rx_feedback->buffer_size, rx_feedback->iq_input_buffer, rx_feedback->iq_input_buffer);
         }
       }

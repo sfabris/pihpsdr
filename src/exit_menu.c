@@ -60,6 +60,7 @@ void stop_program() {
 #endif
     }
   }
+
   radio_save_state();
   t_print("%s: radio state saved\n", __FUNCTION__);
 }

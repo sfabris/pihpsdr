@@ -30,7 +30,6 @@ PROPERTY* properties = NULL;
 static double version = 0.0;
 
 void clearProperties() {
-
   if (properties != NULL) {
     // free all the properties
     PROPERTY *next;
@@ -78,6 +77,7 @@ void loadProperties(const char* filename) {
              radio->info.network.mac_address[5]);
     f = fopen(oldstyle_path, "r");
   }
+
   //
   /////////////////////////////////////////////////////////////////////////////////////////
 

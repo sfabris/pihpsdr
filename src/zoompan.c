@@ -142,7 +142,7 @@ void remote_set_zoom(int rx, double value) {
 static void pan_value_changed_cb(GtkWidget *widget, gpointer data) {
   //t_print("pan_value_changed_cb\n");
   g_mutex_lock(&pan_zoom_mutex);
-  int pan = (int)(gtk_range_get_value(GTK_RANGE(pan_scale))+0.5);
+  int pan = (int)(gtk_range_get_value(GTK_RANGE(pan_scale)) + 0.5);
 
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER

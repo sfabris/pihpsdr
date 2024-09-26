@@ -271,7 +271,7 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
       }
 
       for (i = 20; i <= 60; i += 20) {
-        angle = bydb*((double)i + 54.0) + min_angle;
+        angle = bydb * ((double)i + 54.0) + min_angle;
         radians = angle * M_PI / 180.0;
         cairo_arc(cr, cx, cx, radius + 4, radians, radians);
         cairo_get_current_point(cr, &x, &y);

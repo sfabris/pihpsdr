@@ -533,17 +533,19 @@ int fatal_error(void *data) {
   }
 
   quit = 1;
+
   if (top_window) {
     GtkDialogFlags flags = GTK_DIALOG_DESTROY_WITH_PARENT;
     GtkWidget *dialog = gtk_message_dialog_new_with_markup (GTK_WINDOW(top_window),
-          flags,
-          GTK_MESSAGE_ERROR,
-          GTK_BUTTONS_CLOSE,
-          "<span color='red' size='x-large' weight='bold'>piHPSDR termination due to fatal error:</span>"
-          "\n\n<span size='x-large'>   %s</span>\n\n",
-          msg);
+                        flags,
+                        GTK_MESSAGE_ERROR,
+                        GTK_BUTTONS_CLOSE,
+                        "<span color='red' size='x-large' weight='bold'>piHPSDR termination due to fatal error:</span>"
+                        "\n\n<span size='x-large'>   %s</span>\n\n",
+                        msg);
     gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
   }
+
   exit(1);
 }
