@@ -1050,7 +1050,7 @@ void tx_set_mode(TRANSMITTER* tx, int mode) {
 }
 
 void tx_set_equalizer(TRANSMITTER *tx) {
-  int numchan = tx->eq_tenband ? 11 : 5;
+  int nfreq = tx->eq_tenband ? 10 : 4;
   SetTXAEQProfile(tx->id, numchan, tx->eq_freq, tx->eq_gain);
   SetTXAEQRun(tx->id, tx->eq_enable);
 }

@@ -651,13 +651,9 @@ void rx_calculate_display_average(const RECEIVER *rx) {
 }
 
 void rx_set_equalizer(RECEIVER *rx) {
-  int numchan = rx->eq_tenband ? 11 : 5;
-  SetRXAEQProfile(rx->id, numchan, rx->eq_freq, rx->eq_gain);
+  int nfreq = rx->eq_tenband ? 10 : 4;
+  SetRXAEQProfile(rx->id, nfreq, rx->eq_freq, rx->eq_gain);
   SetRXAEQRun(rx->id, rx->eq_enable);
-  //t_print("RX EQ id=%d enable=%d\n", rx->id, rx->eq_enable);
-  //for (int i = 0; i < numchan; i++) {
-  //  t_print("RX EQ id=%d chan=%d freq=%f gain=%f\n", rx->id, i, rx->eq_freq[i], rx->eq_gain[i]);
-  //}
 }
 
 void rx_set_mode(const RECEIVER *rx, int m) {
