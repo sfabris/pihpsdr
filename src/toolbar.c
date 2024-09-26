@@ -41,9 +41,6 @@
 #include "property.h"
 #include "new_menu.h"
 #include "ext.h"
-#ifdef CLIENT_SERVER
-  #include "client_server.h"
-#endif
 #include "message.h"
 
 int function = 0;

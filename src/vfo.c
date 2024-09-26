@@ -450,14 +450,14 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
 }
 
 void vfo_band_changed(int id, int b) {
-#ifdef CLIENT_SERVER
 
   if (radio_is_remote) {
+#ifdef CLIENT_SERVER
     send_band(client_socket, id, b);
+#endif
     return;
   }
 
-#endif
   const BAND *band;
   BANDSTACK *bandstack;
   int   oldmode = vfo[id].mode;
@@ -579,14 +579,14 @@ void vfo_mode_changed(int m) {
 }
 
 void vfo_id_mode_changed(int id, int m) {
-#ifdef CLIENT_SERVER
 
   if (radio_is_remote) {
+#ifdef CLIENT_SERVER
     send_mode(client_socket, id, m);
+#endif
     return;
   }
 
-#endif
   vfo[id].mode = m;
 
   if (id < receivers) {
@@ -629,14 +629,13 @@ void vfo_filter_changed(int f) {
 }
 
 void vfo_id_filter_changed(int id, int f) {
-#ifdef CLIENT_SERVER
 
   if (radio_is_remote) {
+#ifdef CLIENT_SERVER
     send_filter(client_socket, id, f);
+#endif
     return;
   }
-
-#endif
 
   // store changed filter in the mode settings
   if (id == 0) {
@@ -788,14 +787,13 @@ void vfo_step(int steps) {
 }
 
 void vfo_id_step(int id, int steps) {
-#ifdef CLIENT_SERVER
 
   if (radio_is_remote) {
+#ifdef CLIENT_SERVER
     update_vfo_step(id, steps);
+#endif
     return;
   }
-
-#endif
 
   if (!locked) {
     long long delta;
@@ -897,15 +895,14 @@ void vfo_id_step(int id, int steps) {
 //
 void vfo_id_move(int id, long long hz, int round) {
   long long delta;
-#ifdef CLIENT_SERVER
 
   if (radio_is_remote) {
+#ifdef CLIENT_SERVER
     //send_vfo_move(client_socket,id,hz,round);
     update_vfo_move(id, hz, round);
+#endif
     return;
   }
-
-#endif
 
   if (!locked) {
     if (vfo[id].ctun) {
@@ -1010,14 +1007,14 @@ void vfo_move_to(long long hz) {
 }
 
 void vfo_id_move_to(int id, long long hz) {
-#ifdef CLIENT_SERVER
 
   if (radio_is_remote) {
+#ifdef CLIENT_SERVER
     send_vfo_move_to(client_socket, id, hz);
+#endif
     return;
   }
 
-#endif
   // hz is the offset from the min displayed frequency
   const RECEIVER *myrx;
 

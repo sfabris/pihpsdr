@@ -779,31 +779,23 @@ static void radio_create_visual() {
   // If upon startup, we only should display one panel, we do the switch below
   //
   for (int i = 0; i < RECEIVERS; i++) {
-#ifdef CLIENT_SERVER
-
     if (radio_is_remote) {
+#ifdef CLIENT_SERVER
       rx_create_remote(receiver[i]);
-    } else {
 #endif
+    } else {
       receiver[i] = rx_create_receiver(CHANNEL_RX0 + i, my_width, my_width, rx_height / RECEIVERS);
       rx_set_squelch(receiver[i]);
-#ifdef CLIENT_SERVER
     }
-
-#endif
     receiver[i]->x = 0;
     receiver[i]->y = y;
     // Upon startup, if RIT or CTUN is active, tell WDSP.
-#ifdef CLIENT_SERVER
 
     if (!radio_is_remote) {
-#endif
       rx_set_displaying(receiver[i], 1);
       rx_set_offset(receiver[i], vfo[i].offset);
-#ifdef CLIENT_SERVER
     }
 
-#endif
     gtk_fixed_put(GTK_FIXED(fixed), receiver[i]->panel, 0, y);
     g_object_ref((gpointer)receiver[i]->panel);
     y += rx_height / RECEIVERS;
@@ -815,10 +807,8 @@ static void radio_create_visual() {
   //
   receiver[PS_RX_FEEDBACK] = NULL;
   receiver[PS_TX_FEEDBACK] = NULL;
-#ifdef CLIENT_SERVER
 
   if (!radio_is_remote) {
-#endif
     //t_print("Create transmitter\n");
     transmitter = NULL;
     can_transmit = 0;
@@ -911,11 +901,7 @@ static void radio_create_visual() {
         SetPSHWPeak(transmitter->id, pk);
       }
     }
-
-#ifdef CLIENT_SERVER
   }
-
-#endif
 
   // init local keyer if enabled
   if (cw_keyer_internal == 0) {
@@ -923,10 +909,7 @@ static void radio_create_visual() {
     keyer_update();
   }
 
-#ifdef CLIENT_SERVER
-
   if (!radio_is_remote) {
-#endif
 
     switch (protocol) {
     case ORIGINAL_PROTOCOL:
@@ -943,11 +926,7 @@ static void radio_create_visual() {
       break;
 #endif
     }
-
-#ifdef CLIENT_SERVER
   }
-
-#endif
 
   if (display_zoompan) {
     zoompan = zoompan_init(my_width, ZOOMPAN_HEIGHT);
@@ -1586,19 +1565,12 @@ void radio_change_receivers(int r) {
   // When changing the number of receivers, restart the
   // old protocol
   //
-#ifdef CLIENT_SERVER
 
   if (!radio_is_remote) {
-#endif
-
     if (protocol == ORIGINAL_PROTOCOL) {
       old_protocol_stop();
     }
-
-#ifdef CLIENT_SERVER
   }
-
-#endif
 
   switch (r) {
   case 1:
@@ -1624,20 +1596,15 @@ void radio_change_receivers(int r) {
 
   radio_reconfigure_screen();
   rx_set_active(receiver[0]);
-#ifdef CLIENT_SERVER
 
   if (!radio_is_remote) {
-#endif
     schedule_high_priority();
 
     if (protocol == ORIGINAL_PROTOCOL) {
       old_protocol_run();
     }
 
-#ifdef CLIENT_SERVER
   }
-
-#endif
 }
 
 void radio_change_sample_rate(int rate) {
@@ -2261,14 +2228,14 @@ void radio_set_drive(double value) {
 }
 
 void radio_set_satmode(int mode) {
-#ifdef CLIENT_SERVER
 
   if (radio_is_remote) {
+#ifdef CLIENT_SERVER
     send_sat(client_socket, mode);
+#endif
     return;
   }
 
-#endif
   sat_mode = mode;
 }
 
@@ -2409,10 +2376,10 @@ static void radio_restore_state() {
 #ifdef CLIENT_SERVER
   GetPropI0("radio.hpsdr_server",                            hpsdr_server);
   GetPropI0("radio.hpsdr_server.listen_port",                listen_port);
+#endif
 
   if (radio_is_remote) { return; }
 
-#endif
   GetPropI0("enable_auto_tune",                              enable_auto_tune);
   GetPropI0("enable_tx_inhibit",                             enable_tx_inhibit);
   GetPropI0("radio_sample_rate",                             radio_sample_rate);
@@ -2616,10 +2583,10 @@ void radio_save_state() {
 #ifdef CLIENT_SERVER
   SetPropI0("radio.hpsdr_server",                            hpsdr_server);
   SetPropI0("radio.hpsdr_server.listen_port",                listen_port);
+#endif
 
   if (radio_is_remote) { return; }
 
-#endif
   SetPropI0("enable_auto_tune",                              enable_auto_tune);
   SetPropI0("enable_tx_inhibit",                             enable_tx_inhibit);
   SetPropI0("radio_sample_rate",                             radio_sample_rate);

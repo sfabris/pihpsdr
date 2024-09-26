@@ -478,7 +478,7 @@ extern int start_spectrum(void *data);
 extern void start_vfo_timer(void);
 extern gboolean remote_started;
 
-extern REMOTE_CLIENT *clients;
+extern REMOTE_CLIENT *remoteclients;
 
 extern int listen_port;
 

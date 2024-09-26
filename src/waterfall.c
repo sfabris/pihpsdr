@@ -26,9 +26,6 @@
 #include "vfo.h"
 #include "band.h"
 #include "waterfall.h"
-#ifdef CLIENT_SERVER
-  #include "client_server.h"
-#endif
 
 static int colorLowR = 0; // black
 static int colorLowG = 0;
@@ -97,22 +94,18 @@ static gboolean waterfall_scroll_event_cb (GtkWidget *widget, GdkEventScroll *ev
 }
 
 void waterfall_update(RECEIVER *rx) {
-  int i;
-  const float *samples;
-  long long vfofreq = vfo[rx->id].frequency; // access only once to be thread-safe
-  int  freq_changed = 0;                    // flag whether we have just "rotated"
-  int pan = rx->pan;
-  int zoom = rx->zoom;
-#ifdef CLIENT_SERVER
-
-  if (radio_is_remote) {
-    pan = 0;
-    zoom = 1;
-  }
-
-#endif
-
   if (rx->pixbuf) {
+    const float *samples;
+    long long vfofreq = vfo[rx->id].frequency; // access only once to be thread-safe
+    int  freq_changed = 0;                    // flag whether we have just "rotated"
+    int pan = rx->pan;
+    int zoom = rx->zoom;
+
+    if (radio_is_remote) {
+      pan = 0;
+      zoom = 1;
+    }
+
     unsigned char *pixels = gdk_pixbuf_get_pixels (rx->pixbuf);
     int width = gdk_pixbuf_get_width(rx->pixbuf);
     int height = gdk_pixbuf_get_height(rx->pixbuf);
@@ -156,14 +149,14 @@ void waterfall_update(RECEIVER *rx) {
             // shift left, and clear the right-most part
             memmove(pixels, &pixels[-rotate_pixels * 3], ((my_width * my_heigt) + rotate_pixels) * 3);
 
-            for (i = 0; i < my_heigt; i++) {
+            for (int i = 0; i < my_heigt; i++) {
               memset(&pixels[((i * my_width) + (width + rotate_pixels)) * 3], 0, -rotate_pixels * 3);
             }
           } else if (rotate_pixels > 0) {
             // shift right, and clear left-most part
             memmove(&pixels[rotate_pixels * 3], pixels, ((my_width * my_heigt) - rotate_pixels) * 3);
 
-            for (i = 0; i < my_heigt; i++) {
+            for (int i = 0; i < my_heigt; i++) {
               memset(&pixels[(i * my_width) * 3], 0, rotate_pixels * 3);
             }
           }
@@ -225,7 +218,7 @@ void waterfall_update(RECEIVER *rx) {
 
       average = 0.0F;
 
-      for (i = 0; i < width; i++) {
+      for (int i = 0; i < width; i++) {
         average += (samples[i + pan] + soffset);
       }
 
@@ -239,7 +232,7 @@ void waterfall_update(RECEIVER *rx) {
 
       rangei = 1.0F / (wf_high - wf_low);
 
-      for (i = 0; i < width; i++) {
+      for (int i = 0; i < width; i++) {
         float sample = samples[i + pan] + soffset;
 
         if (sample < wf_low) {

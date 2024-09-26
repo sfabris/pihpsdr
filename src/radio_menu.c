@@ -166,6 +166,9 @@ void setDuplex() {
 }
 
 static void duplex_cb(GtkWidget *widget, gpointer data) {
+   //
+   // While transmitting, ignore the click
+   //
   if (radio_is_transmitting()) {
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), duplex);
     return;
@@ -292,13 +295,11 @@ static void sample_rate_cb(GtkToggleButton *widget, gpointer data) {
   //
   if (sscanf(p, "%d", &samplerate) != 1) { return; }
 
-#ifdef CLIENT_SERVER
-
   if (radio_is_remote) {
+#ifdef CLIENT_SERVER
     send_sample_rate(client_socket, -1, samplerate);
-  } else
 #endif
-  {
+  } else {
     radio_change_sample_rate(samplerate);
   }
 }
@@ -315,13 +316,11 @@ static void receivers_cb(GtkToggleButton *widget, gpointer data) {
     return;
   }
 
-#ifdef CLIENT_SERVER
-
   if (radio_is_remote) {
+#ifdef CLIENT_SERVER
     send_receivers(client_socket, val);
-  } else
 #endif
-  {
+  } else {
     radio_change_receivers(val);
   }
 }

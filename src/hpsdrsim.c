@@ -220,7 +220,7 @@ int main(int argc, char *argv[]) {
   struct timeval tv;
   int yes = 1;
   uint8_t *bp;
-  unsigned long checksum;
+  unsigned long checksum = 0;
   socklen_t lenaddr;
   struct sockaddr_in addr_from;
   unsigned int seed;
@@ -682,7 +682,7 @@ int main(int argc, char *argv[]) {
 
     // If nothing has arrived via UDP for some time, try to open TCP connection.
     // "for some time" means 10 subsequent un-successful UDP rcvmmsg() calls
-    if (sock_TCP_Client < 0 && udp_retries > 10) {
+    if (sock_TCP_Client < 0 && udp_retries > 10 && oldnew != 2) {
       if ((sock_TCP_Client = accept(sock_TCP_Server, NULL, NULL)) > -1) {
         t_print("sock_TCP_Client: %d connected to sock_TCP_Server: %d\n", sock_TCP_Client, sock_TCP_Server);
       }
@@ -1725,13 +1725,14 @@ void *handler_ep6(void *arg) {
 
       pointer += 8;
       memset(pointer, 0, 504);
-      fac1 = rxatt_dbl[0] * 0.0002239;     //  -73 dBm signal
+      fac1 = rxatt_dbl[0] * 0.0002239;       //  -73 dBm signal
       fac1a = rxatt_dbl[0] * 0.000003162278; // -110 dBm signal
+      fac2  = 0.0;                           // Amplitude of broad "man-made" noise to ADC1
+      fac4  = 0.0;                           // Amplitude of broad "man-made" noise to ADC2
 
       if (diversity && !noiseblank) {
-        fac2 = 0.0001 * rxatt_dbl[0];   // Amplitude of broad "man-made" noise to ADC1
-        fac4 = 0.0002 * rxatt_dbl[1];   // Amplitude of broad "man-made" noise to ADC2
-        // (phase shifted 90 deg., 6 dB stronger)
+        fac2 = 0.0001 * rxatt_dbl[0];
+        fac4 = 0.0002 * rxatt_dbl[1];        // (phase shifted 90 deg., 6 dB stronger)
       }
 
       if (diversity && noiseblank) {

@@ -20,7 +20,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
-#include <wdsp.h>
+
+#include <wdsp.h>   // only needed for the resampler
 
 #include <SoapySDR/Constants.h>
 #include <SoapySDR/Device.h>
@@ -333,6 +334,11 @@ void soapy_protocol_init(gboolean hf) {
 }
 
 static void *receive_thread(void *arg) {
+  //
+  //  Since no mic samples arrive in SOAPY, we must use
+  //  the incoming RX samples as a "heart beat" for the
+  //  transmitter.
+  //
   double isample;
   double qsample;
   int flags = 0;

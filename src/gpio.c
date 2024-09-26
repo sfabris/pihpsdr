@@ -988,8 +988,8 @@ void gpio_set_defaults(int ctrlr) {
 void gpioRestoreState() {
   loadProperties("gpio.props");
   GetPropI0("controller",                                         controller);
-
 #ifndef GPIO
+
   //
   // If not compiled for GPIO, we can only have the G2Mk2 or  none
   //

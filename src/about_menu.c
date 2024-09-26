@@ -24,7 +24,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <wdsp.h>
+#include <wdsp.h>             // only needed for GetWDSPVersion
 
 #include "new_menu.h"
 #include "about_menu.h"
@@ -99,6 +99,7 @@ void about_menu(GtkWidget *parent) {
       char addr[64];
       STRLCPY(addr, inet_ntoa(radio->info.network.address.sin_addr), 64);
       STRLCPY(interface_addr, inet_ntoa(radio->info.network.interface_address.sin_addr), 64);
+
       if (have_saturn_xdma) {
         snprintf(line, 512, "Device: Saturn (via XDMA), Protocol %s, v%d.%d\n",
                  radio->protocol == ORIGINAL_PROTOCOL ? "1" : "2",
@@ -119,6 +120,7 @@ void about_menu(GtkWidget *parent) {
                  radio->info.network.interface_name,
                  interface_addr);
       }
+
       STRLCAT(text, line, 1024);
     }
 

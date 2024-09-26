@@ -744,7 +744,7 @@ void *highprio_thread(void *data) {
   int sock;
   struct sockaddr_in addr;
   socklen_t lenaddr = sizeof(addr);
-  unsigned long seqnum, seqold;
+  unsigned long seqnum = 0, seqold;
   unsigned char buffer[2000];
   struct timeval tv;
   int yes = 1;
@@ -1092,6 +1092,7 @@ void *rx_thread(void *data) {
   struct timespec delay;
   tonearg = 0.0;
   tonearg2 = 0.0;
+  t3l = 0.0;
   t3p = 0.0;
   myddc = (int) (uintptr_t) data;
 
@@ -1178,6 +1179,7 @@ void *rx_thread(void *data) {
     } else {
       size = 238;
       wait = 238000000L / rxrate[myddc]; // time for these samples in nano-secs
+      syncadc = 0;
     }
 
     //

@@ -27,7 +27,8 @@
 #include <sys/resource.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <wdsp.h>
+
+#include <wdsp.h>    // only needed for WDSPwisdom() and wisdom_get_status()
 
 #include "appearance.h"
 #include "audio.h"
@@ -71,7 +72,7 @@ int this_monitor;
 static GdkCursor *cursor_arrow;
 static GdkCursor *cursor_watch;
 
-GtkWidget *top_window;
+GtkWidget *top_window = NULL;
 GtkWidget *topgrid;
 
 static GtkWidget *status_label;

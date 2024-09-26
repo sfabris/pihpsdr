@@ -51,34 +51,29 @@ static gboolean close_cb () {
 
 static void agc_hang_threshold_value_changed_cb(GtkWidget *widget, gpointer data) {
   active_receiver->agc_hang_threshold = (int)gtk_range_get_value(GTK_RANGE(widget));
-#ifdef CLIENT_SERVER
 
   if (radio_is_remote) {
+#ifdef CLIENT_SERVER
     send_agc_gain(client_socket, active_receiver->id, active_receiver->agc_gain, active_receiver->agc_hang,
                   active_receiver->agc_thresh, active_receiver->agc_hang_threshold);
+#endif
   } else {
-#endif
     rx_set_agc(active_receiver, active_receiver->agc);
-#ifdef CLIENT_SERVER
   }
-
-#endif
 }
 
 static void agc_cb (GtkToggleButton *widget, gpointer data) {
   int val = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
   active_receiver->agc = val;
-#ifdef CLIENT_SERVER
 
   if (radio_is_remote) {
-    send_agc(client_socket, active_receiver->id, active_receiver->agc);
-  } else {
-#endif
-    rx_set_agc(active_receiver, active_receiver->agc);
 #ifdef CLIENT_SERVER
+    send_agc(client_socket, active_receiver->id, active_receiver->agc);
+#endif
+  } else {
+    rx_set_agc(active_receiver, active_receiver->agc);
   }
 
-#endif
   g_idle_add(ext_vfo_update, NULL);
 }
 

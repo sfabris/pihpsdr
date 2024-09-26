@@ -47,10 +47,8 @@ void stop_program() {
   gpio_close();
   t_print("%s: GPIO closed\n", __FUNCTION__);
 #endif
-#ifdef CLIENT_SERVER
 
   if (!radio_is_remote) {
-#endif
     radio_protocol_stop();
     t_print("%s: protocol stopped\n", __FUNCTION__);
     radio_stop();
@@ -61,11 +59,7 @@ void stop_program() {
       saturn_exit();
 #endif
     }
-
-#ifdef CLIENT_SERVER
   }
-
-#endif
   radio_save_state();
   t_print("%s: radio state saved\n", __FUNCTION__);
 }

@@ -59,7 +59,7 @@
 
 int listen_port = LISTEN_PORT;
 
-REMOTE_CLIENT *clients = NULL;
+REMOTE_CLIENT *remoteclients = NULL;
 
 GMutex client_mutex;
 
@@ -93,10 +93,10 @@ REMOTE_CLIENT *add_client(REMOTE_CLIENT *client) {
   t_print("add_client: %p\n", client);
   // add to front of queue
   g_mutex_lock(&client_mutex);
-  client->next = clients;
-  clients = client;
+  client->next = remoteclients;
+  remoteclients = client;
   g_mutex_unlock(&client_mutex);
-  t_print("add_client: clients=%p\n", clients);
+  t_print("add_client: remoteclients=%p\n", remoteclients);
   return client;
 }
 
@@ -104,11 +104,11 @@ void delete_client(REMOTE_CLIENT *client) {
   t_print("delete_client: %p\n", client);
   g_mutex_lock(&client_mutex);
 
-  if (clients == client) {
-    clients = client->next;
+  if (remoteclients == client) {
+    remoteclients = client->next;
     g_free(client);
   } else {
-    REMOTE_CLIENT* c = clients;
+    REMOTE_CLIENT* c = remoteclients;
     REMOTE_CLIENT* last_c = NULL;
 
     while (c != NULL && c != client) {
@@ -122,7 +122,7 @@ void delete_client(REMOTE_CLIENT *client) {
     }
   }
 
-  t_print("delete_client: clients=%p\n", clients);
+  t_print("delete_client: remoteclients=%p\n", remoteclients);
   g_mutex_unlock(&client_mutex);
 }
 
@@ -178,7 +178,7 @@ void remote_audio(const RECEIVER *rx, short left_sample, short right_sample) {
 
   if (audio_buffer_index >= AUDIO_DATA_SIZE) {
     g_mutex_lock(&client_mutex);
-    REMOTE_CLIENT *c = clients;
+    REMOTE_CLIENT *c = remoteclients;
 
     while (c != NULL && c->socket != -1) {
       audio_data.header.sync = REMOTE_SYNC;
@@ -1996,7 +1996,7 @@ static void *listen_thread(void *arg) {
 int create_hpsdr_server() {
   t_print("create_hpsdr_server\n");
   g_mutex_init(&client_mutex);
-  clients = NULL;
+  remoteclients = NULL;
   running = TRUE;
   listen_thread_id = g_thread_new( "HPSDR_listen", listen_thread, NULL);
   return 0;

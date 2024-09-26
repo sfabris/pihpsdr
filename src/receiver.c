@@ -114,22 +114,18 @@ gboolean rx_button_release_event(GtkWidget *widget, GdkEventButton *event, gpoin
 
   if (making_active) {
     making_active = FALSE;
-#ifdef CLIENT_SERVER
 
     if (radio_is_remote) {
+#ifdef CLIENT_SERVER
       send_rx_select(client_socket, rx->id);
-    } else {
 #endif
+    } else {
       rx_set_active(rx);
 
       if (event->button == GDK_BUTTON_SECONDARY) {
         g_idle_add(ext_start_rx, NULL);
       }
-
-#ifdef CLIENT_SERVER
     }
-
-#endif
   } else {
     if (pressed) {
       int x = (int)event->x;
@@ -235,7 +231,6 @@ void rx_save_state(RECEIVER *rx) {
   SetPropI1("receiver.%d.audio_device", rx->id,                 rx->audio_device);
   SetPropI1("receiver.%d.mute_when_not_active", rx->id,         rx->mute_when_not_active);
   SetPropI1("receiver.%d.mute_radio", rx->id,                   rx->mute_radio);
-#ifdef CLIENT_SERVER
 
   //
   // no further settings are
@@ -245,7 +240,6 @@ void rx_save_state(RECEIVER *rx) {
     return;
   }
 
-#endif
   SetPropI1("receiver.%d.low_latency", rx->id,                  rx->low_latency);
   SetPropI1("receiver.%d.fft_size", rx->id,                     rx->fft_size);
   SetPropI1("receiver.%d.sample_rate", rx->id,                  rx->sample_rate);
@@ -333,7 +327,6 @@ void rx_restore_state(RECEIVER *rx) {
   GetPropI1("receiver.%d.audio_device", rx->id,                 rx->audio_device);
   GetPropI1("receiver.%d.mute_when_not_active", rx->id,         rx->mute_when_not_active);
   GetPropI1("receiver.%d.mute_radio", rx->id,                   rx->mute_radio);
-#ifdef CLIENT_SERVER
 
   //
   // After restoring local audio settings, no further settings are
@@ -343,7 +336,6 @@ void rx_restore_state(RECEIVER *rx) {
     return;
   }
 
-#endif
   GetPropI1("receiver.%d.low_latency", rx->id,                  rx->low_latency);
   GetPropI1("receiver.%d.fft_size", rx->id,                     rx->fft_size);
   GetPropI1("receiver.%d.sample_rate", rx->id,                  rx->sample_rate);
@@ -629,13 +621,10 @@ void rx_set_squelch(const RECEIVER *rx) {
 
 void rx_set_displaying(RECEIVER *rx, int state) {
   rx->displaying = state;
-#ifdef CLIENT_SERVER
 
   if (radio_is_remote) {
     return;
   }
-
-#endif
 
   if (state) {
     if (rx->update_timer_id > 0) {
@@ -868,13 +857,11 @@ static void rx_init_analyzer(const RECEIVER *rx) {
 // re-calculating the averaging.
 //
 void rx_set_framerate(RECEIVER *rx, int fps) {
-#ifdef CLIENT_SERVER
 
   if (radio_is_remote) {
     return;
   }
 
-#endif
   rx->fps = fps;
   rx_set_displaying(rx, rx->displaying);
   rx_calculate_display_average(rx);
@@ -1516,7 +1503,7 @@ static void rx_process_buffer(RECEIVER *rx) {
 
 #ifdef CLIENT_SERVER
 
-    if (clients != NULL) {
+    if (remoteclients != NULL) {
       remote_audio(rx, left_audio_sample, right_audio_sample);
     }
 
@@ -1674,10 +1661,7 @@ void rx_update_zoom(RECEIVER *rx) {
     }
   }
 
-#ifdef CLIENT_SERVER
-
   if (!radio_is_remote) {
-#endif
 
     if (rx->pixel_samples != NULL) {
       g_free(rx->pixel_samples);
@@ -1685,10 +1669,7 @@ void rx_update_zoom(RECEIVER *rx) {
 
     rx->pixel_samples = g_new(float, rx->pixels);
     rx_init_analyzer(rx);
-#ifdef CLIENT_SERVER
   }
-
-#endif
 }
 
 #ifdef CLIENT_SERVER

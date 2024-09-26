@@ -389,8 +389,8 @@ Sliders, Toolbar) at the  bottom.}
  (and necessary) if there is no GPIO or MIDI controller attached,
  since then these sliders are the only way to change, for example,
  the AF volume. If there is only one receiver, it is controlled
- by VFO-A. VFO-B then actually controls nothing (except the TX
- frequency in split mode), but the data stored in VFO-B can
+ by VFO-A. VFO-B then actually only controls controls the transmitter
+ if using split mode, but the data stored in VFO-B can
  be quickly used, for example by copying VFO-B to VFO-A (the
  \bltt{A<B} command), or by swapping the two VFOs (the \bltt{A<>B} command).
 
@@ -804,7 +804,11 @@ and the mode of the active receiver (if there are two receivers), or
 on the frequency/mode of VFO-A (if there is only one receiver). If
 split mode is on, transmitting occurs on the frequency/mode of the
 non-active receiver (if there are 2) or on VFO-B (if there is only  one
-receiver).
+receiver). Note that a frequent beginner error is to have, say,
+SSB mode in VFO-A and CW mode in VFO-B. In this case, nothing is
+transmitted when doing split and using the microphone. Normally one
+starts with the \bltt{A>B} action (that is, copy VFO-A to VFO-B), and
+then adjusts the transmit frequency.
 
 The next indicator shows the SAT (satellite) mode, which can be off
 (then the indicator reads \rett{SAT} in grey), or which can be SAT or RSAT
@@ -1036,8 +1040,9 @@ the radio communication will shortly be stopped and then resumed, so do not be s
 scope freezes for a second or so.
 
 \rett{RIT/XIT step:} In the pop-down menu you can choose among three (1 Hz, 10 Hz, 100 Hz) step sizes
-for RIT and XIT. For example, if the RIT step is 10 Hz, then you can change the RIT offset in steps of
-10 Hz with the RIT+ or RIT- buttons in the toolbar or on the GPIO/MIDI controller.
+for RIT. For example, if the RIT step is 10 Hz, then you can change the RIT offset in steps of
+10 Hz with the RIT+ or RIT- buttons in the toolbar or on the GPIO/MIDI controller. Note that for the
+\bltt{XIT+} and \bltt{XIT-} buttons, the XIT offset changes by 10 times the RIT step size.
 
 \rett{Region:} Although not obvious, this selects settings for the 60m band. Possible choices are "Other",
  "UK" and "WRC15". The \texttt{Other} and \texttt{UK} choices implement the channel structure of the 60m
@@ -1097,6 +1102,11 @@ the divisor has no effect.
 the non-active receiver (when using two receivers) or the frequency of VFO-B (when using one
 receiver) controls the TX frequency. In normal (non-Split) mode, it is the frequency of
 the active receiver (2 RX) or the frequency of VFO-A (1 RX) that matters.
+Note that a frequent beginner error is to have, say,
+SSB mode in VFO-A and CW mode in VFO-B. In this case, nothing is
+transmitted when doing split and using the microphone. Normally one
+starts with the \bltt{A>B} action (that is, copy VFO-A to VFO-B), and
+then adjusts the transmit frequency.
 
 \rett{Duplex} Use this checkbox to enable/disable Duplex mode. In Duplex mode, the receiver(s)
 continue working during TX. In normal setup, this is detrimental since the very strong
@@ -1682,8 +1692,7 @@ In addition to frequency entry, the VFO menu offers a convenient way of changing
 some piHPDSR settings, simply because the VFO menu can be opened by a simple
 mouse click into the VFO bar.
 
-\rett{Rit Step:} In this pop-down menu, the RIT/XIT step size can be chosen
- (1/10/100 Hz).
+\rett{Rit Step:} In this pop-down menu, the RIT step size can be chosen (1/10/100 Hz).
 
 \rett{VFO Step:} In this pop-down menu, the VFO step size can be chosen. The VFO step
 sizes range from 1 Hz to 1 MHz.
@@ -2041,7 +2050,7 @@ suits your needs.
  \rett{Trained} has recently been introduced (since WDSP, version 1.25).
 
 \rett{NR2 NPE Method}. The available choices for the NR2 noise power estimation
-are OSMS 
+are OSMS
 (Optimal Smoothing Minimum Statistics), MMSE (Minimum Mean-Square Error), and
 NSTAT (Non-stationary Noise Method),
 where OSMS is the default.
@@ -2888,7 +2897,7 @@ anyway, and where the RX equaliser is normally not needed.
 If the radio currently runs only a single receiver, RX2 cannot
 be selected with the top right combo-box. Likewise, if the
 radio does not have transmitter, the TX settings cannot be
-selected. 
+selected.
 
 %Note that on some systems, adjusting the window size when
 %switching between four-band and ten-band equalizers took
@@ -3152,7 +3161,7 @@ is highly operating system dependent. On a RaspPi,  USB-to-serial
 adapters (which are nowadays the standard way to add serial ports to a computer) have names such as
 \texttt{/dev/ttyACM0} or \texttt{/dev/USB0} (on RaspPi) or \texttt{/dev/tty.usbserial-....} (on MacOS).
 The serial port shown in the third line of Fig. \ref{fig:RigCtlMenu}, \texttt{/dev/ttyAMA3},
-is used on the ANAN G2-MkII radios for communicating with the front panel. If you chose 
+is used on the ANAN G2-MkII radios for communicating with the front panel. If you chose
 \rett{G2 Mk2 Panel} in the discovery menu, this port will be assigned by default to the third
 slot and it is also enabled, this can be changed in the RigCtl menu and will then also be written to
 the props file.
@@ -3404,7 +3413,7 @@ to change the VFO frequency.
 The encoders menu can be used to assign functions to the encoders of a
 \pH Controller1, Controller2 or the G2 front panel (first version without LEDs)
 controller. For the second-generation G2 front panels (with LEDs), the functions
-of the knobs and buttons are hard-wired. 
+of the knobs and buttons are hard-wired.
 This implies that if \texttt{No Controller} or \texttt{G2 Mk2 Panel} has been chosen
 in the initial discovery screen
 (Fig. \ref{fig:Start}), this menu is not available.
@@ -4109,8 +4118,9 @@ instead. Small SDR radios
 using the AD9866 chip (HermesLite, RadioBerry) and radios connected via the SoapySDR library usually do have
 an RF gain control. If ADC overload occurs, one has to decrease the RF gain.}
 
-\action{RIT}{RIT}{E}{Change the RIT value of the active receiver in the range -9999 to 9999 Hz. If a zero
-value is set, RIT is
+\action{RIT}{RIT}{E}{Change the RIT value of the active receiver in the range -9999 to 9999 Hz.
+Each tick of the encoder changes the value by the current RIT step size. If a zero
+value results, RIT is
 automatically disabled, if a non-zero value ist set, RIT is enabled.}
 
 \action{RIT Clear}{RITCL}{B}{Set the RIT value of the active receiver to zero. As a side effect, RIT is
@@ -4122,7 +4132,7 @@ temporarily disable RIT, and then enable it with the same offset (RIT value) use
 
 \action{RIT -}{RIT-}{B}{Decrement the RIT value of the active receiver by the RIT step size, in the range
 -9999 to 9999 Hz. If a value of zero
-is reached, RIT is automatically disabled, and if a nonzero value is reached, RIT is automatically enabled.
+results, RIT is automatically disabled, and if a nonzero value is reached, RIT is automatically enabled.
 Note that this action belongs to the few ones for which a button release event has an effect. If you press
 and hold RIT- (either
 on the toolbar, or on a GPIO or MIDI console), there is an auto-repeat such that the action will be repeated
@@ -4131,7 +4141,7 @@ the RIT- button is released.}
 
 \action{RIT +}{RIT+}{B}{Increment the RIT value of the active receiver by the RIT step size, in the range
 -9999 to 9999 Hz. If a value of zero
-is reached, RIT is automatically disabled, and if a nonzero value is reached, RIT is automatically enabled.
+results, RIT is automatically disabled, and if a nonzero value is reached, RIT is automatically enabled.
 Note that this action belongs to the few ones for which a button release event has an effect. If you press
 and hold RIT+ (either
 on the toolbar, or on a GPIO or MIDI console), there is an auto-repeat such that the action will be repeated
@@ -4163,7 +4173,12 @@ all VFO frequency \textit{changes} applied to one of the two VFOs will be applie
 
 \action{SNB}{SNB}{B}{Toggle (enable/disable) the spectral noise blanker for the active  receiver.}
 
-\action{Split}{SPLIT}{B}{Toggle (on/off) the  split status of the radio.}
+\action{Split}{SPLIT}{B}{Toggle (on/off) the  split status of the radio.
+Note that a frequent beginner error is to have, say,
+SSB mode in VFO-A and CW mode in VFO-B. In this case, nothing is
+transmitted when doing split and using the microphone. Normally one
+starts with the \bltt{A>B} action (that is, copy VFO-A to VFO-B), and
+then adjusts the transmit frequency.}
 
 \action{Squelch}{SQUELCH}{PE}{
 {\color{red} This action is connected to the \texttt{Sqlch} slider in the slider area.}
@@ -4253,7 +4268,8 @@ preferable.}
 
 \action{XIT}{XIT}{E}{Change the XIT value of the transceiver in the range -9999 to 9999 Hz. If a zero value
 is set, XIT is
-automatically disabled, if a non-zero value ist set, XIT is enabled.}
+automatically disabled, if a non-zero value ist set, XIT is enabled. Each tick of the encoder changes
+the value by  the current RIT step size.}
 
 \action{XIT Clear}{XITCL}{B}{Set the XIT value of the transmitter to zero. As a side effect, XIT is
 disabled.}
@@ -4262,7 +4278,7 @@ disabled.}
 changed, so you can
 temporarily disable XIT, and then enable it with the same offset (XIT value) used before.}
 
-\action{XIT -}{XIT-}{B}{Decrement the XIT value of the transmitter by the  RIT (!) step size, in the range
+\action{XIT -}{XIT-}{B}{Decrement the XIT value of the transmitter by 10 times the RIT step size, in the range
 -9999 to 9999 Hz. If a value of zero
 is reached, XIT is automatically disabled, and if a nonzero value is reached, XIT is automatically enabled.
 Note that this action belongs to the few ones for which a button release event has an effect. If you press
@@ -4271,7 +4287,7 @@ on the toolbar, or on a GPIO or MIDI console), there is an auto-repeat such that
 every 250 msec until
 the XIT- button is released.}
 
-\action{XIT +}{XIT+}{B}{Increment the XIT value of the transmitter  by the  RIT (!) step size, in the range
+\action{XIT +}{XIT+}{B}{Increment the XIT value of the transmitter  by  10 times the RIT step size, in the range
 -9999 to 9999 Hz. If a value of zero
 is reached, XIT is automatically disabled, and if a nonzero value is reached, XIT is automatically enabled.
 Note that this action belongs to the few ones for which a button release event has an effect. If you press
@@ -4364,11 +4380,11 @@ but there are programs around, e.g. \texttt{eSpeak} (both for LINUX and MacOS) a
 \texttt{say} (a program that comes with MacOS). Note that the version of \texttt{eSpeak}
 that is currently being maintained seems to be called \texttt{espeak-ng}.
 
-The ,,hook'' actually used 
+The ,,hook'' actually used
 in \pH is as follows (now it becomes technical): a message that is to be read aloud is
 simply sent out as a ,,promiscuous'' (a.k.a. broadcast) UDP packet to port number 19080.
 A program running on the same computer, or even on another computer on the same network, can
-then receive the packet and take care of the reading. A sample program that does so 
+then receive the packet and take care of the reading. A sample program that does so
 is included in the \pH source code tree (\texttt{udplistener.c}) for demonstration purposes.
 This program is instrumented to use either the \texttt{eSpeak} program, or the text-to-speech
 program \texttt{/usr/bin/say} that comes with MacOS. Although \texttt{eSpeak} can
@@ -6427,7 +6443,7 @@ Transceiver control (CAT connection) in MacOS is the same as described for Linux
 \chapter{Compile-time options}
 \label{sec:compiletime}
 
-There is a number of compile-time options that are shown on the initial screen. 
+There is a number of compile-time options that are shown on the initial screen.
 When compiling from the sources, you can choose which options you want (or do not want).
 To have compile-time options different from the default ones, you have to create a text
 file within the \pH directory which has the name \grtt{make.config.pihpdsr}.

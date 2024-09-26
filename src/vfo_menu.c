@@ -127,6 +127,9 @@ static void vfo_cb(GtkComboBox *widget, gpointer data) {
 
 static void duplex_cb(GtkWidget *widget, gpointer data) {
   if (radio_is_transmitting()) {
+    //
+    // While transmitting, ignore checkbox
+    //
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (widget), duplex);
     return;
   }
@@ -339,17 +342,14 @@ void vfo_num_pad(int action, int id) {
     // by hitting the "NUMPAD enter" button.
     //
     if (fl >= 10000ll) {
-#ifdef CLIENT_SERVER
 
       if (radio_is_remote) {
-        send_vfo_frequency(client_socket, id, fl);
-      } else {
-#endif
-        vfo_set_frequency(id, fl);
 #ifdef CLIENT_SERVER
-      }
-
+        send_vfo_frequency(client_socket, id, fl);
 #endif
+      } else {
+        vfo_set_frequency(id, fl);
+      }
     }
 
     break;

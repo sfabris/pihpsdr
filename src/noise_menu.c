@@ -120,18 +120,17 @@ void set_noise() {
 }
 
 void update_noise() {
-#ifdef CLIENT_SERVER
-
   //
   // TODO: include NR2 and NB2 parameters
   //
   if (radio_is_remote) {
+#ifdef CLIENT_SERVER
     send_noise(client_socket, active_receiver->id, active_receiver->nb, active_receiver->nr,
                active_receiver->anf, active_receiver->snb);
+#endif
     return;
   }
 
-#endif
   set_noise();
 }
 
