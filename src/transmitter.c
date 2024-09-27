@@ -299,7 +299,7 @@ void tx_reconfigure(TRANSMITTER *tx, int width, int height) {
     tx->pixels = display_width * tx->ratio * 2;
     g_free(tx->pixel_samples);
     tx->pixel_samples = g_new(float, tx->pixels);
-    tx_init_analyzer(tx);
+    tx_set_analyzer(tx);
     g_mutex_unlock(&tx->display_mutex);
   }
 
@@ -1640,7 +1640,7 @@ void tx_set_framerate(TRANSMITTER *tx) {
   // When changing the TX display frame rate, the TX display update timer
   // has to be restarted, as well as the initializer
   //
-  tx_init_analyzer(tx);
+  tx_set_analyzer(tx);
   tx_set_displaying(tx);
 }
 
@@ -1667,7 +1667,7 @@ void tx_create_analyzer(const TRANSMITTER *tx) {
   if (rc != 0) {
     t_print("CreateAnalyzer failed for TXid=%d\n", tx->id);
   } else {
-    tx_init_analyzer(tx);
+    tx_set_analyzer(tx);
   }
 }
 
@@ -1698,7 +1698,7 @@ int tx_get_pixels(TRANSMITTER *tx) {
   return rc;
 }
 
-void tx_init_analyzer(const TRANSMITTER *tx) {
+void tx_set_analyzer(const TRANSMITTER *tx) {
   int flp[] = {0};
   const double keep_time = 0.1;
   const int n_pixout = 1;

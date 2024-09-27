@@ -1245,7 +1245,7 @@ void rx_update_zoom(RECEIVER *rx) {
     }
 
     rx->pixel_samples = g_new(float, rx->pixels);
-    rx_init_analyzer(rx);
+    rx_set_analyzer(rx);
   }
 }
 
@@ -1309,8 +1309,8 @@ void rx_set_filter(RECEIVER *rx) {
 void rx_set_framerate(RECEIVER *rx) {
   //
   // When changing the frame rate, the RX display update timer needs
-  // be restarted, and the initializer restarted. This included
-  // re-calculating the averaging.
+  // be restarted, the averaging re-calculated, and the analyzer
+  // parameter re-set
   //
   if (radio_is_remote) {
     return;
@@ -1318,12 +1318,16 @@ void rx_set_framerate(RECEIVER *rx) {
 
   rx_set_displaying(rx);
   rx_set_average(rx);
-  rx_init_analyzer(rx);
+  rx_set_analyzer(rx);
 }
 
 #ifdef CLIENT_SERVER
 void rx_create_remote(RECEIVER *rx) {
-  // receiver structure already setup
+  //
+  // receiver structure already setup via INFO_RECEIVER packet.
+  // since everything is done on the "local" side, we only need
+  // to set-up the panadapter
+  //
   rx_create_visual(rx);
 }
 
@@ -1364,7 +1368,7 @@ void rx_change_sample_rate(RECEIVER *rx, int sample_rate) {
     rx->pixels = (sample_rate / 24000) * rx->width;
     g_free(rx->pixel_samples);
     rx->pixel_samples = g_new(float, rx->pixels);
-    rx_init_analyzer(rx);
+    rx_set_analyzer(rx);
     t_print("%s: PS RX FEEDBACK: id=%d rate=%d buffer_size=%d output_samples=%d\n",
             __FUNCTION__, rx->id, rx->sample_rate, rx->buffer_size, rx->output_samples);
     g_mutex_unlock(&rx->mutex);
@@ -1385,7 +1389,7 @@ void rx_change_sample_rate(RECEIVER *rx, int sample_rate) {
 
   rx->audio_output_buffer = g_new(double, 2 * rx->output_samples);
   rx_off(rx);
-  rx_init_analyzer(rx);
+  rx_set_analyzer(rx);
   SetInputSamplerate(rx->id, sample_rate);
   SetEXTANBSamplerate (rx->id, sample_rate);
   SetEXTNOBSamplerate (rx->id, sample_rate);
@@ -1436,17 +1440,28 @@ double rx_get_smeter(const RECEIVER *rx) {
 }
 
 void rx_create_analyzer(const RECEIVER *rx) {
+  //
+  // After the analyzer has been created, its parameters
+  // are set via rx_set_analyzer
+  //
   int rc;
   XCreateAnalyzer(rx->id, &rc, 262144, 1, 1, NULL);
 
   if (rc != 0) {
     t_print("CreateAnalyzer failed for RXid=%d\n", rx->id);
   } else {
-    rx_init_analyzer(rx);
+    rx_set_analyzer(rx);
   }
 }
 
-void rx_init_analyzer(const RECEIVER *rx) {
+void rx_set_analyzer(const RECEIVER *rx) {
+  //
+  // The analyzer depends on the framerate (fps), the
+  // width (pixels), and the sample rate, as well as the
+  // buffer size (this is constant).
+  // So rx_set_analyzer() has to be called whenever fps, pixels,
+  // or sample_rate change in rx
+  //
   int flp[] = {0};
   const double keep_time = 0.1;
   const int n_pixout = 1;

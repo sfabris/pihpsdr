@@ -174,7 +174,6 @@ extern void   tx_close(const TRANSMITTER *tx);
 extern void   tx_create_analyzer(const TRANSMITTER *tx);
 extern double tx_get_alc(const TRANSMITTER *tx);
 extern int    tx_get_pixels(TRANSMITTER *tx);
-extern void   tx_init_analyzer(const TRANSMITTER *tx);
 extern void   tx_off(const TRANSMITTER *tx);
 extern void   tx_on(const TRANSMITTER *tx);
 
@@ -192,6 +191,7 @@ extern void   tx_ps_setpk(const TRANSMITTER *tx, double pk);
 extern void   tx_save_state(const TRANSMITTER *tx);
 
 extern void   tx_set_am_carrier_level(const TRANSMITTER *tx);
+extern void   tx_set_analyzer(const TRANSMITTER *tx);
 extern void   tx_set_average(const TRANSMITTER *tx);
 extern void   tx_set_bandpass(const TRANSMITTER *tx);
 extern void   tx_set_compressor(const TRANSMITTER *tx);
