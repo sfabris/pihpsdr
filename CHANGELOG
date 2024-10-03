@@ -1,6 +1,12 @@
 LIST OF RECENT PIHPSDR CHANGES
 ==============================
 
+October 2024:
+-------------
+
+- Removed "CW ramp width" feature since we now have a good
+  ramp with a reasonable width.
+
 September 2024:
 ---------------
 

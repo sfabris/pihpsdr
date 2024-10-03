@@ -2700,39 +2700,39 @@ The normal value is 50, which means that a dash is three times longer
 than a dot. The dash length is proportional to this value, so it can
 be from zero to six times the dot length.
 
-\rett{CW ramp width (ms)}. This spin-box lets you choose the
-width of the ,,ramp'' used for RF CW pulses.
-At the beginning of a dot or dash, the
-amplitude of  the RF pulse is slowly
-increased from zero to full amplitude at the beginning,
-and at the end the amplitudes slowly fall down to zero.
-This avoids harsh clicks in the RF signal
-(which could possibly been heard all over the band for
-hard keying). An optimized ramp function has been implemented
-that gives good click suppression both at small and large
-offsets from the carrier frequency. The
-width is the rise/fall time of the pulse envelope, using the default value
-(9 msec) you will meet ARRL's CSI (clean signal initiative) specification
-for all CW speeds up to 40 wpm. Ramp widths can be chosen from
-5 to 16 msec (\pH does not allow values smaller than 5 msec
-to ensure that your CW signal does not produce overly strong clicks).
-If the RF pulse is shaped
-by \pH (\rett{CW handled in Radio} \textit{not} checked),
-you will get
-the optimized ramp function an the chosen ramp width.
-A very recent Protocol-2 update
-(March 2024) allows to send the ramp width to the radio as well.
-However, the FPGA firmware in the radio will ignore that value
-unless you run a very recent model, so with
-\rett{CW handled in Radio} checked, changing the ramp width in this menu
-has possibly no effect.
-
-The CW side tone needs pulse shaping as well to become pleasant.
-To make sure that the delay of the CW side tone is
-as small as possible, a ramp with a raised cosine shape
-and a constant width of 5 msec (independent of the ramp width
-used for RF) is used when \rett{CW handled in Radio} \textit{not} checked
-such that \pH shapes the side tone.
+%\rett{CW ramp width (ms)}. This spin-box lets you choose the
+%width of the ,,ramp'' used for RF CW pulses.
+%At the beginning of a dot or dash, the
+%amplitude of  the RF pulse is slowly
+%increased from zero to full amplitude at the beginning,
+%and at the end the amplitudes slowly fall down to zero.
+%This avoids harsh clicks in the RF signal
+%(which could possibly been heard all over the band for
+%hard keying). An optimized ramp function has been implemented
+%that gives good click suppression both at small and large
+%offsets from the carrier frequency. The
+%width is the rise/fall time of the pulse envelope, using the default value
+%(9 msec) you will meet ARRL's CSI (clean signal initiative) specification
+%for all CW speeds up to 40 wpm. Ramp widths can be chosen from
+%5 to 16 msec (\pH does not allow values smaller than 5 msec
+%to ensure that your CW signal does not produce overly strong clicks).
+%If the RF pulse is shaped
+%by \pH (\rett{CW handled in Radio} \textit{not} checked),
+%you will get
+%the optimized ramp function an the chosen ramp width.
+%A very recent Protocol-2 update
+%(March 2024) allows to send the ramp width to the radio as well.
+%However, the FPGA firmware in the radio will ignore that value
+%unless you run a very recent model, so with
+%\rett{CW handled in Radio} checked, changing the ramp width in this menu
+%has possibly no effect.
+%
+%The CW side tone needs pulse shaping as well to become pleasant.
+%To make sure that the delay of the CW side tone is
+%as small as possible, a ramp with a raised cosine shape
+%and a constant width of 5 msec (independent of the ramp width
+%used for RF) is used when \rett{CW handled in Radio} \textit{not} checked
+%such that \pH shapes the side tone.
 
 \rett{Paddle Mode:} Here the choice is Iambic Mode A, Iambic Mode B,
 and  Straight Key. In Straight Key mode, the key has to be connected
@@ -2740,9 +2740,6 @@ to the dash paddle, since the built-in keyer implements a bug mode
 there (automatic dots from the dot paddle, straight key behaviour
 for the dash paddle). When using an external keyer, use StraightKey
 mode and connect the keyer output to the dash paddle input.
-
-\rett{Keys reversed}. When checking this box, the dot and dash contacts
-are reversed, so you need not re-wire your paddle.
 
 \rett{Enforce letter spacing}. This option forces you to give ,,cleaner'' CW
 when in iambic mode. If at the end of an inter-element pause no key is
@@ -2752,6 +2749,10 @@ might well corrupt a letter you want to send. For example, when sending
 the letter "X" and the dot paddle is pressed a little too late, you
 instead send "TU". This option is probably more useful for practising than
 for doing real QSOs.
+
+\rett{Keys reversed}. When checking this box, the dot and dash contacts
+are reversed, so you need not re-wire your paddle.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
