@@ -3002,6 +3002,9 @@ static int remote_command(void *data) {
     int id = noise_command->id;
     CHECK_RX(id);
     RECEIVER *rx = receiver[id];
+
+    // TODO: noise parameters
+
     rx->nb = noise_command->nb;
     rx->nr = noise_command->nr;
     rx->anf = noise_command->anf;

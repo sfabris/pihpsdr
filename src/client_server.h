@@ -27,12 +27,12 @@
 #endif
 
 //
-// Conversion of host(double) to/from network(unsigned int)
-// Assume that double data is between -200 and 200,
-// convert to uint16 via uint16 = 100.0*(double+200.0) (result in the range 0 to 40000)
+// Conversion of host(double) to/from network(uint32)
+// Assume that double data is between -2000 and 2000,
+// convert to uint32 via uint32 = 1000000.0*(double+2000.0) (result in the range 0 to 4E9)
 //
-#define htond(X) htons((uint16_t) ((X+200.0)*100.0) )
-#define ntohd(X) 0.01*ntohs(X)-200.0
+#define htond(X) htonl((uint32_t) ((X+4000.0)*1000000.0) )
+#define ntohd(X) 0.000001*ntohl(X)-2000.0
 
 typedef enum {
   RECEIVER_DETACHED,
@@ -168,9 +168,9 @@ typedef struct __attribute__((__packed__)) _adc_data {
   uint8_t random;
   uint8_t preamp;
   uint16_t attenuation;
-  uint16_t gain;
-  uint16_t min_gain;
-  uint16_t max_gain;
+  uint32_t gain;         // double
+  uint32_t min_gain;     // double
+  uint32_t max_gain;     // double
 } ADC_DATA;
 
 typedef struct __attribute__((__packed__)) _receiver_data {
@@ -183,9 +183,9 @@ typedef struct __attribute__((__packed__)) _receiver_data {
   uint8_t display_waterfall;
   uint16_t fps;
   uint8_t agc;
-  uint16_t agc_hang;
-  uint16_t agc_thresh;
-  uint16_t agc_hang_thresh;
+  uint32_t agc_hang;            // double
+  uint32_t agc_thresh;          // double
+  uint32_t agc_hang_thresh;     // double
   uint8_t nb;
   uint8_t nr;
   uint8_t anf;
@@ -210,8 +210,8 @@ typedef struct __attribute__((__packed__)) _receiver_data {
   uint16_t height;
   uint16_t x;
   uint16_t y;
-  uint16_t volume;
-  uint16_t agc_gain;
+  uint32_t volume;   // double
+  uint32_t agc_gain; // double
 } RECEIVER_DATA;
 
 typedef struct __attribute__((__packed__)) _vfo_data {
@@ -240,7 +240,7 @@ typedef struct __attribute__((__packed__)) _spectrum_data {
   uint64_t vfo_b_ctun_freq;
   uint64_t vfo_a_offset;
   uint64_t vfo_b_offset;
-  uint16_t meter;
+  uint32_t meter; // double
   uint16_t samples;
   uint16_t sample[SPECTRUM_DATA_SIZE];
 } SPECTRUM_DATA;
@@ -309,7 +309,7 @@ typedef struct __attribute__((__packed__)) _pan_command {
 typedef struct __attribute__((__packed__)) _volume_command {
   HEADER header;
   uint8_t id;
-  uint16_t volume;
+  uint32_t volume;  // double
 } VOLUME_COMMAND;
 
 typedef struct __attribute__((__packed__)) _band_command {
@@ -341,10 +341,10 @@ typedef struct __attribute__((__packed__)) _agc_command {
 typedef struct __attribute__((__packed__)) _agc_gain_command {
   HEADER header;
   uint8_t id;
-  uint16_t gain;
-  uint16_t hang;
-  uint16_t thresh;
-  uint16_t hang_thresh;
+  uint32_t gain;        // double
+  uint32_t hang;        // double
+  uint32_t thresh;      // double
+  uint32_t hang_thresh; // double
 } AGC_GAIN_COMMAND;
 
 typedef struct __attribute__((__packed__)) _attenuation_command {
@@ -356,7 +356,7 @@ typedef struct __attribute__((__packed__)) _attenuation_command {
 typedef struct __attribute__((__packed__)) _rfgain_command {
   HEADER header;
   uint8_t id;
-  uint16_t gain;
+  uint32_t gain;  // double
 } RFGAIN_COMMAND;
 
 typedef struct __attribute__((__packed__)) _squelch_command {
@@ -373,6 +373,16 @@ typedef struct __attribute__((__packed__)) _noise_command {
   uint8_t nr;
   uint8_t anf;
   uint8_t snb;
+  uint8_t nb2_mode;
+  uint8_t nr_agc;
+  uint8_t nr2_gain_method;
+  uint8_t nr2_npe_method;
+  uint8_t nr2_ae;
+  //
+  // PROBLEM: the "double" values have no  nice encoding
+  //          since they include values such as 0.00001
+  // TODO:    Encode double numbers using a mantissa and an exponent
+  //          into a 32-bit network byte order number
 } NOISE_COMMAND;
 
 typedef struct __attribute__((__packed__)) _split_command {
