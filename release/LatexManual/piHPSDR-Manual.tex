@@ -1784,15 +1784,17 @@ one is highlighted (Fig. \ref{fig:ModeMenu}).
 
 \subsection{Settings stored with the mode.}
  Many settings such as filter choices, noise reduction
-and equaliser settings, and TX compressor settings
- are only reasonable with a specific mode in mind. For example, one might wish to use
+settings, equaliser settings, and TX compressor settings
+ are only reasonable for a specific mode and need be re-adjusted if one changes
+ the mode. For example, one might wish to use
  different VFO step sizes for different modes, and get the step size chosen for that
  mode automatically if one switches to that mode. Likewise, one often has specific settings
  for equalisers and TX compression that are valid for voice modes but not for digital modes.
 
  To this end, the settings given below are stored in the mode specific settings whenever
- they are changed for RX1/VFOA or for the transmitter. When changing modes later, these
- settings are restored. Note that settings changed for RX2/VFOB are not stored, but
+ they are changed for RX1/VFOA or for the transmitter. When changing modes later, 
+ the settings stored for the new mode become effective.
+Note that settings changed for RX2/VFOB are not stored, but
  stored settings are applied when the mode of RX2/VFOB is changed.
 
 List of settings stored for each mode:
@@ -1800,12 +1802,12 @@ List of settings stored for each mode:
 \begin{center}
 \begin{tabular}{l|l}
 \toprule
-VFO step size & \\\hline
-Filter & pre-defined filter, Var1, or Var2\\\hline
-Noise reduction & NR off/NR1/NR2 \\\hline
-Noise blanker & NB off/NB1/ NB2 \\\hline
-Automatic notch filter & ANF on/off \\\hline
-Spectral  noise blanker & SNB on/off \\\hline
+VFO step size & step size  \\\hline
+Filter & filter type used (including CW peak) \\\hline
+Noise reduction & all settings \\\hline
+Noise blanker & all settings \\\hline
+Automatic notch filter &  on/off \\\hline
+Spectral  noise blanker &  on/off \\\hline
 AGC characteristic & slow/medium/fast etc. \\\hline
 RX equaliser & all settings \\\hline
 TX equaliser & all settings \\\hline
@@ -1820,6 +1822,13 @@ because one has copied/swapped VFOs, changed the band or the band stack, or reca
 \section{The \texttt{Memory}  menu}
 \label{sec:memmenu}
 
+ \begin{figure}[ht]
+\center
+\includegraphics[width=10cm]{MemMenu.png}
+\caption{The \bltt{Memory} menu.}
+\label{fig:MemMenu}
+\end{figure}
+
 The \bltt{Memory} menu gives you access to ten memory slots. The menu is shown in Fig. \ref{fig:MemMenu}.
 You can store the current
 operating frequency  of the active receiver in any of the five slots by clicking a
@@ -1831,12 +1840,6 @@ in the memory slots.
  So if you have some often used frequencies (e.g. for a net), the
 \bltt{Memory} menu allows you to become QRV there with only few mouse clicks.
 
- \begin{figure}[ht]
-\center
-\includegraphics[width=10cm]{MemMenu.png}
-\caption{The \bltt{Memory} menu.}
-\label{fig:MemMenu}
-\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1846,6 +1849,13 @@ The second column of the main menu contains menus which allow you to change
 receiver settings.
 
 \section{The \texttt{RX} Menu}
+
+\begin{figure}[ht!]
+\center
+\includegraphics[width=10cm]{RXMenu.png}
+\caption{The \bltt{RX} menu.}
+\label{fig:RXMenu}
+\end{figure}
 
 Invoking the \bltt{RX} menu through the main menu always implies that the settings
 of the active receiver are to be modified. Using a mouse, you can also open the menu
@@ -1870,12 +1880,7 @@ can be used for connecting a dedicated RX antenna.
 \textbf{Note: Diversity}. When using \bltt{Diversity} reception, the ADC setting is
 overridden, since there data streams from ADC0 and ADC1 are combined (mixed).
 
-\begin{figure}[ht!]
-\center
-\includegraphics[width=10cm]{RXMenu.png}
-\caption{The \bltt{RX} menu.}
-\label{fig:RXMenu}
-\end{figure}
+
 
 \rett{Dither}. When checked, the ,,dither'' bit is set which affects the operation of
 the ADC converter in some HPSDR boards.
@@ -1944,7 +1949,8 @@ because one then hears the hounds and the fox on different ears.
 \label{fig:FilterMenuUSB}
 \end{figure}
 
-With the \bltt{Filter} menu, you can change the filter of the active receiver. There
+With the \bltt{Filter} menu, you can change the filter of the active receiver. For each mode,
+there
 are ten fixed filters and two variable filters, see Fig. \ref{fig:FilterMenuUSB}. It
 depends on the current mode which filters are at your disposal, and Fig. \ref{fig:FilterMenuUSB}
 is what you see for USB and LSB modes. The filter currently active is highlighted, and
@@ -2004,12 +2010,7 @@ and 5000 Hz.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The \texttt{Noise} Menu}
 
-\begin{figure}[ht]
-\center
-\includegraphics[width=10cm]{NoiseMenu1.png}
-\caption{The \bltt{Noise} menu (with NR settings).}
-\label{fig:NoiseMenu1}
-\end{figure}
+
 
 With the \bltt{Noise} menu you can select a variety of noise reduction and/or
 noise blanker capabilities (Fig. \ref{fig:NoiseMenu1}). The upper part of the
@@ -2030,6 +2031,13 @@ namely no noise reduction, LMS noise reduction (NR1) or spectral noise reduction
 \rett{Noise Blanker}. With this pop-down menu, you can choose the type of noise blanker
 (no noise blanker, the preemptive wide band blanker NB or the interpolating wide band
 blanker NB2 ).
+
+\begin{figure}[ht]
+\center
+\includegraphics[width=10cm]{NoiseMenu1.png}
+\caption{The \bltt{Noise} menu (with NR settings).}
+\label{fig:NoiseMenu1}
+\end{figure}
 
 \rett{NR Settings/NB Settings}. Choosing one of the two buttons determines whether the
 lower part of the menu offers fine-tuning of the noise reduction or noise blanker settings.

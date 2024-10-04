@@ -59,12 +59,41 @@ void update_noise() {
   //
   // TODO: include NR2 and NB2 parameters
   //
+  int id = active_receiver->id;
+
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
-    send_noise(client_socket, active_receiver->id, active_receiver->nb, active_receiver->nr,
+    send_noise(client_socket, id, active_receiver->nb, active_receiver->nr,
                active_receiver->anf, active_receiver->snb);
 #endif
     return;
+  }
+
+  //
+  // Update the mode settings
+  //
+  if (id == 0) {
+    mode_settings[vfo[id].mode].nr = active_receiver->nr;
+    mode_settings[vfo[id].mode].nb = active_receiver->nb;
+    mode_settings[vfo[id].mode].anf = active_receiver->anf;
+    mode_settings[vfo[id].mode].snb = active_receiver->snb;
+    mode_settings[vfo[id].mode].nr2_ae = active_receiver->nr2_ae;
+    mode_settings[vfo[id].mode].nr_agc = active_receiver->nr_agc;
+    mode_settings[vfo[id].mode].nb2_mode = active_receiver->nb2_mode;
+    mode_settings[vfo[id].mode].nr2_gain_method = active_receiver->nr2_gain_method;
+    mode_settings[vfo[id].mode].nr2_npe_method = active_receiver->nr2_npe_method;
+    mode_settings[vfo[id].mode].nr2_trained_threshold = active_receiver->nr2_trained_threshold;
+    mode_settings[vfo[id].mode].nb_tau = active_receiver->nb_tau;
+    mode_settings[vfo[id].mode].nb_advtime = active_receiver->nb_advtime;
+    mode_settings[vfo[id].mode].nb_hang = active_receiver->nb_hang;
+    mode_settings[vfo[id].mode].nb_thresh = active_receiver->nb_thresh;
+#ifdef EXTNR
+    mode_settings[vfo[id].mode].nr4_reduction_amount = active_receiver->nr4_reduction_amount;
+    mode_settings[vfo[id].mode].nr4_smoothing_factor = active_receiver->nr4_smoothing_factor;
+    mode_settings[vfo[id].mode].nr4_whitening_factor = active_receiver->nr4_whitening_factor;
+    mode_settings[vfo[id].mode].nr4_noise_rescale = active_receiver->nr4_noise_rescale;
+    mode_settings[vfo[id].mode].nr4_post_filter_threshold = active_receiver->nr4_post_filter_threshold;
+#endif
   }
 
   rx_set_noise(active_receiver);
@@ -72,48 +101,22 @@ void update_noise() {
 }
 
 static void nb_cb(GtkToggleButton *widget, gpointer data) {
-  int val = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
-  int id  = active_receiver->id;
-  active_receiver->nb = val;
-
-  if (id == 0) {
-    mode_settings[vfo[id].mode].nb = val;
-  }
-
+  active_receiver->nb = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
   update_noise();
 }
 
 static void nr_cb(GtkToggleButton *widget, gpointer data) {
-  int val = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
-  int id  = active_receiver->id;
-  active_receiver->nr = val;
-
-  if (id == 0) {
-    mode_settings[vfo[id].mode].nr = val;
-  }
-
+  active_receiver->nr = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
   update_noise();
 }
 
 static void anf_cb(GtkWidget *widget, gpointer data) {
-  int id  = active_receiver->id;
   active_receiver->anf = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
-
-  if (id == 0) {
-    mode_settings[vfo[id].mode].anf = active_receiver->anf;
-  }
-
   update_noise();
 }
 
 static void snb_cb(GtkWidget *widget, gpointer data) {
-  int id  = active_receiver->id;
   active_receiver->snb = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
-
-  if (id == 0) {
-    mode_settings[vfo[id].mode].snb = active_receiver->snb;
-  }
-
   update_noise();
 }
 
@@ -123,26 +126,22 @@ static void ae_cb(GtkWidget *widget, gpointer data) {
 }
 
 static void pos_cb(GtkWidget *widget, gpointer data) {
-  int val = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
-  active_receiver->nr_agc = val;
+  active_receiver->nr_agc = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
   update_noise();
 }
 
 static void mode_cb(GtkWidget *widget, gpointer data) {
-  int val = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
-  active_receiver->nb2_mode = val;
+  active_receiver->nb2_mode = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
   update_noise();
 }
 
 static void gain_cb(GtkWidget *widget, gpointer data) {
-  int val = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
-  active_receiver->nr2_gain_method = val;
+  active_receiver->nr2_gain_method = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
   update_noise();
 }
 
 static void npe_cb(GtkWidget *widget, gpointer data) {
-  int val = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
-  active_receiver->nr2_npe_method = val;
+  active_receiver->nr2_npe_method = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
   update_noise();
 }
 

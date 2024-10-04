@@ -73,7 +73,13 @@ static void cleanup() {
 }
 
 static void cw_peak_cb(GtkWidget *widget, gpointer data) {
-  vfo[active_receiver->id].cwAudioPeakFilter = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  int id = active_receiver->id;
+  vfo[id].cwAudioPeakFilter = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+
+  if (id == 0) {
+    mode_settings[vfo[id].mode].cwPeak = vfo[id].cwAudioPeakFilter;
+  }
+
   rx_filter_changed(active_receiver);
   g_idle_add(ext_vfo_update, NULL);
 }

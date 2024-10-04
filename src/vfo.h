@@ -79,23 +79,41 @@ extern struct _vfo vfo[MAX_VFOS];
 //
 //
 struct _mode_settings {
-  int filter;               // actual filter used
-  int nb;                   // Noise blanker (0..2)
-  int nr;                   // Noise reduction (0..2 or 0..4)
-  int anf;                  // Automatic notch filter
-  int snb;                  // Spectral noise blanker
-  int agc;                  // AGC characteristics (slow/medium/fast etc.)
-  int en_txeq;              // TX equalizer on/off
-  int en_rxeq;              // RX equalizer on/off
-  double tx_eq_freq[11];    // TX equalizer settings
+  int    filter;                    // actual filter used
+  int    cwPeak;
+  int    nb;                        // Noise blanker (0..2)
+  double nb_tau;                    // NB parameters
+  double nb_hang;
+  double nb_advtime;
+  double nb_thresh;
+  int    nb2_mode;
+  int    nr;                        // Noise reduction (0..2 or 0..4)
+  int    nr_agc;                    // NR parameters
+  int    nr2_gain_method;
+  int    nr2_npe_method;
+  int    nr2_ae;
+  double nr2_trained_threshold;
+#ifdef EXTNR
+  double nr4_reduction_amount;      // NR4 parameters
+  double nr4_smoothing_factor;
+  double nr4_whitening_factor;
+  double nr4_noise_rescale;
+  double nr4_post_filter_threshold
+#endif
+  int anf;                          // Automatic notch filter
+  int snb;                          // Spectral noise blanker
+  int agc;                          // AGC characteristics (slow/medium/fast etc.)
+  int en_txeq;                      // TX equalizer on/off
+  int en_rxeq;                      // RX equalizer on/off
+  double tx_eq_freq[11];            // TX equalizer settings
   double tx_eq_gain[11];
   int    tx_eq_tenband;
-  double rx_eq_freq[11];     // RX equalizer settings
+  double rx_eq_freq[11];            // RX equalizer settings
   double rx_eq_gain[11];
   int    rx_eq_tenband;
-  long long step;           // VFO step size
-  int compressor;           // TX compressor on/off
-  double compressor_level;  // TX compressor level
+  long long step;                   // VFO step size
+  int compressor;                   // TX compressor on/off
+  double compressor_level;          // TX compressor level
 };
 
 extern struct _mode_settings mode_settings[];
