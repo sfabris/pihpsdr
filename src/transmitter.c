@@ -779,6 +779,12 @@ static void tx_create_visual(TRANSMITTER *tx) {
 
 TRANSMITTER *tx_create_transmitter(int id, int width, int height) {
   TRANSMITTER *tx = g_new(TRANSMITTER, 1);
+  //
+  // This is to guard against programming errors
+  // (missing initializations)
+  //
+  memset(tx, 0, sizeof(TRANSMITTER));
+  //
   tx->id = id;
   tx->dac = 0;
   tx->fps = 10;
@@ -889,6 +895,7 @@ TRANSMITTER *tx_create_transmitter(int id, int width, int height) {
   STRLCPY(tx->microphone_name, "NO MIC", 128);
   tx->dialog_x = -1;
   tx->dialog_y = -1;
+  tx->dialog = NULL;
   tx->swr = 1.0;
   tx->swr_protection = FALSE;
   tx->swr_alarm = 3.0;     // default value for SWR protection

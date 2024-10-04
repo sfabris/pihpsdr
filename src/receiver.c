@@ -603,7 +603,8 @@ static void rx_create_visual(RECEIVER *rx) {
 
 RECEIVER *rx_create_pure_signal_receiver(int id, int sample_rate, int width, int fps) {
   //
-  // For a PureSignal receiver, most parameters are not needed.
+  // For a PureSignal receiver, most parameters are not needed
+  // so we fill the entire data with zeroes
   //
   RECEIVER *rx = malloc(sizeof(RECEIVER));
   memset (rx, 0, sizeof(RECEIVER));
@@ -649,6 +650,12 @@ RECEIVER *rx_create_pure_signal_receiver(int id, int sample_rate, int width, int
 RECEIVER *rx_create_receiver(int id, int pixels, int width, int height) {
   t_print("%s: RXid=%d pixels=%d width=%d height=%d\n", __FUNCTION__, id, pixels, width, height);
   RECEIVER *rx = malloc(sizeof(RECEIVER));
+  //
+  // This is to guard against programming errors
+  // (missing initializations)
+  //
+  memset(rx, 0, sizeof(RECEIVER));
+  //
   rx->id = id;
   g_mutex_init(&rx->mutex);
   g_mutex_init(&rx->display_mutex);
