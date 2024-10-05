@@ -1528,17 +1528,44 @@ void send_squelch(int s, int rx, int enable, int squelch) {
   }
 }
 
-void send_noise(int s, int rx, int nb, int nr, int anf, int snb) {
+void send_noise(int s, int rx, int nb, int nr, int anf, int snb,
+                int nb2_mode, int nr_agc, int nr2_gain_method, int nr2_npe_method,
+                int nr2_ae, double nb_tau, double nb_hang, double nb_advtime,
+                double nb_thresh, double nr2_trained_threshold
+#ifdef EXTNR
+                ,
+                double nr4_reduction_amount, double nr4_smoothing_factor,
+                double nr4_whitening_factor, double nr4_noise_rescale, double nr4_post_filter_threshold
+#endif
+               ) {
   NOISE_COMMAND command;
   t_print("send_noise rx=%d nb=%d nr=%d anf=%d snb=%d\n", rx, nb, nr, anf, snb);
   command.header.sync = REMOTE_SYNC;
   command.header.data_type = htons(CMD_RESP_RX_NOISE);
   command.header.version = htonl(CLIENT_SERVER_VERSION);
-  command.id = rx;
-  command.nb = nb;
-  command.nr = nr;
-  command.anf = anf;
-  command.snb = snb;
+  command.id                        = rx;
+  command.nb                        = nb;
+  command.nr                        = nr;
+  command.anf                       = anf;
+  command.snb                       = snb;
+  command.nb2_mode                  = nb2_mode;
+  command.nr_agc                    = nr_agc;
+  command.nr2_gain_method           = nr2_gain_method;
+  command.nr2_npe_method            = nr2_npe_method;
+  command.nr2_ae                    = nr2_ae;
+  command.nb_tau                    = htond(nb_tau);
+  command.nb_hang                   = htond(nb_hang);
+  command.nb_advtime                = htond(nb_advtime);
+  command.nb_thresh                 = htond(nb_thresh);
+  command.nr2_trained_threshold     = htond(nr2_trained_threshold);
+#ifdef EXTNR
+  command.nr4_reduction_amount      = htond(nr4_reduction_amount);
+  command.nr4_smoothing_factor      = htond(nr4_smoothing_factor);
+  command.nr4_whitening_factor      = htond(nr4_whitening_factor);
+  command.nr4_noise_rescale         = htond(nr4_noise_rescale);
+  command.nr4_post_filter_threshold = htond(nr4_post_filter_threshold);
+#endif
+
   int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
   if (bytes_sent < 0) {
@@ -3003,22 +3030,62 @@ static int remote_command(void *data) {
     CHECK_RX(id);
     RECEIVER *rx = receiver[id];
 
-    // TODO: noise parameters
-
-    rx->nb = noise_command->nb;
-    rx->nr = noise_command->nr;
-    rx->anf = noise_command->anf;
-    rx->snb = noise_command->snb;
+    rx->nb                        = noise_command->nb;
+    rx->nr                        = noise_command->nr;
+    rx->anf                       = noise_command->anf;
+    rx->snb                       = noise_command->snb;
+    rx->nb2_mode                  = noise_command->nb2_mode;
+    rx->nr_agc                    = noise_command->nr_agc;
+    rx->nr2_gain_method           = noise_command->nr2_gain_method;
+    rx->nr2_npe_method            = noise_command->nr2_npe_method;
+    rx->nr2_ae                    = noise_command->nr2_ae;
+    rx->nb_tau                    = ntohd(noise_command->nb_tau);
+    rx->nb_hang                   = ntohd(noise_command->nb_hang);
+    rx->nb_advtime                = ntohd(noise_command->nb_advtime);
+    rx->nb_thresh                 = ntohd(noise_command->nb_thresh);
+    rx->nr2_trained_threshold     = ntohd(noise_command->nr2_trained_threshold);
+#ifdef EXTNR
+    rx->nr4_reduction_amount      = ntohd(noise_command->nr4_reduction_amount);
+    rx->nr4_smoothing_factor      = ntohd(noise_command->nr4_smoothing_factor);
+    rx->nr4_whitening_factor      = ntohd(noise_command->nr4_whitening_factor);
+    rx->nr4_noise_rescale         = ntohd(noise_command->nr4_noise_rescale);
+    rx->nr4_post_filter_threshold = ntohd(noise_command->nr4_post_filter_threshold);
+#endif
 
     if (id == 0) {
-      mode_settings[vfo[id].mode].nb = rx->nb;
-      mode_settings[vfo[id].mode].nr = rx->nr;
-      mode_settings[vfo[id].mode].anf = rx->anf;
-      mode_settings[vfo[id].mode].snb = rx->snb;
+      mode_settings[vfo[id].mode].nb                        = rx->nb;
+      mode_settings[vfo[id].mode].nb2_mode                  = rx->nb2_mode;
+      mode_settings[vfo[id].mode].nb_tau                    = rx->nb_tau;
+      mode_settings[vfo[id].mode].nb_hang                   = rx->nb_hang;
+      mode_settings[vfo[id].mode].nb_advtime                = rx->nb_advtime;
+      mode_settings[vfo[id].mode].nb_thresh                 = rx->nb_thresh;
+      mode_settings[vfo[id].mode].nr                        = rx->nr;
+      mode_settings[vfo[id].mode].nr_agc                    = rx->nr_agc;
+      mode_settings[vfo[id].mode].nr2_gain_method           = rx->nr2_gain_method;
+      mode_settings[vfo[id].mode].nr2_npe_method            = rx->nr2_npe_method;
+      mode_settings[vfo[id].mode].nr2_trained_threshold     = rx->nr2_trained_threshold;
+#ifdef EXTNR
+      mode_settings[vfo[id].mode].nr4_reduction_amount      = rx->nr4_reduction_amount;
+      mode_settings[vfo[id].mode].nr4_smoothing_factor      = rx->nr4_smoothing_factor;
+      mode_settings[vfo[id].mode].nr4_whitening_factor      = rx->nr4_whitening_factor;
+      mode_settings[vfo[id].mode].nr4_noise_rescale         = rx->nr4_noise_rescale;
+      mode_settings[vfo[id].mode].nr4_post_filter_threshold = rx->nr4_post_filter_threshold;
+#endif
+      mode_settings[vfo[id].mode].anf                       = rx->anf;
+      mode_settings[vfo[id].mode].snb                       = rx->snb;
     }
 
     rx_set_noise(rx);
-    send_noise(client->socket, rx->id, rx->nb, rx->nr, rx->anf, rx->snb);
+    send_noise(client->socket, rx->id, rx->nb, rx->nr, rx->anf, rx->snb,
+               rx->nb2_mode, rx->nr_agc, rx->nr2_gain_method, rx->nr2_npe_method,
+               rx->nr2_ae, rx->nb_tau, rx->nb_hang, rx->nb_advtime, rx->nb_thresh,
+               rx->nr2_trained_threshold
+#ifdef EXTNR
+               ,
+               rx->nr4_reduction_amount, rx->nr4_smoothing_factor,
+               rx->nr4_whitening_factor, rx->nr4_noise_rescale, rx->nr4_post_filter_threshold
+#endif
+              );
     g_idle_add(ext_vfo_update, NULL);
   }
   break;

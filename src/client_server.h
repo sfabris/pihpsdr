@@ -368,21 +368,28 @@ typedef struct __attribute__((__packed__)) _squelch_command {
 
 typedef struct __attribute__((__packed__)) _noise_command {
   HEADER header;
-  uint8_t id;
-  uint8_t nb;
-  uint8_t nr;
-  uint8_t anf;
-  uint8_t snb;
-  uint8_t nb2_mode;
-  uint8_t nr_agc;
-  uint8_t nr2_gain_method;
-  uint8_t nr2_npe_method;
-  uint8_t nr2_ae;
-  //
-  // PROBLEM: the "double" values have no  nice encoding
-  //          since they include values such as 0.00001
-  // TODO:    Encode double numbers using a mantissa and an exponent
-  //          into a 32-bit network byte order number
+  uint8_t  id;
+  uint8_t  nb;
+  uint8_t  nr;
+  uint8_t  anf;
+  uint8_t  snb;
+  uint8_t  nb2_mode;
+  uint8_t  nr_agc;
+  uint8_t  nr2_gain_method;
+  uint8_t  nr2_npe_method;
+  uint8_t  nr2_ae;
+  uint32_t nb_tau;                    // double
+  uint32_t nb_hang;                   // double
+  uint32_t nb_advtime;                // double
+  uint32_t nb_thresh;                 // double
+  uint32_t nr2_trained_threshold;     // double
+#ifdef EXTNR
+  uint32_t nr4_reduction_amount;      // double
+  uint32_t nr4_smoothing_factor;      // double
+  uint32_t nr4_whitening_factor;      // double
+  uint32_t nr4_noise_rescale;         // double
+  uint32_t nr4_post_filter_threshold; // double
+#endif
 } NOISE_COMMAND;
 
 typedef struct __attribute__((__packed__)) _split_command {
@@ -517,7 +524,17 @@ extern void send_agc_gain(int s, int rx, double gain, double hang, double thresh
 extern void send_attenuation(int s, int rx, int attenuation);
 extern void send_rfgain(int s, int rx, double gain);
 extern void send_squelch(int s, int rx, int enable, int squelch);
-extern void send_noise(int s, int rx, int nb, int nr, int anf, int snb);
+extern void send_noise(int s, int rx, int nb, int nr, int anf, int snb,
+                       int nb2_mode, int nr_agc, int nr2_gain_method, int nr2_npe_method,
+                       int nr2_ae, double nb_tau, double nb_hang, double nb2_advtime,
+                       double nb2_thresh, double nr2_trained_threshold
+#ifdef EXTNR
+                       ,
+                       double nr4_reduction_amount, double nr4_smoothing_factor,
+                       double nr4_whitening_factor, double nr4_noise_rescale,
+                       double nr4_post_filter_threshold
+#endif
+               );
 extern void send_band(int s, int rx, int band);
 extern void send_mode(int s, int rx, int mode);
 extern void send_filter(int s, int rx, int filter);

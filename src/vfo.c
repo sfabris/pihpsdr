@@ -206,8 +206,9 @@ static void modesettingsRestoreState() {
 #ifdef EXTNR
     mode_settings[i].nr4_reduction_amount = 10.0;
     mode_settings[i].nr4_smoothing_factor = 0.0;
-    mode_settings[i].nr4_whitening = 0.0;
+    mode_settings[i].nr4_whitening_factor = 0.0;
     mode_settings[i].nr4_noise_rescale = 2.0;
+    mode_settings[i].nr4_post_filter_threshold = 2.0;
 #endif
     mode_settings[i].en_rxeq = 0;
     mode_settings[i].en_txeq = 0;
