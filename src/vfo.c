@@ -203,13 +203,11 @@ static void modesettingsRestoreState() {
     mode_settings[i].nb_hang = 0.00001;
     mode_settings[i].nb_thresh = 4.95;
     mode_settings[i].nb2_mode = 0;
-#ifdef EXTNR
     mode_settings[i].nr4_reduction_amount = 10.0;
     mode_settings[i].nr4_smoothing_factor = 0.0;
     mode_settings[i].nr4_whitening_factor = 0.0;
     mode_settings[i].nr4_noise_rescale = 2.0;
     mode_settings[i].nr4_post_filter_threshold = 2.0;
-#endif
     mode_settings[i].en_rxeq = 0;
     mode_settings[i].en_txeq = 0;
     mode_settings[i].rx_eq_tenband = 0;
@@ -469,13 +467,11 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
   rx->nr2_npe_method        = mode_settings[m].nr2_npe_method;
   rx->nr2_ae                = mode_settings[m].nr2_ae;
   rx->nr2_trained_threshold = mode_settings[m].nr2_trained_threshold;
-#ifdef EXTNR
   rx->nr4_reduction_amount  = mode_settings[m].nr4_reduction_amount;
   rx->nr4_smoothing_factor  = mode_settings[m].nr4_smoothing_factor;
   rx->nr4_whitening_factor  = mode_settings[m].nr4_whitening_factor;
   rx->nr4_noise_rescale     = mode_settings[m].nr4_noise_rescale;
   rx->nr4_post_filter_threshold = mode_settings[m].nr4_post_filter_threshold;
-#endif
   rx->nb                    = mode_settings[m].nb;
   rx->nb2_mode              = mode_settings[m].nb2_mode;
   rx->nb_tau                = mode_settings[m].nb_tau;

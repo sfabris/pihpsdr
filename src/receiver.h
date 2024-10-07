@@ -41,7 +41,6 @@ typedef struct _receiver {
   GMutex mutex;
   GMutex display_mutex;
 
-  int ddc;
   int adc;
 
   double volume;  // in dB
@@ -145,16 +144,14 @@ typedef struct _receiver {
   // nb2_mode = 3:  hold-sample
   // nb2_mode = 4:  interpolate
 
-#ifdef EXTNR
   //
-  // NR4 parameters
+  // NR4 parameters. Only used if compiled with EXTNR
   //
   double nr4_reduction_amount;
   double nr4_smoothing_factor;
   double nr4_whitening_factor;
   double nr4_noise_rescale;
   double nr4_post_filter_threshold;
-#endif
 
   int alex_antenna;
   int alex_attenuation;
