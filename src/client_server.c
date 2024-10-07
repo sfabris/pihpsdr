@@ -16,6 +16,54 @@
 *
 */
 
+/*
+ * Some general remarks to the client-server model.
+ *
+ * Server = piHPSDR running on a "local" attached to the radio
+ * Client = piHPSDR running on a "remote" computer without a radio
+ *
+ * The server starts after all data has been initialized and the props file has
+ * been read, and then sends out all this data to the client with the
+ * INFO_RADIO, INFO_RECEIVER, INFO_ADC, and INFO_VFO packets.
+ *
+ * It then periodically sends audio (INFO_AUDIO) and pixel (INFO_SPECTRUM) data,
+ * the latter is used both for the panadapter and the waterfall.
+ *
+ * On the client side, a packet is sent if the user changes the state (e.g. via
+ * a menu). Take, for example, the case that a noise reduction setting/parameter
+ * is changed.
+ *
+ * The client never calls WDSP functions, instead in this case it calls send_noid()
+ * which sends a CMD_RESP_RX_NOISE packet to the server.
+ *
+ * If the server receives this packet, it stores the noise reduction settings
+ * contained therein in its internal data structures and applies them by calling
+ * WDSP functions. In addition, it calls send_noise(), that is, the server then
+ * creates and sends back an identical CMD_RESP_RX_NOISE packet to the client.
+ *
+ * When the client receives, the CMD_RESP_RX_NOISE packet, it stores the noise
+ * reduction settings therein in its internal data structures but does not call
+ * WDSP functions.
+ *
+ * There is some reduncancy here. It is important (not yet done) to handle such
+ * a packet in one place only, with a code structure of the form
+ *
+ * copy_data_from_packet_to_local_data_structures();
+ * if (!radio_is_remote) {
+ *   apply_these_settings();
+ * }
+ *
+ * Some settings, e.g. window width etc. need to be applied on both sides.
+ *
+ * Note that processing such a CMD_RESP_NOISE packet is very similar on both sides,
+ * except that only the server actually *applies* the settings.
+ *
+ * Most packets are sent from the GTK queue, but audio data is sent directly from
+ * the receive thread, so we need a mutex in send_bytes. It is important that
+ * a packet (that is, a bunch of data that belongs together) is sent in a single
+ * call to send_bytes.
+ */
+
 #include <gtk/gtk.h>
 
 #include <stdio.h>
@@ -147,11 +195,19 @@ static int recv_bytes(int s, char *buffer, int bytes) {
   return bytes_read;
 }
 
+//
+// This function is called from within the GTK queue but
+// also from the receive thread (via remote_audio).
+// To make this bullet proof, we need a mutex here in case a
+// remote_audio occurs while sending another packet.
+//
 static int send_bytes(int s, char *buffer, int bytes) {
+  static GMutex send_mutex;  // static so correctly initialized
   int bytes_sent = 0;
 
   if (s < 0) { return -1; }
 
+  g_mutex_lock(&send_mutex);
   while (bytes_sent != bytes) {
     int rc = send(s, &buffer[bytes_sent], bytes - bytes_sent, 0);
 
@@ -166,6 +222,7 @@ static int send_bytes(int s, char *buffer, int bytes) {
       bytes_sent += rc;
     }
   }
+  g_mutex_unlock(&send_mutex);
 
   return bytes_sent;
 }
@@ -221,6 +278,10 @@ static int send_spectrum(void *arg) {
     if (client->receiver[r].send_spectrum) {
       if (rx->displaying && (rx->pixels > 0) && (rx->pixel_samples != NULL)) {
         g_mutex_lock(&rx->display_mutex);
+        //
+        // Here the logic need be extended as to
+        // allow spectra of variable width, since the display
+        // can have variable width
         spectrum_data.header.sync = REMOTE_SYNC;
         spectrum_data.header.data_type = htons(INFO_SPECTRUM);
         spectrum_data.header.version = htonll(CLIENT_SERVER_VERSION);
@@ -235,7 +296,9 @@ static int send_spectrum(void *arg) {
         spectrum_data.samples = htons(rx->width);
         samples = rx->pixel_samples;
 
-        for (int i = 0; i < rx->width; i++) {
+        // Added quick and dirty fix as to send only the first SPECTRUM_DATA_SIZE pixels
+
+        for (int i = 0; (i < rx->width) && (i < SPECTRUM_DATA_SIZE) ; i++) {
           s = (short)samples[i + rx->pan];
           spectrum_data.sample[i] = htons(s);
         }
@@ -403,20 +466,23 @@ static void *server_thread(void *arg) {
   HEADER header;
   t_print("Client connected on port %d\n", client->address.sin_port);
   //
-  // The server starts with sending much of the radio data
+  // The server starts with sending much of the radio data in order
+  // to initialize data structures on the client side.
   //
-  send_radio_data(client);
-  send_adc_data(client, 0);
-  send_adc_data(client, 1);
+  send_radio_data(client);                 // send INFO_RADIO packet
+  send_adc_data(client, 0);                // send INFO_ADC   packet
+  send_adc_data(client, 1);                // send INFO_ADC   packet
 
   for (int i = 0; i < RECEIVERS; i++) {
-    send_rx_data(client, i);
+    send_rx_data(client, i);               // send INFO_RECEIVER packet
   }
 
-  send_vfo_data(client, VFO_A);
-  send_vfo_data(client, VFO_B);
+  send_vfo_data(client, VFO_A);            // send INFO_VFO packet
+  send_vfo_data(client, VFO_B);            // send INFO_VFO packet
 
+  //
   // get and parse client commands
+  //
   while (client->running) {
     int bytes_read = recv_bytes(client->socket, (char *)&header.sync, sizeof(header.sync));
 
@@ -1531,13 +1597,9 @@ void send_squelch(int s, int rx, int enable, int squelch) {
 void send_noise(int s, int rx, int nb, int nr, int anf, int snb,
                 int nb2_mode, int nr_agc, int nr2_gain_method, int nr2_npe_method,
                 int nr2_ae, double nb_tau, double nb_hang, double nb_advtime,
-                double nb_thresh, double nr2_trained_threshold
-#ifdef EXTNR
-                ,
+                double nb_thresh, double nr2_trained_threshold,
                 double nr4_reduction_amount, double nr4_smoothing_factor,
-                double nr4_whitening_factor, double nr4_noise_rescale, double nr4_post_filter_threshold
-#endif
-               ) {
+                double nr4_whitening_factor, double nr4_noise_rescale, double nr4_post_filter_threshold) {
   NOISE_COMMAND command;
   t_print("send_noise rx=%d nb=%d nr=%d anf=%d snb=%d\n", rx, nb, nr, anf, snb);
   command.header.sync = REMOTE_SYNC;
@@ -1558,13 +1620,11 @@ void send_noise(int s, int rx, int nb, int nr, int anf, int snb,
   command.nb_advtime                = htond(nb_advtime);
   command.nb_thresh                 = htond(nb_thresh);
   command.nr2_trained_threshold     = htond(nr2_trained_threshold);
-#ifdef EXTNR
   command.nr4_reduction_amount      = htond(nr4_reduction_amount);
   command.nr4_smoothing_factor      = htond(nr4_smoothing_factor);
   command.nr4_whitening_factor      = htond(nr4_whitening_factor);
   command.nr4_noise_rescale         = htond(nr4_noise_rescale);
   command.nr4_post_filter_threshold = htond(nr4_post_filter_threshold);
-#endif
 
   int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
@@ -2086,10 +2146,27 @@ void start_vfo_timer() {
   t_print("check_vfo_timer_id %d\n", check_vfo_timer_id);
 }
 
+////////////////////////////////////////////////////////////////////////////
 //
 // client_thread is running on the "remote"  computer
 // (which communicates with the server on the "local" computer)
 //
+// It receives a lot of data which is stored to get the proper menus etc.,
+// but this data does not affect any radio operation (all of which runs
+// on the "local" computer)
+//
+// TODO TODO TODO
+// it seems that in many of the "CMD_RESP_..." cases, remote_command
+// could be called, if some provision is taken there that actual
+// radio operations are put into "if (radio_is_remote) { ... }".
+//
+// This avoids code duplication and facilitates software maintenance.
+// So there should be a single place of handling incoming packets, and
+// in this place there can be a discrimination whether we are client or
+// or server.
+//
+////////////////////////////////////////////////////////////////////////////
+
 static void *client_thread(void* arg) {
   int bytes_read;
   HEADER header;
@@ -2314,6 +2391,9 @@ static void *client_thread(void* arg) {
 
     case INFO_SPECTRUM: {
       SPECTRUM_DATA spectrum_data;
+      //
+      // This need be reworked if one allows a variable width
+      //
       bytes_read = recv_bytes(client_socket, (char *)&spectrum_data.rx, sizeof(spectrum_data) - sizeof(header));
 
       if (bytes_read <= 0) {
@@ -2338,7 +2418,9 @@ static void *client_thread(void* arg) {
         receiver[r]->pixel_samples = g_new(float, (int)samples);
       }
 
-      for (int i = 0; i < samples; i++) {
+      // Added quick and dirty fix as to use at most SPECTRUM_DATA_SIZE pixels
+
+      for (int i = 0; (i < samples) && (i<SPECTRUM_DATA_SIZE); i++) {
         short sample = ntohs(spectrum_data.sample[i]);
         receiver[r]->pixel_samples[i] = (float)sample;
       }
@@ -3044,13 +3126,11 @@ static int remote_command(void *data) {
     rx->nb_advtime                = ntohd(noise_command->nb_advtime);
     rx->nb_thresh                 = ntohd(noise_command->nb_thresh);
     rx->nr2_trained_threshold     = ntohd(noise_command->nr2_trained_threshold);
-#ifdef EXTNR
     rx->nr4_reduction_amount      = ntohd(noise_command->nr4_reduction_amount);
     rx->nr4_smoothing_factor      = ntohd(noise_command->nr4_smoothing_factor);
     rx->nr4_whitening_factor      = ntohd(noise_command->nr4_whitening_factor);
     rx->nr4_noise_rescale         = ntohd(noise_command->nr4_noise_rescale);
     rx->nr4_post_filter_threshold = ntohd(noise_command->nr4_post_filter_threshold);
-#endif
 
     if (id == 0) {
       mode_settings[vfo[id].mode].nb                        = rx->nb;
@@ -3064,13 +3144,11 @@ static int remote_command(void *data) {
       mode_settings[vfo[id].mode].nr2_gain_method           = rx->nr2_gain_method;
       mode_settings[vfo[id].mode].nr2_npe_method            = rx->nr2_npe_method;
       mode_settings[vfo[id].mode].nr2_trained_threshold     = rx->nr2_trained_threshold;
-#ifdef EXTNR
       mode_settings[vfo[id].mode].nr4_reduction_amount      = rx->nr4_reduction_amount;
       mode_settings[vfo[id].mode].nr4_smoothing_factor      = rx->nr4_smoothing_factor;
       mode_settings[vfo[id].mode].nr4_whitening_factor      = rx->nr4_whitening_factor;
       mode_settings[vfo[id].mode].nr4_noise_rescale         = rx->nr4_noise_rescale;
       mode_settings[vfo[id].mode].nr4_post_filter_threshold = rx->nr4_post_filter_threshold;
-#endif
       mode_settings[vfo[id].mode].anf                       = rx->anf;
       mode_settings[vfo[id].mode].snb                       = rx->snb;
     }
@@ -3079,13 +3157,9 @@ static int remote_command(void *data) {
     send_noise(client->socket, rx->id, rx->nb, rx->nr, rx->anf, rx->snb,
                rx->nb2_mode, rx->nr_agc, rx->nr2_gain_method, rx->nr2_npe_method,
                rx->nr2_ae, rx->nb_tau, rx->nb_hang, rx->nb_advtime, rx->nb_thresh,
-               rx->nr2_trained_threshold
-#ifdef EXTNR
-               ,
+               rx->nr2_trained_threshold,
                rx->nr4_reduction_amount, rx->nr4_smoothing_factor,
-               rx->nr4_whitening_factor, rx->nr4_noise_rescale, rx->nr4_post_filter_threshold
-#endif
-              );
+               rx->nr4_whitening_factor, rx->nr4_noise_rescale, rx->nr4_post_filter_threshold);
     g_idle_add(ext_vfo_update, NULL);
   }
   break;

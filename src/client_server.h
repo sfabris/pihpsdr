@@ -27,12 +27,13 @@
 #endif
 
 //
-// Conversion of host(double) to/from network(uint32)
+// Conversion of host(double) to/from network(uint32) with 1E-6 resolution
 // Assume that double data is between -2000 and 2000,
-// convert to uint32 via uint32 = 1000000.0*(double+2000.0) (result in the range 0 to 4E9)
+// convert to uint32 via 1000000.0*(double+2000.0) (result in the range 0 to 4E9)
 //
-#define htond(X) htonl((uint32_t) ((X+4000.0)*1000000.0) )
+#define htond(X) htonl((uint32_t) ((X+2000.0)*1000000.0) )
 #define ntohd(X) 0.000001*ntohl(X)-2000.0
+#define mydouble uint32_t
 
 typedef enum {
   RECEIVER_DETACHED,
@@ -97,7 +98,7 @@ enum _vfo_action_enum {
 
 #define CLIENT_SERVER_VERSION 0LL
 
-#define SPECTRUM_DATA_SIZE 800
+#define SPECTRUM_DATA_SIZE 1024
 #define AUDIO_DATA_SIZE 1024
 
 #define REMOTE_SYNC (uint16_t)0xFAFA
@@ -168,28 +169,44 @@ typedef struct __attribute__((__packed__)) _adc_data {
   uint8_t random;
   uint8_t preamp;
   uint16_t attenuation;
-  uint32_t gain;         // double
-  uint32_t min_gain;     // double
-  uint32_t max_gain;     // double
+  mydouble gain;
+  mydouble min_gain;
+  mydouble max_gain;
 } ADC_DATA;
 
 typedef struct __attribute__((__packed__)) _receiver_data {
   HEADER header;
   uint8_t rx;
-  uint16_t adc;
+  uint8_t adc;
+  mydouble volume;
+  uint32_t fft_size;
+  uint8_t  agc;
+  mydouble agc_gain;
   uint64_t sample_rate;
   uint8_t displaying;
   uint8_t display_panadapter;
   uint8_t display_waterfall;
   uint16_t fps;
-  uint8_t agc;
-  uint32_t agc_hang;            // double
-  uint32_t agc_thresh;          // double
-  uint32_t agc_hang_thresh;     // double
+  mydouble agc_hang;
+  mydouble agc_thresh;
+  mydouble agc_hang_thresh;
   uint8_t nb;
+  uint8_t nb2_mode;
   uint8_t nr;
+  uint8_t nr_agc;
+  uint8_t nr2_ae;
   uint8_t anf;
   uint8_t snb;
+  mydouble nr2_trained_threshold;
+  mydouble nb_tau;
+  mydouble nb_hang;
+  mydouble nb_advtime;
+  mydouble nb_thresh;
+  mydouble nr4_reduction_amount;
+  mydouble nr4_smoothing_factor;
+  mydouble nr4_whitening_factor;
+  mydouble nr4_noise_rescale;
+  mydouble nr4_post_filter_threshold;
   uint8_t display_gradient;
   uint8_t display_filled;
   uint8_t display_detector_mode;
@@ -210,8 +227,6 @@ typedef struct __attribute__((__packed__)) _receiver_data {
   uint16_t height;
   uint16_t x;
   uint16_t y;
-  uint32_t volume;   // double
-  uint32_t agc_gain; // double
 } RECEIVER_DATA;
 
 typedef struct __attribute__((__packed__)) _vfo_data {
@@ -231,6 +246,10 @@ typedef struct __attribute__((__packed__)) _vfo_data {
   uint64_t step;
 } VFO_DATA;
 
+//
+// TODO: make the spectrum variable-size since displays
+//       now can change size
+//
 typedef struct __attribute__((__packed__)) _spectrum_data {
   HEADER header;
   uint8_t rx;
@@ -240,7 +259,7 @@ typedef struct __attribute__((__packed__)) _spectrum_data {
   uint64_t vfo_b_ctun_freq;
   uint64_t vfo_a_offset;
   uint64_t vfo_b_offset;
-  uint32_t meter; // double
+  mydouble meter;
   uint16_t samples;
   uint16_t sample[SPECTRUM_DATA_SIZE];
 } SPECTRUM_DATA;
@@ -309,7 +328,7 @@ typedef struct __attribute__((__packed__)) _pan_command {
 typedef struct __attribute__((__packed__)) _volume_command {
   HEADER header;
   uint8_t id;
-  uint32_t volume;  // double
+  mydouble volume;
 } VOLUME_COMMAND;
 
 typedef struct __attribute__((__packed__)) _band_command {
@@ -341,10 +360,10 @@ typedef struct __attribute__((__packed__)) _agc_command {
 typedef struct __attribute__((__packed__)) _agc_gain_command {
   HEADER header;
   uint8_t id;
-  uint32_t gain;        // double
-  uint32_t hang;        // double
-  uint32_t thresh;      // double
-  uint32_t hang_thresh; // double
+  mydouble gain;
+  mydouble hang;
+  mydouble thresh;
+  mydouble hang_thresh;
 } AGC_GAIN_COMMAND;
 
 typedef struct __attribute__((__packed__)) _attenuation_command {
@@ -356,7 +375,7 @@ typedef struct __attribute__((__packed__)) _attenuation_command {
 typedef struct __attribute__((__packed__)) _rfgain_command {
   HEADER header;
   uint8_t id;
-  uint32_t gain;  // double
+  mydouble gain;
 } RFGAIN_COMMAND;
 
 typedef struct __attribute__((__packed__)) _squelch_command {
@@ -378,18 +397,16 @@ typedef struct __attribute__((__packed__)) _noise_command {
   uint8_t  nr2_gain_method;
   uint8_t  nr2_npe_method;
   uint8_t  nr2_ae;
-  uint32_t nb_tau;                    // double
-  uint32_t nb_hang;                   // double
-  uint32_t nb_advtime;                // double
-  uint32_t nb_thresh;                 // double
-  uint32_t nr2_trained_threshold;     // double
-#ifdef EXTNR
-  uint32_t nr4_reduction_amount;      // double
-  uint32_t nr4_smoothing_factor;      // double
-  uint32_t nr4_whitening_factor;      // double
-  uint32_t nr4_noise_rescale;         // double
-  uint32_t nr4_post_filter_threshold; // double
-#endif
+  mydouble nb_tau;
+  mydouble nb_hang;
+  mydouble nb_advtime;
+  mydouble nb_thresh;
+  mydouble nr2_trained_threshold;
+  mydouble nr4_reduction_amount;
+  mydouble nr4_smoothing_factor;
+  mydouble nr4_whitening_factor;
+  mydouble nr4_noise_rescale;
+  mydouble nr4_post_filter_threshold;
 } NOISE_COMMAND;
 
 typedef struct __attribute__((__packed__)) _split_command {
@@ -527,14 +544,10 @@ extern void send_squelch(int s, int rx, int enable, int squelch);
 extern void send_noise(int s, int rx, int nb, int nr, int anf, int snb,
                        int nb2_mode, int nr_agc, int nr2_gain_method, int nr2_npe_method,
                        int nr2_ae, double nb_tau, double nb_hang, double nb2_advtime,
-                       double nb2_thresh, double nr2_trained_threshold
-#ifdef EXTNR
-                       ,
+                       double nb2_thresh, double nr2_trained_threshold,
                        double nr4_reduction_amount, double nr4_smoothing_factor,
                        double nr4_whitening_factor, double nr4_noise_rescale,
-                       double nr4_post_filter_threshold
-#endif
-               );
+                       double nr4_post_filter_threshold);
 extern void send_band(int s, int rx, int band);
 extern void send_mode(int s, int rx, int mode);
 extern void send_filter(int s, int rx, int filter);
