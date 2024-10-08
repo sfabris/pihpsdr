@@ -108,8 +108,6 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
   double rxlvl;   // only used for RX input level, clones "value"
   double pwr;     // only used for TX power, clones "value"
   char sf[32];
-  int  units = 2;          // 0: xxx mW, 1: xx.y W, 2: xxx W
-  double interval = 10.0;  // 1/10 of full reflection
   cairo_t *cr = cairo_create (meter_surface);
   int txvfo = vfo_get_tx_vfo();
   const BAND *band = band_get_band(vfo[txvfo].band);
@@ -147,13 +145,6 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
   switch (meter_type) {
   case POWER:
     pwr = value;
-
-    if (band->disablePA || !pa_enabled) {
-      units = 0;  // x mW
-      interval = 0.1;
-    } else {
-      interval = 0.1 * pa_power_list[pa_power];
-    }
 
     if (max_count > CNTMAX) {
       max_pwr = EXPAV1 * max_pwr + EXPAV2 * pwr;
@@ -201,6 +192,7 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
   // From now on, DO NOT USE rxlvl,pwr,alc but use max_rxlvl etc.
   //
   if (analog_meter) {
+    cairo_text_extents_t extents;
     cairo_set_source_rgba(cr, COLOUR_VFO_BACKGND);
     cairo_paint (cr);
     cairo_set_font_size(cr, DISPLAY_FONT_SIZE2);
@@ -216,7 +208,7 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
       double angle;
       double radians;
       double cx = (double)METER_WIDTH / 2.0;
-      double radius = cx - 20.0;
+      double radius = cx - 25.0;
       double min_angle, max_angle, bydb;
 
       if (cx - 0.342 * radius < METER_HEIGHT - 5) {
@@ -253,10 +245,14 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
           cairo_line_to(cr, x, y);
           cairo_stroke(cr);
           snprintf(sf, 32, "%d", i);
+          cairo_text_extents(cr, sf, &extents);
           cairo_arc(cr, cx, cx, radius + 5, radians, radians);
           cairo_get_current_point(cr, &x, &y);
           cairo_new_path(cr);
-          x -= 4.0;
+          //
+          // At x=0, move left the whole width, at x==cx half of the width, and at x=2 cx do not move
+          //
+          x += extents.width * (x / (2.0 * cx) - 1.0);
           cairo_move_to(cr, x, y);
           cairo_show_text(cr, sf);
         } else {
@@ -279,10 +275,11 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
         cairo_line_to(cr, x, y);
         cairo_stroke(cr);
         snprintf(sf, 32, "+%d", i);
+        cairo_text_extents(cr, sf, &extents);
         cairo_arc(cr, cx, cx, radius + 5, radians, radians);
         cairo_get_current_point(cr, &x, &y);
         cairo_new_path(cr);
-        x -= 4.0;
+        x += extents.width * (x / (2.0 * cx) - 1.0);
         cairo_move_to(cr, x, y);
         cairo_show_text(cr, sf);
         cairo_new_path(cr);
@@ -326,14 +323,25 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
       //
       // Analog TX display
       //
+      int  units;          // 1: x.y W, 2: xxx W
+      double interval;     // 1/10 of full reflection
       int i;
       double x;
       double y;
       double angle;
       double radians;
       double cx = (double)METER_WIDTH / 2.0;
-      double radius = cx - 20.0;
+      double radius = cx - 25.0;
       double min_angle, max_angle;
+
+      if (band->disablePA || !pa_enabled) {
+        units = 1;
+        interval = 0.1;
+      } else {
+        int pp = pa_power_list[pa_power];
+        units = (pp <= 1) ? 1 : 2;
+        interval = 0.1 * pp;
+      }
 
       if (cx - 0.342 * radius < METER_HEIGHT - 5) {
         min_angle = 200.0;
@@ -366,23 +374,28 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
 
           if ((i % 20) == 0) {
             switch (units) {
-            case 0:
             case 1:
               snprintf(sf, 32, "%0.1f", 0.1 * interval * i);
               break;
 
             case 2:
-              snprintf(sf, 32, "%d", (int) (0.1 * interval * i));
+              {
+                int p = (int) (0.1 * interval * i);
+                // "1000" overwrites the right margin, replace by "1K"
+                if (p == 1000) {
+                  snprintf(sf, 32, "1K");
+                } else {
+                  snprintf(sf, 32, "%d", p);
+                }
+              }
               break;
             }
+            cairo_text_extents(cr, sf, &extents);
 
             cairo_arc(cr, cx, cx, radius + 5, radians, radians);
             cairo_get_current_point(cr, &x, &y);
             cairo_new_path(cr);
-            //
-            // move labels at the left side to the left
-            //
-            x = x + 6.0 * (x / (2.0 * cx) - 1.0);
+            x += extents.width * (x / (2.0 * cx) - 1.0);
             cairo_move_to(cr, x, y);
             cairo_show_text(cr, sf);
           }
