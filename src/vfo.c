@@ -203,11 +203,13 @@ static void modesettingsRestoreState() {
     mode_settings[i].nb_hang = 0.00001;
     mode_settings[i].nb_thresh = 4.95;
     mode_settings[i].nb2_mode = 0;
+#ifdef EXTNR
     mode_settings[i].nr4_reduction_amount = 10.0;
     mode_settings[i].nr4_smoothing_factor = 0.0;
     mode_settings[i].nr4_whitening_factor = 0.0;
     mode_settings[i].nr4_noise_rescale = 2.0;
     mode_settings[i].nr4_post_filter_threshold = 2.0;
+#endif
     mode_settings[i].en_rxeq = 0;
     mode_settings[i].en_txeq = 0;
     mode_settings[i].rx_eq_tenband = 0;
@@ -280,6 +282,33 @@ static void modesettingsRestoreState() {
       GetPropF2("modeset.%d.txeqfrq.%d", i, j,       mode_settings[i].tx_eq_freq[j]);
       GetPropF2("modeset.%d.rxeqfrq.%d", i, j,       mode_settings[i].rx_eq_freq[j]);
     }
+  }
+}
+
+void copy_mode_settings(int mode) {
+  //
+  // If mode is USB or LSB or DSB, copy settings of that mode to USB and LSB and DSB
+  // If mode is CWU or CWL       , copy settings of that mode to CWL and CWU
+  // If mode is DIGU or DIGL     , copy settings of that mode to DIGL and DIGU
+  //
+  switch (mode) {
+  case modeCWU:
+  case modeCWL:
+    mode_settings[modeCWU] = mode_settings[mode];
+    mode_settings[modeCWL] = mode_settings[mode];
+    break;
+  case modeDIGU:
+  case modeDIGL:
+    mode_settings[modeDIGU] = mode_settings[mode];
+    mode_settings[modeDIGL] = mode_settings[mode];
+    break;
+  case modeLSB:
+  case modeUSB:
+  case modeDSB:
+    mode_settings[modeLSB] = mode_settings[mode];
+    mode_settings[modeUSB] = mode_settings[mode];
+    mode_settings[modeDSB] = mode_settings[mode];
+    break;
   }
 }
 
@@ -459,30 +488,32 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
   int id, m;
   id = rx->id;
   m = vfo[id].mode;
-  vfo[id].filter            = mode_settings[m].filter;
-  vfo[id].cwAudioPeakFilter = mode_settings[m].cwPeak;
-  rx->nr                    = mode_settings[m].nr;
-  rx->nr_agc                = mode_settings[m].nr_agc;
-  rx->nr2_gain_method       = mode_settings[m].nr2_gain_method;
-  rx->nr2_npe_method        = mode_settings[m].nr2_npe_method;
-  rx->nr2_ae                = mode_settings[m].nr2_ae;
-  rx->nr2_trained_threshold = mode_settings[m].nr2_trained_threshold;
-  rx->nr4_reduction_amount  = mode_settings[m].nr4_reduction_amount;
-  rx->nr4_smoothing_factor  = mode_settings[m].nr4_smoothing_factor;
-  rx->nr4_whitening_factor  = mode_settings[m].nr4_whitening_factor;
-  rx->nr4_noise_rescale     = mode_settings[m].nr4_noise_rescale;
+  vfo[id].filter                = mode_settings[m].filter;
+  vfo[id].cwAudioPeakFilter     = mode_settings[m].cwPeak;
+  rx->nr                        = mode_settings[m].nr;
+  rx->nr_agc                    = mode_settings[m].nr_agc;
+  rx->nr2_gain_method           = mode_settings[m].nr2_gain_method;
+  rx->nr2_npe_method            = mode_settings[m].nr2_npe_method;
+  rx->nr2_ae                    = mode_settings[m].nr2_ae;
+  rx->nr2_trained_threshold     = mode_settings[m].nr2_trained_threshold;
+#ifdef EXTNR
+  rx->nr4_reduction_amount      = mode_settings[m].nr4_reduction_amount;
+  rx->nr4_smoothing_factor      = mode_settings[m].nr4_smoothing_factor;
+  rx->nr4_whitening_factor      = mode_settings[m].nr4_whitening_factor;
+  rx->nr4_noise_rescale         = mode_settings[m].nr4_noise_rescale;
   rx->nr4_post_filter_threshold = mode_settings[m].nr4_post_filter_threshold;
-  rx->nb                    = mode_settings[m].nb;
-  rx->nb2_mode              = mode_settings[m].nb2_mode;
-  rx->nb_tau                = mode_settings[m].nb_tau;
-  rx->nb_hang               = mode_settings[m].nb_hang;
-  rx->nb_advtime            = mode_settings[m].nb_advtime;
-  rx->nb_thresh             = mode_settings[m].nb_thresh;
-  rx->anf                   = mode_settings[m].anf;
-  rx->snb                   = mode_settings[m].snb;
-  rx->agc                   = mode_settings[m].agc;
-  rx->eq_enable             = mode_settings[m].en_rxeq;
-  rx->eq_tenband            = mode_settings[m].rx_eq_tenband;
+#endif
+  rx->nb                        = mode_settings[m].nb;
+  rx->nb2_mode                  = mode_settings[m].nb2_mode;
+  rx->nb_tau                    = mode_settings[m].nb_tau;
+  rx->nb_hang                   = mode_settings[m].nb_hang;
+  rx->nb_advtime                = mode_settings[m].nb_advtime;
+  rx->nb_thresh                 = mode_settings[m].nb_thresh;
+  rx->anf                       = mode_settings[m].anf;
+  rx->snb                       = mode_settings[m].snb;
+  rx->agc                       = mode_settings[m].agc;
+  rx->eq_enable                 = mode_settings[m].en_rxeq;
+  rx->eq_tenband                = mode_settings[m].rx_eq_tenband;
 
   for (int i = 0; i < 11; i++) {
     rx->eq_gain[i] = mode_settings[m].rx_eq_gain[i];
@@ -709,7 +740,9 @@ void vfo_id_filter_changed(int id, int f) {
 
   // store changed filter in the mode settings
   if (id == 0) {
-    mode_settings[vfo[id].mode].filter = f;
+    int mode = vfo[id].mode;
+    mode_settings[mode].filter = f;
+    copy_mode_settings(mode);
   }
 
   vfo[id].filter = f;
@@ -843,11 +876,12 @@ void vfo_set_step_from_index(int id, int index) {
   if (index >= STEPS) { index = STEPS - 1; }
 
   int step = steps[index];
-  int m = vfo[id].mode;
   vfo[id].step = step;
 
   if (id == 0) {
-    mode_settings[m].step = step;
+    int mode = vfo[id].mode;
+    mode_settings[mode].step = step;
+    copy_mode_settings(mode);
   }
 }
 

@@ -2624,10 +2624,12 @@ static void *client_thread(void* arg) {
       rx->anf = noise_command.anf;
 
       if (id == 0) {
-        mode_settings[vfo[id].mode].nb = rx->nb;
-        mode_settings[vfo[id].mode].nr = rx->nr;
-        mode_settings[vfo[id].mode].snb = rx->snb;
-        mode_settings[vfo[id].mode].anf = rx->anf;
+        int mode = vfo[id].mode;
+        mode_settings[mode].nb = rx->nb;
+        mode_settings[mode].nr = rx->nr;
+        mode_settings[mode].snb = rx->snb;
+        mode_settings[mode].anf = rx->anf;
+        copy_mode_settings(mode);
       }
 
       g_idle_add(ext_vfo_update, NULL);
@@ -3121,31 +3123,37 @@ static int remote_command(void *data) {
     rx->nb_advtime                = ntohd(noise_command->nb_advtime);
     rx->nb_thresh                 = ntohd(noise_command->nb_thresh);
     rx->nr2_trained_threshold     = ntohd(noise_command->nr2_trained_threshold);
+#ifdef EXTNR
     rx->nr4_reduction_amount      = ntohd(noise_command->nr4_reduction_amount);
     rx->nr4_smoothing_factor      = ntohd(noise_command->nr4_smoothing_factor);
     rx->nr4_whitening_factor      = ntohd(noise_command->nr4_whitening_factor);
     rx->nr4_noise_rescale         = ntohd(noise_command->nr4_noise_rescale);
     rx->nr4_post_filter_threshold = ntohd(noise_command->nr4_post_filter_threshold);
+#endif
 
     if (id == 0) {
-      mode_settings[vfo[id].mode].nb                        = rx->nb;
-      mode_settings[vfo[id].mode].nb2_mode                  = rx->nb2_mode;
-      mode_settings[vfo[id].mode].nb_tau                    = rx->nb_tau;
-      mode_settings[vfo[id].mode].nb_hang                   = rx->nb_hang;
-      mode_settings[vfo[id].mode].nb_advtime                = rx->nb_advtime;
-      mode_settings[vfo[id].mode].nb_thresh                 = rx->nb_thresh;
-      mode_settings[vfo[id].mode].nr                        = rx->nr;
-      mode_settings[vfo[id].mode].nr_agc                    = rx->nr_agc;
-      mode_settings[vfo[id].mode].nr2_gain_method           = rx->nr2_gain_method;
-      mode_settings[vfo[id].mode].nr2_npe_method            = rx->nr2_npe_method;
-      mode_settings[vfo[id].mode].nr2_trained_threshold     = rx->nr2_trained_threshold;
-      mode_settings[vfo[id].mode].nr4_reduction_amount      = rx->nr4_reduction_amount;
-      mode_settings[vfo[id].mode].nr4_smoothing_factor      = rx->nr4_smoothing_factor;
-      mode_settings[vfo[id].mode].nr4_whitening_factor      = rx->nr4_whitening_factor;
-      mode_settings[vfo[id].mode].nr4_noise_rescale         = rx->nr4_noise_rescale;
-      mode_settings[vfo[id].mode].nr4_post_filter_threshold = rx->nr4_post_filter_threshold;
-      mode_settings[vfo[id].mode].anf                       = rx->anf;
-      mode_settings[vfo[id].mode].snb                       = rx->snb;
+      int mode = vfo[id].mode;
+      mode_settings[mode].nb                        = rx->nb;
+      mode_settings[mode].nb2_mode                  = rx->nb2_mode;
+      mode_settings[mode].nb_tau                    = rx->nb_tau;
+      mode_settings[mode].nb_hang                   = rx->nb_hang;
+      mode_settings[mode].nb_advtime                = rx->nb_advtime;
+      mode_settings[mode].nb_thresh                 = rx->nb_thresh;
+      mode_settings[mode].nr                        = rx->nr;
+      mode_settings[mode].nr_agc                    = rx->nr_agc;
+      mode_settings[mode].nr2_gain_method           = rx->nr2_gain_method;
+      mode_settings[mode].nr2_npe_method            = rx->nr2_npe_method;
+      mode_settings[mode].nr2_trained_threshold     = rx->nr2_trained_threshold;
+#ifdef EXTNR
+      mode_settings[mode].nr4_reduction_amount      = rx->nr4_reduction_amount;
+      mode_settings[mode].nr4_smoothing_factor      = rx->nr4_smoothing_factor;
+      mode_settings[mode].nr4_whitening_factor      = rx->nr4_whitening_factor;
+      mode_settings[mode].nr4_noise_rescale         = rx->nr4_noise_rescale;
+      mode_settings[mode].nr4_post_filter_threshold = rx->nr4_post_filter_threshold;
+#endif
+      mode_settings[mode].anf                       = rx->anf;
+      mode_settings[mode].snb                       = rx->snb;
+      copy_mode_settings(mode);
     }
 
     rx_set_noise(rx);

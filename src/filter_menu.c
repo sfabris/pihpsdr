@@ -77,7 +77,9 @@ static void cw_peak_cb(GtkWidget *widget, gpointer data) {
   vfo[id].cwAudioPeakFilter = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 
   if (id == 0) {
-    mode_settings[vfo[id].mode].cwPeak = vfo[id].cwAudioPeakFilter;
+    int mode = vfo[id].mode;
+    mode_settings[mode].cwPeak = vfo[id].cwAudioPeakFilter;
+    copy_mode_settings(mode);
   }
 
   rx_filter_changed(active_receiver);

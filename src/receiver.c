@@ -753,11 +753,13 @@ RECEIVER *rx_create_receiver(int id, int pixels, int width, int height) {
   rx->nb_hang =    0.00001;       // Lag=0.01     in the DSP menu
   rx->nb_thresh =  4.95;          // Threshold=30 in the DSP menu
   rx->nb2_mode = 0;               // Zero mode
+#ifdef EXTNR
   rx->nr4_reduction_amount = 10.0;
   rx->nr4_smoothing_factor = 0.0;
   rx->nr4_whitening_factor = 0.0;
   rx->nr4_noise_rescale = 2.0;
   rx->nr4_post_filter_threshold = -10.0;
+#endif
   const BAND *b = band_get_band(vfo[rx->id].band);
   rx->alex_antenna = b->alexRxAntenna;
 
@@ -1599,8 +1601,9 @@ void rx_set_agc(RECEIVER *rx) {
   // Update mode settings, if this is RX1
   //
   if (id == 0) {
-    int m = vfo[id].mode;
-    mode_settings[m].agc = rx->agc;
+    int mode = vfo[id].mode;
+    mode_settings[mode].agc = rx->agc;
+    copy_mode_settings(mode);
   }
 }
 

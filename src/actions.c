@@ -472,7 +472,9 @@ int process_action(void *data) {
       TOGGLE(active_receiver->anf);
 
       if (id == 0) {
-        mode_settings[vfo[id].mode].anf = active_receiver->anf;
+        int mode = vfo[id].mode;
+        mode_settings[mode].anf = active_receiver->anf;
+        copy_mode_settings(mode);
       }
 
       update_noise();
@@ -765,8 +767,10 @@ int process_action(void *data) {
 
   case COMP_ENABLE:
     if (can_transmit && a->mode == PRESSED) {
+      int mode = vfo_get_tx_mode();
       TOGGLE(transmitter->compressor);
-      mode_settings[vfo_get_tx_mode()].compressor = transmitter->compressor;
+      mode_settings[mode].compressor = transmitter->compressor;
+      copy_mode_settings(mode);
       tx_set_compressor(transmitter);
       g_idle_add(ext_vfo_update, NULL);
     }
@@ -775,11 +779,13 @@ int process_action(void *data) {
 
   case COMPRESSION:
     if (can_transmit) {
+      int mode = vfo_get_tx_mode();
       value = KnobOrWheel(a, transmitter->compressor_level, 0.0, 20.0, 1.0);
       transmitter->compressor = SET(value > 0.5);
       transmitter->compressor_level = value;
-      mode_settings[vfo_get_tx_mode()].compressor = transmitter->compressor;
-      mode_settings[vfo_get_tx_mode()].compressor_level = transmitter->compressor_level;
+      mode_settings[mode].compressor = transmitter->compressor;
+      mode_settings[mode].compressor_level = transmitter->compressor_level;
+      copy_mode_settings(mode);
       tx_set_compressor(transmitter);
       g_idle_add(ext_vfo_update, NULL);
     }
@@ -1188,7 +1194,9 @@ int process_action(void *data) {
       if (active_receiver->nb > 2) { active_receiver->nb = 0; }
 
       if (id == 0) {
-        mode_settings[vfo[id].mode].nb = active_receiver->nb;
+        int mode = vfo[id].mode;
+        mode_settings[mode].nb = active_receiver->nb;
+        copy_mode_settings(mode);
       }
 
       update_noise();
@@ -1211,7 +1219,9 @@ int process_action(void *data) {
 #endif
 
       if (id == 0) {
-        mode_settings[vfo[id].mode].nr = active_receiver->nr;
+        int mode = vfo[id].mode;
+        mode_settings[mode].nr = active_receiver->nr;
+        copy_mode_settings(mode);
       }
 
       update_noise();
@@ -1532,13 +1542,17 @@ int process_action(void *data) {
         active_receiver->snb = 1;
 
         if (id == 0) {
-          mode_settings[vfo[id].mode].snb = 1;
+          int mode = vfo[id].mode;
+          mode_settings[mode].snb = 1;
+          copy_mode_settings(mode);
         }
       } else {
         active_receiver->snb = 0;
 
         if (id == 0) {
-          mode_settings[vfo[id].mode].snb = 0;
+          int mode = vfo[id].mode;
+          mode_settings[mode].snb = 0;
+          copy_mode_settings(mode);
         }
       }
 

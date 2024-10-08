@@ -107,17 +107,19 @@ static void tenband_cb (GtkWidget *widget, gpointer data) {
     }
 
     if (eqid == 0) {
-      int m = vfo[eqid].mode;
-      mode_settings[m].rx_eq_tenband = val;
+      int mode = vfo[eqid].mode;
+      mode_settings[mode].rx_eq_tenband = val;
+      copy_mode_settings(mode);
     }
 
     break;
 
   case 2:
     if (can_transmit) {
-      int m = vfo[vfo_get_tx_vfo()].mode;
+      int mode = vfo[vfo_get_tx_vfo()].mode;
       transmitter->eq_tenband = val;
-      mode_settings[m].tx_eq_tenband = val;
+      mode_settings[mode].tx_eq_tenband = val;
+      copy_mode_settings(mode);
     }
 
     break;
@@ -139,17 +141,19 @@ static void enable_cb (GtkWidget *widget, gpointer data) {
     }
 
     if (eqid == 0) {
-      int m = vfo[eqid].mode;
-      mode_settings[m].en_rxeq = val;
+      int mode = vfo[eqid].mode;
+      mode_settings[mode].en_rxeq = val;
+      copy_mode_settings(mode);
     }
 
     break;
 
   case 2:
     if (can_transmit) {
-      int m = vfo[vfo_get_tx_vfo()].mode;
+      int mode = vfo[vfo_get_tx_vfo()].mode;
       transmitter->eq_enable = val;
-      mode_settings[m].en_txeq = val;
+      mode_settings[mode].en_txeq = val;
+      copy_mode_settings(mode);
     }
 
     break;
@@ -199,13 +203,14 @@ static void freq_changed_cb (GtkWidget *widget, gpointer data) {
   case 0:
   case 1:
     if (eqid < receivers) {
-      int m = vfo[eqid].mode;
+      int mode = vfo[eqid].mode;
 
       for (int j = 1; j < 11; j++) {
         receiver[eqid]->eq_freq[j] = gtk_spin_button_get_value(GTK_SPIN_BUTTON(freqspin[j]));
 
         if (eqid == 0) {
-          mode_settings[m].rx_eq_freq[j] = receiver[eqid]->eq_freq[j];
+          mode_settings[mode].rx_eq_freq[j] = receiver[eqid]->eq_freq[j];
+          copy_mode_settings(mode);
         }
       }
     }
@@ -214,11 +219,12 @@ static void freq_changed_cb (GtkWidget *widget, gpointer data) {
 
   case 2:
     if (can_transmit) {
-      int m = vfo[vfo_get_tx_vfo()].mode;
+      int mode = vfo[vfo_get_tx_vfo()].mode;
 
       for (int j = 1; j < 11; j++) {
         transmitter->eq_freq[j] = gtk_spin_button_get_value(GTK_SPIN_BUTTON(freqspin[j]));
-        mode_settings[m].tx_eq_freq[j] = transmitter->eq_freq[j];
+        mode_settings[mode].tx_eq_freq[j] = transmitter->eq_freq[j];
+        copy_mode_settings(mode);
       }
     }
 
@@ -241,17 +247,19 @@ static void gain_changed_cb (GtkWidget *widget, gpointer data) {
     }
 
     if (eqid == 0) {
-      int m = vfo[eqid].mode;
-      mode_settings[m].rx_eq_gain[i] = val;
+      int mode = vfo[eqid].mode;
+      mode_settings[mode].rx_eq_gain[i] = val;
+      copy_mode_settings(mode);
     }
 
     break;
 
   case 2:
     if (can_transmit) {
-      int m = vfo[vfo_get_tx_vfo()].mode;
+      int mode = vfo[vfo_get_tx_vfo()].mode;
       transmitter->eq_gain[i] = val;
-      mode_settings[m].tx_eq_gain[i] = val;
+      mode_settings[mode].tx_eq_gain[i] = val;
+      copy_mode_settings(mode);
     }
 
     break;

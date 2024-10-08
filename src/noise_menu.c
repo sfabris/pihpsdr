@@ -69,25 +69,29 @@ void update_noise() {
   // Update the mode settings
   //
   if (id == 0) {
-    mode_settings[vfo[id].mode].nr = active_receiver->nr;
-    mode_settings[vfo[id].mode].nb = active_receiver->nb;
-    mode_settings[vfo[id].mode].anf = active_receiver->anf;
-    mode_settings[vfo[id].mode].snb = active_receiver->snb;
-    mode_settings[vfo[id].mode].nr2_ae = active_receiver->nr2_ae;
-    mode_settings[vfo[id].mode].nr_agc = active_receiver->nr_agc;
-    mode_settings[vfo[id].mode].nb2_mode = active_receiver->nb2_mode;
-    mode_settings[vfo[id].mode].nr2_gain_method = active_receiver->nr2_gain_method;
-    mode_settings[vfo[id].mode].nr2_npe_method = active_receiver->nr2_npe_method;
-    mode_settings[vfo[id].mode].nr2_trained_threshold = active_receiver->nr2_trained_threshold;
-    mode_settings[vfo[id].mode].nb_tau = active_receiver->nb_tau;
-    mode_settings[vfo[id].mode].nb_advtime = active_receiver->nb_advtime;
-    mode_settings[vfo[id].mode].nb_hang = active_receiver->nb_hang;
-    mode_settings[vfo[id].mode].nb_thresh = active_receiver->nb_thresh;
-    mode_settings[vfo[id].mode].nr4_reduction_amount = active_receiver->nr4_reduction_amount;
-    mode_settings[vfo[id].mode].nr4_smoothing_factor = active_receiver->nr4_smoothing_factor;
-    mode_settings[vfo[id].mode].nr4_whitening_factor = active_receiver->nr4_whitening_factor;
-    mode_settings[vfo[id].mode].nr4_noise_rescale = active_receiver->nr4_noise_rescale;
-    mode_settings[vfo[id].mode].nr4_post_filter_threshold = active_receiver->nr4_post_filter_threshold;
+    int mode = vfo[id].mode;
+    mode_settings[mode].nr = active_receiver->nr;
+    mode_settings[mode].nb = active_receiver->nb;
+    mode_settings[mode].anf = active_receiver->anf;
+    mode_settings[mode].snb = active_receiver->snb;
+    mode_settings[mode].nr2_ae = active_receiver->nr2_ae;
+    mode_settings[mode].nr_agc = active_receiver->nr_agc;
+    mode_settings[mode].nb2_mode = active_receiver->nb2_mode;
+    mode_settings[mode].nr2_gain_method = active_receiver->nr2_gain_method;
+    mode_settings[mode].nr2_npe_method = active_receiver->nr2_npe_method;
+    mode_settings[mode].nr2_trained_threshold = active_receiver->nr2_trained_threshold;
+    mode_settings[mode].nb_tau = active_receiver->nb_tau;
+    mode_settings[mode].nb_advtime = active_receiver->nb_advtime;
+    mode_settings[mode].nb_hang = active_receiver->nb_hang;
+    mode_settings[mode].nb_thresh = active_receiver->nb_thresh;
+#ifdef EXTNR
+    mode_settings[mode].nr4_reduction_amount = active_receiver->nr4_reduction_amount;
+    mode_settings[mode].nr4_smoothing_factor = active_receiver->nr4_smoothing_factor;
+    mode_settings[mode].nr4_whitening_factor = active_receiver->nr4_whitening_factor;
+    mode_settings[mode].nr4_noise_rescale = active_receiver->nr4_noise_rescale;
+    mode_settings[mode].nr4_post_filter_threshold = active_receiver->nr4_post_filter_threshold;
+#endif
+    copy_mode_settings(mode);
   }
 
   rx_set_noise(active_receiver);

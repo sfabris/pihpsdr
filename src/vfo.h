@@ -93,11 +93,13 @@ struct _mode_settings {
   int    nr2_npe_method;
   int    nr2_ae;
   double nr2_trained_threshold;
+#ifdef EXTNR
   double nr4_reduction_amount;      // NR4 parameters, only used if compiled with EXTNR
   double nr4_smoothing_factor;
   double nr4_whitening_factor;
   double nr4_noise_rescale;
   double nr4_post_filter_threshold;
+#endif
   int anf;                          // Automatic notch filter
   int snb;                          // Spectral noise blanker
   int agc;                          // AGC characteristics (slow/medium/fast etc.)
@@ -115,6 +117,7 @@ struct _mode_settings {
 };
 
 extern struct _mode_settings mode_settings[];
+extern void copy_mode_settings(int mode);
 
 #define STEPS 17
 extern char *step_labels[];
