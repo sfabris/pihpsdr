@@ -75,6 +75,7 @@ static gboolean close_cb () {
 gboolean band_select_cb (GtkWidget *widget, gpointer data) {
   CHOICE *choice = (CHOICE *) data;
   int id = active_receiver->id;
+  int newband;
 
   //
   // If the current band has been clicked, this will cycle through the
@@ -84,11 +85,14 @@ gboolean band_select_cb (GtkWidget *widget, gpointer data) {
 #ifdef CLIENT_SERVER
     send_band(client_socket, id, choice->info);
 #endif
+    // We have to assume that the band change succeeded, we just cannot know.
+    newband = choice->info;
   } else {
     vfo_band_changed(id, choice->info);
+    newband = vfo[id].band;
   }
 
-  if (vfo[id].band != choice->info) {
+  if (newband != choice->info) {
     //
     // Note that a band change may fail. This can happen if the local oscillator
     // of a transverter band has a grossly wrong frequency such that the effective
@@ -103,7 +107,7 @@ gboolean band_select_cb (GtkWidget *widget, gpointer data) {
     while (choice) {
       g_signal_handler_block(G_OBJECT(choice->button), choice->signal);
 
-      if (choice->info == vfo[id].band) {
+      if (choice->info == newband) {
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(choice->button), TRUE);
         current = choice;
       } else {

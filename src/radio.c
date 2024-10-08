@@ -124,8 +124,8 @@ gboolean iqswap;
 DISCOVERED *radio = NULL;
 gboolean radio_is_remote = FALSE;     // only used with CLIENT_SERVER
 
-char property_path[128];
-GMutex property_mutex;
+static char property_path[128];
+static GMutex property_mutex;
 
 RECEIVER *receiver[8];
 RECEIVER *active_receiver;
@@ -1156,10 +1156,6 @@ void radio_start_radio() {
     have_rx_att = 0;
   }
 
-  //
-  // A semaphore for safely writing to the props file
-  //
-  g_mutex_init(&property_mutex);
   char p[32];
   char version[32];
   char ip[32];
@@ -2371,7 +2367,10 @@ static void radio_restore_state() {
   GetPropI0("radio.hpsdr_server.listen_port",                listen_port);
 #endif
 
-  if (radio_is_remote) { return; }
+  if (radio_is_remote) {
+    g_mutex_unlock(&property_mutex);
+    return;
+  }
 
   GetPropI0("enable_auto_tune",                              enable_auto_tune);
   GetPropI0("enable_tx_inhibit",                             enable_tx_inhibit);
@@ -2574,7 +2573,11 @@ void radio_save_state() {
   SetPropI0("radio.hpsdr_server.listen_port",                listen_port);
 #endif
 
-  if (radio_is_remote) { return; }
+  if (radio_is_remote) {
+    saveProperties(property_path);
+    g_mutex_unlock(&property_mutex);
+    return;
+  }
 
   SetPropI0("enable_auto_tune",                              enable_auto_tune);
   SetPropI0("enable_tx_inhibit",                             enable_tx_inhibit);

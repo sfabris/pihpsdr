@@ -56,8 +56,6 @@ extern GtkWidget *fixed;
 
 extern long long frequency_calibration;
 
-extern char property_path[];
-
 enum _filter_board_enum {
   NO_FILTER_BOARD = 0,
   ALEX,
@@ -275,8 +273,6 @@ extern double drive_digi_max;    // maximum value allowed in DIGU/DIGL
 
 extern gboolean display_warnings;
 extern gboolean display_pacurr;
-
-extern GMutex property_mutex;
 
 extern int hl2_audio_codec;
 extern int anan10E;

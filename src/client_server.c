@@ -2229,10 +2229,6 @@ static void *client_thread(void* arg) {
       rx_gain_calibration = (int)s;
       filter_board = ntohs(radio_data.filter_board);
       t_print("have_rx_gain=%d rx_gain_calibration=%d filter_board=%d\n", have_rx_gain, rx_gain_calibration, filter_board);
-      //
-      // A semaphore for safely writing to the props file
-      //
-      g_mutex_init(&property_mutex);
       snprintf(title, 128, "piHPSDR: %s remote at %s", radio->name, server);
       g_idle_add(ext_set_title, (void *)title);
     }
