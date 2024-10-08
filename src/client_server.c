@@ -138,18 +138,18 @@ static gboolean accumulated_round = FALSE;
 guint check_vfo_timer_id = 0;
 
 REMOTE_CLIENT *add_client(REMOTE_CLIENT *client) {
-  t_print("add_client: %p\n", client);
+  t_print("%s: %p\n", __FUNCTION__, client);
   // add to front of queue
   g_mutex_lock(&client_mutex);
   client->next = remoteclients;
   remoteclients = client;
   g_mutex_unlock(&client_mutex);
-  t_print("add_client: remoteclients=%p\n", remoteclients);
+  t_print("%s: remoteclients=%p\n", __FUNCTION__, remoteclients);
   return client;
 }
 
 void delete_client(REMOTE_CLIENT *client) {
-  t_print("delete_client: %p\n", client);
+  t_print("%s:: %p\n", __FUNCTION__, client);
   g_mutex_lock(&client_mutex);
 
   if (remoteclients == client) {
@@ -170,7 +170,7 @@ void delete_client(REMOTE_CLIENT *client) {
     }
   }
 
-  t_print("delete_client: remoteclients=%p\n", remoteclients);
+  t_print("%s: remoteclients=%p\n", __FUNCTION__, remoteclients);
   g_mutex_unlock(&client_mutex);
 }
 
@@ -248,6 +248,7 @@ void remote_audio(const RECEIVER *rx, short left_sample, short right_sample) {
       if (bytes_sent < 0) {
         t_perror("remote_audio");
         close(c->socket);
+        c->socket = -1;
       }
 
       c = c->next;
@@ -342,14 +343,8 @@ void send_radio_data(const REMOTE_CLIENT *client) {
   radio_data.have_rx_gain = have_rx_gain;
   radio_data.rx_gain_calibration = htons(rx_gain_calibration);
   radio_data.filter_board = htons(filter_board);
-  int bytes_sent = send_bytes(client->socket, (char *)&radio_data, sizeof(radio_data));
-  t_print("send_radio_data: %d\n", bytes_sent);
 
-  if (bytes_sent < 0) {
-    t_perror("send_radio_data");
-  } else {
-    //t_print("send_radio_data: %d\n",bytes_sent);
-  }
+  send_bytes(client->socket, (char *)&radio_data, sizeof(radio_data));
 }
 
 void send_adc_data(const REMOTE_CLIENT *client, int i) {
@@ -369,13 +364,8 @@ void send_adc_data(const REMOTE_CLIENT *client, int i) {
   adc_data.gain = htond(adc[i].gain);
   adc_data.min_gain = htond(adc[i].min_gain);
   adc_data.max_gain = htond(adc[i].max_gain);
-  int bytes_sent = send_bytes(client->socket, (char *)&adc_data, sizeof(adc_data));
 
-  if (bytes_sent < 0) {
-    t_perror("send_adc_data");
-  } else {
-    //t_print("send_adc_data: %d\n",bytes_sent);
-  }
+  send_bytes(client->socket, (char *)&adc_data, sizeof(adc_data));
 }
 
 void send_rx_data(const REMOTE_CLIENT *client, int rx) {
@@ -421,13 +411,8 @@ void send_rx_data(const REMOTE_CLIENT *client, int rx) {
   rx_data.display_detector_mode = receiver[rx]->display_detector_mode;
   rx_data.display_average_mode = receiver[rx]->display_average_mode;
   rx_data.display_average_time = htons((int)receiver[rx]->display_average_time);
-  int bytes_sent = send_bytes(client->socket, (char *)&rx_data, sizeof(rx_data));
 
-  if (bytes_sent < 0) {
-    t_perror("send_rx_data");
-  } else {
-    //t_print("send_rx_data: bytes sent %d\n",bytes_sent);
-  }
+  send_bytes(client->socket, (char *)&rx_data, sizeof(rx_data));
 }
 
 void send_vfo_data(const REMOTE_CLIENT *client, int v) {
@@ -448,13 +433,8 @@ void send_vfo_data(const REMOTE_CLIENT *client, int v) {
   vfo_data.lo = htonll(vfo[v].lo);
   vfo_data.offset = htonll(vfo[v].offset);
   vfo_data.step   = htonll(vfo[v].step);
-  int bytes_sent = send_bytes(client->socket, (char *)&vfo_data, sizeof(vfo_data));
 
-  if (bytes_sent < 0) {
-    t_perror("send_vfo_data");
-  } else {
-    //t_print("send_vfo_data: bytes sent %d\n",bytes_sent);
-  }
+  send_bytes(client->socket, (char *)&vfo_data, sizeof(vfo_data));
 }
 
 //
@@ -1357,13 +1337,8 @@ void send_start_spectrum(int s, int rx) {
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.id = rx;
   command.start_stop = 1;
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_vfo_frequency(int s, int rx, long long hz) {
@@ -1374,13 +1349,8 @@ void send_vfo_frequency(int s, int rx, long long hz) {
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.id = rx;
   command.hz = htonll(hz);
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_vfo_move_to(int s, int rx, long long hz) {
@@ -1391,13 +1361,8 @@ void send_vfo_move_to(int s, int rx, long long hz) {
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.id = rx;
   command.hz = htonll(hz);
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_vfo_move(int s, int rx, long long hz, int round) {
@@ -1409,13 +1374,8 @@ void send_vfo_move(int s, int rx, long long hz, int round) {
   command.id = rx;
   command.hz = htonll(hz);
   command.round = round;
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void update_vfo_move(int rx, long long hz, int round) {
@@ -1434,13 +1394,8 @@ void send_vfo_step(int s, int rx, int steps) {
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.id = rx;
   command.steps = htons(stps);
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void update_vfo_step(int rx, int steps) {
@@ -1458,13 +1413,8 @@ void send_zoom(int s, int rx, int zoom) {
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.id = rx;
   command.zoom = htons(z);
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_pan(int s, int rx, int pan) {
@@ -1476,13 +1426,8 @@ void send_pan(int s, int rx, int pan) {
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.id = rx;
   command.pan = htons(p);
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_volume(int s, int rx, double volume) {
@@ -1493,13 +1438,8 @@ void send_volume(int s, int rx, double volume) {
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.id = rx;
   command.volume = htond(volume);
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_agc(int s, int rx, int agc) {
@@ -1511,13 +1451,8 @@ void send_agc(int s, int rx, int agc) {
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.id = rx;
   command.agc = htons(a);
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_agc_gain(int s, int rx, double gain, double hang, double thresh, double hang_thresh) {
@@ -1531,13 +1466,8 @@ void send_agc_gain(int s, int rx, double gain, double hang, double thresh, doubl
   command.hang = htond(hang);
   command.thresh = htond(thresh);
   command.hang_thresh = htond(hang_thresh);
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_rfgain(int s, int id, double gain) {
@@ -1548,13 +1478,8 @@ void send_rfgain(int s, int id, double gain) {
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.id = id;
   command.gain = htond(gain);
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    t_print("send_command RFGAIN: %d\n", bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_attenuation(int s, int rx, int attenuation) {
@@ -1566,13 +1491,8 @@ void send_attenuation(int s, int rx, int attenuation) {
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.id = rx;
   command.attenuation = htons(a);
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_squelch(int s, int rx, int enable, int squelch) {
@@ -1585,13 +1505,8 @@ void send_squelch(int s, int rx, int enable, int squelch) {
   command.id = rx;
   command.enable = enable;
   command.squelch = htons(sq);
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_noise(int s, const RECEIVER *rx) {
@@ -1642,13 +1557,8 @@ void send_band(int s, int rx, int band) {
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.id = rx;
   command.band = htons(band);
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_mode(int s, int rx, int mode) {
@@ -1659,13 +1569,8 @@ void send_mode(int s, int rx, int mode) {
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.id = rx;
   command.mode = htons(mode);
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_filter(int s, int rx, int filter) {
@@ -1678,13 +1583,8 @@ void send_filter(int s, int rx, int filter) {
   command.filter = htons(filter);
   command.filter_low = htons(receiver[rx]->filter_low);
   command.filter_high = htons(receiver[rx]->filter_high);
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_split(int s, int split) {
@@ -1694,13 +1594,8 @@ void send_split(int s, int split) {
   command.header.data_type = htons(CMD_RESP_SPLIT);
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.split = split;
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_sat(int s, int sat) {
@@ -1710,13 +1605,8 @@ void send_sat(int s, int sat) {
   command.header.data_type = htons(CMD_RESP_SAT);
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.sat = sat;
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_dup(int s, int dup) {
@@ -1726,13 +1616,8 @@ void send_dup(int s, int dup) {
   command.header.data_type = htons(CMD_RESP_DUP);
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.dup = dup;
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_fps(int s, int rx, int fps) {
@@ -1743,13 +1628,8 @@ void send_fps(int s, int rx, int fps) {
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.id = rx;
   command.fps = htons(fps);
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_lock(int s, int lock) {
@@ -1759,13 +1639,8 @@ void send_lock(int s, int lock) {
   command.header.data_type = htons(CMD_RESP_LOCK);
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.lock = lock;
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_ctun(int s, int vfo, int ctun) {
@@ -1776,13 +1651,8 @@ void send_ctun(int s, int vfo, int ctun) {
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.id = vfo;
   command.ctun = ctun;
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_rx_select(int s, int rx) {
@@ -1792,13 +1662,8 @@ void send_rx_select(int s, int rx) {
   command.header.data_type = htons(CMD_RESP_RX_SELECT);
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.id = rx;
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_vfo(int s, int action) {
@@ -1808,13 +1673,8 @@ void send_vfo(int s, int action) {
   command.header.data_type = htons(CMD_RESP_VFO);
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.id = action;
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_rit_toggle(int s, int rx) {
@@ -1824,13 +1684,8 @@ void send_rit_toggle(int s, int rx) {
   command.header.data_type = htons(CMD_RESP_RIT_TOGGLE);
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.id = rx;
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_rit_clear(int s, int rx) {
@@ -1840,13 +1695,8 @@ void send_rit_clear(int s, int rx) {
   command.header.data_type = htons(CMD_RESP_RIT_CLEAR);
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.id = rx;
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_rit(int s, int rx, int rit) {
@@ -1857,13 +1707,8 @@ void send_rit(int s, int rx, int rit) {
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.id = rx;
   command.rit = htons(rit);
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 // NOTYETUSED
@@ -1873,13 +1718,8 @@ void send_xit_toggle(int s) {
   command.header.sync = REMOTE_SYNC;
   command.header.data_type = htons(CMD_RESP_XIT_TOGGLE);
   command.header.version = htonl(CLIENT_SERVER_VERSION);
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 //NOTYETUSED
@@ -1889,13 +1729,8 @@ void send_xit_clear(int s) {
   command.header.sync = REMOTE_SYNC;
   command.header.data_type = htons(CMD_RESP_XIT_CLEAR);
   command.header.version = htonl(CLIENT_SERVER_VERSION);
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 //NOTYETUSED
@@ -1906,13 +1741,8 @@ void send_xit(int s, int xit) {
   command.header.data_type = htons(CMD_RESP_XIT);
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.xit = htons(xit);
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_sample_rate(int s, int rx, int sample_rate) {
@@ -1924,13 +1754,8 @@ void send_sample_rate(int s, int rx, int sample_rate) {
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.id = rx;
   command.sample_rate = htonll(rate);
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_receivers(int s, int receivers) {
@@ -1940,13 +1765,8 @@ void send_receivers(int s, int receivers) {
   command.header.data_type = htons(CMD_RESP_RECEIVERS);
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.receivers = receivers;
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_rit_increment(int s, int increment) {
@@ -1956,13 +1776,8 @@ void send_rit_increment(int s, int increment) {
   command.header.data_type = htons(CMD_RESP_RIT_INCREMENT);
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.increment = htons(increment);
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_filter_board(int s, int filter_board) {
@@ -1972,13 +1787,8 @@ void send_filter_board(int s, int filter_board) {
   command.header.data_type = htons(CMD_RESP_FILTER_BOARD);
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.filter_board = filter_board;
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_swap_iq(int s, int iqswap) {
@@ -1988,13 +1798,8 @@ void send_swap_iq(int s, int iqswap) {
   command.header.data_type = htons(CMD_RESP_SWAP_IQ);
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.iqswap = iqswap;
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_region(int s, int region) {
@@ -2004,13 +1809,8 @@ void send_region(int s, int region) {
   command.header.data_type = htons(CMD_RESP_REGION);
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.region = region;
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_mute_rx(int s, int mute) {
@@ -2020,13 +1820,8 @@ void send_mute_rx(int s, int mute) {
   command.header.data_type = htons(CMD_RESP_MUTE_RX);
   command.header.version = htonl(CLIENT_SERVER_VERSION);
   command.mute = mute;
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
 
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 static void *listen_thread(void *arg) {
