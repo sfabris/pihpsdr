@@ -1594,45 +1594,44 @@ void send_squelch(int s, int rx, int enable, int squelch) {
   }
 }
 
-void send_noise(int s, int rx, int nb, int nr, int anf, int snb,
-                int nb2_mode, int nr_agc, int nr2_gain_method, int nr2_npe_method,
-                int nr2_ae, double nb_tau, double nb_hang, double nb_advtime,
-                double nb_thresh, double nr2_trained_threshold,
-                double nr4_reduction_amount, double nr4_smoothing_factor,
-                double nr4_whitening_factor, double nr4_noise_rescale, double nr4_post_filter_threshold) {
+void send_noise(int s, const RECEIVER *rx) {
   NOISE_COMMAND command;
-  t_print("send_noise rx=%d nb=%d nr=%d anf=%d snb=%d\n", rx, nb, nr, anf, snb);
   command.header.sync = REMOTE_SYNC;
   command.header.data_type = htons(CMD_RESP_RX_NOISE);
   command.header.version = htonl(CLIENT_SERVER_VERSION);
-  command.id                        = rx;
-  command.nb                        = nb;
-  command.nr                        = nr;
-  command.anf                       = anf;
-  command.snb                       = snb;
-  command.nb2_mode                  = nb2_mode;
-  command.nr_agc                    = nr_agc;
-  command.nr2_gain_method           = nr2_gain_method;
-  command.nr2_npe_method            = nr2_npe_method;
-  command.nr2_ae                    = nr2_ae;
-  command.nb_tau                    = htond(nb_tau);
-  command.nb_hang                   = htond(nb_hang);
-  command.nb_advtime                = htond(nb_advtime);
-  command.nb_thresh                 = htond(nb_thresh);
-  command.nr2_trained_threshold     = htond(nr2_trained_threshold);
-  command.nr4_reduction_amount      = htond(nr4_reduction_amount);
-  command.nr4_smoothing_factor      = htond(nr4_smoothing_factor);
-  command.nr4_whitening_factor      = htond(nr4_whitening_factor);
-  command.nr4_noise_rescale         = htond(nr4_noise_rescale);
-  command.nr4_post_filter_threshold = htond(nr4_post_filter_threshold);
+  command.id                        = rx->id;
+  command.nb                        = rx->nb;
+  command.nr                        = rx->nr;
+  command.anf                       = rx->anf;
+  command.snb                       = rx->snb;
+  command.nb2_mode                  = rx->nb2_mode;
+  command.nr_agc                    = rx->nr_agc;
+  command.nr2_gain_method           = rx->nr2_gain_method;
+  command.nr2_npe_method            = rx->nr2_npe_method;
+  command.nr2_ae                    = rx->nr2_ae;
+  command.nb_tau                    = htond(rx->nb_tau);
+  command.nb_hang                   = htond(rx->nb_hang);
+  command.nb_advtime                = htond(rx->nb_advtime);
+  command.nb_thresh                 = htond(rx->nb_thresh);
+  command.nr2_trained_threshold     = htond(rx->nr2_trained_threshold);
+#ifdef EXTNR
+  command.nr4_reduction_amount      = htond(rx->nr4_reduction_amount);
+  command.nr4_smoothing_factor      = htond(rx->nr4_smoothing_factor);
+  command.nr4_whitening_factor      = htond(rx->nr4_whitening_factor);
+  command.nr4_noise_rescale         = htond(rx->nr4_noise_rescale);
+  command.nr4_post_filter_threshold = htond(rx->nr4_post_filter_threshold);
+#else
+  //
+  // If this side is not compiled with EXTNR, fill in default values
+  //
+  command.nr4_reduction_amount      = htond(10.0);
+  command.nr4_smoothing_factor      = htond(0.0);
+  command.nr4_whitening_factor      = htond(0.0);
+  command.nr4_noise_rescale         = htond(2.0);
+  command.nr4_post_filter_threshold = htond(-10.0);
+#endif
 
-  int bytes_sent = send_bytes(s, (char *)&command, sizeof(command));
-
-  if (bytes_sent < 0) {
-    t_perror("send_command");
-  } else {
-    //t_print("send_command: %d\n",bytes_sent);
-  }
+  send_bytes(s, (char *)&command, sizeof(command));
 }
 
 void send_band(int s, int rx, int band) {
@@ -3150,12 +3149,7 @@ static int remote_command(void *data) {
     }
 
     rx_set_noise(rx);
-    send_noise(client->socket, rx->id, rx->nb, rx->nr, rx->anf, rx->snb,
-               rx->nb2_mode, rx->nr_agc, rx->nr2_gain_method, rx->nr2_npe_method,
-               rx->nr2_ae, rx->nb_tau, rx->nb_hang, rx->nb_advtime, rx->nb_thresh,
-               rx->nr2_trained_threshold,
-               rx->nr4_reduction_amount, rx->nr4_smoothing_factor,
-               rx->nr4_whitening_factor, rx->nr4_noise_rescale, rx->nr4_post_filter_threshold);
+    send_noise(client->socket, rx);
     g_idle_add(ext_vfo_update, NULL);
   }
   break;

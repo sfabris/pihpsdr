@@ -60,16 +60,7 @@ void update_noise() {
 
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
-    send_noise(client_socket, id, active_receiver->nb, active_receiver->nr,
-               active_receiver->anf, active_receiver->snb,
-               active_receiver->nb2_mode, active_receiver->nr_agc,
-               active_receiver->nr2_gain_method, active_receiver->nr2_npe_method,
-               active_receiver->nr2_ae, active_receiver->nb_tau, active_receiver->nb_hang,
-               active_receiver->nb_advtime, active_receiver->nb_thresh,
-               active_receiver->nr2_trained_threshold,
-               active_receiver->nr4_reduction_amount, active_receiver->nr4_smoothing_factor,
-               active_receiver->nr4_whitening_factor, active_receiver->nr4_noise_rescale,
-               active_receiver->nr4_post_filter_threshold);
+    send_noise(client_socket, active_receiver);
 #endif
     return;
   }

@@ -541,13 +541,7 @@ extern void send_agc_gain(int s, int rx, double gain, double hang, double thresh
 extern void send_attenuation(int s, int rx, int attenuation);
 extern void send_rfgain(int s, int rx, double gain);
 extern void send_squelch(int s, int rx, int enable, int squelch);
-extern void send_noise(int s, int rx, int nb, int nr, int anf, int snb,
-                       int nb2_mode, int nr_agc, int nr2_gain_method, int nr2_npe_method,
-                       int nr2_ae, double nb_tau, double nb_hang, double nb2_advtime,
-                       double nb2_thresh, double nr2_trained_threshold,
-                       double nr4_reduction_amount, double nr4_smoothing_factor,
-                       double nr4_whitening_factor, double nr4_noise_rescale,
-                       double nr4_post_filter_threshold);
+extern void send_noise(int s, const RECEIVER *rx);
 extern void send_band(int s, int rx, int band);
 extern void send_mode(int s, int rx, int mode);
 extern void send_filter(int s, int rx, int filter);
