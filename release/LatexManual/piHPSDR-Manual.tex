@@ -1796,6 +1796,15 @@ settings, equaliser settings, and TX compressor settings
  the settings stored for the new mode become effective.
 Note that settings changed for RX2/VFOB are not stored, but
  stored settings are applied when the mode of RX2/VFOB is changed.
+ 
+Most users certainly want different settings, say, for USB, CWU, and DIGU. But they
+will probably want to have the same settings for USB and LSB. Therefore,
+ three groups of modes are defined, which contain LSB/USB/DSB, CWU/CWL and
+ DIGU/DIGL. If modified settings are stored for a mode that belongs to one of the three
+ groups, the updated settings are copied to the settings for the other
+ modes the same group. For example, when change noise reduction parameters
+ or equalizer settings for the active receiver when running USB,
+  these changes will also become effective when later changing the mode to LSB.
 
 List of settings stored for each mode:
 
