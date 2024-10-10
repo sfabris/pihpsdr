@@ -799,6 +799,89 @@ static void send_resp (int fd, char * msg) {
   }
 }
 
+static int wdspmode(int kenwoodmode) {
+  int wdspmode;
+
+  switch (kenwoodmode) {
+  case 1:                // Kenwood LSB
+    wdspmode = modeLSB;
+    break;
+  case 2:                // Kenwood USB
+    wdspmode = modeUSB;
+    break;
+  case 3:                // Kenwood CW (upper side band)
+    wdspmode = modeCWU;
+    break;
+  case 4:                // Kenwood FM
+    wdspmode = modeFMN;
+    break;
+  case 5:                // Kenwood AM
+    wdspmode = modeAM;
+    break;
+  case 6:                // Kenwood FSK (lower side band)
+    wdspmode = modeDIGL;
+    break;
+  case 7:                // Kenwood CW-R (lower side band)
+    wdspmode = modeCWL;
+    break;
+  case 9:                // Kenwood FSK-R (upper side band)
+    wdspmode = modeDIGU;
+    break;
+  default:
+    // NOTREACHED?
+    wdspmode = modeLSB;
+    break;
+  }
+
+  return wdspmode;
+}
+
+static int ts2000_mode(int wdspmode) {
+  int kenwoodmode;
+
+  switch (wdspmode) {
+  case modeLSB:
+    kenwoodmode = 1;  // Kenwood LDB
+    break;
+
+  case modeUSB:
+    kenwoodmode = 2;  // Kenwood USB
+    break;
+
+  case modeCWL:
+    kenwoodmode = 7;  // Kenwood CW-R
+    break;
+
+  case modeCWU:
+    kenwoodmode = 3;  // Kenwood CW
+    break;
+
+  case modeFMN:
+    kenwoodmode = 4;  // Kenwood FM
+    break;
+
+  case modeAM:
+  case modeSAM:
+    kenwoodmode = 5;  // Kenwood AM
+    break;
+
+  case modeDIGL:
+    kenwoodmode = 6;  // Kenwood FSK
+    break;
+
+  case modeDIGU:
+    kenwoodmode = 9;  // Kenwood FSK-R
+    break;
+
+  default:
+    // NOTREACHED?
+    kenwoodmode = 1;  // LSB 
+    break;
+  }
+
+  return kenwoodmode;
+}
+
 static gboolean autoreport_handler(gpointer data) {
   CLIENT *client = (CLIENT *) data;
   //
@@ -838,7 +921,7 @@ static gboolean autoreport_handler(gpointer data) {
     }
 
     if (md != client->last_md) {
-      snprintf(reply, 256, "MD%1d;", md);
+      snprintf(reply, 256, "MD%1d;", ts2000_mode(md));
       send_resp(client->fd, reply);
       client->last_md = md;
     }
@@ -1195,89 +1278,6 @@ static gpointer rigctl_client (gpointer data) {
   g_mutex_unlock(&mutex_numcat);
   g_idle_add(ext_vfo_update, NULL);
   return NULL;
-}
-
-static int wdspmode(int kenwoodmode) {
-  int wdspmode;
-
-  switch (kenwoodmode) {
-  case 1:                // Kenwood LSB
-    wdspmode = modeLSB;
-    break;
-  case 2:                // Kenwood USB
-    wdspmode = modeUSB;
-    break;
-  case 3:                // Kenwood CW (upper side band)
-    wdspmode = modeCWU;
-    break;
-  case 4:                // Kenwood FM
-    wdspmode = modeFMN;
-    break;
-  case 5:                // Kenwood AM
-    wdspmode = modeAM;
-    break;
-  case 6:                // Kenwood FSK (lower side band)
-    wdspmode = modeDIGL;
-    break;
-  case 7:                // Kenwood CW-R (lower side band)
-    wdspmode = modeCWL;
-    break;
-  case 9:                // Kenwood FSK-R (upper side band)
-    wdspmode = modeDIGU;
-    break;
-  default:
-    // NOTREACHED?
-    wdspmode = modeLSB;
-    break;
-  }
-
-  return wdspmode;
-}
-
-static int ts2000_mode(int wdspmode) {
-  int kenwoodmode;
-
-  switch (wdspmode) {
-  case modeLSB:
-    kenwoodmode = 1;  // Kenwood LDB
-    break;
-
-  case modeUSB:
-    kenwoodmode = 2;  // Kenwood USB
-    break;
-
-  case modeCWL:
-    kenwoodmode = 7;  // Kenwood CW-R
-    break;
-
-  case modeCWU:
-    kenwoodmode = 3;  // Kenwood CW
-    break;
-
-  case modeFMN:
-    kenwoodmode = 4;  // Kenwood FM
-    break;
-
-  case modeAM:
-  case modeSAM:
-    kenwoodmode = 5;  // Kenwood AM
-    break;
-
-  case modeDIGL:
-    kenwoodmode = 6;  // Kenwood FSK
-    break;
-
-  case modeDIGU:
-    kenwoodmode = 9;  // Kenwood FSK-R
-    break;
-
-  default:
-    // NOTREACHED?
-    kenwoodmode = 1;  // LSB 
-    break;
-  }
-
-  return kenwoodmode;
 }
 
 gboolean parse_extended_cmd (const char *command, CLIENT *client) {
