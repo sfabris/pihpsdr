@@ -159,8 +159,8 @@ static void digi_drive_cb (GtkWidget *widget, gpointer data) {
   drive_digi_max = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
   int mode = vfo_get_tx_mode();
 
-  if ((mode == modeDIGL || mode == modeDIGU) && transmitter->drive > v + 0.5) {
-    set_drive(v);
+  if ((mode == modeDIGL || mode == modeDIGU) && transmitter->drive > drive_digi_max + 0.5) {
+    set_drive(drive_digi_max);
   }
 
 }
