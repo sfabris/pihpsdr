@@ -88,7 +88,7 @@ typedef struct _transmitter {
   int    ps_stbl;
   int    ps_map;
   int    ps_pin;
-  double ps_ptol;
+  int    ps_ptol;
   double ps_moxdelay;
   double ps_loopdelay;
   int    ps_oneshot;

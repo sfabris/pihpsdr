@@ -328,7 +328,7 @@ void tx_save_state(const TRANSMITTER *tx) {
   SetPropI1("transmitter.%d.ps_stbl",           tx->id,               tx->ps_stbl);
   SetPropI1("transmitter.%d.ps_map",            tx->id,               tx->ps_map);
   SetPropI1("transmitter.%d.ps_pin",            tx->id,               tx->ps_pin);
-  SetPropF1("transmitter.%d.ps_ptol",           tx->id,               tx->ps_ptol);
+  SetPropI1("transmitter.%d.ps_ptol",           tx->id,               tx->ps_ptol);
   SetPropF1("transmitter.%d.ps_moxdelay",       tx->id,               tx->ps_moxdelay);
   SetPropF1("transmitter.%d.ps_loopdelay",      tx->id,               tx->ps_loopdelay);
   SetPropI1("transmitter.%d.attenuation",       tx->id,               tx->attenuation);
@@ -384,7 +384,7 @@ static void tx_restore_state(TRANSMITTER *tx) {
   GetPropI1("transmitter.%d.ps_stbl",           tx->id,               tx->ps_stbl);
   GetPropI1("transmitter.%d.ps_map",            tx->id,               tx->ps_map);
   GetPropI1("transmitter.%d.ps_pin",            tx->id,               tx->ps_pin);
-  GetPropF1("transmitter.%d.ps_ptol",           tx->id,               tx->ps_ptol);
+  GetPropI1("transmitter.%d.ps_ptol",           tx->id,               tx->ps_ptol);
   GetPropF1("transmitter.%d.ps_moxdelay",       tx->id,               tx->ps_moxdelay);
   GetPropF1("transmitter.%d.ps_loopdelay",      tx->id,               tx->ps_loopdelay);
   GetPropI1("transmitter.%d.attenuation",       tx->id,               tx->attenuation);
@@ -870,7 +870,7 @@ TRANSMITTER *tx_create_transmitter(int id, int width, int height) {
   tx->ps_stbl = 0;            // "Stbl" un-checked
   tx->ps_map = 1;             // "Map" checked
   tx->ps_pin = 1;             // "Pin" checked
-  tx->ps_ptol = 0.8;          // "Relax Tolerance" un-checked
+  tx->ps_ptol = 0;            // "Relax Tolerance" un-checked
   tx->ps_moxdelay = 0.2;      // "MOX Wait" 0.2 sec
   tx->ps_loopdelay = 0.0;     // "CAL Wait" 0.0 sec
   tx->feedback = 0;
@@ -1885,9 +1885,7 @@ void tx_ps_setparams(const TRANSMITTER *tx) {
   SetPSPtol(tx->id, tx->ps_ptol ? 0.4 : 0.8);
   SetPSIntsAndSpi(tx->id, tx->ps_ints, tx->ps_spi);
   SetPSStabilize(tx->id, tx->ps_stbl);
-  SetPSMapMode(tx->id, tx->ps_map);
   SetPSPinMode(tx->id, tx->ps_pin);
-  SetPSPtol(tx->id, tx->ps_ptol);
   SetPSMoxDelay(tx->id, tx->ps_moxdelay);
   // Note that the TXDelay is internally stored in NanoSeconds
   SetPSTXDelay(tx->id, 1E-9 * tx->ps_ampdelay);

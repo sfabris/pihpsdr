@@ -418,7 +418,7 @@ void equalizer_menu(GtkWidget *parent) {
   case 1:
     have_tenband = receiver[eqid]->eq_tenband;
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (enable_b), receiver[eqid]->eq_enable);
-    g_signal_connect(enable_b, "toggled", G_CALLBACK(enable_cb), GINT_TO_POINTER(0));
+    g_signal_connect(enable_b, "toggled", G_CALLBACK(enable_cb), NULL);
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(tenband_b), receiver[eqid]->eq_tenband);
     g_signal_connect(tenband_b, "toggled", G_CALLBACK(tenband_cb), GINT_TO_POINTER(0));
 
@@ -437,7 +437,7 @@ void equalizer_menu(GtkWidget *parent) {
   case 2:
     have_tenband = transmitter->eq_tenband;
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (enable_b), transmitter->eq_enable);
-    g_signal_connect(enable_b, "toggled", G_CALLBACK(enable_cb), GINT_TO_POINTER(0));
+    g_signal_connect(enable_b, "toggled", G_CALLBACK(enable_cb), NULL);
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON(tenband_b), transmitter->eq_tenband);
     g_signal_connect(tenband_b, "toggled", G_CALLBACK(tenband_cb), GINT_TO_POINTER(0));
 

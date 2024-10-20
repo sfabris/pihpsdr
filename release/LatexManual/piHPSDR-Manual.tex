@@ -3211,8 +3211,9 @@ TCP CAT connections are established when the \textit{client} successfully connec
 the connection is put in ,,auto reporting'' mode. This mode can generally be enabled and disabled with the
 ZZAI or AI CAT commands (see Appendix \ref{sec:catcommands}), but with this checkbox, the connection can be put
 in auto reporting mode without the CAT client sending AI commands. In auto reporting mode, frequency changes
-are transmitted via FA and FB CAT messages. The main use for auto reporting mode is, if a power amplifier
-is connected via a serial line that needs frequency info via CAT. If you do not have hardware that depends
+are transmitted via FA and FB CAT messages, and mode changes of VFO-A are transmitted via MD CAT commands.
+The main use for auto reporting mode is, if a power amplifier or a logbook program
+is connected via a serial line that needs frequency or mode  info via CAT. If you do not have hardware that depends
 on such unsolicited (without requesting them via ZZAI or AI commands) messages, this box should never be checked.
 
 \rett{Enable RigCtl Debug Logging}. If enabled, the \pH CAT subsystem sends lots of debug messages to the standard output. If

@@ -630,7 +630,7 @@ void ps_menu(GtkWidget *parent) {
   col++;
   GtkWidget *tol_b = gtk_check_button_new_with_label("PS Relax Tolerance");
   gtk_widget_set_name(tol_b, "boldlabel");
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (tol_b), (transmitter->ps_ptol < 0.6));
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (tol_b), transmitter->ps_ptol);
   gtk_grid_attach(GTK_GRID(grid), tol_b, col, row, 2, 1);
   g_signal_connect(tol_b, "toggled", G_CALLBACK(tol_cb), NULL);
   col++;
