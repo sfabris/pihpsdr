@@ -27,8 +27,6 @@
 
 PROPERTY* properties = NULL;
 
-static double version = 0.0;
-
 void clearProperties() {
   if (properties != NULL) {
     // free all the properties
@@ -85,6 +83,7 @@ void loadProperties(const char* filename) {
     const char* value;
     const char* name;
     char string[256];
+    double version = -1;
 
     while (fgets(string, sizeof(string), f)) {
       if (string[0] != '#') {
@@ -106,12 +105,12 @@ void loadProperties(const char* filename) {
       }
     }
 
-    fclose(f);
-  }
+    if (version >= 0.0 && version != PROPERTY_VERSION) {
+      properties = NULL;
+      t_print("loadProperties: version=%f expected version=%f ignoring\n", version, PROPERTY_VERSION);
+    }
 
-  if (version != PROPERTY_VERSION) {
-    properties = NULL;
-    t_print("loadProperties: version=%f expected version=%f ignoring\n", version, PROPERTY_VERSION);
+    fclose(f);
   }
 }
 

@@ -305,7 +305,6 @@ void rx_save_state(const RECEIVER *rx) {
   SetPropI1("receiver.%d.zoom", rx->id,                         rx->zoom);
   SetPropI1("receiver.%d.pan", rx->id,                          rx->pan);
   SetPropI1("receiver.%d.eq_enable", rx->id,                    rx->eq_enable);
-  SetPropI1("receiver.%d.eq_tenband", rx->id,                   rx->eq_tenband);
 
   for (int i = 0; i < 11; i++) {
     SetPropF2("receiver.%d.eq_freq[%d]", rx->id, i,             rx->eq_freq[i]);
@@ -410,7 +409,6 @@ void rx_restore_state(RECEIVER *rx) {
   GetPropI1("receiver.%d.zoom", rx->id,                         rx->zoom);
   GetPropI1("receiver.%d.pan", rx->id,                          rx->pan);
   GetPropI1("receiver.%d.eq_enable", rx->id,                    rx->eq_enable);
-  GetPropI1("receiver.%d.eq_tenband", rx->id,                   rx->eq_tenband);
 
   for (int i = 0; i < 11; i++) {
     GetPropF2("receiver.%d.eq_freq[%d]", rx->id, i,             rx->eq_freq[i]);
@@ -790,18 +788,17 @@ RECEIVER *rx_create_receiver(int id, int pixels, int width, int height) {
   rx->zoom = 1;
   rx->pan = 0;
   rx->eq_enable = 0;
-  rx->eq_tenband  = 0;
   rx->eq_freq[0]  =     0.0;
-  rx->eq_freq[1]  =   200.0;
-  rx->eq_freq[2]  =   500.0;
-  rx->eq_freq[3]  =  1200.0;
-  rx->eq_freq[4]  =  3000.0;
-  rx->eq_freq[5]  =  5000.0;
-  rx->eq_freq[6]  =  7000.0;
-  rx->eq_freq[7]  =  9000.0;
-  rx->eq_freq[8]  = 11000.0;
-  rx->eq_freq[9]  = 13000.0;
-  rx->eq_freq[10] = 15000.0;
+  rx->eq_freq[1]  =    50.0;
+  rx->eq_freq[2]  =   100.0;
+  rx->eq_freq[3]  =   200.0;
+  rx->eq_freq[4]  =   500.0;
+  rx->eq_freq[5]  =  1000.0;
+  rx->eq_freq[6]  =  1500.0;
+  rx->eq_freq[7]  =  2000.0;
+  rx->eq_freq[8]  =  2500.0;
+  rx->eq_freq[9]  =  3000.0;
+  rx->eq_freq[10] =  5000.0;
   rx->eq_gain[0]  = 0.0;
   rx->eq_gain[1]  = 0.0;
   rx->eq_gain[2]  = 0.0;
@@ -1348,13 +1345,20 @@ void rx_create_remote(RECEIVER *rx) {
 // function should only occur *once* in the program,
 // at best in a wrapper.
 //
+// WDSPRXDEBUG should only be activated for debugging
+//
 // TODO: If the radio is remote, make them a no-op.
 //
 ////////////////////////////////////////////////////////
 
+//#define WDSPRXDEBUG
+
 void rx_change_sample_rate(RECEIVER *rx, int sample_rate) {
   // ToDo: move this outside of the WDSP wrappers and encapsulate WDSP calls
   //       in this function
+#ifdef WDSPRXDEBUG
+  t_print("RX id=%d SampleRate=%d\n", rx->id, sample_rate);
+#endif
   g_mutex_lock(&rx->mutex);
   rx->sample_rate = sample_rate;
   schedule_receive_specific();
@@ -1420,6 +1424,8 @@ void rx_change_sample_rate(RECEIVER *rx, int sample_rate) {
 }
 
 void rx_close(const RECEIVER *rx) {
+#ifdef WDSPRXDEBUG
+#endif
   CloseChannel(rx->id);
 }
 
@@ -1447,6 +1453,8 @@ double rx_get_smeter(const RECEIVER *rx) {
 }
 
 void rx_create_analyzer(const RECEIVER *rx) {
+#ifdef WDSPRXDEBUG
+#endif
   //
   // After the analyzer has been created, its parameters
   // are set via rx_set_analyzer
@@ -1462,6 +1470,8 @@ void rx_create_analyzer(const RECEIVER *rx) {
 }
 
 void rx_set_analyzer(const RECEIVER *rx) {
+#ifdef WDSPRXDEBUG
+#endif
   //
   // The analyzer depends on the framerate (fps), the
   // width (pixels), and the sample rate, as well as the
@@ -1512,20 +1522,28 @@ void rx_set_analyzer(const RECEIVER *rx) {
 }
 
 void rx_off(const RECEIVER *rx) {
+#ifdef WDSPRXDEBUG
+#endif
   // switch receiver OFF, wait until slew-down completet
   SetChannelState(rx->id, 0, 1);
 }
 
 void rx_on(const RECEIVER *rx) {
+#ifdef WDSPRXDEBUG
+#endif
   // switch receiver ON
   SetChannelState(rx->id, 1, 0);
 }
 
 void rx_set_af_binaural(const RECEIVER *rx) {
+#ifdef WDSPRXDEBUG
+#endif
   SetRXAPanelBinaural(rx->id, rx->binaural);
 }
 
 void rx_set_af_gain(const RECEIVER *rx) {
+#ifdef WDSPRXDEBUG
+#endif
   //
   // volume is in dB from 0 ... -40 and this is
   // converted to  an amplitude from 0 ... 1.
@@ -1548,6 +1566,8 @@ void rx_set_af_gain(const RECEIVER *rx) {
 }
 
 void rx_set_agc(RECEIVER *rx) {
+#ifdef WDSPRXDEBUG
+#endif
   //
   // Apply the AGC settings stored in rx.
   // Calculate new AGC and "hang" line levels
@@ -1637,6 +1657,8 @@ void rx_set_average(const RECEIVER *rx) {
     wdspmode = AVERAGE_MODE_TIME_WINDOW;
     break;
   }
+#ifdef WDSPRXDEBUG
+#endif
 
   //
   // I observed artifacts when changing the mode from "Log Recursive"
@@ -1650,9 +1672,13 @@ void rx_set_average(const RECEIVER *rx) {
 
 void rx_set_bandpass(const RECEIVER *rx) {
   RXASetPassband(rx->id, (double)rx->filter_low, (double)rx->filter_high);
+#ifdef WDSPRXDEBUG
+#endif
 }
 
 void rx_set_cw_peak(const RECEIVER *rx, int state, double freq) {
+#ifdef WDSPRXDEBUG
+#endif
   if (state) {
     double w = 0.25 * (rx->filter_high - rx->filter_low);
 
@@ -1692,29 +1718,43 @@ void rx_set_detector(const RECEIVER *rx) {
     wdspmode = DETECTOR_MODE_SAMPLE;
     break;
   }
+#ifdef WDSPRXDEBUG
+#endif
 
   SetDisplayDetectorMode(rx->id, 0, wdspmode);
 }
 
 void rx_set_deviation(const RECEIVER *rx) {
   SetRXAFMDeviation(rx->id, (double)rx->deviation);
+#ifdef WDSPRXDEBUG
+#endif
 }
 
 void rx_set_equalizer(RECEIVER *rx) {
   //
   // Apply the equalizer parameters stored in rx
   //
-  int nfreq = rx->eq_tenband ? 10 : 4;
-  SetRXAEQProfile(rx->id, nfreq, rx->eq_freq, rx->eq_gain);
+  SetRXAEQProfile(rx->id, 10, rx->eq_freq, rx->eq_gain);
   SetRXAEQRun(rx->id, rx->eq_enable);
+#ifdef WDSPRXDEBUG
+  t_print("WDSP:RX id=%d Equalizer enable=%d allgain=%g\n", rx->id, rx->eq_enable, rx->eq_gain[0]);
+  for (int i = 1; i < 11; i++) {
+    t_print("... Chan=%2d Freq=%6g Gain=%4g\n", i, rx->eq_freq[i], rx->eq_gain[i]);
+  }
+
+#endif
 }
 
 void rx_set_fft_latency(const RECEIVER *rx) {
   RXASetMP(rx->id, rx->low_latency);
+#ifdef WDSPRXDEBUG
+#endif
 }
 
 void rx_set_fft_size(const RECEIVER *rx) {
   RXASetNC(rx->id, rx->fft_size);
+#ifdef WDSPRXDEBUG
+#endif
 }
 
 void rx_set_mode(const RECEIVER *rx) {
@@ -1724,6 +1764,8 @@ void rx_set_mode(const RECEIVER *rx) {
   //
   SetRXAMode(rx->id, vfo[rx->id].mode);
   rx_set_squelch(rx);
+#ifdef WDSPRXDEBUG
+#endif
 }
 
 void rx_set_noise(const RECEIVER *rx) {
@@ -1788,6 +1830,8 @@ void rx_set_noise(const RECEIVER *rx) {
   SetRXASBNRpostFilterThreshold(rx->id, rx->nr4_post_filter_threshold);
   SetRXASBNRRun(rx->id, (rx->nr == 4));
 #endif
+#ifdef WDSPRXDEBUG
+#endif
 }
 
 void rx_set_offset(const RECEIVER *rx, long long offset) {
@@ -1800,6 +1844,8 @@ void rx_set_offset(const RECEIVER *rx, long long offset) {
     RXANBPSetShiftFrequency(rx->id, (double)offset);
     SetRXAShiftRun(rx->id, 1);
   }
+#ifdef WDSPRXDEBUG
+#endif
 }
 
 void rx_set_squelch(const RECEIVER *rx) {
@@ -1833,6 +1879,8 @@ void rx_set_squelch(const RECEIVER *rx) {
     value = ((rx->squelch / 100.0) * 160.0) - 160.0;
     SetRXAAMSQThreshold(rx->id, value);
     am_squelch = rx->squelch_enable;
+#ifdef WDSPRXDEBUG
+#endif
     break;
 
   case modeLSB:
@@ -1846,6 +1894,8 @@ void rx_set_squelch(const RECEIVER *rx) {
     SetRXASSQLThreshold(rx->id, value);
     SetRXASSQLTauMute(rx->id, 0.1);
     SetRXASSQLTauUnMute(rx->id, 0.1);
+#ifdef WDSPRXDEBUG
+#endif
     break;
 
   case modeFMN:
@@ -1855,6 +1905,8 @@ void rx_set_squelch(const RECEIVER *rx) {
     value = pow(10.0, -2.0 * rx->squelch / 100.0);
     SetRXAFMSQThreshold(rx->id, value);
     fm_squelch = rx->squelch_enable;
+#ifdef WDSPRXDEBUG
+#endif
     break;
 
   default:

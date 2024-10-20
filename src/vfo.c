@@ -132,9 +132,7 @@ static void modesettingsSaveState() {
 #endif
     SetPropI1("modeset.%d.agc", i,                   mode_settings[i].agc);
     SetPropI1("modeset.%d.en_txeq", i,               mode_settings[i].en_txeq);
-    SetPropI1("modeset.%d.txeq_tenband", i,          mode_settings[i].tx_eq_tenband);
     SetPropI1("modeset.%d.en_rxeq", i,               mode_settings[i].en_rxeq);
-    SetPropI1("modeset.%d.rxeq_tenband", i,          mode_settings[i].rx_eq_tenband);
     SetPropI1("modeset.%d.step", i,                  mode_settings[i].step);
     SetPropF1("modeset.%d.compressor_level", i,      mode_settings[i].compressor_level);
     SetPropI1("modeset.%d.compressor", i,            mode_settings[i].compressor);
@@ -212,8 +210,6 @@ static void modesettingsRestoreState() {
 #endif
     mode_settings[i].en_rxeq = 0;
     mode_settings[i].en_txeq = 0;
-    mode_settings[i].rx_eq_tenband = 0;
-    mode_settings[i].tx_eq_tenband = 0;
 
     for (int j = 0; j < 11; j++) {
       mode_settings[i].tx_eq_gain[j] = 0;
@@ -222,26 +218,26 @@ static void modesettingsRestoreState() {
 
     mode_settings[i].tx_eq_freq[0]  =     0.0;
     mode_settings[i].rx_eq_freq[0]  =     0.0;
-    mode_settings[i].tx_eq_freq[1]  =   200.0;
-    mode_settings[i].rx_eq_freq[1]  =   200.0;
-    mode_settings[i].tx_eq_freq[2]  =   500.0;
-    mode_settings[i].rx_eq_freq[2]  =   500.0;
-    mode_settings[i].tx_eq_freq[3]  =  1200.0;
-    mode_settings[i].rx_eq_freq[3]  =  1200.0;
-    mode_settings[i].tx_eq_freq[4]  =  3000.0;
-    mode_settings[i].rx_eq_freq[4]  =  3000.0;
-    mode_settings[i].tx_eq_freq[5]  =  5000.0;
-    mode_settings[i].rx_eq_freq[5]  =  5000.0;
-    mode_settings[i].tx_eq_freq[6]  =  7000.0;
-    mode_settings[i].rx_eq_freq[6]  =  7000.0;
-    mode_settings[i].tx_eq_freq[7]  =  9000.0;
-    mode_settings[i].rx_eq_freq[7]  =  9000.0;
-    mode_settings[i].tx_eq_freq[8]  = 11000.0;
-    mode_settings[i].rx_eq_freq[8]  = 11000.0;
-    mode_settings[i].tx_eq_freq[9]  = 13000.0;
-    mode_settings[i].rx_eq_freq[9]  = 13000.0;
-    mode_settings[i].tx_eq_freq[10] = 15000.0;
-    mode_settings[i].rx_eq_freq[10] = 15000.0;
+    mode_settings[i].tx_eq_freq[1]  =    50.0;
+    mode_settings[i].rx_eq_freq[1]  =    50.0;
+    mode_settings[i].tx_eq_freq[2]  =   100.0;
+    mode_settings[i].rx_eq_freq[2]  =   100.0;
+    mode_settings[i].tx_eq_freq[3]  =   200.0;
+    mode_settings[i].rx_eq_freq[3]  =   200.0;
+    mode_settings[i].tx_eq_freq[4]  =   500.0;
+    mode_settings[i].rx_eq_freq[4]  =   500.0;
+    mode_settings[i].tx_eq_freq[5]  =  1000.0;
+    mode_settings[i].rx_eq_freq[5]  =  1000.0;
+    mode_settings[i].tx_eq_freq[6]  =  1500.0;
+    mode_settings[i].rx_eq_freq[6]  =  1500.0;
+    mode_settings[i].tx_eq_freq[7]  =  2000.0;
+    mode_settings[i].rx_eq_freq[7]  =  2000.0;
+    mode_settings[i].tx_eq_freq[8]  =  2500.0;
+    mode_settings[i].rx_eq_freq[8]  =  2500.0;
+    mode_settings[i].tx_eq_freq[9]  =  3000.0;
+    mode_settings[i].rx_eq_freq[9]  =  3000.0;
+    mode_settings[i].tx_eq_freq[10] =  5000.0;
+    mode_settings[i].rx_eq_freq[10] =  5000.0;
     mode_settings[i].compressor = 0;
     mode_settings[i].compressor_level = 0.0;
     GetPropI1("modeset.%d.filter", i,                mode_settings[i].filter);
@@ -270,8 +266,6 @@ static void modesettingsRestoreState() {
     GetPropI1("modeset.%d.agc", i,                   mode_settings[i].agc);
     GetPropI1("modeset.%d.en_txeq", i,               mode_settings[i].en_txeq);
     GetPropI1("modeset.%d.en_rxeq", i,               mode_settings[i].en_rxeq);
-    GetPropI1("modeset.%d.txeq_tenband", i,          mode_settings[i].tx_eq_tenband);
-    GetPropI1("modeset.%d.rxeq_tenband", i,          mode_settings[i].rx_eq_tenband);
     GetPropI1("modeset.%d.step", i,                  mode_settings[i].step);
     GetPropF1("modeset.%d.compressor_level", i,      mode_settings[i].compressor_level);
     GetPropI1("modeset.%d.compressor", i,            mode_settings[i].compressor);
@@ -513,7 +507,6 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
   rx->snb                       = mode_settings[m].snb;
   rx->agc                       = mode_settings[m].agc;
   rx->eq_enable                 = mode_settings[m].en_rxeq;
-  rx->eq_tenband                = mode_settings[m].rx_eq_tenband;
 
   for (int i = 0; i < 11; i++) {
     rx->eq_gain[i] = mode_settings[m].rx_eq_gain[i];
@@ -528,7 +521,6 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
   //
   if ((id == vfo_get_tx_vfo()) && can_transmit) {
     transmitter->eq_enable  = mode_settings[m].en_txeq;
-    transmitter->eq_tenband = mode_settings[m].tx_eq_tenband;
 
     for (int i = 0; i < 11; i++) {
       transmitter->eq_gain[i] = mode_settings[m].tx_eq_gain[i];
@@ -537,7 +529,11 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
 
     transmitter->compressor = mode_settings[m].compressor;
     transmitter->compressor_level = mode_settings[m].compressor_level;
+    transmitter->cfc = mode_settings[m].cfc;
     tx_set_compressor      (transmitter);
+
+    transmitter->dexp = mode_settings[m].dexp;
+    tx_set_dexp(transmitter);
   }
 
   //
@@ -1740,6 +1736,23 @@ void vfo_update() {
 
   // -----------------------------------------------------------
   //
+  // Draw string indicating DEXP status
+  //
+  // -----------------------------------------------------------
+  if (vfl->dexp_x != 0 && can_transmit) {
+    cairo_move_to(cr, vfl->dexp_x, vfl->dexp_y);
+
+    if (transmitter->dexp) {
+      cairo_set_source_rgba(cr, COLOUR_ATTN);
+    } else {
+      cairo_set_source_rgba(cr, COLOUR_SHADE);
+    }
+
+    cairo_show_text(cr, "DExp");
+  }
+
+  // -----------------------------------------------------------
+  //
   // Draw string indicating AGC status
   //
   // -----------------------------------------------------------
@@ -1782,7 +1795,11 @@ void vfo_update() {
   if (can_transmit && vfl->cmpr_x != 0) {
     cairo_move_to(cr, vfl->cmpr_x, vfl->cmpr_y);
 
-    if (transmitter->compressor) {
+    if (transmitter->cfc) {
+      snprintf(temp_text, 32, "CFC on");
+      cairo_set_source_rgba(cr, COLOUR_ATTN);
+      cairo_show_text(cr, temp_text);
+    } else if (transmitter->compressor) {
       snprintf(temp_text, 32, "CMPR %d", (int) transmitter->compressor_level);
       cairo_set_source_rgba(cr, COLOUR_ATTN);
       cairo_show_text(cr, temp_text);

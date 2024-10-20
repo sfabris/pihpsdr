@@ -349,20 +349,34 @@ void tx_save_state(const TRANSMITTER *tx) {
   SetPropI1("transmitter.%d.do_scale",          tx->id,               tx->do_scale);
   SetPropI1("transmitter.%d.compressor",        tx->id,               tx->compressor);
   SetPropF1("transmitter.%d.compressor_level",  tx->id,               tx->compressor_level);
+  SetPropI1("transmitter.%d.cfc",               tx->id,               tx->cfc);
+  SetPropI1("transmitter.%d.cfc_eq",            tx->id,               tx->cfc_eq);
+  SetPropI1("transmitter.%d.dexp",              tx->id,               tx->dexp);
+  SetPropI1("transmitter.%d.dexp_exp",          tx->id,               tx->dexp_exp);
+  SetPropI1("transmitter.%d.dexp_filter",       tx->id,               tx->dexp_filter);
+  SetPropI1("transmitter.%d.dexp_filter_low",   tx->id,               tx->dexp_filter_low);
+  SetPropI1("transmitter.%d.dexp_filter_high",  tx->id,               tx->dexp_filter_high);
+  SetPropI1("transmitter.%d.dexp_trigger",      tx->id,               tx->dexp_trigger);
+  SetPropF1("transmitter.%d.dexp_hyst",         tx->id,               tx->dexp_hyst);
+  SetPropF1("transmitter.%d.dexp_tau",          tx->id,               tx->dexp_tau);
+  SetPropF1("transmitter.%d.dexp_attack",       tx->id,               tx->dexp_attack);
+  SetPropF1("transmitter.%d.dexp_release",      tx->id,               tx->dexp_release);
+  SetPropF1("transmitter.%d.dexp_hold",         tx->id,               tx->dexp_hold);
   SetPropI1("transmitter.%d.dialog_x",          tx->id,               tx->dialog_x);
   SetPropI1("transmitter.%d.dialog_y",          tx->id,               tx->dialog_y);
   SetPropI1("transmitter.%d.display_filled",    tx->id,               tx->display_filled);
-  SetPropI1("transmitter.%d.eq_enable", tx->id,                       tx->eq_enable);
-  SetPropI1("transmitter.%d.eq_tenband", tx->id,                      tx->eq_tenband);
+  SetPropI1("transmitter.%d.eq_enable",         tx->id,               tx->eq_enable);
 
   for (int i = 0; i < 11; i++) {
-    SetPropF2("transmitter.%d.eq_freq[%d]", tx->id, i,             tx->eq_freq[i]);
-    SetPropF2("transmitter.%d.eq_gain[%d]", tx->id, i,             tx->eq_gain[i]);
+    SetPropF2("transmitter.%d.eq_freq[%d]",     tx->id, i,            tx->eq_freq[i]);
+    SetPropF2("transmitter.%d.eq_gain[%d]",     tx->id, i,            tx->eq_gain[i]);
+    SetPropF2("transmitter.%d.cfc_freq[%d]",    tx->id, i,            tx->cfc_freq[i]);
+    SetPropF2("transmitter.%d.cfc_lvl[%d]",     tx->id, i,            tx->cfc_lvl[i]);
+    SetPropF2("transmitter.%d.cfc_post[%d]",    tx->id, i,            tx->cfc_post[i]);
   }
 }
 
 static void tx_restore_state(TRANSMITTER *tx) {
-  t_print("%s: id=%d\n", __FUNCTION__, tx->id);
   GetPropI1("transmitter.%d.alcmode",           tx->id,               tx->alcmode);
   GetPropI1("transmitter.%d.fft_size",          tx->id,               tx->fft_size);
   GetPropI1("transmitter.%d.fps",               tx->id,               tx->fps);
@@ -405,15 +419,30 @@ static void tx_restore_state(TRANSMITTER *tx) {
   GetPropI1("transmitter.%d.do_scale",          tx->id,               tx->do_scale);
   GetPropI1("transmitter.%d.compressor",        tx->id,               tx->compressor);
   GetPropF1("transmitter.%d.compressor_level",  tx->id,               tx->compressor_level);
+  GetPropI1("transmitter.%d.cfc",               tx->id,               tx->cfc);
+  GetPropI1("transmitter.%d.cfc_eq",            tx->id,               tx->cfc_eq);
+  GetPropI1("transmitter.%d.dexp",              tx->id,               tx->dexp);
+  GetPropI1("transmitter.%d.dexp_exp",          tx->id,               tx->dexp_exp);
+  GetPropI1("transmitter.%d.dexp_filter",       tx->id,               tx->dexp_filter);
+  GetPropI1("transmitter.%d.dexp_filter_low",   tx->id,               tx->dexp_filter_low);
+  GetPropI1("transmitter.%d.dexp_filter_high",  tx->id,               tx->dexp_filter_high);
+  GetPropI1("transmitter.%d.dexp_trigger",      tx->id,               tx->dexp_trigger);
+  GetPropF1("transmitter.%d.dexp_hyst",         tx->id,               tx->dexp_hyst);
+  GetPropF1("transmitter.%d.dexp_tau",          tx->id,               tx->dexp_tau);
+  GetPropF1("transmitter.%d.dexp_attack",       tx->id,               tx->dexp_attack);
+  GetPropF1("transmitter.%d.dexp_release",      tx->id,               tx->dexp_release);
+  GetPropF1("transmitter.%d.dexp_hold",         tx->id,               tx->dexp_hold);
   GetPropI1("transmitter.%d.dialog_x",          tx->id,               tx->dialog_x);
   GetPropI1("transmitter.%d.dialog_y",          tx->id,               tx->dialog_y);
   GetPropI1("transmitter.%d.display_filled",    tx->id,               tx->display_filled);
-  GetPropI1("transmitter.%d.eq_enable", tx->id,                       tx->eq_enable);
-  GetPropI1("transmitter.%d.eq_tenband", tx->id,                      tx->eq_tenband);
+  GetPropI1("transmitter.%d.eq_enable",         tx->id,               tx->eq_enable);
 
   for (int i = 0; i < 11; i++) {
-    GetPropF2("transmitter.%d.eq_freq[%d]", tx->id, i,             tx->eq_freq[i]);
-    GetPropF2("transmitter.%d.eq_gain[%d]", tx->id, i,             tx->eq_gain[i]);
+    GetPropF2("transmitter.%d.eq_freq[%d]",     tx->id, i,            tx->eq_freq[i]);
+    GetPropF2("transmitter.%d.eq_gain[%d]",     tx->id, i,            tx->eq_gain[i]);
+    GetPropF2("transmitter.%d.cfc_freq[%d]",    tx->id, i,            tx->cfc_freq[i]);
+    GetPropF2("transmitter.%d.cfc_lvl[%d]",     tx->id, i,            tx->cfc_lvl[i]);
+    GetPropF2("transmitter.%d.cfc_post[%d]",    tx->id, i,            tx->cfc_post[i]);
   }
 }
 
@@ -891,6 +920,55 @@ TRANSMITTER *tx_create_transmitter(int id, int width, int height) {
   tx->do_scale = 0;
   tx->compressor = 0;
   tx->compressor_level = 0.0;
+
+  tx->cfc              =       0;
+  tx->cfc_eq           =       0;
+  tx->cfc_freq[ 0]     =     0.0;  // Not used
+  tx->cfc_freq[ 1]     =    50.0;
+  tx->cfc_freq[ 2]     =   100.0;
+  tx->cfc_freq[ 3]     =   200.0;
+  tx->cfc_freq[ 4]     =   500.0;
+  tx->cfc_freq[ 5]     =  1000.0;
+  tx->cfc_freq[ 6]     =  1500.0;
+  tx->cfc_freq[ 7]     =  2500.0;
+  tx->cfc_freq[ 8]     =  3000.0;
+  tx->cfc_freq[ 9]     =  5000.0;
+  tx->cfc_freq[10]     =  8000.0;
+  tx->cfc_lvl [ 0]     =     0.0;    // freq independent part
+  tx->cfc_lvl [ 1]     =     0.0;
+  tx->cfc_lvl [ 2]     =     0.0;
+  tx->cfc_lvl [ 3]     =     0.0;
+  tx->cfc_lvl [ 4]     =     0.0;
+  tx->cfc_lvl [ 5]     =     0.0;
+  tx->cfc_lvl [ 6]     =     0.0;
+  tx->cfc_lvl [ 7]     =     0.0;
+  tx->cfc_lvl [ 8]     =     0.0;
+  tx->cfc_lvl [ 9]     =     0.0;
+  tx->cfc_lvl [10]     =     0.0;
+  tx->cfc_post[ 0]     =     0.0;    // freq independent part
+  tx->cfc_post[ 1]     =     0.0;
+  tx->cfc_post[ 2]     =     0.0;
+  tx->cfc_post[ 3]     =     0.0;
+  tx->cfc_post[ 4]     =     0.0;
+  tx->cfc_post[ 5]     =     0.0;
+  tx->cfc_post[ 6]     =     0.0;
+  tx->cfc_post[ 7]     =     0.0;
+  tx->cfc_post[ 8]     =     0.0;
+  tx->cfc_post[ 9]     =     0.0;
+  tx->cfc_post[10]     =     0.0;
+
+  tx->dexp             =       0;
+  tx->dexp_tau         =    0.01;
+  tx->dexp_attack      =   0.025;
+  tx->dexp_release     =   0.100;
+  tx->dexp_hold        =   0.800;
+  tx->dexp_exp         =      20;  // in dB
+  tx->dexp_hyst        =   0.750;
+  tx->dexp_trigger     =     -25;  // in dB
+  tx->dexp_filter      =       0;
+  tx->dexp_filter_low  =    1000;
+  tx->dexp_filter_high =    2000;
+
   tx->local_microphone = 0;
   STRLCPY(tx->microphone_name, "NO MIC", 128);
   tx->dialog_x = -1;
@@ -901,18 +979,17 @@ TRANSMITTER *tx_create_transmitter(int id, int width, int height) {
   tx->swr_alarm = 3.0;     // default value for SWR protection
   tx->alc = 0.0;
   tx->eq_enable = 0;
-  tx->eq_tenband  = 0;
   tx->eq_freq[0]  =     0.0;
-  tx->eq_freq[1]  =   200.0;
-  tx->eq_freq[2]  =   500.0;
-  tx->eq_freq[3]  =  1200.0;
-  tx->eq_freq[4]  =  3000.0;
-  tx->eq_freq[5]  =  5000.0;
-  tx->eq_freq[6]  =  7000.0;
-  tx->eq_freq[7]  =  9000.0;
-  tx->eq_freq[8]  = 11000.0;
-  tx->eq_freq[9]  = 13000.0;
-  tx->eq_freq[10] = 15000.0;
+  tx->eq_freq[1]  =    50.0;
+  tx->eq_freq[2]  =   100.0;
+  tx->eq_freq[3]  =   200.0;
+  tx->eq_freq[4]  =   500.0;
+  tx->eq_freq[5]  =  1000.0;
+  tx->eq_freq[6]  =  1500.0;
+  tx->eq_freq[7]  =  2000.0;
+  tx->eq_freq[8]  =  2500.0;
+  tx->eq_freq[9]  =  3000.0;
+  tx->eq_freq[10] =  5000.0;
   tx->eq_gain[0]  = 0.0;
   tx->eq_gain[1]  = 0.0;
   tx->eq_gain[2]  = 0.0;
@@ -949,6 +1026,35 @@ TRANSMITTER *tx_create_transmitter(int id, int width, int height) {
   tx->cw_ramp_audio = NULL;
   tx->cw_ramp_rf    = NULL;
   tx_set_ramps(tx);
+
+  create_dexp(0,                     // dexp channel, BETWEEN 0 and 3
+              0,                     // run flag (to be switched on later)
+              tx->buffer_size,       // TX input buffer size (number of complex samples)
+              tx->mic_input_buffer,  // input buffer for DEXP
+              tx->mic_input_buffer,  // output buffer for DEXP
+              48000,                 // mic sample rate
+              0.01,                  // tau
+              0.025,                 // attack
+              0.100,                 // release
+              0.800,                 // hold
+              10.0,                  // Expansion ratio, 20 dB
+              0.75,                  // Hysteresis ratio
+              0.05,                  // Trigger level, about -25 dB
+              tx->buffer_size,       // filter size for the side filter
+              0,                     // window type for side filter
+              1000.0,                // low-cut of side filter
+              2000.0,                // high-cut of side filter
+              0,                     // side filter run flag (to be switched on later)
+              0,                     // vox OFF (not yet implemented)
+              0,                     // delay OFF
+              0.050,                 // 50 msec delay (if used)
+              NULL,                  // function to call upon VOX status change
+              0,                     // anti-vox OFF (not yet implemented)
+              1,                     // chunk size of antivox data
+              1,                     // sample rate of antivox data
+              1.0,                   // antivox gain
+              1.0);                  // antivox tau
+
   t_print("%s: OpenChannel id=%d buffer_size=%d dsp_size=%d fft_size=%d sample_rate=%d dspRate=%d outputRate=%d\n",
           __FUNCTION__,
           tx->id,
@@ -1002,6 +1108,7 @@ TRANSMITTER *tx_create_transmitter(int id, int width, int height) {
   tx_set_pre_emphasize(tx);
   tx_set_mic_gain(tx);
   tx_set_compressor(tx);
+  tx_set_dexp(tx);
   tx_set_mode(tx, vfo_get_tx_mode());
   tx_create_analyzer(tx);
   tx_set_detector(tx);
@@ -1077,6 +1184,10 @@ static void tx_full_buffer(TRANSMITTER *tx) {
       *dp++ = tx->cw_sig_rf[j];
     }
   } else {
+    //
+    // Old VOX code, to be applied BEFORE FM preemphasis
+    // and the downward expander
+    //
     update_vox(tx);
 
     //
@@ -1106,6 +1217,13 @@ static void tx_full_buffer(TRANSMITTER *tx) {
       }
     }
 
+    //
+    // Note that the DownwardExpander is used *outside* of WDSP
+    // channels. We use a single DEXP and give it the id=0.
+    // For triggering VOX, we still use the old code, although
+    // the downward expander also offers VOX capabilities.
+    //
+    xdexp(0);
     fexchange0(tx->id, tx->mic_input_buffer, tx->iq_output_buffer, &error);
 
     if (error != 0) {
@@ -1661,14 +1779,27 @@ void tx_set_framerate(TRANSMITTER *tx) {
 //
 // TODO: If the radio is remote, make them a no-op.
 //
+//
+// "bracketed" with #ifdef WDSPTXDEBUG, we add log
+// messages for debugging, please do not remove them
+// WDSPTXDEBUG should however not be active in the
+// production version.
 ////////////////////////////////////////////////////////
+
+//#define WDSPTXDEBUG
 
 void tx_close(const TRANSMITTER *tx) {
   CloseChannel(tx->id);
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX CloseChannel id=%d\n", tx->id);
+#endif
 }
 
 void tx_create_analyzer(const TRANSMITTER *tx) {
   int rc;
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX CreateAnalyzer id=%d\n", tx->id);
+#endif
   XCreateAnalyzer(tx->id, &rc, 262144, 1, 1, NULL);
 
   if (rc != 0) {
@@ -1726,7 +1857,7 @@ void tx_set_analyzer(const TRANSMITTER *tx) {
   int max_w = afft_size + (int) min(keep_time * (double) tx->iq_output_rate,
                                     keep_time * (double) afft_size * (double) tx->fps);
   overlap = (int)max(0.0, ceil(afft_size - (double)tx->iq_output_rate / (double)tx->fps));
-  t_print("SetAnalyzer id=%d buffer_size=%d overlap=%d pixels=%d\n", tx->id, tx->output_samples, overlap, tx->pixels);
+  t_print("WDSP:TX SetAnalyzer id=%d buffer_size=%d overlap=%d pixels=%d\n", tx->id, tx->output_samples, overlap, tx->pixels);
   SetAnalyzer(tx->id,                // id of the TXA channel
               n_pixout,              // 1 = "use same data for scope and waterfall"
               spur_elimination_ffts, // 1 = "no spur elimination"
@@ -1752,11 +1883,17 @@ void tx_set_analyzer(const TRANSMITTER *tx) {
 void tx_off(const TRANSMITTER *tx) {
   // switch TX OFF, wait until slew-down completed
   SetChannelState(tx->id, 0, 1);
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX id=%d Channel OFF\n", tx->id);
+#endif
 }
 
 void tx_on(const TRANSMITTER *tx) {
   // switch TX ON
   SetChannelState(tx->id, 1, 0);
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX id=%d Channel ON\n", tx->id);
+#endif
 }
 
 void tx_ps_getinfo(const TRANSMITTER *tx, int *info) {
@@ -1777,6 +1914,9 @@ double tx_ps_getpk(const TRANSMITTER *tx) {
 
 void tx_ps_mox(const TRANSMITTER *tx, int state) {
   SetPSMox(tx->id, state);
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX id=%d PS mox=%d\n", tx->id, state);
+#endif
 }
 
 void tx_ps_onoff(TRANSMITTER *tx, int state) {
@@ -1807,6 +1947,9 @@ void tx_ps_onoff(TRANSMITTER *tx, int state) {
   //     (to have a safe re-configuration of the number of
   //     RX streams)
   //
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX id=%d PS OnOff=%d\n", tx->id, state);
+#endif
   if (!state) {
     // see above. Ensure some feedback samples still flow into
     // pscc after resetting.
@@ -1865,10 +2008,16 @@ void tx_ps_onoff(TRANSMITTER *tx, int state) {
 }
 
 void tx_ps_reset(const TRANSMITTER *tx) {
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX id=%d PS Reset\n", tx->id);
+#endif
   SetPSControl(tx->id, 1, 0, 0, 0);
 }
 
 void tx_ps_resume(const TRANSMITTER *tx) {
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX id=%d PS Resume OneShot=%d\n", tx->id, tx->ps_oneshot);
+#endif
   if (tx->ps_oneshot) {
     SetPSControl(tx->id, 0, 1, 0, 0);
   } else {
@@ -1877,6 +2026,9 @@ void tx_ps_resume(const TRANSMITTER *tx) {
 }
 
 void tx_ps_set_sample_rate(const TRANSMITTER *tx, int rate) {
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX id=%d PS SampleRate=%d\n", tx->id, rate);
+#endif
   SetPSFeedbackRate (tx->id, rate);
 }
 
@@ -1890,14 +2042,25 @@ void tx_ps_setparams(const TRANSMITTER *tx) {
   // Note that the TXDelay is internally stored in NanoSeconds
   SetPSTXDelay(tx->id, 1E-9 * tx->ps_ampdelay);
   SetPSLoopDelay(tx->id, tx->ps_loopdelay);
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX id=%d PS map=%d ptol=%d ints=%d spi=%d stbl=%d pin=%d moxdelay=%g ampdelay=%g loopdelay=%g\n",
+          tx->id, tx->ps_map, tx->ps_ptol, tx->ps_ints, tx->ps_spi, tx->ps_stbl, tx->ps_pin, tx->ps_moxdelay,
+          tx->ps_ampdelay, tx->ps_loopdelay);
+#endif
 }
 
 void tx_ps_setpk(const TRANSMITTER *tx, double peak) {
   SetPSHWPeak(tx->id, peak);
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX id=%d PS HWpeak=%g\n", tx->id, peak);
+#endif
 }
 
 void tx_set_am_carrier_level(const TRANSMITTER *tx) {
   SetTXAAMCarrierLevel(tx->id, tx->am_carrier_level);
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX id=%d AM carrier level=%g\n", tx->id, tx->am_carrier_level);
+#endif
 }
 
 void tx_set_average(const TRANSMITTER *tx) {
@@ -1931,6 +2094,10 @@ void tx_set_average(const TRANSMITTER *tx) {
     break;
   }
 
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX id=%d Display BackMult=%g NumAvg=%d AvgMode=%d\n",
+          display_avb, display_average, wdspmode);
+#endif
   //
   // I observed artifacts when changing the mode from "Log Recursive"
   // to "Time Window", so I generally switch to NONE first, and then
@@ -1943,9 +2110,17 @@ void tx_set_average(const TRANSMITTER *tx) {
 
 void tx_set_bandpass(const TRANSMITTER *tx) {
   SetTXABandpassFreqs(tx->id, (double) tx->filter_low, (double) tx->filter_high);
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX id=%d BandPass low=%d high=%d\n", tx->id, tx->filter_low, tx->filter_high);
+#endif
 }
 
-void tx_set_compressor(const TRANSMITTER *tx) {
+void tx_set_compressor(TRANSMITTER *tx) {
+  //
+  // CFC compressor: use with auto leveler. TURN OFF normal
+  // compressor if using CFC
+  //
+  // Normal compressor: use with auto leveler and CESSB overshoot
   //
   // The CESSB overshoot filter (on/off) automatically follows
   // the Compressor on/off setting. This we can do because we
@@ -1955,13 +2130,35 @@ void tx_set_compressor(const TRANSMITTER *tx) {
   // 0 dB, therefore, the auto-leveler is also automatically
   // activated when en/dis-abling the compressor(de-)
   //
-  SetTXACompressorRun(tx->id, tx->compressor);
-  SetTXACompressorGain(tx->id, tx->compressor_level);
-  SetTXAosctrlRun(tx->id, tx->compressor);
-  SetTXALevelerSt(tx->id, tx->compressor);
+
+  SetTXALevelerSt(tx->id, tx->compressor || tx->cfc);
   SetTXALevelerAttack(tx->id, 1);
   SetTXALevelerDecay(tx->id, 500);
   SetTXALevelerTop(tx->id, 6.0);
+
+  if (tx->cfc) {
+    SetTXACompressorRun(tx->id, 0);
+    SetTXACFCOMPprofile(tx->id, 10, tx->cfc_freq+1, tx->cfc_lvl+1, tx->cfc_post+1);
+    SetTXACFCOMPPrecomp(tx->id, tx->cfc_lvl[0]);
+    SetTXACFCOMPPrePeq(tx->id, tx->cfc_post[0]);
+    SetTXACFCOMPRun(tx->id, 1);
+    SetTXACFCOMPPeqRun(tx->id, tx->cfc_eq);
+  } else {
+    SetTXACFCOMPRun(tx->id, 0);
+    SetTXACFCOMPPeqRun(tx->id, 0);
+    SetTXACompressorRun(tx->id, tx->compressor);
+    SetTXAosctrlRun(tx->id, tx->compressor);
+    SetTXACompressorGain(tx->id, tx->compressor_level);
+  }
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX id=%d Compressor=%d Lvl=%g CFC=%d CFC-EQ=%d AllComp=%g AllGain=%g\n",
+          tx->id, tx->compressor, tx->compressor_level, tx->cfc, tx->cfc_eq,
+          tx->cfc_lvl[0], tx->cfc_post[0]);
+  for (int i = 1; i < 11; i++) {
+    t_print("Chan=%2d Freq=%6g Cmpr=%4g PostGain=%4g\n",
+            i, tx->cfc_freq[i], tx->cfc_lvl[i], tx->cfc_post[i]);
+  }
+#endif
 }
 
 void tx_set_ctcss(const TRANSMITTER *tx) {
@@ -1970,6 +2167,9 @@ void tx_set_ctcss(const TRANSMITTER *tx) {
   //
   SetTXACTCSSFreq(tx->id, ctcss_frequencies[tx->ctcss]);
   SetTXACTCSSRun(tx->id, tx->ctcss_enabled);
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX id=%d CTCSS enable=%d freq=%5g\n", tx->id, tx->ctcss_enabled, ctcss_frequencies[tx->ctcss]);
+#endif
 }
 
 void tx_set_detector(const TRANSMITTER *tx) {
@@ -1996,26 +2196,69 @@ void tx_set_detector(const TRANSMITTER *tx) {
     wdspmode = DETECTOR_MODE_SAMPLE;
     break;
   }
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX id=%d Display DetMode=%d\n", tx->id, wdspmode);
+#endif
 
   SetDisplayDetectorMode(tx->id, 0, wdspmode);
 }
 
 void tx_set_deviation(const TRANSMITTER *tx) {
   SetTXAFMDeviation(tx->id, (double)tx->deviation);
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX id=%d FM Max Deviation=%d\n", tx->id, tx->deviation);
+#endif
+}
+
+void tx_set_dexp(const TRANSMITTER *tx) {
+  //
+  // Set all the parameters of the Downward Expander
+  // Note the DEXP number must be between 0 and 3, so
+  // we cannot use tx->id!
+  // Note the ExpansionRatio and the Trigger level are in dB
+  //
+  SetDEXPDetectorTau(0, tx->dexp_tau);
+  SetDEXPAttackTime(0, tx->dexp_attack);
+  SetDEXPReleaseTime(0, tx->dexp_release);
+  SetDEXPHoldTime(0, tx->dexp_hold);
+  SetDEXPExpansionRatio(0, pow(10.0, 0.05*tx->dexp_exp));
+  SetDEXPHysteresisRatio(0, tx->dexp_hyst);
+  SetDEXPAttackThreshold(0, pow(10.0, 0.05*tx->dexp_trigger));
+  SetDEXPLowCut(0, (double) tx->dexp_filter_low);
+  SetDEXPHighCut(0, (double) tx->dexp_filter_high);
+  SetDEXPRunSideChannelFilter(0, tx->dexp_filter);
+  SetDEXPRun(0, tx->dexp);
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX id=%d DEXP=%d DoFilter=%d Low=%d High=%d ExpRatio(dB)=%d TriggerLvl(dB)=%d\n",
+          tx->id, tx->dexp, tx->dexp_filter, tx->dexp_filter_low, tx->dexp_filter_high, tx->dexp_exp, tx->dexp_trigger);
+  t_print("... Tau=%g Attack=%g Release=%g Hold=%g Hyst=%g\n",
+          tx->dexp_tau, tx->dexp_attack, tx->dexp_release, tx->dexp_hold, tx->dexp_hyst);
+#endif
 }
 
 void tx_set_equalizer(TRANSMITTER *tx) {
-  int nfreq = tx->eq_tenband ? 10 : 4;
-  SetTXAEQProfile(tx->id, nfreq, tx->eq_freq, tx->eq_gain);
+  SetTXAEQProfile(tx->id, 10, tx->eq_freq, tx->eq_gain);
   SetTXAEQRun(tx->id, tx->eq_enable);
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX id=%d Equalizer enable=%d allgain=%g\n", tx->id, tx->eq_enable, tx->eq_gain[0]);
+  for (int i = 1; i < 11; i++) {
+    t_print("... Chan=%2d Freq=%6g Gain=%4g\n", i, tx->eq_freq[i], tx->eq_gain[i]);
+  }
+#endif
 }
 
 void tx_set_fft_size(const TRANSMITTER *tx) {
   TXASetNC(tx->id, tx->fft_size);
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX id=%d FFT size=%d\n", tx->id, tx->fft_size);
+#endif
 }
 
 void tx_set_mic_gain(const TRANSMITTER *tx) {
   SetTXAPanelGain1(tx->id, pow(10.0, tx->mic_gain * 0.05));
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX id=%d MicGain(dB)=%g\n", tx->id, tx->mic_gain);
+#endif
 }
 
 void tx_set_mode(TRANSMITTER* tx, int mode) {
@@ -2025,6 +2268,9 @@ void tx_set_mode(TRANSMITTER* tx, int mode) {
         set_drive(drive_digi_max);
       }
     }
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX id=%d mode=%d\n", tx->id, mode);
+#endif
 
     SetTXAMode(tx->id, mode);
     tx_set_filter(tx);
@@ -2033,12 +2279,18 @@ void tx_set_mode(TRANSMITTER* tx, int mode) {
 
 void tx_set_pre_emphasize(const TRANSMITTER *tx) {
   SetTXAFMEmphPosition(tx->id, tx->pre_emphasize);
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX id=%d FM PreEmph=%d\n", tx->id, tx->pre_emphasize);
+#endif
 }
 
 void tx_set_singletone(const TRANSMITTER *tx, int state, double freq) {
   //
   // Produce the TX signal for TUNEing
   //
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX id=%d SingleTone=%d Freq=%g\n", tx->id, state, freq);
+#endif
   if (state) {
     SetTXAPostGenToneFreq(tx->id, freq);
     SetTXAPostGenToneMag(tx->id, 0.99999);
@@ -2073,6 +2325,10 @@ void tx_set_twotone(TRANSMITTER *tx, int state) {
   static guint timer = 0;
 
   if (state == tx->twotone) { return; }
+
+#ifdef WDSPTXDEBUG
+  t_print("WDSP:TX id=%d TwoTone=%d\n", tx->id, state);
+#endif
 
   tx->twotone = state;
 

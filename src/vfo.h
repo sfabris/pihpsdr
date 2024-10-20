@@ -107,13 +107,13 @@ struct _mode_settings {
   int en_rxeq;                      // RX equalizer on/off
   double tx_eq_freq[11];            // TX equalizer settings
   double tx_eq_gain[11];
-  int    tx_eq_tenband;
   double rx_eq_freq[11];            // RX equalizer settings
   double rx_eq_gain[11];
-  int    rx_eq_tenband;
   long long step;                   // VFO step size
   int compressor;                   // TX compressor on/off
   double compressor_level;          // TX compressor level
+  int dexp;                         // Downward Expander
+  int cfc;                          // Continuous Frequency Compressor
 };
 
 extern struct _mode_settings mode_settings[];
