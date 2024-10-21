@@ -56,7 +56,13 @@ GIT_DATE := $(firstword $(shell git --no-pager show --date=short --format="%ai" 
 GIT_VERSION := $(shell git describe --abbrev=0 --tags --always --dirty)
 GIT_COMMIT := $(shell git log --pretty=format:"%h"  -1)
 
-CFLAGS?= -O3 -Wno-deprecated-declarations -Wall
+#
+# Compile with warning level set to maximum. Note the check against "unintendend" fallthroughs
+# in switch statements must be requested explicitly.
+# Turn off complaints about deprecated functions (new GTK functions are marked deprecated in each
+# release) and against unused parameters (those regularly occur in GTK callbacks).
+#
+CFLAGS?= -O3 -Wall -Wextra -Wimplicit-fallthrough -Wno-unused-parameter -Wno-deprecated-declarations
 LINK?=   $(CC)
 
 #

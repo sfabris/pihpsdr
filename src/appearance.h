@@ -155,6 +155,7 @@ struct _VFO_BAR_LAYOUT {
   int step_x,  step_y;     // "Step 100 kHz"
   int ctun_x,  ctun_y;
   int cat_x,   cat_y;
+  int dexp_x,  dexp_y;
   int vox_x,   vox_y;
   int lock_x,  lock_y;
   int split_x, split_y;

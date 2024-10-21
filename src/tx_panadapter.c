@@ -279,7 +279,6 @@ void tx_panadapter_update(TRANSMITTER *tx) {
       cairo_set_source_rgba(cr, COLOUR_PAN_FILL2);
       cairo_close_path (cr);
       cairo_fill_preserve (cr);
-      cairo_fill_preserve (cr);
       cairo_set_line_width(cr, PAN_LINE_THIN);
     } else {
       cairo_set_source_rgba(cr, COLOUR_PAN_FILL3);

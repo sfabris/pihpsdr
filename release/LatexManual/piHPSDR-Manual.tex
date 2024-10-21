@@ -767,6 +767,11 @@ The indicators in the middle, between the VFO dials, are related to
 transmitting. \rett{CMPR} indicates if a speech processor
 (compressor) is enabled, if so, it prints in yellow, followed
 by a number between 1 and 20 indicating the compression value in dB.
+If the speech processor is used simulataneously with the continuous frequency
+compressor (CFC), there is a yellow \rett{CprCfc} at this place, and if
+the CFC is used but not the speech processor, the symobol is \rett{CFC on}.
+\rett{Dexp} states whether the downward expander (DEXP) is active. Due to space
+restrictions, this indicator is not shown for the smaller VFO bars.
 \rett{PS} indicates whether adaptive pre-distortion (,,PureSignal'')
 is enabled, PS settings can be made in the \bltt{PS} menu.
  \rett{VOX} indicates whether VOX (voice control) is enabled. VOX means
@@ -867,7 +872,9 @@ menu, which can be accessed quickly just by clicking into the meter area.
 During RX, an S-meter is shown together with the signal level in dBm. Note
 that -73 dBm corresponds to S9 for frequencies up to 30 MHz, while above
 30 MHz, S9 corresponds to -93 dBm. Since the S meter is in steps of
-6 dB, a signal level of S1 (below 30 MHz) corresponds to -121 dBm.
+6 dB, a signal level of S1 (below 30 MHz) corresponds to -121 dBm. In the
+meter menu, one can also choose if the S-meter reading corresponds to a peak
+or  an average value.
 
 During TX, the output power is displayed, provided that the radio actually
 reports this power. The output power meter can be calibrated (see the \bltt{PA}
@@ -1498,16 +1505,18 @@ S-meter readings.
 
 
 \rett{TX ALC reading:} Here, the possible values are Peak, Average, and
-ALC gain. For a two-tone signal with maximum audio amplitude the Average
-ALC value is -3.0 dB, while the Peak value is 0.0 dB. Therefore I personally
-prefer the Peak value here and made it the default in \pH:
- if the value is less than zero, one can and should
-increase either the amplitude of the incoming audio signal (e.g. boost the
-microphone preamp) or move the Mic gain slider to the right. The reason is,
-that PureSignal only works if the TX audio input has maximum amplitude,
+ALC gain. Normally one uses the peak ALC value. If it is negative, the level
+of the TX audio signal or the Mic gain slider should be increased.
+This is very important since, for example,
+ PureSignal only works if the TX audio input has maximum amplitude,
 so you can put the drive slider to zero, then put the radio into TX mode,
 whistle into the microphone and slowly increase the Mic gain until the
-ALC value shown is only slightly less than zero.
+ALC value shown is only slightly less than zero. The average TX ALC
+value only is of interest if  you search for settings for the speech processor
+or the continous frequency compressor. For normal speaking into the microphone,
+the average ALC value will be negative even if the Mic gain slider is adjuste
+for zero peak ALC value. A compressor will distort the TX audio such that this
+gap gets smaller.
 
 For RX-only radios, the TX ALC setting will not be shown in the menu.
 
@@ -2176,13 +2185,21 @@ the RX ,,BFO frequency''.
 \begin{figure}[ht!]
 \center
 \includegraphics[width=12cm]{TXMenu.png}
-\caption{The \bltt{TX} menu.}
+\caption{The \bltt{TX} menu with the TX settings.}
 \label{fig:TXMenu}
 \end{figure}
 
 The \bltt{TX} menu can be opened from the main menu, or just by a secondary mouse click
 into the TX pan-adapter (while transmitting). The menu is shown in Fig. \ref{fig:TXMenu}.
+This menu has three sub-menus, called the \rett{TX Settings} for general transmitter settings,
+the \rett{CFC settings} for controlling the continous frequency compressor (CFC), and the
+\rett{DwdExp Settings} for controlling the downward expander (DEXP). With the radio buttons
+in the top row of the menu you can switch between the three sub-menus. When you open the TX
+menu for the first time after starting \pH, the TX settings are shown. Subsequently opening
+the TX menu always shows the sub-menu that was on display when the TX  menu was closed the last
+time.
 
+\subsection{TX Menu: TX Settings}
 
 \rett{Local Microphone}. If this box is checked, the TX audio samples come from a sound card
 attached to the host computer, or from a virtual audio cable. The sound device can be
@@ -2231,14 +2248,14 @@ and \rett{TX Filter High} check boxes will be inactive in this case.
 \rett{Compression} With this box the TX compressor can be enabled/disabled.
 The compression level (0-20 dB) can be chosen in the spin button to the right.
 Setting TX compression on/off automatically engages/disengages the CESSB overshoot
-correction. This we can do since we do not allow low-latency filters in the TX
-(see \bltt{DSP} menu).
+correction, the TX auto leveler and the TX phase rotator.
 
 \textbf{Note:} The compressor on/off flag, as well as the compression level, is
 ,,stored with the mode''. So it is possible to have the compressor enabled for SSB
 (LSB/USB)
 and disabled for digi modes (DIGL/DIGU), and when switching modes, the compressor
-settings for the new mode are automatically restored.
+settings for the new mode are automatically restored. The compressor can be used (although
+this might not be recommended together with the CFC).
 
 \rett{Tune use Drive} If this box is checked, TUNE-ing will be done with the power that corresponds to the
 current position of the drive slider, and the tune drive level is ignored.
@@ -2307,9 +2324,94 @@ for the DIGU and DIGL modes. If the value is 100, this has no effect. The primar
 PA protection,
 since many digital modes (unlike SSB voice) are constantly transmitting at full power.
 
+\subsection{TX Menu: CFC Settings}
 
+\begin{figure}[ht]
+\center
+\includegraphics[width=12cm]{TX_CFC.png}
+\caption{The TX menu with the CFC settings}
+\label{fig:CFCmenu}
+\end{figure}
 
+In the CFC sub-menu, the settings for the continous frequency compressor can be made.
+As the name indicates, the compression can be chosen frequency dependent. As for the
+equalizer, one can specify corner frequencies with a given compression, between corner
+frequencies the compression is interpolated linearly. In addition, there is an equaliser that
+is applied after compression, so one give a gain (or attenuation) for each corner
+frequency, with linear interpolation in-between. Gains in this menu are in dB and
+can be chosen between -20 and +20 dB, compression levels are also in dB and can be chosen
+between 0 dB (no compression) and +20 dB.
 
+\rett{Use Continuous Frequency Compressor}. This checkbox is used to enable/disable the CFC. As with
+the speech processor, using the CFC automatically enables the TX auto-leveler and phase rotator.
+
+\rett{Use Post-Compression Equalizer}. This checkbox is used  to enable/disable the post-compression
+equalizer.
+
+\rett{Add Freq.-Indep. Compression} With this spin button, one can specify an \textit{additional}
+frequency-independent compression that applies to all frequencies.
+
+\rett{Add Freq.-Indep. Gain} If using the post-compression equaliser, this spin button speficies an
+\textit{additional} frequency-idependent gain applied to all frequencies.
+
+In the lower part of the menu, you find ten groups of three spin buttons that specify a frequency/level/gain
+triple. The compression level and gain given (if the post-compression equalizer is used) applies to that
+corner frequency while linear interpolation is used between corner frequencies.
+
+\subsection{TX Menu: DEXP Settings}
+
+\begin{figure}[ht]
+\center
+\includegraphics[width=12cm]{TX_DEXP.png}
+\caption{The TX menu with the DEXP settings}
+\label{fig:DEXPmenu}
+\end{figure}
+
+In the sub-menu for the downward expander, you can control the settings for DEXP. DEXP can be viewed
+as a configurable noise gate that applies to the TX audio input. Its main use is to suppress low noise
+(e.g. from fans) that are taken up  by the microphone in speech pauses. The downward expander damps
+such noise as long it is below a trigger level. Once the ,,noise'' exceeds the trigger level (that is,
+the  operator speaks the next word or so) this damping is switched off. Sometimes, the ,,noise'' is
+rather loud, such that noise alone leads to triggering, and in many cases such noise has rather low
+frequencies. This is where a side channel filter comes in: this filter specifies a range of frequencies
+used for triggering. For normal human voice for example, one expects that frequencies between 1000 and
+2000 Hz are contained therein so one can only use these for triggering.
+
+\rett{Use Downward Expander} With this check box, the DEXP can be enabled or disabled.
+
+\rett{Use Side Channel Filter} With this check box, ths side channel filter can be enabled of disabled.
+With the  side channel filter enabled, only TX audio in the defined frequency  range will trigger the
+noise gate.
+
+\rett{Expansion Factor (dB)} This factor (in dB!) determines how strongly the noise will be damped as long
+as it is below the trigger. The default (20 dB) should be OK in most cases.
+
+\rett{Hysteresis ratio} If this  value is smaller than 1 (say, 0.75), then the hold time (the time in which the noise
+gate is open starts when the input level drops below the trigger level, multiplied with the hysteresis ratio.
+
+\rett{Trigger level (dB)} This spin button specifies the trigger level. It is given in dB relative to
+full-amplitude audio samples. The default level (-25 dB, corresponding to an amplitude of 0.056) should
+be OK in most cases.
+
+\rett{Trigger Attack tau (ms)} This is the time constant (in ms) for averaging the input signal before
+it goes to the detector.
+
+\rett{Trigger Attack Time(ms)} This is the time used for opening the noise gate. To avoid plops in the
+audio, the gate is not opened instantly but with a raised cosine characteristic. This time should not
+be overly long, since otherwise parts of the first word spoken by the operator can get rejected by
+the gate.
+
+\rett{Trigger Relese Time (ms)} This is the time used for closing the noise  gate. To avoid plops in the
+audio, the gate is not opened instantly but with a raised cosine characteristic. The time for closing the
+gate can usually be chosed much larger than for  opening.
+
+\rett{Trigger Hold Time (ms)} After the operator has finished his speaking, the noise gate remains open
+for some time (e.g. waiting for the next word). Typical hold times are of the order of 1 second, when no
+new triggering audio arrives within that time, the gate is closed and the noise  thus suppressed.
+
+\rett{Filter Low-Cut (Hz)} and \rett{Filter  High-Cut (Hz)} specify the frequency edges of the side
+channel filter (if it is enabled). The defaults given here (1000--2000 Hz) are well suited  for distinguishing
+human voice from humming noise coming from fans etc.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The \texttt{PA} Menu}
 
@@ -2320,7 +2422,7 @@ The menu presents itself as shown in Fig. \ref{fig:PAMenuCalibrate}.
 
 \begin{figure}[ht]
 \center
-\includegraphics[width=8cm]{PAmenuCalibrate.png}
+\includegraphics[width=10cm]{PAmenuCalibrate.png}
 \caption{The PA menu, PA calibration screen}
 \label{fig:PAMenuCalibrate}
 \end{figure}
@@ -2850,11 +2952,15 @@ is shown in Fig. \ref{fig:EqualizerMenu}.
 \label{fig:EqualizerMenu}
 \end{figure}
 
-With the combo-box at the top right one can select if one
-wants to change the equaliser settings for the receivers
-RX1 or RX2, or for the transmitter.
-The \rett{Enable} checkbox enables/disables the equaliser
-(either for RX1, for RX2, or for TX).
+With the radio buttons in the top row you can select
+whether you want to control or modify the equaliser settings for the receivers
+RX1 or RX2, or for the transmitter. If only one receiver is running,
+the \rett{RX2 Settings} button does not appear. Likewise, if the radio
+has no transmitter, the \rett{TX Settings} button does not appear.
+
+Below the  top row, there are the controls that affect the equaliser
+that has been selected there.
+The \rett{Enable} checkbox enables/disables the equaliser.
 If the equaliser of the active receiver
 is enabled, the EQ indicator in the
 VFO bar, upon receiving, turns yellow and reads \rett{RxEQ}.
@@ -2863,65 +2969,37 @@ while transmitting and reads \rett{TxEQ}. So while receiving,
 you cannot tell, from the VFO bar, whether the TX equaliser is
 actually enabled or not!
 
-By default, the equalisers are four-channel equalisers, but
-you can individually change each of the three to a ten-band
-one if you check the \rett{Ten Bands} box. If you do so, additional
-spin buttons and sliders appear to the right of those already
-seen (see Fig. \ref{fig:TenBandEqualizer}). The horizontal
-space required to display all the spin buttons an sliders is
-quite large (about 900 pixels) such that the use of ten-
-band equalizers may become cumbersome for very small screens.
-In normal situations, where the audio band width is usually 3 kHz
-or less, a four-channel equaliser is usually sufficient and all
-controls relevant to the four-channel equalizers are in the left half
-of th e menu window. The possibility
-to have (up to) ten channels can be useful for wide band (AM or eSSB) operation.
+The spin button \rett{Added Frequency-Independent Gain} specifies
+an \textit{additional} gain (or attenuation) applied to all frequency
+channels. Gains in this menu are in dB and can vary from -20 to +20,
+-20 is of course  not a ,,gain'' but an attenuation by 20 dB.
 
-\begin{figure}[ht]
-\center
-\includegraphics[width=13cm]{TenBandEqualizer.png}
-\caption{Broad version of the Equaliser menu (in 10-channel mode)}
-\label{fig:TenBandEqualizer}
-\end{figure}
+In the bottom part of the menu, there are ten pairs of spin buttons
+that specify 10 corner frequencies and the gains associated therewith.
+ This defines the 10 channels
+of the equaliser. Note frequencies may appear in any order since they
+are sorted before the equaliser settings are updated. Note however,
+if you specify a frequency twice with two different gains, the outcome
+is undetermined.
 
-The four (or ten) corner frequencies can be changed with the
-spin buttons, while the corresponding gain/attenuation is
-set with the slider to the right thereof. Between the corner frequencies, the
-(frequency dependent!) gain/attenuation is obtained by linear interpolation.
-The gain/attenuation specified for the lowest corner frequency
-then applies to all frequencies below, and likewise for the
-highest corner frequency.
-The top left slider does not have a spin button but is
-labeled \rett{Preamp},
-which indicates that this slider applies an
-additional, frequency-independent gain or attenuation.
-Note that all corner frequency are strictly
-kept in ascending order, so it may happen that when increasing
-a corner frequency, frequencies of the higher channels are
-increased to keep the order. Likewise, when reducing a corner
-frequency, frequencies of the lower channels might get reduced
-as well. The allowed range for corner frequencies is 50 to
-16000 Hz.
+The gain at one of the   corner frequencies is exactly the gain
+chosen by the spin button (plus any frequency-independent gain
+selected by the spin button in the second row). Between two
+corner frequencies, the gain is frequency dependent and obtained
+by liner interpolation between the two corners. For a frequency
+between  zero and the lowest corner frequency, the gain chosen for that corner
+frequency applies, and likewise the gain selected for the largest corner frequency
+applies to all frequencies above that frequency.
 
 Equaliser settings are saved with the mode, so
-if you adjust the equalisers when doing LSB, and then switch to
-DIGU, the equaliser settings for DIGU become effective
+if you adjust the equalisers when doing USB or LSB, and then switch to
+DIGU or DIGL, the equaliser settings for DIGUDIGL become effective
 (normally, equalizers are disabled for digital modes).
-They resume their LSB
-settings upon switching back to LSB. This also applies to other
+They resume their USB/LSB
+settings upon switching back to USB or LSB. This also applies to other
 modes such as CWU/CWL, where the TX equaliser has no meaning
 anyway, and where the RX equaliser is normally not needed.
 
-If the radio currently runs only a single receiver, RX2 cannot
-be selected with the top right combo-box. Likewise, if the
-radio does not have transmitter, the TX settings cannot be
-selected.
-
-%Note that on some systems, adjusting the window size when
-%switching between four-band and ten-band equalizers took
-%very long, so the menu window in four-band mode appears too wide
-%since it contains much blank space in its right half, where
-%the controls of the bands 5 through 10 are located.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The \texttt{Ant} (Antenna) Menu}
 
@@ -7025,8 +7103,6 @@ and install the most recent package file found there. At the time of this writin
 released in January 26, 2023. The package is good both for Intel and Silicon Macs. Download the package
 file (e.g. XQuartz-2.8.5.pkg) to your desktop and run it by double-clicking.
 
-
-
 Compiling \pH on a Mac requires some basic LINUX/Unix skills. The most important program to use is
 the Terminal application (\texttt{Terminal.app}), that can be found in the Utilities folder that resides
 in the Applications folder. It is suggested to drag this application into the ,,dock'' so you have quick
@@ -7091,14 +7167,12 @@ to switch between version with the \texttt{git} command can be given in this man
 }
 \end{center}
 
-The last command starts with installing Apple's command line tools, in particular the Apple C and C\texttt{++}
-compilers. You may get an error message from \texttt{xcode-select} that the tools are already
-installed, which you can safely ignore. Then, the
- \texttt{HomeBrew} universe is installed, and the installation starts with asking you for the administrator
+The libinstall command installs the
+ \texttt{HomeBrew} universe, and the installation starts with asking you for the administrator
  password, tells you what it wants to do and requires hitting \texttt{Enter} to proceed.
- On Apple Silicon Macs, you will be asked the administrator password another three times,
+ On Apple Silicon Macs, you will be asked the administrator again at a later stage,
  since here we have to create three symbolic links in \texttt{/usr/local} (see the end of this section),
- each of which requires administrator privileges.
+which requires administrator privileges.
 
 Do not worry if \texttt{HomeBrew} was already installed on your computer, the installation
 procedure works in this case as well and does no harm. In addition to

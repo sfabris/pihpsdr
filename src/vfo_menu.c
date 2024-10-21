@@ -323,12 +323,12 @@ void vfo_num_pad(int action, int id) {
 
   case -4:  // Enter as MHz
     mult *= 1000.0;
+    [[fallthrough]];
 
-  //FALLTHROUGH
   case -3:  // Enter as kHz
     mult *= 1000.0;
+    [[fallthrough]];
 
-  //FALLTHROUGH
   case -2:  // Enter
     fd = atof(buffer) * mult;
     fl = (long long) (fd + 0.5);

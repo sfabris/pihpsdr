@@ -79,8 +79,10 @@ const VFO_BAR_LAYOUT vfo_layout_list[] = {
 
     .cmpr_x = 380,
     .cmpr_y = 50,
-    .ps_x = 470,
+    .ps_x = 520,
     .ps_y = 50,
+    .dexp_x = 470,
+    .dexp_y = 50,
 
     .vox_x = 380,
     .vox_y = 68,
@@ -148,8 +150,10 @@ const VFO_BAR_LAYOUT vfo_layout_list[] = {
 
     .cmpr_x = 330,
     .cmpr_y = 40,
-    .ps_x = 410,
+    .ps_x = 450,
     .ps_y = 40,
+    .dexp_x = 410,
+    .dexp_y = 40,
 
     .vox_x = 330,
     .vox_y = 59,
@@ -218,6 +222,8 @@ const VFO_BAR_LAYOUT vfo_layout_list[] = {
     .eq_y = 40,
     .ps_x = 330,
     .ps_y = 40,
+    .dexp_x = 0,
+    .dexp_y = 0,
 
     .zoom_x = 70,
     .zoom_y = 78,
@@ -297,7 +303,9 @@ const VFO_BAR_LAYOUT vfo_layout_list[] = {
     .xit_y = 63,
     .filter_x = 0,
     .multifn_x = 470,
-    .multifn_y = 63
+    .multifn_y = 63,
+    .dexp_x = 0,
+    .dexp_y = 0,
   },
 
   //
@@ -358,7 +366,9 @@ const VFO_BAR_LAYOUT vfo_layout_list[] = {
     .dup_y = 54,
     .filter_x = 0,
     .multifn_x = 310,
-    .multifn_y = 82
+    .multifn_y = 82,
+    .dexp_x = 0,
+    .dexp_y = 0,
   },
   //
   // The last "layout" must have a negative width to

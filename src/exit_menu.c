@@ -97,7 +97,11 @@ static gboolean reboot_cb (GtkWidget *widget, GdkEventButton *event, gpointer da
 // cppcheck-suppress constParameterCallback
 static gboolean shutdown_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   stop_program();
+#ifdef __APPLE__
+  (void) system("shutdown -h now");
+#else
   (void) system("shutdown -h -P now");
+#endif
   _exit(0);
 }
 

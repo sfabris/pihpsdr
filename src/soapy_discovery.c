@@ -79,7 +79,7 @@ static void get_info(char *driver) {
 
   SoapySDRKwargs info = SoapySDRDevice_getHardwareInfo(sdr);
 
-  for (int i = 0; i < info.size; i++) {
+  for (size_t i = 0; i < info.size; i++) {
     t_print("soapy_discovery: hardware info key=%s val=%s\n", info.keys[i], info.vals[i]);
 
     if (strcmp(info.keys[i], "firmwareVersion") == 0) {
@@ -103,14 +103,14 @@ static void get_info(char *driver) {
   size_t rx_channels = SoapySDRDevice_getNumChannels(sdr, SOAPY_SDR_RX);
   t_print("Rx channels: %ld\n", (long) rx_channels);
 
-  for (int i = 0; i < rx_channels; i++) {
+  for (size_t i = 0; i < rx_channels; i++) {
     t_print("Rx channel full duplex: channel=%d fullduplex=%d\n", i, SoapySDRDevice_getFullDuplex(sdr, SOAPY_SDR_RX, i));
   }
 
   size_t tx_channels = SoapySDRDevice_getNumChannels(sdr, SOAPY_SDR_TX);
   t_print("Tx channels: %ld\n", (long) tx_channels);
 
-  for (int i = 0; i < tx_channels; i++) {
+  for (size_t i = 0; i < tx_channels; i++) {
     t_print("Tx channel full duplex: channel=%d fullduplex=%d\n", i, SoapySDRDevice_getFullDuplex(sdr, SOAPY_SDR_TX, i));
   }
 
@@ -305,7 +305,6 @@ static void get_info(char *driver) {
 
 void soapy_discovery() {
   size_t length;
-  int i;
   SoapySDRKwargs input_args = {};
   t_print("%s\n", __FUNCTION__);
   rtlsdr_count = 0;
@@ -313,7 +312,7 @@ void soapy_discovery() {
   SoapySDRKwargs *results = SoapySDRDevice_enumerate(&input_args, &length);
   t_print("%s: length=%d\n", __FUNCTION__, (int)length);
 
-  for (i = 0; i < length; i++) {
+  for (size_t i = 0; i < length; i++) {
     for (size_t j = 0; j < results[i].size; j++) {
       if (strcmp(results[i].keys[j], "driver") == 0 && strcmp(results[i].vals[j], "audio") != 0) {
         get_info(results[i].vals[j]);

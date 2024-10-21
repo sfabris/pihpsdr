@@ -259,7 +259,6 @@ typedef struct _receiver {
   int  eq_enable;
   double eq_freq[11];
   double eq_gain[11];
-  int    eq_tenband;
 
 } RECEIVER;
 

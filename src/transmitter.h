@@ -116,6 +116,29 @@ typedef struct _transmitter {
   int compressor;
   double compressor_level;
 
+  int cfc;                  // use Continuous Frequency Compressor (CFC)
+  int cfc_eq;               // use post-equalizer of the CFC
+  //
+  // cfc_freq[0] is NOT USED
+  // cfc_lvl [0] contains the added frequency-independent compression
+  // cfc_post[0] contains the added frequency-independent gain
+  //
+  double cfc_freq[11];      // CFC corner frequencies
+  double cfc_lvl[11];       // compression level for corner frequencies
+  double cfc_post[11];      // EQ gain for corner frequencies
+
+  int dexp;                 // use downward expander (DEXP)
+  int    dexp_trigger;      // threshold for the "noise gate" in dB (!)
+  double dexp_tau;          // time constant for low-pass filtering
+  double dexp_attack;       // DEXP attack time
+  double dexp_release;      // DEXP decay  time
+  double dexp_hold;         // DEXP hold time
+  int    dexp_exp;          // DEXP expansion ratio in dB (!)
+  double dexp_hyst;         // DEXP hysteresis ratio
+  int    dexp_filter;       // Do side channel filtering
+  int    dexp_filter_low;   // low-cut of side channel filter
+  int    dexp_filter_high;  // high-cut of side channel filter
+
   double fwd;
   double rev;
   double alc;
@@ -148,7 +171,6 @@ typedef struct _transmitter {
   int    eq_enable;
   double eq_freq[11];  // frequency in Hz
   double eq_gain[11];  // gain in dB
-  int    eq_tenband;   // four or ten channels
 
 } TRANSMITTER;
 
@@ -194,10 +216,11 @@ extern void   tx_set_am_carrier_level(const TRANSMITTER *tx);
 extern void   tx_set_analyzer(const TRANSMITTER *tx);
 extern void   tx_set_average(const TRANSMITTER *tx);
 extern void   tx_set_bandpass(const TRANSMITTER *tx);
-extern void   tx_set_compressor(const TRANSMITTER *tx);
+extern void   tx_set_compressor(TRANSMITTER *tx);
 extern void   tx_set_ctcss(const TRANSMITTER *tx);
 extern void   tx_set_detector(const TRANSMITTER *tx);
 extern void   tx_set_deviation(const TRANSMITTER *tx);
+extern void   tx_set_dexp(const TRANSMITTER *tx);
 extern void   tx_set_displaying(TRANSMITTER *tx);
 extern void   tx_set_equalizer(TRANSMITTER *tx);
 extern void   tx_set_fft_size(const TRANSMITTER *tx);
