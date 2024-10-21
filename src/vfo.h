@@ -93,6 +93,7 @@ struct _mode_settings {
   int    nr2_npe_method;
   int    nr2_ae;
   double nr2_trained_threshold;
+  double nr2_trained_t2;
 #ifdef EXTNR
   double nr4_reduction_amount;      // NR4 parameters, only used if compiled with EXTNR
   double nr4_smoothing_factor;

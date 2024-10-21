@@ -80,6 +80,7 @@ void update_noise() {
     mode_settings[mode].nr2_gain_method = active_receiver->nr2_gain_method;
     mode_settings[mode].nr2_npe_method = active_receiver->nr2_npe_method;
     mode_settings[mode].nr2_trained_threshold = active_receiver->nr2_trained_threshold;
+    mode_settings[mode].nr2_trained_t2 = active_receiver->nr2_trained_t2;
     mode_settings[mode].nb_tau = active_receiver->nb_tau;
     mode_settings[mode].nb_advtime = active_receiver->nb_advtime;
     mode_settings[mode].nb_hang = active_receiver->nb_hang;
@@ -145,6 +146,11 @@ static void npe_cb(GtkWidget *widget, gpointer data) {
 
 static void trained_thr_cb(GtkWidget *widget, gpointer data) {
   active_receiver->nr2_trained_threshold = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
+  update_noise();
+}
+
+static void trained_t2_cb(GtkWidget *widget, gpointer data) {
+  active_receiver->nr2_trained_t2 = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
   update_noise();
 }
 
@@ -377,6 +383,7 @@ void noise_menu(GtkWidget *parent) {
   //
   GtkWidget *b_ae = gtk_check_button_new_with_label("NR2 Artifact Elimination");
   gtk_widget_set_name(b_ae, "boldlabel");
+  gtk_widget_set_halign(b_ae, GTK_ALIGN_END);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (b_ae), active_receiver->nr2_ae);
   gtk_widget_show(b_ae);
   gtk_grid_attach(GTK_GRID(nr_grid), b_ae, 2, 1, 2, 1);
@@ -391,6 +398,16 @@ void noise_menu(GtkWidget *parent) {
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(trained_thr_b), active_receiver->nr2_trained_threshold);
   gtk_grid_attach(GTK_GRID(nr_grid), trained_thr_b, 1, 2, 1, 1);
   g_signal_connect(trained_thr_b, "changed", G_CALLBACK(trained_thr_cb), NULL);
+  //
+  GtkWidget *trained_t2_title = gtk_label_new("NR2 Trained T2");
+  gtk_widget_set_name(trained_t2_title, "boldlabel");
+  gtk_widget_set_halign(trained_t2_title, GTK_ALIGN_END);
+  gtk_widget_show(trained_t2_title);
+  gtk_grid_attach(GTK_GRID(nr_grid), trained_t2_title, 2, 2, 1, 1);
+  GtkWidget *trained_t2_b = gtk_spin_button_new_with_range(0.02, 0.3, 0.01);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(trained_t2_b), active_receiver->nr2_trained_t2);
+  gtk_grid_attach(GTK_GRID(nr_grid), trained_t2_b, 3, 2, 1, 1);
+  g_signal_connect(trained_thr_b, "changed", G_CALLBACK(trained_t2_cb), NULL);
   //
   gtk_container_add(GTK_CONTAINER(nr_container), nr_grid);
   //

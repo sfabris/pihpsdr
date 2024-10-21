@@ -419,6 +419,7 @@ extern void SetRXAEMNRPosition (int channel, int position);
 extern void SetRXAEMNRaeZetaThresh (int channel, double zetathresh);
 extern void SetRXAEMNRaePsi (int channel, double psi);
 extern void SetRXAEMNRtrainZetaThresh(int channel, double thresh);
+extern void SetRXAEMNRtrainT2(int channel, double t2);
 
 //
 // Interfaces from emph.c
