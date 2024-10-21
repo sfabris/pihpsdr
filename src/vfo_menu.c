@@ -323,11 +323,11 @@ void vfo_num_pad(int action, int id) {
 
   case -4:  // Enter as MHz
     mult *= 1000.0;
-    [[fallthrough]];
+    __attribute__((fallthrough));
 
   case -3:  // Enter as kHz
     mult *= 1000.0;
-    [[fallthrough]];
+    __attribute__((fallthrough));
 
   case -2:  // Enter
     fd = atof(buffer) * mult;

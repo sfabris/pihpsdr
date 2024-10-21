@@ -415,7 +415,7 @@ void update_action_table() {
 
   case 11110:                                                         // ORION, TX, PureSignal, DUPLEX
     rxcase[0] = RXACTION_PS;
-    [[fallthrough]];
+    __attribute__((fallthrough));
 
   case 1000:                                                          // ORION, RX, no DIVERSITY
   case 11100:                                                         // ORION, TX, no PureSignal, DUPLEX
