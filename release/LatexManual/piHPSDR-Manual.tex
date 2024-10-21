@@ -1792,11 +1792,11 @@ settings, equaliser settings, and TX compressor settings
  for equalisers and TX compression that are valid for voice modes but not for digital modes.
 
  To this end, the settings given below are stored in the mode specific settings whenever
- they are changed for RX1/VFOA or for the transmitter. When changing modes later, 
+ they are changed for RX1/VFOA or for the transmitter. When changing modes later,
  the settings stored for the new mode become effective.
 Note that settings changed for RX2/VFOB are not stored, but
  stored settings are applied when the mode of RX2/VFOB is changed.
- 
+
 Most users certainly want different settings, say, for USB, CWU, and DIGU. But they
 will probably want to have the same settings for USB and LSB. Therefore,
  three groups of modes are defined, which contain LSB/USB/DSB, CWU/CWL and
@@ -7016,7 +7016,8 @@ to install the ,,HomeBrew'' universe which is the prerequisite for compiling \pH
 \end{center}
 
 Some users have reported that it seems to be necessary to first install the X Window manager on the Macintosh.
- To the end, in a web browser open the link
+While I cannot confirm this, it also does no harm if you install X-Windows on your Mac.
+To the end, in a web browser open the link
 
 \texttt{www.xquartz.org}
 
@@ -7025,12 +7026,23 @@ released in January 26, 2023. The package is good both for Intel and Silicon Mac
 file (e.g. XQuartz-2.8.5.pkg) to your desktop and run it by double-clicking.
 
 
+
 Compiling \pH on a Mac requires some basic LINUX/Unix skills. The most important program to use is
 the Terminal application (\texttt{Terminal.app}), that can be found in the Utilities folder that resides
 in the Applications folder. It is suggested to drag this application into the ,,dock'' so you have quick
 access.
-Although MacOS has a complete Unix ,,under the hood'', one needs additional software to to Linux-style
-programming. The most popular such ,,Unix enabler'' packages are \texttt{MacPorts} and \texttt{HomeBrew}, I
+
+On a plain vanilla MacOS, even the most basic commands for doing programming are not installed
+by default. For example, the \grtt{git} command used below as the first step  to download piHPSDR is
+not present by default. But this is easily cured. Simply open a terminal window and type in the command
+
+\grtt{xcode-select --install}
+
+(you will need internet access to perform this task). This installs the so-called Command Line Tools,
+which we absolutely need to proceed. But even with the Command Line Tools installed, additional
+commands and libraries are needed. Fortunately there are packages out there which just contain
+these.
+The most popular such ,,Unix enabler'' packages are \texttt{MacPorts} and \texttt{HomeBrew}, I
 am using
 \texttt{HomeBrew} but I know that \pH can be compiled and run successfully with \texttt{MacPorts}
 as well. The deal is as simply as follows: if you use \texttt{MacPorts} then you are on your own, or
