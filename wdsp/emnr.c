@@ -314,7 +314,7 @@ void calc_emnr(EMNR a)
     //
     a->g.GG = (double *)malloc0(241 * 241 * sizeof(double));
     a->g.GGS = (double *)malloc0(241 * 241 * sizeof(double));
-    if ((a->g.fileb = fopen("calculus", "rb")))
+    if (a->g.fileb = fopen("calculus", "rb"))
     {
         fread(a->g.GG, sizeof(double), 241 * 241, a->g.fileb);
         fread(a->g.GGS, sizeof(double), 241 * 241, a->g.fileb);
@@ -496,7 +496,7 @@ void calc_emnr(EMNR a)
 
     a->ae.zetaThresh = 0.75;
     a->ae.psi        = 20.0;
-
+    a->ae.t2 = 0.20;
     a->ae.nmask = (double *)malloc0(a->ae.msize * sizeof(double));
     //
 }
@@ -810,7 +810,7 @@ void aepf(EMNR a)
         a->ae.nmask[k] /= (double)(2 * (a->ae.msize - k) - 1);
     }
     memcpy (a->mask, a->ae.nmask, a->ae.msize * sizeof (double));
-    if (a->g.gain_method == 3 && zetaT < 0.20)
+    if (a->g.gain_method == 3 && zetaT < a->ae.t2)
         for (k = 0; k < a->ae.msize; k++)
             a->mask[k] *= 0.05;
 }
@@ -1163,4 +1163,12 @@ void SetRXAEMNRtrainZetaThresh(int channel, double thresh)
     EnterCriticalSection(&ch[channel].csDSP);
     rxa[channel].emnr.p->g.zeta_thresh = thresh;
     LeaveCriticalSection(&ch[channel].csDSP);
+}
+
+PORT
+void SetRXAEMNRtrainT2(int channel, double t2)
+{
+      EnterCriticalSection(&ch[channel].csDSP);
+      rxa[channel].emnr.p->ae.t2 = t2;
+      LeaveCriticalSection(&ch[channel].csDSP);
 }
