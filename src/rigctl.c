@@ -4187,7 +4187,11 @@ int parse_cmd(void *data) {
     //ENDDEF
     if (command[1] == 'S' && command[2] == ';') {
       stop_program();
+#ifdef __APPLE__
+      (void) system("shutdown -h now");
+#else
       (void) system("shutdown -h -P now");
+#endif
       _exit(0);
     } else {
       implemented = FALSE;

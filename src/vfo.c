@@ -1795,18 +1795,23 @@ void vfo_update() {
   if (can_transmit && vfl->cmpr_x != 0) {
     cairo_move_to(cr, vfl->cmpr_x, vfl->cmpr_y);
 
-    if (transmitter->cfc) {
+    if (transmitter->cfc && transmitter->compressor) {
+      snprintf(temp_text, 32, "CprCfc");
+      cairo_set_source_rgba(cr, COLOUR_ATTN);
+    }
+    if (transmitter->cfc && !transmitter->compressor) {
       snprintf(temp_text, 32, "CFC on");
       cairo_set_source_rgba(cr, COLOUR_ATTN);
-      cairo_show_text(cr, temp_text);
-    } else if (transmitter->compressor) {
-      snprintf(temp_text, 32, "CMPR %d", (int) transmitter->compressor_level);
-      cairo_set_source_rgba(cr, COLOUR_ATTN);
-      cairo_show_text(cr, temp_text);
-    } else {
-      cairo_set_source_rgba(cr, COLOUR_SHADE);
-      cairo_show_text(cr, "CMPR");
     }
+    if (!transmitter->cfc && transmitter->compressor) {
+      snprintf(temp_text, 32, "Cmpr %d", (int) transmitter->compressor_level);
+      cairo_set_source_rgba(cr, COLOUR_ATTN);
+    }
+    if (!transmitter->cfc && !transmitter->compressor) {
+      snprintf(temp_text, 32, "Cmpr");
+      cairo_set_source_rgba(cr, COLOUR_SHADE);
+    }
+    cairo_show_text(cr, temp_text);
   }
 
   // -----------------------------------------------------------

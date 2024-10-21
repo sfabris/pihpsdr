@@ -2117,37 +2117,34 @@ void tx_set_bandpass(const TRANSMITTER *tx) {
 
 void tx_set_compressor(TRANSMITTER *tx) {
   //
-  // - TURN OFF normal compressor if using CFC
+  // - Although I see not much juice therein, the 
+  //   usage of CFC alongside with the speech processor
+  //   is allowed.
   //
-  // - with either COMP or CFC automatically (dis)engage
+  // - with COMP or CFC (or both) automatically (dis)engage
   //   the auto-leveler and the phase rotator
   //
   // - if using COMP: engage CESSB overshoot control
   //
 
-  // Phase rotator with default settings.
+  // Run phase rotator and auto-leveler with both COMP and CRC
   SetTXAPHROTRun(tx->id, tx->compressor || tx->cfc);
-  // TX auto leveler with fixed settings.
   SetTXALevelerSt(tx->id, tx->compressor || tx->cfc);
   SetTXALevelerAttack(tx->id, 1);
   SetTXALevelerDecay(tx->id, 500);
   SetTXALevelerTop(tx->id, 6.0);
 
-  if (tx->cfc) {
-    SetTXACompressorRun(tx->id, 0);
-    SetTXACFCOMPprofile(tx->id, 10, tx->cfc_freq+1, tx->cfc_lvl+1, tx->cfc_post+1);
-    SetTXACFCOMPPrecomp(tx->id, tx->cfc_lvl[0]);
-    SetTXACFCOMPPrePeq(tx->id, tx->cfc_post[0]);
-    SetTXACFCOMPRun(tx->id, 1);
-    SetTXACFCOMPPeqRun(tx->id, tx->cfc_eq);
-  } else {
-    SetTXACFCOMPRun(tx->id, 0);
-    SetTXACFCOMPPeqRun(tx->id, 0);
-    // CESSB overshoot control, used only with COMP
-    SetTXAosctrlRun(tx->id, tx->compressor);
-    SetTXACompressorGain(tx->id, tx->compressor_level);
-    SetTXACompressorRun(tx->id, tx->compressor);
-  }
+  SetTXACFCOMPprofile(tx->id, 10, tx->cfc_freq+1, tx->cfc_lvl+1, tx->cfc_post+1);
+  SetTXACFCOMPPrecomp(tx->id, tx->cfc_lvl[0]);
+  SetTXACFCOMPPrePeq(tx->id, tx->cfc_post[0]);
+  SetTXACFCOMPRun(tx->id, tx->cfc);
+  SetTXACFCOMPPeqRun(tx->id, tx->cfc_eq);
+
+  // CESSB overshoot control used only with COMP
+  SetTXAosctrlRun(tx->id, tx->compressor);
+  SetTXACompressorGain(tx->id, tx->compressor_level);
+  SetTXACompressorRun(tx->id, tx->compressor);
+
 #ifdef WDSPTXDEBUG
   t_print("WDSP:TX id=%d Compressor=%d Lvl=%g CFC=%d CFC-EQ=%d AllComp=%g AllGain=%g\n",
           tx->id, tx->compressor, tx->compressor_level, tx->cfc, tx->cfc_eq,
