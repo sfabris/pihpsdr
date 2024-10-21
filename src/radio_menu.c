@@ -494,9 +494,11 @@ void radio_menu(GtkWidget *parent) {
 
   switch (rit_increment) {
   default:
+    // we should not arrive here, but just in case ...
     rit_increment = 1;
+    gtk_combo_box_set_active(GTK_COMBO_BOX(rit_combo), 0);
+    break;
 
-  // fallthrough
   case 1:
     gtk_combo_box_set_active(GTK_COMBO_BOX(rit_combo), 0);
     break;
