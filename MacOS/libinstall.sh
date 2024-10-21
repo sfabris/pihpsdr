@@ -22,12 +22,6 @@ THISDIR="$(cd "$(dirname "$0")" && pwd -P)"
 ################################################################
   
 #
-# This installs the "command line tools", these are necessary to install the
-# homebrew universe
-#
-xcode-select --install
-
-#
 # This installes the core of the homebrew universe
 #
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
@@ -148,6 +142,7 @@ $BREW install python-setuptools
 # re-install may be necessary (note parts of this
 # is always compiled from the sources).
 #
+$BREW tap pothosware/pothos
 $BREW reinstall soapysdr
 $BREW reinstall pothosware/pothos/soapyplutosdr
 $BREW reinstall pothosware/pothos/limesuite

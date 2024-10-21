@@ -1801,11 +1801,11 @@ settings, equaliser settings, and TX compressor settings
  for equalisers and TX compression that are valid for voice modes but not for digital modes.
 
  To this end, the settings given below are stored in the mode specific settings whenever
- they are changed for RX1/VFOA or for the transmitter. When changing modes later, 
+ they are changed for RX1/VFOA or for the transmitter. When changing modes later,
  the settings stored for the new mode become effective.
 Note that settings changed for RX2/VFOB are not stored, but
  stored settings are applied when the mode of RX2/VFOB is changed.
- 
+
 Most users certainly want different settings, say, for USB, CWU, and DIGU. But they
 will probably want to have the same settings for USB and LSB. Therefore,
  three groups of modes are defined, which contain LSB/USB/DSB, CWU/CWL and
@@ -2952,7 +2952,7 @@ is shown in Fig. \ref{fig:EqualizerMenu}.
 \label{fig:EqualizerMenu}
 \end{figure}
 
-With the radio buttons in the top row you can select 
+With the radio buttons in the top row you can select
 whether you want to control or modify the equaliser settings for the receivers
 RX1 or RX2, or for the transmitter. If only one receiver is running,
 the \rett{RX2 Settings} button does not appear. Likewise, if the radio
@@ -2984,12 +2984,12 @@ is undetermined.
 
 The gain at one of the   corner frequencies is exactly the gain
 chosen by the spin button (plus any frequency-independent gain
-selected by the spin button in the second row). Between two 
+selected by the spin button in the second row). Between two
 corner frequencies, the gain is frequency dependent and obtained
 by liner interpolation between the two corners. For a frequency
 between  zero and the lowest corner frequency, the gain chosen for that corner
 frequency applies, and likewise the gain selected for the largest corner frequency
-applies to all frequencies above that frequency. 
+applies to all frequencies above that frequency.
 
 Equaliser settings are saved with the mode, so
 if you adjust the equalisers when doing USB or LSB, and then switch to
@@ -7094,7 +7094,8 @@ to install the ,,HomeBrew'' universe which is the prerequisite for compiling \pH
 \end{center}
 
 Some users have reported that it seems to be necessary to first install the X Window manager on the Macintosh.
- To the end, in a web browser open the link
+While I cannot confirm this, it also does no harm if you install X-Windows on your Mac.
+To the end, in a web browser open the link
 
 \texttt{www.xquartz.org}
 
@@ -7102,13 +7103,22 @@ and install the most recent package file found there. At the time of this writin
 released in January 26, 2023. The package is good both for Intel and Silicon Macs. Download the package
 file (e.g. XQuartz-2.8.5.pkg) to your desktop and run it by double-clicking.
 
-
 Compiling \pH on a Mac requires some basic LINUX/Unix skills. The most important program to use is
 the Terminal application (\texttt{Terminal.app}), that can be found in the Utilities folder that resides
 in the Applications folder. It is suggested to drag this application into the ,,dock'' so you have quick
 access.
-Although MacOS has a complete Unix ,,under the hood'', one needs additional software to to Linux-style
-programming. The most popular such ,,Unix enabler'' packages are \texttt{MacPorts} and \texttt{HomeBrew}, I
+
+On a plain vanilla MacOS, even the most basic commands for doing programming are not installed
+by default. For example, the \grtt{git} command used below as the first step  to download piHPSDR is
+not present by default. But this is easily cured. Simply open a terminal window and type in the command
+
+\grtt{xcode-select --install}
+
+(you will need internet access to perform this task). This installs the so-called Command Line Tools,
+which we absolutely need to proceed. But even with the Command Line Tools installed, additional
+commands and libraries are needed. Fortunately there are packages out there which just contain
+these.
+The most popular such ,,Unix enabler'' packages are \texttt{MacPorts} and \texttt{HomeBrew}, I
 am using
 \texttt{HomeBrew} but I know that \pH can be compiled and run successfully with \texttt{MacPorts}
 as well. The deal is as simply as follows: if you use \texttt{MacPorts} then you are on your own, or
@@ -7157,14 +7167,12 @@ to switch between version with the \texttt{git} command can be given in this man
 }
 \end{center}
 
-The last command starts with installing Apple's command line tools, in particular the Apple C and C\texttt{++}
-compilers. You may get an error message from \texttt{xcode-select} that the tools are already
-installed, which you can safely ignore. Then, the
- \texttt{HomeBrew} universe is installed, and the installation starts with asking you for the administrator
+The libinstall command installs the
+ \texttt{HomeBrew} universe, and the installation starts with asking you for the administrator
  password, tells you what it wants to do and requires hitting \texttt{Enter} to proceed.
- On Apple Silicon Macs, you will be asked the administrator password another three times,
+ On Apple Silicon Macs, you will be asked the administrator again at a later stage,
  since here we have to create three symbolic links in \texttt{/usr/local} (see the end of this section),
- each of which requires administrator privileges.
+which requires administrator privileges.
 
 Do not worry if \texttt{HomeBrew} was already installed on your computer, the installation
 procedure works in this case as well and does no harm. In addition to
