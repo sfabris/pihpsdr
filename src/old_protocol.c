@@ -2672,8 +2672,9 @@ void ozy_send_buffer() {
         output_buffer[C3] = 13;                           // REG_FCODE_RX1
         output_buffer[C4] = hl2_iob_rx1_code;             // one-byte code
         hl2_command_loop = 10;
+        //t_print("HL2IOB: Sent RX1 freq code %d\n", hl2_iob_rx1_code);
+        break;
 
-      //t_print("HL2IOB: Sent RX1 freq code %d\n", hl2_iob_rx1_code);
       case 10:
         output_buffer[C0] = 0xFA;                         // I2C-2 with ACK
         output_buffer[C1] = 0x06;                         // write

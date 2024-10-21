@@ -3042,6 +3042,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
           tx_set_twotone(transmitter, atoi(&command[4]));
         }
       }
+      break;
 
     default:
       implemented = FALSE;

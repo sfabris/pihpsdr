@@ -631,6 +631,7 @@ void filter_width_changed(int id, int increment) {
     switch (mode) {
     case modeDIGL:
       if (filter->high < -500) {
+        // change both high and low
         filter->low -= increment * 13;
         filter->high += increment * 12;
 
@@ -638,10 +639,10 @@ void filter_width_changed(int id, int increment) {
 
         break;
       }
+      [[fallthrough]];
 
-    // FALLTHROUGH
-    // only change high-audio-cut
     case modeLSB:
+      // only change high-audio-cut
       filter->low -= increment * 25;
 
       if (filter->low > filter->high) { filter->low = filter->high; }
@@ -650,6 +651,7 @@ void filter_width_changed(int id, int increment) {
 
     case modeDIGU:
       if (filter->low > 500) {
+        // change both high and low
         filter->low -= increment * 12;
         filter->high += increment * 13;
 
@@ -657,10 +659,10 @@ void filter_width_changed(int id, int increment) {
 
         break;
       }
+      [[fallthrough]];
 
-    // FALLTHROUGH
-    // only change high-audio-cut
     case modeUSB:
+      // only change high-audio-cut
       filter->high += increment * 25;
 
       if (filter->high < filter->low) { filter->high = filter->low; }

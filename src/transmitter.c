@@ -2117,20 +2117,17 @@ void tx_set_bandpass(const TRANSMITTER *tx) {
 
 void tx_set_compressor(TRANSMITTER *tx) {
   //
-  // CFC compressor: use with auto leveler. TURN OFF normal
-  // compressor if using CFC
+  // - TURN OFF normal compressor if using CFC
   //
-  // Normal compressor: use with auto leveler and CESSB overshoot
+  // - with either COMP or CFC automatically (dis)engage
+  //   the auto-leveler and the phase rotator
   //
-  // The CESSB overshoot filter (on/off) automatically follows
-  // the Compressor on/off setting. This we can do because we
-  // do not allow low-latency filters in the TX.
-  //
-  // The compressor only works well if the mic level peaks at
-  // 0 dB, therefore, the auto-leveler is also automatically
-  // activated when en/dis-abling the compressor(de-)
+  // - if using COMP: engage CESSB overshoot control
   //
 
+  // Phase rotator with default settings.
+  SetTXAPHROTRun(tx->id, tx->compressor || tx->cfc);
+  // TX auto leveler with fixed settings.
   SetTXALevelerSt(tx->id, tx->compressor || tx->cfc);
   SetTXALevelerAttack(tx->id, 1);
   SetTXALevelerDecay(tx->id, 500);
@@ -2146,9 +2143,10 @@ void tx_set_compressor(TRANSMITTER *tx) {
   } else {
     SetTXACFCOMPRun(tx->id, 0);
     SetTXACFCOMPPeqRun(tx->id, 0);
-    SetTXACompressorRun(tx->id, tx->compressor);
+    // CESSB overshoot control, used only with COMP
     SetTXAosctrlRun(tx->id, tx->compressor);
     SetTXACompressorGain(tx->id, tx->compressor_level);
+    SetTXACompressorRun(tx->id, tx->compressor);
   }
 #ifdef WDSPTXDEBUG
   t_print("WDSP:TX id=%d Compressor=%d Lvl=%g CFC=%d CFC-EQ=%d AllComp=%g AllGain=%g\n",

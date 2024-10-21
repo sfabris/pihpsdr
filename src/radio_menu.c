@@ -918,7 +918,7 @@ void radio_menu(GtkWidget *parent) {
       //
       // Draw a spin-button for each range
       //
-      for (int i = 0; i < radio->info.soapy.rx_gains; i++) {
+      for (size_t i = 0; i < radio->info.soapy.rx_gains; i++) {
         label = gtk_label_new(radio->info.soapy.rx_gain[i]);
         gtk_grid_attach(GTK_GRID(grid), label, 0, row, 1, 1);
         col++;
@@ -944,7 +944,7 @@ void radio_menu(GtkWidget *parent) {
       //
       // Select TX gain out of a list of discrete ranges
       //
-      for (int i = 0; i < radio->info.soapy.tx_gains; i++) {
+      for (size_t i = 0; i < radio->info.soapy.tx_gains; i++) {
         label = gtk_label_new(radio->info.soapy.tx_gain[i]);
         gtk_grid_attach(GTK_GRID(grid), label, 2, row, 1, 1);
         SoapySDRRange range = radio->info.soapy.tx_range[i];

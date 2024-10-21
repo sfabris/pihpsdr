@@ -392,7 +392,7 @@ void saturn_discovery() {
     FILE *fp = fopen("/sys/class/net/eth0/address", "rt");
 
     if (fp) {
-      if (fgets(buf, sizeof buf, fp) > 0) {
+      if (fgets(buf, sizeof buf, fp) != NULL) {
         sscanf(buf, "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &mac[0],
                &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]);
       }

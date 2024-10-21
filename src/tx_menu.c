@@ -136,6 +136,10 @@ static void sel_cb(GtkWidget *widget, gpointer data) {
   case DEXP_CONTAINER:
     my_container = dexp_container;
     break;
+  default:
+    // We should never come here
+    my_container = NULL;
+    break;
   }
 
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) {
