@@ -3,6 +3,9 @@ LIST OF RECENT PIHPSDR CHANGES
 
 October 2024:
 -------------
+- Added t2 parameter spin-button to the NR2 "trained"
+  method.
+
 - Added the continuous frequency compressor (CFC) and the
   the downward expander (DEXP)
 
