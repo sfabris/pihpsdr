@@ -164,9 +164,9 @@ static void gain_changed_cb (GtkWidget *widget, gpointer data) {
 }
 
 static void eqid_changed_cb(GtkWidget *widget, gpointer data) {
-  eqid = GPOINTER_TO_INT(data);
 
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) {
+    eqid = GPOINTER_TO_INT(data);
     gtk_widget_hide(rx1_container);
     gtk_widget_hide(rx2_container);
     gtk_widget_hide(tx_container);

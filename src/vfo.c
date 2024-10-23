@@ -136,6 +136,8 @@ static void modesettingsSaveState() {
     SetPropI1("modeset.%d.step", i,                  mode_settings[i].step);
     SetPropF1("modeset.%d.compressor_level", i,      mode_settings[i].compressor_level);
     SetPropI1("modeset.%d.compressor", i,            mode_settings[i].compressor);
+    SetPropI1("modeset.%d.cfc", i,                   mode_settings[i].cfc);
+    SetPropI1("modeset.%d.dexp", i,                  mode_settings[i].dexp);
 
     for (int j = 0; j < 11; j++) {
       SetPropF2("modeset.%d.txeq.%d", i, j,          mode_settings[i].tx_eq_gain[j]);
@@ -238,6 +240,8 @@ static void modesettingsRestoreState() {
     mode_settings[i].rx_eq_freq[9]  =  3000.0;
     mode_settings[i].tx_eq_freq[10] =  5000.0;
     mode_settings[i].rx_eq_freq[10] =  5000.0;
+    mode_settings[i].cfc = 0;
+    mode_settings[i].dexp = 0;
     mode_settings[i].compressor = 0;
     mode_settings[i].compressor_level = 0.0;
     GetPropI1("modeset.%d.filter", i,                mode_settings[i].filter);
@@ -269,6 +273,8 @@ static void modesettingsRestoreState() {
     GetPropI1("modeset.%d.step", i,                  mode_settings[i].step);
     GetPropF1("modeset.%d.compressor_level", i,      mode_settings[i].compressor_level);
     GetPropI1("modeset.%d.compressor", i,            mode_settings[i].compressor);
+    GetPropI1("modeset.%d.cfc", i,                   mode_settings[i].cfc);
+    GetPropI1("modeset.%d.dexp", i,                  mode_settings[i].dexp);
 
     for (int j = 0; j < 11; j++) {
       GetPropF2("modeset.%d.txeq.%d", i, j,          mode_settings[i].tx_eq_gain[j]);
