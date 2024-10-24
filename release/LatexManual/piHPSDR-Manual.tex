@@ -2383,7 +2383,7 @@ used for triggering. For normal human voice for example, one expects that freque
 
 \rett{Use Downward Expander} With this check box, the DEXP can be enabled or disabled.
 
-\rett{Use Side Channel Filter} With this check box, ths side channel filter can be enabled of disabled.
+\rett{Use Side Channel Filter} With this check box, the side channel filter can be enabled of disabled.
 With the  side channel filter enabled, only TX audio in the defined frequency  range will trigger the
 noise gate.
 
@@ -2405,9 +2405,9 @@ audio, the gate is not opened instantly but with a raised cosine characteristic.
 be overly long, since otherwise parts of the first word spoken by the operator can get rejected by
 the gate.
 
-\rett{Trigger Relese Time (ms)} This is the time used for closing the noise  gate. To avoid plops in the
+\rett{Trigger Release Time (ms)} This is the time used for closing the noise  gate. To avoid plops in the
 audio, the gate is not opened instantly but with a raised cosine characteristic. The time for closing the
-gate can usually be chosed much larger than for  opening.
+gate can usually be chosen much larger than for  opening.
 
 \rett{Trigger Hold Time (ms)} After the operator has finished his speaking, the noise gate remains open
 for some time (e.g. waiting for the next word). Typical hold times are of the order of 1 second, when no
@@ -2519,7 +2519,7 @@ the 200W spin button, then the value in the 100W spin button will read 125. So i
 single shot, you have roughly calibrated the Watt meter.
 
 A finer calibration only makes sense if you have a highly accurate Watt meter, since
-the (uncalibrated) reading in \pH may actually be more accurate than your
+the (un-calibrated) reading in \pH may actually be more accurate than your
 Watt meter. Using your highly accurate Watt meter,
 you can now move the drive slider until your Watt meter exactly reads one of the
 lower power values, and use the corresponding spin button to change the calibration
@@ -2564,7 +2564,7 @@ speak into the microphone, but stays green if you don't speak.
 
 The VOX hang time determines how long the radio stays in TX mode after the last time the
 microphone delivered a signal that was above the VOX threshold. Typical values are 250 to
-500 milli seconds. If your radio produces relay chatter because it goes RX between your words,
+500 ms. If your radio produces relay chatter because it goes RX between your words,
 increase the hang time. However, this will also increase the turn-around between you finished
 your message and go RX.
 
@@ -2583,12 +2583,12 @@ VOX is very nice for rag-chew phone QSOs, I won't recommend it for contest opera
 PureSignal is the ,,street name'' for adaptive pre-distortion. What this means is, that
 the signal from the \textit{output} of the PA (the ,,antenna signal'') is coupled
 back (through an attenuator of typically 40-60 dB) to the radio and is analysed
-whether is looks like it should. If it is distorted (e.g. by non-linearities of the PA),
+whether is looks like it should. If it is distorted (e.g. by non-linearity of the PA),
 then the PureSignal algorithm calculates how an input signal to the PA should look like
 to produce the desired output. This is usually measured and calibrated with a so-called
 two-tone experiment. In this experiment, two constant carriers, for example 7100 kHz
 and 7101 kHz, are transmitted. If both carriers contain 25W power, this is
-a 100W PEP signal. Non-linearities of the PA first lead to the occurrence of harmonics
+a 100W PEP signal. Non-linearity of the PA first lead to the occurrence of harmonics
 (in this case around 14.2, 21.3, and 28.4 MHz). This is not a problem because
 such harmonics are  damped by the TX low-pass filters. Higher-order non-linear effects,
 however, lead to additional in-band signals, in our example they occur at
@@ -2605,7 +2605,7 @@ The elements have the following function:
 \rett{Enable PS}. With this check box, PS can be enabled/disabled.
 
 \rett{Two Tone}. With this button, a two-tone experiment can be started/stopped. The button
-will be highlighted as long as the two-tone signal is transmitted. In the lower sideband
+will be highlighted as long as the two-tone signal is transmitted. In the lower side band
 modes (LSB, DIGL, CWL), an RF two-tone signal with frequencies 700 and 1900 Hz
 \textit{below} the dial frequency are transmitted, in all other modes the two
 RF frequencies are 700 and 1900 Hz \textit{above} the dial frequency. The same two-tone
@@ -2751,7 +2751,7 @@ This is a much cleaner two-tone signal (the first satellites are at $-56$ dBm,
 the IM3 value is about $-50$ dBc). To demonstrate how effective the PS algorithm is,
 I have pushed the \rett{OFF} button which stops the PureSignal calibration, the result
 is shown in Fig. \ref{fig:PSoff}. After hitting that button, IM3 satellites immediately
-grow and rise to about $-40$ dbM (which means IM3
+grow and rise to about $-40$ dBm (which means IM3
 about $-34$ dBc), which is s reflects the intrinsic
 non-linearity of the PA.
  Note that this is still a quite acceptable value,
@@ -2805,7 +2805,7 @@ either generated by the radio (if CW is handled there and the radio
 has an audio codec) or
 by \pH (if CW is not handled in the radio). The allowed range
 is 0--127, typical values are between 10 and 20. The side tone level
-is usually set to zero if, for example, a low latency sidetone is
+is usually set to zero if, for example, a low latency side tone is
 produced outside \pH. In this case, one usually wants to hear
 the tone from CAT CW messages being sent, so if the side tone is
 zero, a default side tone level (12) is used while transmitting
@@ -2900,7 +2900,7 @@ very rarely need to invoke this menu, which is shown
 in Fig. \ref{fig:DSPMenu}.
 
 \rett{Filter Type} (RX only). Digital filters can be designed such that a signal within the
-passband leaves the filter in a shape as similar as possible
+pass band leaves the filter in a shape as similar as possible
 to what went into the filter. This requires that the phase
 difference between input and output signal is a linear
 function of the frequency. Another desirable property
@@ -2997,7 +2997,7 @@ applies to all frequencies above that frequency.
 
 Equaliser settings are saved with the mode, so
 if you adjust the equalisers when doing USB or LSB, and then switch to
-DIGU or DIGL, the equaliser settings for DIGUDIGL become effective
+DIGU or DIGL, the equaliser settings for DIGU/DIGL become effective
 (normally, equalisers are disabled for digital modes).
 They resume their USB/LSB
 settings upon switching back to USB or LSB. This also applies to other
@@ -3065,7 +3065,7 @@ host computer running \pH that a RX/TX transition has been made.
 Only then, \pH can start telling the radio to switch the relays that
 connect the Ant jacks with the TX circuitry.
 
-As as result, a small part (few milli-secs) of the first RF pulse (dot or dash)
+As as result, a small part (few ms) of the first RF pulse (dot or dash)
 may appear at the Ant jack used for RX only. If, say, an active antenna is
 connected there, this may well destroy the active antenna.
 
@@ -3100,7 +3100,7 @@ Standard HPSDR radios have seven individually programmable outputs wired as
 open collector output. In the \bltt{OC} menu, you can specify, separately
 for each band, and separately for receive and transmit, which output should
 be ,,set''. This can be used to switch the band filters of an external PA
-or of an external RX preselector, to control an automatic antenna tuner,
+or of an external RX pre-selector, to control an automatic antenna tuner,
 and many more things, since it is
 your external hardware which in the end has to make sense of the output
 bit pattern.
@@ -3209,7 +3209,7 @@ are updated (Fig. \ref{fig:ToolbarMenu5}).
 
 It can be seen that the text of the first seven toolbar buttons has changed to reflect
 the functions of the \texttt{F1} set, and also the rightmost button (which is always mapped
-to \bltt{Function}) has changed to \texttt{FNC(1)} in oder to indicate the \texttt{F1}
+to \bltt{Function}) has changed to \texttt{FNC(1)} in order to indicate the \texttt{F1}
 layer is now active. For mouse users (only), a secondary click on the rightmost toolbar
 button cycles through the layers in in reverse order.
 
@@ -3269,7 +3269,7 @@ the props file.
 ports, you must know the proper name (e.g. by looking at the contents of the \texttt{/dev} directory).
 Named pipes can be created everywhere in the file system hierarchy using the command
 ,,\texttt{mkdir -p <some\_arbitrary\_name>}''. Names pipes can be used for the communication between \pH
-and another program running on the same computer, and are only meaningful if that other programm does not
+and another program running on the same computer, and are only meaningful if that other program does not
 support CAT-over-TCP.
 
 To the right of the serial port text field, there is a pop-down menu for choosing the baud rate. Only 4800,
@@ -3336,7 +3336,7 @@ go from 1 to 16. Because this is encoded in a 4-bit data field whose numerical v
 goes from 0 to 15, computer users normally refer to channel numbers from 0 to 15,
 and this convention is also followed by piHPDSR. Different channel numbers can be used
 to discriminate MIDI events from different sources (devices). An example of such a setup
-is if you connect a DJ console as well as a microcontroller to which a CW key is attached.
+is if you connect a DJ console as well as a micro controller to which a CW key is attached.
 
 The second type of messages are ControllerChange messages. Typically, they report the value of
 an expression pedal, if it has changed. A ControllerChange message also has two parameters,
@@ -3387,9 +3387,9 @@ DJ controller'' you will find lots of examples. For a very decent price, you
 can obtain a device which features lots of controls which you can conveniently use
 as VFO knobs, smaller knobs for controlling the AF volume etc., and push buttons
 to be used, for example, instead of toolbar buttons. The second kind of MIDI devices
-are small MIDI-capable microcontrollers, starting with Teensy and Arduino devices
-which have a 32U4 microcontroller which has built-in MIDI capability. With such a
-microcontroller, you can build your own "DJ controller". Let the 32U4 control
+are small MIDI-capable micro controllers, starting with Teensy and Arduino devices
+which have a 32U4 micro controller which has built-in MIDI capability. With such a
+micro controller, you can build your own "DJ controller". Let the 32U4 control
 lots of push buttons and rotary encoders, and send the MIDI messages via USB to the
 computer. Using such a micro controller is also the most convenient and general way
 to connect a Morse key or paddle to the host computer running \pH (see
@@ -3452,7 +3452,7 @@ depending on the position of the potentiometer.
 
 Below \rett{Channel}, you see the value zero which
 indicates that the channel number of that MIDI message was 1 (see above on the
-different channel numberings). Below \rett{Type}, you see a pop-down menu, here
+different channel numbering). Below \rett{Type}, you see a pop-down menu, here
 you can choose between \rett{WHEEL} and \rett{Knob/Slider}. In the example shown,
 it must be a \rett{WHEEL} since this is a rotary encoder. Because there is no
 standard how the values map to increments, a separate panel
@@ -3654,7 +3654,7 @@ shown in Fig. \ref{fig:SwitchMenuV2} which match the functions printed on the en
 \label{sec:actionlist}
 
 In this chapter, we give a list of ,,actions'' implemented in the \pH program. These actions can be
-assigned to toolbar buttons on the screen, or pushbuttons/encoders of a GPIO-connected or MIDI controller.
+assigned to toolbar buttons on the screen, or push-buttons/encoders of a GPIO-connected or MIDI controller.
 Not all actions can be assigned to all control elements. Changing the AF volume, for example, can only be
 assigned to a knob
 which you can turn, while switching RIT on/off can only be assigned to a button that you can push. For each
@@ -4324,7 +4324,7 @@ Set the TX drive level (0-100).}
 engaged, the radio will go TX and emit a two-tone signal. If PURESIGNAL is enabled with auto calibration,
 then the PURESIGNAL engine will be restarted and the attenuation of the feedback
 signal re-adjusted while the two-tone signal is being sent.
-In the lower sideband
+In the lower side band
 modes (LSB, DIGL, CWL), an RF two-tone signal with frequencies 700 and 1900 Hz
 \textit{below} the dial frequency are transmitted, in all other modes the two
 RF frequencies are 700 and 1900 Hz \textit{above} the dial frequency. }
@@ -4470,7 +4470,7 @@ standard key bindings of the GTK user interface. For example, when using a norma
 slider, you can use the up-arrow and down-arrow keys to fine adjust the value. In this
 section we will only list the keyboard binding that are captured and processed by \pH.
 
-\section{Accessability for the Blind}
+\section{Accessibility for the Blind}
 
 \pH has built-in support for making operating easier for those with very limited
 eye-sight. The idea is that pressing one of the function keys generates a message that
@@ -4493,8 +4493,8 @@ be installed on MacOS via HomeBrew, using  \texttt{/usr/bin/say}  is the preferr
 
 For MacOS, the language and the voice used by the \texttt{say} program can be chosen in
 the usual "Accessibility" preferences pane. For \texttt{espeak-ng}, there is a plethora of
-command-line options fine-tuning its behavior (which are not used by the \texttt{udplistener}
-program since it is simply a demo), but I have not seen how to customize \texttt{espeak-ng}
+command-line options fine-tuning its behaviour (which are not used by the \texttt{udplistener}
+program since it is simply a demo), but I have not seen how to customise \texttt{espeak-ng}
 through a preferences file (I might be wrong on this). How to handle the audio output
 is up to the user, on a Macintosh, you can easily have the RX audio and the text-to-speech
 audio on the same audio device. For LINUX, there are so many audio options that I could
@@ -5056,7 +5056,7 @@ $\phantom{\Big|}$\textbf{\large SD} & Set/Read CW break-in hang time \\\cline{1-
 $\phantom{\Big|}${\large Set} & {SDp$_1$p$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {SD;} \\\hline
 $\phantom{\Big|}${\large Response} & {SDp$_1$p$_1$p$_1$p$_1$;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ = 0...1000 (in milli seconds)} \\
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ = 0...1000 (in ms)} \\
  & \multicolumn{1}{|p{11cm}|}{when setting, p$_1$ = 0  disables break-in} \\
 \bottomrule
 \end{tabular}
@@ -5899,12 +5899,12 @@ Controller2 or the G2 front panel, simply because nearly all GPIO lines are
 reserved for the controller.
 In these cases, the best
 choice to get "the key into the computer" is to use MIDI. There are low-cost
-microcontrollers which can be programmed such that they act as MIDI input devices
+micro controllers which can be programmed such that they act as MIDI input devices
 if connected (via USB) to the host computer (in the simplest case, 32U4 based
-microcontrollers like the Arduino Leonardo or the Teensy LC). You can
-run a WinKey Clone on the microcontroller and add code that for key-up/down and
+micro controllers like the Arduino Leonardo or the Teensy LC). You can
+run a WinKey Clone on the micro controller and add code that for key-up/down and
 PTT on/off sends MIDI NoteOn/Off messages to the computer. Then, use the
-\bltt{MIDI} menu to configure. More powerful microcontrollers (e.g. the Teensy4)
+\bltt{MIDI} menu to configure. More powerful micro controllers (e.g. the Teensy4)
 can even show up at the computer as a MIDI input device \textit{and} a serial port,
 in this case you can even connect from a contest logging program to  the keyer
 via the WinKey protocol over the serial port, and get the key-up/down messages
@@ -6090,7 +6090,7 @@ void loop() {
 
 
  /*
-  * Execute loop() approximately (!) once per milli-second
+  * Execute loop() approximately (!) once per ms
   */
  delayMicroseconds(950);
 }
@@ -6610,7 +6610,7 @@ This is an option for RedPitaya based radios. These have an SDR app that must be
 started before one can connect. If you have a RedPitaya exclusively being used as a radio, this
 app is most likely auto-started when powering up the RedPitaya so you do not need the STEMLAB
 option. This option allows to start the SDR application on the RedPitaya through the web interface.
-If you have a RedPitay and no autostart of the SDR application there, and not compiled \pH
+If you have a RedPitaya and no autostart of the SDR application there, and not compiled \pH
 with the STEMLAB option, you can open a web browser, start the SDR application on the RedPitaya,
 and then start \pH. With the STEMLAB option, this can all be done by \pH.
 }
@@ -6663,7 +6663,7 @@ other single-board computers with a GPIO.
 \end{figure}
 
 Fig. \ref{fig:GPIO} lists which GPIO lines are used for which controller option. In the first column,
-the GPIO pin number (0--31) ist listed. The second column indicates the function often
+the GPIO pin number (0--31) is listed. The second column indicates the function often
 associated with this pin in the RaspberryPi community, and the third column states on which connector
 (P1 or P5) this pin can be found. P1 is the main 40-pin GPIO header of the RaspberryPI, while P5 is
 an auxiliary connector that carries pins one should normally not use (like those for a second I2C
@@ -6732,7 +6732,7 @@ follows the key-down/up state.
 
 The reason for choosing ,,active low'' for the output lines is that in the default setup,
 the GPIO lines are switched
-to ,,input with pull-up'' upon booting. An input line with a built-in pullup
+to ,,input with pull-up'' upon booting. An input line with a built-in pull-up
 resistor is, however,
 nearly indistinguishable from an output line with high level.
 
@@ -7079,7 +7079,7 @@ have been used. Very old MacOS systems (e.g. Catalina) are no longer supported b
 If you want to run piHPDSR on an Apple Macintosh computer (iMac, Mac Mini, iBook Air, PowerBook), then
 you \textit{have to} compile \pH from the sources. Producing a precompiled binary that can be
 distributed and run simply by double-clicking is overly complicated for applications using the GTK
-graphical user interface (as piHSPDR does). But fear not, the proceduce is actually very simple because
+graphical user interface (as piHSPDR does). But fear not, the procedure is actually very simple because
 all the difficult things are avoided by using the HomeBrew toolkit.
 
 \begin{center}
@@ -7340,10 +7340,10 @@ stems from missing, corrupt, or outdated SoapySDR libraries which are not part o
 \chapter[Connecting the Computer and the Radio]{Connecting Computer and Radio}
 \label{sec:dhcp}
 \textit{This section applies if you run \pH on a
-RaspPi or aDesktop or Laptop computer running Linux or MacOS, and if this computer connects to the
+RaspPi or a Desktop or Laptop computer running Linux or MacOS, and if this computer connects to the
 radio via ethernet, and the radio is running HPSDR protocol-1 or protocol-2. This class of radios
 encompasses the original HPSDR radios but also the HermesLite-II (which runs a variant of the HPSDR
-protocol-1) and RedPitayas (if it runs a hpsdr radio emulator).}
+protocol-1) and RedPitayas (if it runs a HPSDR radio emulator).}
 
 \textit{This section also does not apply to SoapySDR radios (Adalm Pluto, RTL sticks, etc.). In most
 cases they use an USB connection so you can just plug and play.}
@@ -7371,7 +7371,7 @@ can then still be connected to the web via its WiFi interface. In this direct ca
 the computer nor the radio gets an IP address for the wired interface simply because there is no DHCP server
 at either side of the cable.
 
-To make the communication work, the easiest work-araound is probably to assign a fixed IP address both to
+To make the communication work, the easiest work-around is probably to assign a fixed IP address both to
 the wired interface of the computer and to the radio. The convention is that such ,,local'' IP addresses have
 the form $192.168.xxx.yyy$, where $xxx$ and $yyy$ are numbers between 1 and 250. Furthermore, such
 local addresses are set up in "batches", where $xxx$ describes the sub-net and $yyy$ the address within the
@@ -7380,7 +7380,7 @@ form $192.168.xxx.yyy/24$ where the number 24 encodes the netmask.
 
 Such local sub-nets with small numbers of $xxx$ (say, 1 through 4) are often created/used by routers etc.,
 so it is strongly recommended to use a higher number, e.g. $xxx=8$ for the sub-net used for connecting
-the comnputer and the radio.
+the computer and the radio.
 
 The bad news is that the procedure of assigning a fixed IP address differs greatly between different
 radios, and different operating systems (e.g. Linux and MacOS). For HPSDR radios, a fixed IP address

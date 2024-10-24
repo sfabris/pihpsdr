@@ -297,11 +297,13 @@ void copy_mode_settings(int mode) {
     mode_settings[modeCWU] = mode_settings[mode];
     mode_settings[modeCWL] = mode_settings[mode];
     break;
+
   case modeDIGU:
   case modeDIGL:
     mode_settings[modeDIGU] = mode_settings[mode];
     mode_settings[modeDIGL] = mode_settings[mode];
     break;
+
   case modeLSB:
   case modeUSB:
   case modeDSB:
@@ -537,7 +539,6 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
     transmitter->compressor_level = mode_settings[m].compressor_level;
     transmitter->cfc = mode_settings[m].cfc;
     tx_set_compressor      (transmitter);
-
     transmitter->dexp = mode_settings[m].dexp;
     tx_set_dexp(transmitter);
   }
@@ -1805,18 +1806,22 @@ void vfo_update() {
       snprintf(temp_text, 32, "CprCfc");
       cairo_set_source_rgba(cr, COLOUR_ATTN);
     }
+
     if (transmitter->cfc && !transmitter->compressor) {
       snprintf(temp_text, 32, "CFC on");
       cairo_set_source_rgba(cr, COLOUR_ATTN);
     }
+
     if (!transmitter->cfc && transmitter->compressor) {
       snprintf(temp_text, 32, "Cmpr %d", (int) transmitter->compressor_level);
       cairo_set_source_rgba(cr, COLOUR_ATTN);
     }
+
     if (!transmitter->cfc && !transmitter->compressor) {
       snprintf(temp_text, 32, "Cmpr");
       cairo_set_source_rgba(cr, COLOUR_SHADE);
     }
+
     cairo_show_text(cr, temp_text);
   }
 

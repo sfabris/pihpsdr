@@ -639,6 +639,7 @@ void filter_width_changed(int id, int increment) {
 
         break;
       }
+
       __attribute__((fallthrough));
 
     case modeLSB:
@@ -659,6 +660,7 @@ void filter_width_changed(int id, int increment) {
 
         break;
       }
+
       __attribute__((fallthrough));
 
     case modeUSB:

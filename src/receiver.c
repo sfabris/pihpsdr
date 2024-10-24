@@ -1660,9 +1660,9 @@ void rx_set_average(const RECEIVER *rx) {
     wdspmode = AVERAGE_MODE_TIME_WINDOW;
     break;
   }
+
 #ifdef WDSPRXDEBUG
 #endif
-
   //
   // I observed artifacts when changing the mode from "Log Recursive"
   // to "Time Window", so I generally switch to NONE first, and then
@@ -1682,6 +1682,7 @@ void rx_set_bandpass(const RECEIVER *rx) {
 void rx_set_cw_peak(const RECEIVER *rx, int state, double freq) {
 #ifdef WDSPRXDEBUG
 #endif
+
   if (state) {
     double w = 0.25 * (rx->filter_high - rx->filter_low);
 
@@ -1721,9 +1722,9 @@ void rx_set_detector(const RECEIVER *rx) {
     wdspmode = DETECTOR_MODE_SAMPLE;
     break;
   }
+
 #ifdef WDSPRXDEBUG
 #endif
-
   SetDisplayDetectorMode(rx->id, 0, wdspmode);
 }
 
@@ -1741,6 +1742,7 @@ void rx_set_equalizer(RECEIVER *rx) {
   SetRXAEQRun(rx->id, rx->eq_enable);
 #ifdef WDSPRXDEBUG
   t_print("WDSP:RX id=%d Equalizer enable=%d allgain=%g\n", rx->id, rx->eq_enable, rx->eq_gain[0]);
+
   for (int i = 1; i < 11; i++) {
     t_print("... Chan=%2d Freq=%6g Gain=%4g\n", i, rx->eq_freq[i], rx->eq_gain[i]);
   }
@@ -1848,6 +1850,7 @@ void rx_set_offset(const RECEIVER *rx, long long offset) {
     RXANBPSetShiftFrequency(rx->id, (double)offset);
     SetRXAShiftRun(rx->id, 1);
   }
+
 #ifdef WDSPRXDEBUG
 #endif
 }

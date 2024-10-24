@@ -124,6 +124,7 @@ static void cw_ramp_width_changed_cb(GtkWidget *widget, gpointer data) {
   tx_set_ramps(transmitter);
   schedule_transmit_specific();
 }
+
 #endif
 
 void cw_menu(GtkWidget *parent) {
@@ -141,7 +142,6 @@ void cw_menu(GtkWidget *parent) {
   gtk_grid_set_column_spacing (GTK_GRID(grid), 10);
   gtk_grid_set_column_homogeneous (GTK_GRID(grid), FALSE);
   gtk_grid_set_row_homogeneous (GTK_GRID(grid), TRUE);
-
   col = 0;
   GtkWidget *close_b = gtk_button_new_with_label("Close");
   gtk_widget_set_name(close_b, "close_button");
@@ -153,7 +153,6 @@ void cw_menu(GtkWidget *parent) {
   gtk_widget_show(cw_keyer_internal_b);
   gtk_grid_attach(GTK_GRID(grid), cw_keyer_internal_b, 1, col, 1, 1);
   g_signal_connect(cw_keyer_internal_b, "toggled", G_CALLBACK(cw_keyer_internal_cb), NULL);
-
   col++;
   GtkWidget *cw_speed_label = gtk_label_new("CW Speed (WPM)");
   gtk_widget_set_name(cw_speed_label, "boldlabel");
@@ -165,7 +164,6 @@ void cw_menu(GtkWidget *parent) {
   gtk_widget_show(cw_keyer_speed_b);
   gtk_grid_attach(GTK_GRID(grid), cw_keyer_speed_b, 1, col, 1, 1);
   g_signal_connect(cw_keyer_speed_b, "value_changed", G_CALLBACK(cw_keyer_speed_value_changed_cb), NULL);
-
   col++;
   GtkWidget *cw_breakin_b = gtk_check_button_new_with_label("CW Break-In, Delay (ms):");
   gtk_widget_set_name(cw_breakin_b, "boldlabel");
@@ -179,7 +177,6 @@ void cw_menu(GtkWidget *parent) {
   gtk_widget_show(cw_keyer_hang_time_b);
   gtk_grid_attach(GTK_GRID(grid), cw_keyer_hang_time_b, 1, col, 1, 1);
   g_signal_connect(cw_keyer_hang_time_b, "value_changed", G_CALLBACK(cw_keyer_hang_time_value_changed_cb), NULL);
-
   col++;
   GtkWidget *cw_keyer_sidetone_level_label = gtk_label_new("Sidetone Level:");
   gtk_widget_set_name(cw_keyer_sidetone_level_label, "boldlabel");
@@ -192,7 +189,6 @@ void cw_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(grid), cw_keyer_sidetone_level_b, 1, col, 1, 1);
   g_signal_connect(cw_keyer_sidetone_level_b, "value_changed", G_CALLBACK(cw_keyer_sidetone_level_value_changed_cb),
                    NULL);
-
   col++;
   GtkWidget *cw_keyer_sidetone_frequency_label = gtk_label_new("Sidetone Freq:");
   gtk_widget_set_name(cw_keyer_sidetone_frequency_label, "boldlabel");
@@ -205,7 +201,6 @@ void cw_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(grid), cw_keyer_sidetone_frequency_b, 1, col, 1, 1);
   g_signal_connect(cw_keyer_sidetone_frequency_b, "value_changed",
                    G_CALLBACK(cw_keyer_sidetone_frequency_value_changed_cb), NULL);
-
   col++;
   GtkWidget *cw_keyer_weight_label = gtk_label_new("Weight:");
   gtk_widget_set_name(cw_keyer_weight_label, "boldlabel");
@@ -217,7 +212,6 @@ void cw_menu(GtkWidget *parent) {
   gtk_widget_show(cw_keyer_weight_b);
   gtk_grid_attach(GTK_GRID(grid), cw_keyer_weight_b, 1, col, 1, 1);
   g_signal_connect(cw_keyer_weight_b, "value_changed", G_CALLBACK(cw_keyer_weight_value_changed_cb), NULL);
-
 #if 0
   col++;
   GtkWidget *cw_ramp_width_label = gtk_label_new("CW ramp width (ms):");
@@ -231,7 +225,6 @@ void cw_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(grid), cw_ramp_width_b, 1, col, 1, 1);
   g_signal_connect(cw_ramp_width_b, "value_changed", G_CALLBACK(cw_ramp_width_changed_cb), NULL);
 #endif
-
   col++;
   GtkWidget *paddle_label = gtk_label_new("Paddle Mode:");
   gtk_widget_set_name(paddle_label, "boldlabel");
@@ -246,7 +239,6 @@ void cw_menu(GtkWidget *parent) {
   gtk_widget_show(mode_combo);
   my_combo_attach(GTK_GRID(grid), mode_combo, 1, col, 1, 1);
   g_signal_connect(mode_combo, "changed", G_CALLBACK(cw_keyer_mode_cb), NULL);
-
   col++;
   GtkWidget *cw_keys_reversed_b = gtk_check_button_new_with_label("Keys reversed");
   gtk_widget_set_name(cw_keys_reversed_b, "boldlabel");
@@ -260,7 +252,6 @@ void cw_menu(GtkWidget *parent) {
   gtk_widget_show(cw_keyer_spacing_b);
   gtk_grid_attach(GTK_GRID(grid), cw_keyer_spacing_b, 0, col, 1, 1);
   g_signal_connect(cw_keyer_spacing_b, "toggled", G_CALLBACK(cw_keyer_spacing_cb), NULL);
-
   gtk_container_add(GTK_CONTAINER(content), grid);
   sub_menu = dialog;
   gtk_widget_show_all(dialog);
