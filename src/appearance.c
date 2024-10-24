@@ -41,6 +41,76 @@
 //
 const VFO_BAR_LAYOUT vfo_layout_list[] = {
   //
+  // A layout tailored for a screen 1920 px wide,
+  // which is the 1280px version scaled with 1.8
+  //
+  {
+    .description = "VFO bar for 1920px windows",
+    .width = 1575,
+    .height = 170,
+    .size1 = 28,
+    .size2 = 54,
+    .size3 = 90,
+
+    .vfo_a_x = -10,
+    .vfo_a_y = 125,
+    .vfo_b_x = -1000,
+    .vfo_b_y = 125,
+
+    .mode_x = 10,
+    .mode_y = 43,
+    .agc_x = 450,
+    .agc_y = 43,
+    .nr_x = 680,
+    .nr_y = 43,
+    .nb_x = 775,
+    .nb_y = 43,
+    .anf_x = 850,
+    .anf_y = 43,
+    .snb_x = 930,
+    .snb_y = 43,
+    .div_x = 1000,
+    .div_y = 43,
+    .eq_x = 1100,
+    .eq_y = 43,
+    .cat_x = 1200,
+    .cat_y = 43,
+
+    .cmpr_x = 680,
+    .cmpr_y = 95,
+    .ps_x = 930,
+    .ps_y = 95,
+    .dexp_x = 850,
+    .dexp_y = 95,
+
+    .vox_x = 680,
+    .vox_y = 125,
+    .dup_x = 850,
+    .dup_y = 125,
+
+    .lock_x = 5,
+    .lock_y = 160,
+    .zoom_x = 170,
+    .zoom_y = 160,
+    .ctun_x = 320,
+    .ctun_y = 160,
+    .step_x = 450,
+    .step_y = 160,
+    .split_x = 680,
+    .split_y = 160,
+    .sat_x = 850,
+    .sat_y = 160,
+    .rit_x = 1000,
+    .rit_y = 160,
+    .xit_x = 1200,
+    .xit_y = 160,
+    .filter_x = 730,
+    .filter_y = 43,
+    .multifn_x = 775,
+    .multifn_y = 160,
+  },
+
+  //
   // A layout tailored for a screen 1280 px wide:
   // a Layout with dial digits of size 50, and a "LED" size 20
   // which requires a width of 875 and a height of 90
