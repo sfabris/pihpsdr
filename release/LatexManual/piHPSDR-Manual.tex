@@ -1791,7 +1791,7 @@ The \bltt{Mode} menu lets you change the mode of the active receiver, so you can
 say, from LSB to CWU or DIGU. The mode menu simply lists the available modes, the current
 one is highlighted (Fig. \ref{fig:ModeMenu}).
 
-\subsection{Settings stored with the mode.}
+\subsection{RX/TX ,,profiles''}
  Many settings such as filter choices, noise reduction
 settings, equaliser settings, and TX compressor settings
  are only reasonable for a specific mode and need be re-adjusted if one changes
@@ -1800,42 +1800,51 @@ settings, equaliser settings, and TX compressor settings
  mode automatically if one switches to that mode. Likewise, one often has specific settings
  for equalisers and TX compression that are valid for voice modes but not for digital modes.
 
- To this end, the settings given below are stored in the mode specific settings whenever
- they are changed for RX1/VFOA or for the transmitter. When changing modes later,
- the settings stored for the new mode become effective.
-Note that settings changed for RX2/VFOB are not stored, but
- stored settings are applied when the mode of RX2/VFOB is changed.
+ To this end, the settings given below are combined in a ,,RX/TX profile'' that
+ is associated with a certain mode or a certain group of modes. Modes grouped
+ together are USB/LSB/DSB, CWU/CWL, and DIGU/DIGL. This has been done because
+ if one has figured out optimal settings for e.q. the TX and RX equalisers for LSB,
+ one most likely wants to have the same settings automatically for USB as well.
+ When the mode of the VFO controlling RX1, RX2, or the transmitter is changed,
+ the settings for that VFO/receiver/transmitter will be loaded from the profile.
 
-Most users certainly want different settings, say, for USB, CWU, and DIGU. But they
-will probably want to have the same settings for USB and LSB. Therefore,
- three groups of modes are defined, which contain LSB/USB/DSB, CWU/CWL and
- DIGU/DIGL. If modified settings are stored for a mode that belongs to one of the three
- groups, the updated settings are copied to the settings for the other
- modes the same group. For example, when change noise reduction parameters
- or equaliser settings for the active receiver when running USB,
-  these changes will also become effective when later changing the mode to LSB.
-
-List of settings stored for each mode:
+ Here is the list of settings that form the RX/TX profile:
 
 \begin{center}
-\begin{tabular}{l|l}
+\begin{tabular}{l}
 \toprule
-VFO step size & step size  \\\hline
-Filter & filter type used (including CW peak) \\\hline
-Noise reduction & all settings \\\hline
-Noise blanker & all settings \\\hline
-Automatic notch filter &  on/off \\\hline
-Spectral  noise blanker &  on/off \\\hline
-AGC characteristic & slow/medium/fast etc. \\\hline
-RX equaliser & all settings \\\hline
-TX equaliser & all settings \\\hline
-TX compressor & on/off and compression level \\
+$\bullet$ Filter type \cr
+$\bullet$ CW peak filter (on/off) \cr
+$\bullet$ VFO step size  \cr
+$\bullet$ RX Noise reduction (all settings) \cr
+$\bullet$ RX Noise blanker (all settings) \cr
+$\bullet$ RX Automatic notch filter (on/off) \cr
+$\bullet$ RX Spectral  noise blanker (on/off) \cr
+$\bullet$ RX AGC characteristic (slow/medium/fast etc.) \cr
+$\bullet$ RX equaliser (all settings) \cr
+$\bullet$ TX equaliser (all settings) \cr
+$\bullet$ TX speech processor (on/off, compression level) \cr
+$\bullet$ TX continuous frequency compressor (CFC, all settings) \cr
+$\bullet$ TX downward expander (DEXP, on/off) \cr
 \bottomrule
 \end{tabular}
 \end{center}
 
-Mode settings are not only restored if a mode is explicitly changed, but also if the mode changes
+A profile is not only loaded if a mode is explicitly changed, but also when the mode changes
 because one has copied/swapped VFOs, changed the band or the band stack, or recalled a memory slot.
+
+A receiver- or VFO-speficic setting will be updated in the profile if it is changed and if this
+change applies to the active receiver. It is then stored in the profile associated with the mode
+(group)
+of the active receiver. Changing a transmitter-specific setting (TX equaliser, CFC, or DEXP) always
+leads to profile update of the profile associated with the mode (group) of the VFO that controls the
+transmitter frequency (that is, VFO-A if not working  split, and VFO-B if working split). The updated
+profile will only become effective upon the next mode change to that mode.
+
+Note that the concepts of mode groups implies that the profile associated with, say, LSB is
+automatically updated if the USB profile is updated, such that the profiles of the mode  within
+a mode group (although stored separately for historical reasons) will be identical.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The \texttt{Memory}  menu}
 \label{sec:memmenu}
