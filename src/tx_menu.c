@@ -61,7 +61,7 @@ static int which_container = TX_CONTAINER;
 #define CFCPOST 1280
 
 enum _tx_choices {
-  TX_FPS = 0,
+  TX_FPS = TX,
   TX_LINEIN,
   TX_COMP,
   TX_FILTER_LOW,
@@ -157,10 +157,12 @@ static void spinbtn_cb(GtkWidget *widget, gpointer data) {
   //
   // Handle ALL spin-buttons in this menu
   //
+  int mode = vfo_get_tx_mode();
   int c = GPOINTER_TO_INT(data);
   double v = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
   int    vi = (v >= 0.0) ? (int) (v + 0.5) : (int) (v - 0.5);
-  int d = c & 0xFF00;
+  int d = c & 0xFF00;   // The command class, TX/CFCFREQ/CFCLVL/CFCPOST/DEXP
+  int e = c & 0x00FF;   // channel No. for CRCFREQ/CFCLVL/CFCPOST
 
   if (d == TX) {
     // Spin buttons of the TX menu
@@ -230,15 +232,21 @@ static void spinbtn_cb(GtkWidget *widget, gpointer data) {
     }
   } else if (d == CFCFREQ) {
     // The CFC frequency spin buttons
-    transmitter->cfc_freq[c & 0xFF] = v;
+    transmitter->cfc_freq[e] = v;
+    mode_settings[mode].cfc_freq[e] = v;
+    copy_mode_settings(mode);
     tx_set_compressor(transmitter);
   } else if (d == CFCLVL) {
     // The CFC compression-level spin buttons
-    transmitter->cfc_lvl[c & 0xFF] = v;
+    transmitter->cfc_lvl[e] = v;
+    mode_settings[mode].cfc_lvl[e] = v;
+    copy_mode_settings(mode);
     tx_set_compressor(transmitter);
   } else if (d == CFCPOST) {
     // The CFC Post-equalizer gain spin buttons
-    transmitter->cfc_post[c & 0xFF] = v;
+    transmitter->cfc_post[e] = v;
+    mode_settings[mode].cfc_post[e] = v;
+    copy_mode_settings(mode);
     tx_set_compressor(transmitter);
   } else if (d == DEXP) {
     // The DEXP spin buttons. Note that the spin buttons for the
@@ -246,39 +254,57 @@ static void spinbtn_cb(GtkWidget *widget, gpointer data) {
     switch (c) {
     case DEXP_TAU:
       transmitter->dexp_tau = 0.001 * v;
+      mode_settings[mode].dexp_tau = 0.001*v;
+      copy_mode_settings(mode);
       break;
 
     case DEXP_ATTACK:
       transmitter->dexp_attack = 0.001 * v;
+      mode_settings[mode].dexp_attack = 0.001*v;
+      copy_mode_settings(mode);
       break;
 
     case DEXP_RELEASE:
       transmitter->dexp_release = 0.001 * v;
+      mode_settings[mode].dexp_release = 0.001*v;
+      copy_mode_settings(mode);
       break;
 
     case DEXP_HOLD:
       transmitter->dexp_hold = 0.001 * v;
+      mode_settings[mode].dexp_hold = 0.001*v;
+      copy_mode_settings(mode);
       break;
 
     case DEXP_HYST:
       transmitter->dexp_hyst = v;
+      mode_settings[mode].dexp_hyst = v;
+      copy_mode_settings(mode);
       break;
 
     case DEXP_TRIGGER:
       transmitter->dexp_trigger = vi;
+      mode_settings[mode].dexp_trigger = vi;
+      copy_mode_settings(mode);
       break;
 
     case DEXP_FILTER_LOW:
       transmitter->dexp_filter_low = vi;
+      mode_settings[mode].dexp_filter_low = vi;
+      copy_mode_settings(mode);
       break;
 
     case DEXP_FILTER_HIGH:
       transmitter->dexp_filter_high = vi;
+      mode_settings[mode].dexp_filter_high = vi;
+      copy_mode_settings(mode);
       break;
 
     case DEXP_EXP:
       // Note this is in dB
       transmitter->dexp_exp = vi;
+      mode_settings[mode].dexp_exp = vi;
+      copy_mode_settings(mode);
       break;
     }
 
@@ -372,6 +398,8 @@ static void chkbtn_cb(GtkWidget *widget, gpointer data) {
 
     case CFC_EQ:
       transmitter->cfc_eq = v;
+      mode_settings[mode].cfc_eq = v;
+      copy_mode_settings(mode);
       break;
     }
 
@@ -388,6 +416,8 @@ static void chkbtn_cb(GtkWidget *widget, gpointer data) {
 
     case DEXP_FILTER:
       transmitter->dexp_filter = v;
+      mode_settings[mode].dexp_filter = v;
+      copy_mode_settings(mode);
       break;
     }
 
