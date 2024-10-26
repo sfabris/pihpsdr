@@ -606,10 +606,6 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
     rx->eq_freq[i] = mode_settings[m].rx_eq_freq[i];
   }
 
-  rx_set_agc(rx);
-  update_noise();
-  update_eq();
-
   //
   // Transmitter-specific settings: TXEQ, CMRP, DEXP, CFC
   // only changed if this VFO controls the TX
@@ -646,6 +642,13 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
     tx_set_compressor(transmitter);
     tx_set_dexp(transmitter);
   }
+
+  //
+  // defer update_eq() until here since it also applies TX EQ settings
+  //
+  rx_set_agc(rx);
+  update_noise();
+  update_eq();
 
   g_idle_add(ext_vfo_update, NULL);
 }
