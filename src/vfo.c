@@ -138,7 +138,7 @@ static void modesettingsSaveState() {
     SetPropI1("modeset.%d.agc", i,                   mode_settings[i].agc);
     SetPropI1("modeset.%d.en_rxeq", i,               mode_settings[i].en_rxeq);
 
-    SetPropI1("modeset.%d.en_txeq", i,               mode_settings[i].en_rxeq);
+    SetPropI1("modeset.%d.en_txeq", i,               mode_settings[i].en_txeq);
     SetPropI1("modeset.%d.compressor", i,            mode_settings[i].compressor);
     SetPropF1("modeset.%d.compressor_level", i,      mode_settings[i].compressor_level);
 
@@ -330,7 +330,7 @@ static void modesettingsRestoreState() {
     GetPropI1("modeset.%d.agc", i,                   mode_settings[i].agc);
     GetPropI1("modeset.%d.en_rxeq", i,               mode_settings[i].en_rxeq);
 
-    GetPropI1("modeset.%d.en_txeq", i,               mode_settings[i].en_rxeq);
+    GetPropI1("modeset.%d.en_txeq", i,               mode_settings[i].en_txeq);
     GetPropI1("modeset.%d.compressor", i,            mode_settings[i].compressor);
     GetPropF1("modeset.%d.compressor_level", i,      mode_settings[i].compressor_level);
 
