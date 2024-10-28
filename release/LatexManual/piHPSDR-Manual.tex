@@ -72,7 +72,7 @@ it uses the GTK-3 toolkit, while the actual signal processing is done by Warren 
 \pH organises the transfer of digitised radio ,,intermediate frequency'' (IF)
 data between the radio hardware and the
 WDSP library, the
-transfer of audio input (e.g. from a microphone) or output (e.g. to a headephone) data,
+transfer of audio input (e.g. from a microphone) or output (e.g. to a headphone) data,
  as well as the processing of user
 input (either by mouse/touch-screen, keyboard, or external "knobs and buttons"),
  and the graphical display of the IF data. \pH is intended
@@ -110,7 +110,7 @@ the code. A lot of extensions and improvements have been added by myself, theref
 to the version of \pH that can be found on my GitHub account \texttt{https://github.com/dl1ycf/pihpsdr}.
 
 Because \pH can be used on many different types of computers, and because operating systems change
-rather quickly over time, I do no longer have pre-compiled binaries in the repository. Such binaries
+rather quickly over time, I do no longer have precompiled binaries in the repository. Such binaries
 usually only work on a specific hardware, and with a specific variant (e.g. 32-bit compared to 64-bit) of
 the operating system. It is therefore necessary to build \pH \textit{on the target system}
 from the sources. I know this sounds daunting to non-LINUX-nerds. But I have put much effort into making
@@ -138,7 +138,7 @@ can be found on the screen. This may be confusing upon first reading, but I shal
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Starting \pH for the first time}
-Let us assume you have an SDR (say, an ANAN-7000 or a HermesLite-II) powered up and connected to an antenna,
+Let us assume you have an SDR (say, an Anan-7000 or a HermesLite-II) powered up and connected to an antenna,
 and you have \pH installed on a computer (say, a Raspberry Pi or an Apple Macintosh), the first thing to
 do is to establish a proper connection between the computer and the radio. Although advocated at many
 places,
@@ -191,7 +191,7 @@ the network connection, you then see a screen with a discovery menu (Fig. \ref{f
 It is possible that the \rett{Start} button is deactivated and shows another text. \rett{In Use} at
 this point means that the radio is already in use (connected by another SDR application), while
 \rett{Incompatible} denotes that the radio is not compatible with this version of \pH. This
-is only the case if piHPDSR runs natively on the compute module inside the new ANAN Saturn/G2
+is only the case if piHPDSR runs natively on the compute module inside the new Anan Saturn/G2
 radios and the FPGA firmware is known to be too old (or too new)
 for direct (XDMA) data transfer between the compute
 module and the FPGA. Updating both \pH and the FPGA firmware to the latest version
@@ -247,7 +247,7 @@ protocol-2 discovery queries
 will also sent to the IP address specified, in addition to the standard broadcast discovery packets which
 can only reach
 radios on the same network segment. With a known IP address (and if supported by the radio),  one can
-connect to radios which are not on the same subnet as the computer, in principle you can connect to any
+connect to radios which are not on the same sub-net as the computer, in principle you can connect to any
 radio on the world
 provided it is on the internet. However, the original HPSDR standard states that a broadcast packet must be
 used, so several
@@ -261,7 +261,7 @@ was not yet ready when \pH was started. Simply press \rett{Discover} to start an
 The combo-box (pop-down menu) to the left of the \rett{Discover} button lets you choose which type of GPIO
 controller you
 have attached to the computer.  If compiled with GPIO support (this can also be done for
-programs running on a Raspberry Pi or on an internal Raspberry module of ANAN G2 radios),
+programs running on a Raspberry Pi or on an internal Raspberry module of Anan G2 radios),
 the menu lets you choose between
 
 \begin{itemize}[font=\texttt, left=80pt]
@@ -275,14 +275,14 @@ single encoders. This special case is not covered in this manual.}
 \item[Controller2 V2]{Choose this if you have a "version 2" \pH controller from ApacheLabs (with double encoders
 on a single shaft), or a clone thereof.
 This controller is denoted Controller2 in the rest of this manual.}
-\item[G2 Front Panel]{Choose this if you have an ANAN G2 radio with a built-in controller.}
-\item[G2 Mk2 Panel]{Choose this if you have an ANAN G2 Mk2 radio (with LEDs in the front panel).}
+\item[G2 Front Panel]{Choose this if you have an Anan G2 radio with a built-in controller.}
+\item[G2 Mk2 Panel]{Choose this if you have an Anan G2 Mk2 radio (with LEDs in the front panel).}
 \end{itemize}
 
 If \pH is compiles without GPIO support, you can only choose between \rett{No Controller} and
 \rett{G2 Mk2 Panel} (the latter is controlled by a serial connection rather than by GPIO lines).
 The effect of choosing \rett{G2 Mk2 Panel} is that \pH will then use a default when configuring
-the serial lines that is suitable of an ANAN G2-MkII radio.
+the serial lines that is suitable of an Anan G2-MkII radio.
 
 \textbf{Attention.} Be sure to choose a controller only if such a controller is actually connected to your
 Raspberry Pi. Unexpected things can happen if you chose one type of controller here but have totally different
@@ -358,7 +358,7 @@ is completely black in the above picture since there was no RF signal.
 
  RX1 and RX2 are largely independent. They can receive on different
  bands. They can receive from different antennas provided the radio
- has two RF frontend with two analog-to-digital converters (ADCs),
+ has two RF front-end with two analog-to-digital converters (ADCs),
  as most modern radios do. In this case, one usually
  assigns the first ADC (ADC0) to RX1 and the second ADC (ADC1) to
  RX2. This can be done in the \bltt{RX} menu.
@@ -425,7 +425,7 @@ the \bltt{Display} menu, you can make your choice. This setting
 refers to both receivers when there are two. Note that the TX
 spectrum can be a filled one or a line spectrum (to be specified
 in the \bltt{TX} menu), but that there
-is nov gradient option.
+is no gradient option.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Zoom and Pan}
@@ -486,8 +486,8 @@ The \rett{AGC} slider controls the AGC of the currently active receiver, it goes
 
 The \rett{ATT} slider controls a programmable attenuator in the RF front end of the active receiver. For
 HPSDR hardware, it goes from 0 to 31 dB. The HermesLite-II has a slider named \rett{RF} at this place,
-since this radio has a programmable pre-amplifier/attenuator that goes from -12 to +48 dB. For the STEMlab
-(Red Pitaya based) radios, you find a combo-box here where you can select the fixed attenuators/preamps.
+since this radio has a programmable preamplifier/attenuator that goes from -12 to +48 dB. For the STEMlab
+(RedPitaya based) radios, you find a combo-box here where you can select the fixed attenuators/preamps.
 
 The \rett{Mic} slider adds an amplification from -12 to +50 dB to the audio signal fed to the transmitter.
 This amplification is purely done numerically (no effect on any hardware) and applies to the audio signal
@@ -499,7 +499,7 @@ a 5-Watt radio such as the HermesLite-II should transmit 5 Watts if this slider 
 
 The \rett{Squlch} slider adjusts the squelch level. If moved up from zero, the check-box will automatically
 be activated. If moved down to zero, the check box will be deactivated. If you found a suitable squelch
-level and want to disable squelch temporarily, you can un-check the check box and active squelch later
+level and want to disable squelch temporarily, you can uncheck the check box and active squelch later
 on by checking it.
 
 Note that the slider area can be hidden (removed) via the \bltt{Display} menu (see there).
@@ -695,7 +695,7 @@ The example shown is a VFO bar whose width is 745 pixels and
 thus suitable for screens that are 1024 pixels wide (or more),
 since the meter area has a fixed width of 200 pixels, and
 the \rett{Hide}/\rett{Menu} buttons are 65 pixels wide. This layout is
-denoted \texttt{Large dials for 1024px windows}, as to the choice
+denoted \texttt{VFO bar for 1024px windows}, as to the choice
 of VFO bar layouts, see the description of the \bltt{Screen} menu.
 
 The large dials indicating the frequencies of VFO-A and VFO-B
@@ -767,9 +767,9 @@ The indicators in the middle, between the VFO dials, are related to
 transmitting. \rett{CMPR} indicates if a speech processor
 (compressor) is enabled, if so, it prints in yellow, followed
 by a number between 1 and 20 indicating the compression value in dB.
-If the speech processor is used simulataneously with the continuous frequency
+If the speech processor is used simultaneously with the continuous frequency
 compressor (CFC), there is a yellow \rett{CprCfc} at this place, and if
-the CFC is used but not the speech processor, the symobol is \rett{CFC on}.
+the CFC is used but not the speech processor, the symbol is \rett{CFC on}.
 \rett{Dexp} states whether the downward expander (DEXP) is active. Due to space
 restrictions, this indicator is not shown for the smaller VFO bars.
 \rett{PS} indicates whether adaptive pre-distortion (,,PureSignal'')
@@ -823,7 +823,7 @@ of the two VFOs also applies to the other VFO. This is the best way
 to do cross-band operation with, e.g. the QO-100 satellite which is at
 a fixed position. In RSAT mode, a frequency change of one of the VFOs
 is applied to the other VFO with an opposite sign (so if you move up
-VFO-A by 2 kHZ, then VFO-B moves down by the same amount). This is
+VFO-A by 2 kHz, then VFO-B moves down by the same amount). This is
 what one needs for low-flying satellites which have inverting
 transponders which offer some sort of Doppler correction.
 
@@ -974,7 +974,7 @@ where ,,much happens'' anyway in the GUI seems a good compromise.
 Via the \bltt{Exit} menu, you can leave the \pH program. When leaving the program,
 the radio protocol is stopped and all the settings are written to a preferences file. This
 file is located in the \pH directory and takes the name XX-XX-XX-XX-XX-XX.props, where
-the XX are heaxdecimal numbers that encode the MAC address for the radio.
+the XX are hexadecimal numbers that encode the MAC address for the radio.
 So the preferences for different radios (if you
 have more than one) are stored in different files. To leave the program, just click the
 "Exit" button in this menu. If you decide you want to continue, you can leave the \bltt{Exit}
@@ -1036,7 +1036,7 @@ the colons by dashes and appending ,,.props''.
 
 The \bltt{Radio} menu lets you make settings which affect the general setting, and the hardware of the
 radio.
-The following figure (Fig. \ref{fig:RadioMenu}) shows the menu as it opens on an ANAN G2 radio.
+The following figure (Fig. \ref{fig:RadioMenu}) shows the menu as it opens on an Anan G2 radio.
 Note this menu looks slightly different for different radios and protocols, this will be discussed
 at the end of the section. First, we go through all the elements we see in Fig. \ref{fig:RadioMenu},
 they will be coloured red in the following list.
@@ -1117,7 +1117,7 @@ then adjusts the transmit frequency.
 
 \rett{Duplex} Use this checkbox to enable/disable Duplex mode. In Duplex mode, the receiver(s)
 continue working during TX. In normal setup, this is detrimental since the very strong
-signal that originates from the crosstalk at the T/R relay will lead to AGC pumping,
+signal that originates from the cross-talk at the T/R relay will lead to AGC pumping,
 making your receiver(s) essentially deaf for a short period after TX/RX switching.
 However, when using different and well-decoupled antennas for RX and TX (this is typical
 for some satellite operations), Duplex mode gives you important information, as you can
@@ -1149,7 +1149,7 @@ when using a mouse, it is a great helper when using a touch screen. Therefore th
 option is set by default, but you can uncheck it here if you prefer normal
 mouse operation. Note that this option becomes effective when the next menu is opened.
 
-\rett{Mute Spkr Amp} This box only appears on ANAN-7000/8000 and G2 radios using protocol 2.
+\rett{Mute Spkr Amp} This box only appears on Anan-7000/8000 and G2 radios using protocol 2.
 If checked, the audio amplifier driving the speakers (either the speaker jacks in the
 back panel, or the built-in speakers) is disabled. This does not affect the audio signal
 at the headphone jack.
@@ -1213,7 +1213,7 @@ if the signal in the meter is too strong. For most HPSDR radios, the default val
  is enabled, RX audio data is sent to the HL2.
 
  \rett{Anan-10E/100B} This box only appears for Hermes boards. While the Anan-10E and
- the ANAN-100B identify themselves as Hermes boards, they have a FPGA with limited
+ the Anan-100B identify themselves as Hermes boards, they have a FPGA with limited
  resources and this affects the allocation of PureSignal feedback channels. To make
  PureSignal work on these machines, you have to check this box in the \bltt{Radio} menu.
 
@@ -1400,7 +1400,7 @@ frequently, check your antenna. The SWR threshold (default: 3.0) can be set in t
 
 \rett{Display PA current} If this is checked, the PA supply voltage and the PA current
 are shown while transmitting. This data is only available for Orion-II and SATURN boards
-(ANAN-7000/8000 and ANAN-G2 and the HermesLite-II).
+(Anan-7000/8000 and Anan-G2 and the HermesLite-II).
  For the HermesLite-II, the PA temperature and the PA current are shown.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The \texttt{Display} Menu}
@@ -1513,8 +1513,8 @@ so you can put the drive slider to zero, then put the radio into TX mode,
 whistle into the microphone and slowly increase the Mic gain until the
 ALC value shown is only slightly less than zero. The average TX ALC
 value only is of interest if  you search for settings for the speech processor
-or the continous frequency compressor. For normal speaking into the microphone,
-the average ALC value will be negative even if the Mic gain slider is adjuste
+or the continuous frequency compressor. For normal speaking into the microphone,
+the average ALC value will be negative even if the Mic gain slider is adjusted
 for zero peak ALC value. A compressor will distort the TX audio such that this
 gap gets smaller.
 
@@ -1791,7 +1791,7 @@ The \bltt{Mode} menu lets you change the mode of the active receiver, so you can
 say, from LSB to CWU or DIGU. The mode menu simply lists the available modes, the current
 one is highlighted (Fig. \ref{fig:ModeMenu}).
 
-\subsection{Settings stored with the mode.}
+\subsection{RX/TX ,,profiles''}
  Many settings such as filter choices, noise reduction
 settings, equaliser settings, and TX compressor settings
  are only reasonable for a specific mode and need be re-adjusted if one changes
@@ -1800,42 +1800,51 @@ settings, equaliser settings, and TX compressor settings
  mode automatically if one switches to that mode. Likewise, one often has specific settings
  for equalisers and TX compression that are valid for voice modes but not for digital modes.
 
- To this end, the settings given below are stored in the mode specific settings whenever
- they are changed for RX1/VFOA or for the transmitter. When changing modes later,
- the settings stored for the new mode become effective.
-Note that settings changed for RX2/VFOB are not stored, but
- stored settings are applied when the mode of RX2/VFOB is changed.
+ To this end, the settings given below are combined in a ,,RX/TX profile'' that
+ is associated with a certain mode or a certain group of modes. Modes grouped
+ together are USB/LSB/DSB, CWU/CWL, and DIGU/DIGL. This has been done because
+ if one has figured out optimal settings for e.q. the TX and RX equalisers for LSB,
+ one most likely wants to have the same settings automatically for USB as well.
+ When the mode of the VFO controlling RX1, RX2, or the transmitter is changed,
+ the settings for that VFO/receiver/transmitter will be loaded from the profile.
 
-Most users certainly want different settings, say, for USB, CWU, and DIGU. But they
-will probably want to have the same settings for USB and LSB. Therefore,
- three groups of modes are defined, which contain LSB/USB/DSB, CWU/CWL and
- DIGU/DIGL. If modified settings are stored for a mode that belongs to one of the three
- groups, the updated settings are copied to the settings for the other
- modes the same group. For example, when change noise reduction parameters
- or equalizer settings for the active receiver when running USB,
-  these changes will also become effective when later changing the mode to LSB.
-
-List of settings stored for each mode:
+ Here is the list of settings that form the RX/TX profile:
 
 \begin{center}
-\begin{tabular}{l|l}
+\begin{tabular}{l}
 \toprule
-VFO step size & step size  \\\hline
-Filter & filter type used (including CW peak) \\\hline
-Noise reduction & all settings \\\hline
-Noise blanker & all settings \\\hline
-Automatic notch filter &  on/off \\\hline
-Spectral  noise blanker &  on/off \\\hline
-AGC characteristic & slow/medium/fast etc. \\\hline
-RX equaliser & all settings \\\hline
-TX equaliser & all settings \\\hline
-TX compressor & on/off and compression level \\
+$\bullet$ Filter type \cr
+$\bullet$ CW peak filter (on/off) \cr
+$\bullet$ VFO step size  \cr
+$\bullet$ RX Noise reduction (all settings) \cr
+$\bullet$ RX Noise blanker (all settings) \cr
+$\bullet$ RX Automatic notch filter (on/off) \cr
+$\bullet$ RX Spectral  noise blanker (on/off) \cr
+$\bullet$ RX AGC characteristic (slow/medium/fast etc.) \cr
+$\bullet$ RX equaliser (all settings) \cr
+$\bullet$ TX equaliser (all settings) \cr
+$\bullet$ TX speech processor (on/off, compression level) \cr
+$\bullet$ TX continuous frequency compressor (CFC, all settings) \cr
+$\bullet$ TX downward expander (DEXP, on/off) \cr
 \bottomrule
 \end{tabular}
 \end{center}
 
-Mode settings are not only restored if a mode is explicitly changed, but also if the mode changes
+A profile is not only loaded if a mode is explicitly changed, but also when the mode changes
 because one has copied/swapped VFOs, changed the band or the band stack, or recalled a memory slot.
+
+A receiver- or VFO-speficic setting will be updated in the profile if it is changed and if this
+change applies to the active receiver. It is then stored in the profile associated with the mode
+(group)
+of the active receiver. Changing a transmitter-specific setting (TX equaliser, CFC, or DEXP) always
+leads to profile update of the profile associated with the mode (group) of the VFO that controls the
+transmitter frequency (that is, VFO-A if not working  split, and VFO-B if working split). The updated
+profile will only become effective upon the next mode change to that mode.
+
+Note that the concepts of mode groups implies that the profile associated with, say, LSB is
+automatically updated if the USB profile is updated, such that the profiles of the mode  within
+a mode group (although stored separately for historical reasons) will be identical.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The \texttt{Memory}  menu}
 \label{sec:memmenu}
@@ -1918,21 +1927,21 @@ connected to the radio. Local audio is not affected. The main use of this checkb
 to mute a radio-connected headphone while doing digi mode via local RX output.
 
 \rett{Bypass ADC0 RX filters}. This box is only shown if the ALEX filter board
-is selected (see the \bltt{Radio} menu). If checked, the filters in the RF frontend for ADC0
+is selected (see the \bltt{Radio} menu). If checked, the filters in the RF front-end for ADC0
 are by-passed during receive. This option will normally only used for radios that
 have band-pass filters in the front end, if one operates two receivers both running
 on ADC0 data on different bands. Without checking this option, only the signals for
-the band of the active receiver will pass. Older radios (up to ANAN-100/200)  have a
+the band of the active receiver will pass. Older radios (up to Anan-100/200)  have a
 combination of a low-pass and a high-pass filter in the RX path to ADC0. If these
 radios run two receivers, the low-pass filter is selected based on the higher
 of the two RX frequencies, and the high-pass filters is selected based on the
 lower one. This ensures that the signals for both receivers fall into  the filter
 pass band.
 
-\rett{Bypass ADC1 RX filters}. This box is only shown if the RF frontend for ADC1
-features a filter board (ANAN-7000/8000 and G2 radios),
+\rett{Bypass ADC1 RX filters}. This box is only shown if the RF front-end for ADC1
+features a filter board (Anan-7000/8000 and G2 radios),
 and if the ALEX filter board
-is selected (see the \bltt{Radio} menu). If checked, the filters in the RF frontend for ADC1
+is selected (see the \bltt{Radio} menu). If checked, the filters in the RF front-end for ADC1
 are by-passed during receive.
 
 \rett{Local Audio Output:} If checked, the audio from this radio is sent to a local
@@ -2057,7 +2066,7 @@ blanker NB2 ).
 \label{fig:NoiseMenu1}
 \end{figure}
 
-\rett{NR Settings/NB Settings}. Choosing one of the two buttons determines whether the
+\rett{NR Settings} and \rett{NB Settings}. Choosing one of the two buttons determines whether the
 lower part of the menu offers fine-tuning of the noise reduction or noise blanker settings.
 The set up for changing the noise reduction settings is shown in Fig. \ref{fig:NoiseMenu1},
 below (Fig \ref{fig:NoiseMenu2}) you find the set up for changing the noise blanker settings.
@@ -2081,7 +2090,7 @@ are OSMS
 NSTAT (Non-stationary Noise Method),
 where OSMS is the default.
 
-\rett{NR...Position}. In the RX chain, the noise reduction can be placed before or after
+\rett{NR/NR2/ANF Position}. In the RX chain, the noise reduction can be placed before or after
 the automatic gain control (AGC). The choice here refers to \textit{all} noise reduction
 capabilities (SNB, ANF, NR1, NR2).
 
@@ -2094,10 +2103,14 @@ checked (artefact elimination ,,enabled'').
 that is only used in the NR2 \rett{Trained} method. The default value, $-0.5$, should be
 suitable in most cases.
 
+\rett{NR2 Trained T2}. The so-called T2 value of the trained noise reduction may vary between
+0.02 and 0.3, and the default value 0.2 should be OK in most cases. Sometimes it happens that
+very weak signals are eliminated (that is, treated as noise). In this case one can try to \textit{reduce} the
+T2 value.
 
 
-Note the noise blanker works very different from the noise reduction, since noise blanking
-is applied to the original RX IQ samples before any frequency shifts etc. take place.
+\textbf{Noise blankers.} A noise blanker works very different from  noise reduction, since noise blanking
+is applied to the original RX IQ samples before any frequency shifts and down-sampling take place.
 Noise blanking is targeted at impulse noise, that is, small but strong impulses in the RX
 signal that are almost exclusively man-made noise.
 If you have a single source of noise (e.g. a Plasma TV) that drives you crazy, it is worth
@@ -2192,7 +2205,7 @@ the RX ,,BFO frequency''.
 The \bltt{TX} menu can be opened from the main menu, or just by a secondary mouse click
 into the TX pan-adapter (while transmitting). The menu is shown in Fig. \ref{fig:TXMenu}.
 This menu has three sub-menus, called the \rett{TX Settings} for general transmitter settings,
-the \rett{CFC settings} for controlling the continous frequency compressor (CFC), and the
+the \rett{CFC settings} for controlling the continuous frequency compressor (CFC), and the
 \rett{DwdExp Settings} for controlling the downward expander (DEXP). With the radio buttons
 in the top row of the menu you can switch between the three sub-menus. When you open the TX
 menu for the first time after starting \pH, the TX settings are shown. Subsequently opening
@@ -2248,7 +2261,7 @@ and \rett{TX Filter High} check boxes will be inactive in this case.
 \rett{Compression} With this box the TX compressor can be enabled/disabled.
 The compression level (0-20 dB) can be chosen in the spin button to the right.
 Setting TX compression on/off automatically engages/disengages the CESSB overshoot
-correction, the TX auto leveler and the TX phase rotator.
+correction, the TX auto leveller and the TX phase rotator.
 
 \textbf{Note:} The compressor on/off flag, as well as the compression level, is
 ,,stored with the mode''. So it is possible to have the compressor enabled for SSB
@@ -2333,9 +2346,9 @@ since many digital modes (unlike SSB voice) are constantly transmitting at full 
 \label{fig:CFCmenu}
 \end{figure}
 
-In the CFC sub-menu, the settings for the continous frequency compressor can be made.
+In the CFC sub-menu, the settings for the continuous frequency compressor can be made.
 As the name indicates, the compression can be chosen frequency dependent. As for the
-equalizer, one can specify corner frequencies with a given compression, between corner
+equaliser, one can specify corner frequencies with a given compression, between corner
 frequencies the compression is interpolated linearly. In addition, there is an equaliser that
 is applied after compression, so one give a gain (or attenuation) for each corner
 frequency, with linear interpolation in-between. Gains in this menu are in dB and
@@ -2343,19 +2356,19 @@ can be chosen between -20 and +20 dB, compression levels are also in dB and can 
 between 0 dB (no compression) and +20 dB.
 
 \rett{Use Continuous Frequency Compressor}. This checkbox is used to enable/disable the CFC. As with
-the speech processor, using the CFC automatically enables the TX auto-leveler and phase rotator.
+the speech processor, using the CFC automatically enables the TX auto-leveller and phase rotator.
 
 \rett{Use Post-Compression Equalizer}. This checkbox is used  to enable/disable the post-compression
-equalizer.
+equaliser.
 
 \rett{Add Freq.-Indep. Compression} With this spin button, one can specify an \textit{additional}
 frequency-independent compression that applies to all frequencies.
 
-\rett{Add Freq.-Indep. Gain} If using the post-compression equaliser, this spin button speficies an
-\textit{additional} frequency-idependent gain applied to all frequencies.
+\rett{Add Freq.-Indep. Gain} If using the post-compression equaliser, this spin button specifies an
+\textit{additional} frequency-independent gain applied to all frequencies.
 
 In the lower part of the menu, you find ten groups of three spin buttons that specify a frequency/level/gain
-triple. The compression level and gain given (if the post-compression equalizer is used) applies to that
+triple. The compression level and gain given (if the post-compression equaliser is used) applies to that
 corner frequency while linear interpolation is used between corner frequencies.
 
 \subsection{TX Menu: DEXP Settings}
@@ -2379,7 +2392,7 @@ used for triggering. For normal human voice for example, one expects that freque
 
 \rett{Use Downward Expander} With this check box, the DEXP can be enabled or disabled.
 
-\rett{Use Side Channel Filter} With this check box, ths side channel filter can be enabled of disabled.
+\rett{Use Side Channel Filter} With this check box, the side channel filter can be enabled of disabled.
 With the  side channel filter enabled, only TX audio in the defined frequency  range will trigger the
 noise gate.
 
@@ -2401,9 +2414,9 @@ audio, the gate is not opened instantly but with a raised cosine characteristic.
 be overly long, since otherwise parts of the first word spoken by the operator can get rejected by
 the gate.
 
-\rett{Trigger Relese Time (ms)} This is the time used for closing the noise  gate. To avoid plops in the
+\rett{Trigger Release Time (ms)} This is the time used for closing the noise  gate. To avoid plops in the
 audio, the gate is not opened instantly but with a raised cosine characteristic. The time for closing the
-gate can usually be chosed much larger than for  opening.
+gate can usually be chosen much larger than for  opening.
 
 \rett{Trigger Hold Time (ms)} After the operator has finished his speaking, the noise gate remains open
 for some time (e.g. waiting for the next word). Typical hold times are of the order of 1 second, when no
@@ -2417,7 +2430,7 @@ human voice from humming noise coming from fans etc.
 
 In the \bltt{PA} menu, you can adjust the output level of your HPSDR board
 to the PA being used, and you can establish a calibration of the
-power begin displayed in the meter section while transmitting.
+power that is displayed in the meter section while transmitting.
 The menu presents itself as shown in Fig. \ref{fig:PAMenuCalibrate}.
 
 \begin{figure}[ht]
@@ -2500,7 +2513,7 @@ Start with resetting the value by hitting the \rett{Reset} button. Then, move th
 drive slider to 100 (the unit of the drive slider is per cent, not Watt!) and hit
 \texttt{TUNE} in the toolbar.
  After the PA calibration described above, your (external) Watt meter should
-show the nominal PA output power (e.g. 100 Watt for an ANAN-7000). Now look at the
+show the nominal PA output power (e.g. 100 Watt for an Anan-7000). Now look at the
 forward power reported in the meter section (top right of the \pH window).
 Suppose you read "250 W" there although your output is 200 Watt. Then simply
 insert the number 250 in the spin button to the right of the string
@@ -2515,7 +2528,7 @@ the 200W spin button, then the value in the 100W spin button will read 125. So i
 single shot, you have roughly calibrated the Watt meter.
 
 A finer calibration only makes sense if you have a highly accurate Watt meter, since
-the (uncalibrated) reading in \pH may actually be more accurate than your
+the (un-calibrated) reading in \pH may actually be more accurate than your
 Watt meter. Using your highly accurate Watt meter,
 you can now move the drive slider until your Watt meter exactly reads one of the
 lower power values, and use the corresponding spin button to change the calibration
@@ -2560,7 +2573,7 @@ speak into the microphone, but stays green if you don't speak.
 
 The VOX hang time determines how long the radio stays in TX mode after the last time the
 microphone delivered a signal that was above the VOX threshold. Typical values are 250 to
-500 milli seconds. If your radio produces relay chatter because it goes RX between your words,
+500 ms. If your radio produces relay chatter because it goes RX between your words,
 increase the hang time. However, this will also increase the turn-around between you finished
 your message and go RX.
 
@@ -2579,12 +2592,12 @@ VOX is very nice for rag-chew phone QSOs, I won't recommend it for contest opera
 PureSignal is the ,,street name'' for adaptive pre-distortion. What this means is, that
 the signal from the \textit{output} of the PA (the ,,antenna signal'') is coupled
 back (through an attenuator of typically 40-60 dB) to the radio and is analysed
-whether is looks like it should. If it is distorted (e.g. by non-linearities of the PA),
+whether is looks like it should. If it is distorted (e.g. by non-linearity of the PA),
 then the PureSignal algorithm calculates how an input signal to the PA should look like
 to produce the desired output. This is usually measured and calibrated with a so-called
 two-tone experiment. In this experiment, two constant carriers, for example 7100 kHz
 and 7101 kHz, are transmitted. If both carriers contain 25W power, this is
-a 100W PEP signal. Non-linearities of the PA first lead to the occurrence of harmonics
+a 100W PEP signal. Non-linearity of the PA first lead to the occurrence of harmonics
 (in this case around 14.2, 21.3, and 28.4 MHz). This is not a problem because
 such harmonics are  damped by the TX low-pass filters. Higher-order non-linear effects,
 however, lead to additional in-band signals, in our example they occur at
@@ -2601,7 +2614,7 @@ The elements have the following function:
 \rett{Enable PS}. With this check box, PS can be enabled/disabled.
 
 \rett{Two Tone}. With this button, a two-tone experiment can be started/stopped. The button
-will be highlighted as long as the two-tone signal is transmitted. In the lower sideband
+will be highlighted as long as the two-tone signal is transmitted. In the lower side band
 modes (LSB, DIGL, CWL), an RF two-tone signal with frequencies 700 and 1900 Hz
 \textit{below} the dial frequency are transmitted, in all other modes the two
 RF frequencies are 700 and 1900 Hz \textit{above} the dial frequency. The same two-tone
@@ -2697,7 +2710,7 @@ will automatically be set to maximum attenuation while transmitting with the PA 
 \rett{SetPk}. This field shows the currently assumed value of the peak value of the TX DAC
 feedback signal. \pH chooses is automatically, depending on the radio hardware.
 The standard value for Protocol-1 and Protocol-2 radios are 0.407 and 0.290. Notable exceptions are
-the HermesLite-II running Protocol-1 (SetPK=0.240) and the ANAN-G2 running Protocol-2 (SetPK=0.612).
+the HermesLite-II running Protocol-1 (SetPK=0.240) and the Anan-G2 running Protocol-2 (SetPK=0.612).
 The SetPK value is determined by the FPGA firmware of the radio can can experimentally
 be determined by comparing the outgoing TX and the incoming TX feedback signal.
  It should match the value reported
@@ -2747,7 +2760,7 @@ This is a much cleaner two-tone signal (the first satellites are at $-56$ dBm,
 the IM3 value is about $-50$ dBc). To demonstrate how effective the PS algorithm is,
 I have pushed the \rett{OFF} button which stops the PureSignal calibration, the result
 is shown in Fig. \ref{fig:PSoff}. After hitting that button, IM3 satellites immediately
-grow and rise to about $-40$ dbM (which means IM3
+grow and rise to about $-40$ dBm (which means IM3
 about $-34$ dBc), which is s reflects the intrinsic
 non-linearity of the PA.
  Note that this is still a quite acceptable value,
@@ -2801,7 +2814,7 @@ either generated by the radio (if CW is handled there and the radio
 has an audio codec) or
 by \pH (if CW is not handled in the radio). The allowed range
 is 0--127, typical values are between 10 and 20. The side tone level
-is usually set to zero if, for example, a low latency sidetone is
+is usually set to zero if, for example, a low latency side tone is
 produced outside \pH. In this case, one usually wants to hear
 the tone from CAT CW messages being sent, so if the side tone is
 zero, a default side tone level (12) is used while transmitting
@@ -2896,7 +2909,7 @@ very rarely need to invoke this menu, which is shown
 in Fig. \ref{fig:DSPMenu}.
 
 \rett{Filter Type} (RX only). Digital filters can be designed such that a signal within the
-passband leaves the filter in a shape as similar as possible
+pass band leaves the filter in a shape as similar as possible
 to what went into the filter. This requires that the phase
 difference between input and output signal is a linear
 function of the frequency. Another desirable property
@@ -2993,8 +3006,8 @@ applies to all frequencies above that frequency.
 
 Equaliser settings are saved with the mode, so
 if you adjust the equalisers when doing USB or LSB, and then switch to
-DIGU or DIGL, the equaliser settings for DIGUDIGL become effective
-(normally, equalizers are disabled for digital modes).
+DIGU or DIGL, the equaliser settings for DIGU/DIGL become effective
+(normally, equalisers are disabled for digital modes).
 They resume their USB/LSB
 settings upon switching back to USB or LSB. This also applies to other
 modes such as CWU/CWL, where the TX equaliser has no meaning
@@ -3034,7 +3047,7 @@ such as a beverage antenna which often has a better signal-to-noise
  ration than standard antennas used for transmitting.
 
 \textbf{Transverter operation.} Newer radios (Anan-7000, 8000, and Saturn/G2) have a
-switchable low-power TX output, e.g. the \texttt{Xvtr Out} jack at the ANAN-7000 back plane.
+switchable low-power TX output, e.g. the \texttt{Xvtr Out} jack at the Anan-7000 back plane.
  This output is automatically enabled if \rett{Xvtr} is selected as the RX antenna of RX1.
 
 
@@ -3061,7 +3074,7 @@ host computer running \pH that a RX/TX transition has been made.
 Only then, \pH can start telling the radio to switch the relays that
 connect the Ant jacks with the TX circuitry.
 
-As as result, a small part (few milli-secs) of the first RF pulse (dot or dash)
+As as result, a small part (few ms) of the first RF pulse (dot or dash)
 may appear at the Ant jack used for RX only. If, say, an active antenna is
 connected there, this may well destroy the active antenna.
 
@@ -3096,7 +3109,7 @@ Standard HPSDR radios have seven individually programmable outputs wired as
 open collector output. In the \bltt{OC} menu, you can specify, separately
 for each band, and separately for receive and transmit, which output should
 be ,,set''. This can be used to switch the band filters of an external PA
-or of an external RX preselector, to control an automatic antenna tuner,
+or of an external RX pre-selector, to control an automatic antenna tuner,
 and many more things, since it is
 your external hardware which in the end has to make sense of the output
 bit pattern.
@@ -3205,7 +3218,7 @@ are updated (Fig. \ref{fig:ToolbarMenu5}).
 
 It can be seen that the text of the first seven toolbar buttons has changed to reflect
 the functions of the \texttt{F1} set, and also the rightmost button (which is always mapped
-to \bltt{Function}) has changed to \texttt{FNC(1)} in oder to indicate the \texttt{F1}
+to \bltt{Function}) has changed to \texttt{FNC(1)} in order to indicate the \texttt{F1}
 layer is now active. For mouse users (only), a secondary click on the rightmost toolbar
 button cycles through the layers in in reverse order.
 
@@ -3219,7 +3232,7 @@ function, one is stuck and can no longer cycle through the function layers.
 \pH has a built-in rig control or CAT (computer aided transceiver) facility. This can be used to control
 \pH from other programs or even other computers. You can have up to three simultaneous CAT connections
 via TCP, and three additional CAT connections via serial lines (provided the host computer running \pH
-has those serial interfaces available). Note that on the new ANAN G2MkII radios, one of the serial lines
+has those serial interfaces available). Note that on the new Anan G2-Ultra radios, one of the serial lines
 is used for controlling the front panel.
 It is also possible to use FIFOs (also known as named pipes) instead of real serial devices, which offers a
 hardware-free connection
@@ -3257,7 +3270,7 @@ is highly operating system dependent. On a RaspPi,  USB-to-serial
 adapters (which are nowadays the standard way to add serial ports to a computer) have names such as
 \texttt{/dev/ttyACM0} or \texttt{/dev/USB0} (on RaspPi) or \texttt{/dev/tty.usbserial-....} (on MacOS).
 The serial port shown in the third line of Fig. \ref{fig:RigCtlMenu}, \texttt{/dev/ttyAMA3},
-is used on the ANAN G2-MkII radios for communicating with the front panel. If you chose
+is used on the Anan G2-Ultra radios for communicating with the front panel. If you chose
 \rett{G2 Mk2 Panel} in the discovery menu, this port will be assigned by default to the third
 slot and it is also enabled, this can be changed in the RigCtl menu and will then also be written to
 the props file.
@@ -3265,7 +3278,7 @@ the props file.
 ports, you must know the proper name (e.g. by looking at the contents of the \texttt{/dev} directory).
 Named pipes can be created everywhere in the file system hierarchy using the command
 ,,\texttt{mkdir -p <some\_arbitrary\_name>}''. Names pipes can be used for the communication between \pH
-and another program running on the same computer, and are only meaningful if that other programm does not
+and another program running on the same computer, and are only meaningful if that other program does not
 support CAT-over-TCP.
 
 To the right of the serial port text field, there is a pop-down menu for choosing the baud rate. Only 4800,
@@ -3332,7 +3345,7 @@ go from 1 to 16. Because this is encoded in a 4-bit data field whose numerical v
 goes from 0 to 15, computer users normally refer to channel numbers from 0 to 15,
 and this convention is also followed by piHPDSR. Different channel numbers can be used
 to discriminate MIDI events from different sources (devices). An example of such a setup
-is if you connect a DJ console as well as a microcontroller to which a CW key is attached.
+is if you connect a DJ console as well as a micro controller to which a CW key is attached.
 
 The second type of messages are ControllerChange messages. Typically, they report the value of
 an expression pedal, if it has changed. A ControllerChange message also has two parameters,
@@ -3383,9 +3396,9 @@ DJ controller'' you will find lots of examples. For a very decent price, you
 can obtain a device which features lots of controls which you can conveniently use
 as VFO knobs, smaller knobs for controlling the AF volume etc., and push buttons
 to be used, for example, instead of toolbar buttons. The second kind of MIDI devices
-are small MIDI-capable microcontrollers, starting with Teensy and Arduino devices
-which have a 32U4 microcontroller which has built-in MIDI capability. With such a
-microcontroller, you can build your own "DJ controller". Let the 32U4 control
+are small MIDI-capable micro controllers, starting with Teensy and Arduino devices
+which have a 32U4 micro controller which has built-in MIDI capability. With such a
+micro controller, you can build your own "DJ controller". Let the 32U4 control
 lots of push buttons and rotary encoders, and send the MIDI messages via USB to the
 computer. Using such a micro controller is also the most convenient and general way
 to connect a Morse key or paddle to the host computer running \pH (see
@@ -3405,7 +3418,7 @@ This way it is possible to run two instances of \pH on the same computer, both
 connected to different radios, and control them independently with two different MIDI
 consoles. The first thing you have to do is to check all MIDI devices you want to use.
 
-\rett{Ignore Controller Pairs}. This check box  which is un-checked by default
+\rett{Ignore Controller Pairs}. This check box  which is unchecked by default
 The MIDI standard offers the possibility to combine two controllers, one
 (primary one) in the range 0--31 and the other (auxiliary one)
 with a a controller number larger by 32, thus in
@@ -3448,7 +3461,7 @@ depending on the position of the potentiometer.
 
 Below \rett{Channel}, you see the value zero which
 indicates that the channel number of that MIDI message was 1 (see above on the
-different channel numberings). Below \rett{Type}, you see a pop-down menu, here
+different channel numbering). Below \rett{Type}, you see a pop-down menu, here
 you can choose between \rett{WHEEL} and \rett{Knob/Slider}. In the example shown,
 it must be a \rett{WHEEL} since this is a rotary encoder. Because there is no
 standard how the values map to increments, a separate panel
@@ -3650,7 +3663,7 @@ shown in Fig. \ref{fig:SwitchMenuV2} which match the functions printed on the en
 \label{sec:actionlist}
 
 In this chapter, we give a list of ,,actions'' implemented in the \pH program. These actions can be
-assigned to toolbar buttons on the screen, or pushbuttons/encoders of a GPIO-connected or MIDI controller.
+assigned to toolbar buttons on the screen, or push-buttons/encoders of a GPIO-connected or MIDI controller.
 Not all actions can be assigned to all control elements. Changing the AF volume, for example, can only be
 assigned to a knob
 which you can turn, while switching RIT on/off can only be assigned to a button that you can push. For each
@@ -4320,7 +4333,7 @@ Set the TX drive level (0-100).}
 engaged, the radio will go TX and emit a two-tone signal. If PURESIGNAL is enabled with auto calibration,
 then the PURESIGNAL engine will be restarted and the attenuation of the feedback
 signal re-adjusted while the two-tone signal is being sent.
-In the lower sideband
+In the lower side band
 modes (LSB, DIGL, CWL), an RF two-tone signal with frequencies 700 and 1900 Hz
 \textit{below} the dial frequency are transmitted, in all other modes the two
 RF frequencies are 700 and 1900 Hz \textit{above} the dial frequency. }
@@ -4466,7 +4479,7 @@ standard key bindings of the GTK user interface. For example, when using a norma
 slider, you can use the up-arrow and down-arrow keys to fine adjust the value. In this
 section we will only list the keyboard binding that are captured and processed by \pH.
 
-\section{Accessability for the Blind}
+\section{Accessibility for the Blind}
 
 \pH has built-in support for making operating easier for those with very limited
 eye-sight. The idea is that pressing one of the function keys generates a message that
@@ -4489,8 +4502,8 @@ be installed on MacOS via HomeBrew, using  \texttt{/usr/bin/say}  is the preferr
 
 For MacOS, the language and the voice used by the \texttt{say} program can be chosen in
 the usual "Accessibility" preferences pane. For \texttt{espeak-ng}, there is a plethora of
-command-line options fine-tuning its behavior (which are not used by the \texttt{udplistener}
-program since it is simply a demo), but I have not seen how to customize \texttt{espeak-ng}
+command-line options fine-tuning its behaviour (which are not used by the \texttt{udplistener}
+program since it is simply a demo), but I have not seen how to customise \texttt{espeak-ng}
 through a preferences file (I might be wrong on this). How to handle the audio output
 is up to the user, on a Macintosh, you can easily have the RX audio and the text-to-speech
 audio on the same audio device. For LINUX, there are so many audio options that I could
@@ -5052,7 +5065,7 @@ $\phantom{\Big|}$\textbf{\large SD} & Set/Read CW break-in hang time \\\cline{1-
 $\phantom{\Big|}${\large Set} & {SDp$_1$p$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {SD;} \\\hline
 $\phantom{\Big|}${\large Response} & {SDp$_1$p$_1$p$_1$p$_1$;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ = 0...1000 (in milli seconds)} \\
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ = 0...1000 (in ms)} \\
  & \multicolumn{1}{|p{11cm}|}{when setting, p$_1$ = 0  disables break-in} \\
 \bottomrule
 \end{tabular}
@@ -5895,12 +5908,12 @@ Controller2 or the G2 front panel, simply because nearly all GPIO lines are
 reserved for the controller.
 In these cases, the best
 choice to get "the key into the computer" is to use MIDI. There are low-cost
-microcontrollers which can be programmed such that they act as MIDI input devices
+micro controllers which can be programmed such that they act as MIDI input devices
 if connected (via USB) to the host computer (in the simplest case, 32U4 based
-microcontrollers like the Arduino Leonardo or the Teensy LC). You can
-run a WinKey Clone on the microcontroller and add code that for key-up/down and
+micro controllers like the Arduino Leonardo or the Teensy LC). You can
+run a WinKey Clone on the micro controller and add code that for key-up/down and
 PTT on/off sends MIDI NoteOn/Off messages to the computer. Then, use the
-\bltt{MIDI} menu to configure. More powerful microcontrollers (e.g. the Teensy4)
+\bltt{MIDI} menu to configure. More powerful micro controllers (e.g. the Teensy4)
 can even show up at the computer as a MIDI input device \textit{and} a serial port,
 in this case you can even connect from a contest logging program to  the keyer
 via the WinKey protocol over the serial port, and get the key-up/down messages
@@ -6086,7 +6099,7 @@ void loop() {
 
 
  /*
-  * Execute loop() approximately (!) once per milli-second
+  * Execute loop() approximately (!) once per ms
   */
  delayMicroseconds(950);
 }
@@ -6606,7 +6619,7 @@ This is an option for RedPitaya based radios. These have an SDR app that must be
 started before one can connect. If you have a RedPitaya exclusively being used as a radio, this
 app is most likely auto-started when powering up the RedPitaya so you do not need the STEMLAB
 option. This option allows to start the SDR application on the RedPitaya through the web interface.
-If you have a RedPitay and no autostart of the SDR application there, and not compiled \pH
+If you have a RedPitaya and no autostart of the SDR application there, and not compiled \pH
 with the STEMLAB option, you can open a web browser, start the SDR application on the RedPitaya,
 and then start \pH. With the STEMLAB option, this can all be done by \pH.
 }
@@ -6659,7 +6672,7 @@ other single-board computers with a GPIO.
 \end{figure}
 
 Fig. \ref{fig:GPIO} lists which GPIO lines are used for which controller option. In the first column,
-the GPIO pin number (0--31) ist listed. The second column indicates the function often
+the GPIO pin number (0--31) is listed. The second column indicates the function often
 associated with this pin in the RaspberryPi community, and the third column states on which connector
 (P1 or P5) this pin can be found. P1 is the main 40-pin GPIO header of the RaspberryPI, while P5 is
 an auxiliary connector that carries pins one should normally not use (like those for a second I2C
@@ -6728,7 +6741,7 @@ follows the key-down/up state.
 
 The reason for choosing ,,active low'' for the output lines is that in the default setup,
 the GPIO lines are switched
-to ,,input with pull-up'' upon booting. An input line with a built-in pullup
+to ,,input with pull-up'' upon booting. An input line with a built-in pull-up
 resistor is, however,
 nearly indistinguishable from an output line with high level.
 
@@ -7073,9 +7086,9 @@ In the last year, MacOS operating systems from version 10.15 (,,Catalina'') thro
 have been used. Very old MacOS systems (e.g. Catalina) are no longer supported by HomeBrew.}
 
 If you want to run piHPDSR on an Apple Macintosh computer (iMac, Mac Mini, iBook Air, PowerBook), then
-you \textit{have to} compile \pH from the sources. Producing a pre-compiled binary that can be
+you \textit{have to} compile \pH from the sources. Producing a precompiled binary that can be
 distributed and run simply by double-clicking is overly complicated for applications using the GTK
-graphical user interface (as piHSPDR does). But fear not, the proceduce is actually very simple because
+graphical user interface (as piHSPDR does). But fear not, the procedure is actually very simple because
 all the difficult things are avoided by using the HomeBrew toolkit.
 
 \begin{center}
@@ -7336,10 +7349,10 @@ stems from missing, corrupt, or outdated SoapySDR libraries which are not part o
 \chapter[Connecting the Computer and the Radio]{Connecting Computer and Radio}
 \label{sec:dhcp}
 \textit{This section applies if you run \pH on a
-RaspPi or aDesktop or Laptop computer running Linux or MacOS, and if this computer connects to the
+RaspPi or a Desktop or Laptop computer running Linux or MacOS, and if this computer connects to the
 radio via ethernet, and the radio is running HPSDR protocol-1 or protocol-2. This class of radios
 encompasses the original HPSDR radios but also the HermesLite-II (which runs a variant of the HPSDR
-protocol-1) and RedPitayas (if it runs a hpsdr radio emulator).}
+protocol-1) and RedPitayas (if it runs a HPSDR radio emulator).}
 
 \textit{This section also does not apply to SoapySDR radios (Adalm Pluto, RTL sticks, etc.). In most
 cases they use an USB connection so you can just plug and play.}
@@ -7367,16 +7380,16 @@ can then still be connected to the web via its WiFi interface. In this direct ca
 the computer nor the radio gets an IP address for the wired interface simply because there is no DHCP server
 at either side of the cable.
 
-To make the communication work, the easiest workaraound is probably to assign a fixed IP address both to
+To make the communication work, the easiest work-around is probably to assign a fixed IP address both to
 the wired interface of the computer and to the radio. The convention is that such ,,local'' IP addresses have
 the form $192.168.xxx.yyy$, where $xxx$ and $yyy$ are numbers between 1 and 250. Furthermore, such
 local addresses are set up in "batches", where $xxx$ describes the sub-net and $yyy$ the address within the
-subnet. That is, the so-called netmask is 255.255.255.0, alternatively, the addresses are given in the
+sub-net. That is, the so-called netmask is 255.255.255.0, alternatively, the addresses are given in the
 form $192.168.xxx.yyy/24$ where the number 24 encodes the netmask.
 
-Such local subnets with small numbers of $xxx$ (say, 1 through 4) are often created/used by routers etc.,
-so it is strongly recommended to use a higher number, e.g. $xxx=8$ for the subnet used for connecting
-the comnputer and the radio.
+Such local sub-nets with small numbers of $xxx$ (say, 1 through 4) are often created/used by routers etc.,
+so it is strongly recommended to use a higher number, e.g. $xxx=8$ for the sub-net used for connecting
+the computer and the radio.
 
 The bad news is that the procedure of assigning a fixed IP address differs greatly between different
 radios, and different operating systems (e.g. Linux and MacOS). For HPSDR radios, a fixed IP address
@@ -7389,7 +7402,7 @@ is relatively easy to locate on the internet. For MacOS it is even easier since 
 can be chosen in the network setup tool.
 
 \textbf{If you plan to run your own DHCP server.}\\
-In principle, one can have a DHCP server running on the computer that also runs \pH, and thi8
+In principle, one can have a DHCP server running on the computer that also runs \pH, and this
 will then assign an IP address to the wired interface of the computer and to the
 radio. Therefore, the problem of how to "burn" a fixed IP address into the radio does not arise. For MacOS, this
 is indeed relatively easy. For Linux computers, I experienced problems doing so because I ran into a

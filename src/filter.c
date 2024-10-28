@@ -639,7 +639,8 @@ void filter_width_changed(int id, int increment) {
 
         break;
       }
-      [[fallthrough]];
+
+      __attribute__((fallthrough));
 
     case modeLSB:
       // only change high-audio-cut
@@ -659,7 +660,8 @@ void filter_width_changed(int id, int increment) {
 
         break;
       }
-      [[fallthrough]];
+
+      __attribute__((fallthrough));
 
     case modeUSB:
       // only change high-audio-cut

@@ -79,8 +79,15 @@ extern struct _vfo vfo[MAX_VFOS];
 //
 //
 struct _mode_settings {
+  //
+  // VFO setting
+  //
   int    filter;                    // actual filter used
-  int    cwPeak;
+  int    cwPeak;                    // CW peak filter on/off
+  long long step;                   // VFO step size
+  //
+  // RX (noise, EQ, AGC mode) settings
+  //
   int    nb;                        // Noise blanker (0..2)
   double nb_tau;                    // NB parameters
   double nb_hang;
@@ -104,17 +111,33 @@ struct _mode_settings {
   int anf;                          // Automatic notch filter
   int snb;                          // Spectral noise blanker
   int agc;                          // AGC characteristics (slow/medium/fast etc.)
-  int en_txeq;                      // TX equalizer on/off
   int en_rxeq;                      // RX equalizer on/off
-  double tx_eq_freq[11];            // TX equalizer settings
-  double tx_eq_gain[11];
   double rx_eq_freq[11];            // RX equalizer settings
   double rx_eq_gain[11];
-  long long step;                   // VFO step size
+  //
+  // TX (EQ, CMPR, DEXP, CRC) settings
+  //
+  int en_txeq;                      // TX equalizer on/off
+  double tx_eq_freq[11];            // TX equalizer settings
+  double tx_eq_gain[11];
   int compressor;                   // TX compressor on/off
   double compressor_level;          // TX compressor level
-  int dexp;                         // Downward Expander
-  int cfc;                          // Continuous Frequency Compressor
+  int dexp;                         // Downward Expander (DEXP) on/off
+  int dexp_trigger;                 // DEXP trigger level (dB)
+  double dexp_tau;                  // DEXP averaging time constant
+  double dexp_attack;               // DEXP OpenGate width
+  double dexp_release;              // DEXP CloseGate width
+  double dexp_hold;                 // DEXP "gate open with no signal" time
+  int dexp_exp;                     // DEXP expansion ration (dB)
+  double dexp_hyst;                 // DEXP hysteresis ratio
+  int dexp_filter;                  // DEXP side channel filter on/off
+  int dexp_filter_low;              // DEXP side channel filter low-cut
+  int dexp_filter_high;             // DEXP side channel filter high-cut
+  int cfc;                          // Continuous Frequency Compressor (CFC) on/off
+  int cfc_eq;                       // CFC post-equalizer on/off
+  double cfc_freq[11];              // CFC corner frequencies
+  double cfc_lvl[11];               // CFC compression at corner frequency
+  double cfc_post[11];              // CFC post-EQ gain at corner frequency
 };
 
 extern struct _mode_settings mode_settings[];

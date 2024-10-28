@@ -663,7 +663,7 @@ static gboolean tx_update_display(gpointer data) {
     // sense transformer: Exchange fwd and rev readings
     //
     if (device == DEVICE_HERMES_LITE || device == DEVICE_HERMES_LITE2 ||
-        device == NEW_DEVICE_HERMES_LITE || device == NEW_DEVICE_HERMES_LITE2) {
+    device == NEW_DEVICE_HERMES_LITE || device == NEW_DEVICE_HERMES_LITE2) {
       if (rev_power > fwd_power) {
         fwd_power   = alex_reverse_power;
         rev_power   = alex_forward_power;
@@ -920,7 +920,6 @@ TRANSMITTER *tx_create_transmitter(int id, int width, int height) {
   tx->do_scale = 0;
   tx->compressor = 0;
   tx->compressor_level = 0.0;
-
   tx->cfc              =       0;
   tx->cfc_eq           =       0;
   tx->cfc_freq[ 0]     =     0.0;  // Not used
@@ -956,7 +955,6 @@ TRANSMITTER *tx_create_transmitter(int id, int width, int height) {
   tx->cfc_post[ 8]     =     0.0;
   tx->cfc_post[ 9]     =     0.0;
   tx->cfc_post[10]     =     0.0;
-
   tx->dexp             =       0;
   tx->dexp_tau         =    0.01;
   tx->dexp_attack      =   0.025;
@@ -968,7 +966,6 @@ TRANSMITTER *tx_create_transmitter(int id, int width, int height) {
   tx->dexp_filter      =       0;
   tx->dexp_filter_low  =    1000;
   tx->dexp_filter_high =    2000;
-
   tx->local_microphone = 0;
   STRLCPY(tx->microphone_name, "NO MIC", 128);
   tx->dialog_x = -1;
@@ -1026,7 +1023,6 @@ TRANSMITTER *tx_create_transmitter(int id, int width, int height) {
   tx->cw_ramp_audio = NULL;
   tx->cw_ramp_rf    = NULL;
   tx_set_ramps(tx);
-
   create_dexp(0,                     // dexp channel, BETWEEN 0 and 3
               0,                     // run flag (to be switched on later)
               tx->buffer_size,       // TX input buffer size (number of complex samples)
@@ -1054,7 +1050,6 @@ TRANSMITTER *tx_create_transmitter(int id, int width, int height) {
               1,                     // sample rate of antivox data
               1.0,                   // antivox gain
               1.0);                  // antivox tau
-
   t_print("%s: OpenChannel id=%d buffer_size=%d dsp_size=%d fft_size=%d sample_rate=%d dspRate=%d outputRate=%d\n",
           __FUNCTION__,
           tx->id,
@@ -1857,7 +1852,8 @@ void tx_set_analyzer(const TRANSMITTER *tx) {
   int max_w = afft_size + (int) min(keep_time * (double) tx->iq_output_rate,
                                     keep_time * (double) afft_size * (double) tx->fps);
   overlap = (int)max(0.0, ceil(afft_size - (double)tx->iq_output_rate / (double)tx->fps));
-  t_print("WDSP:TX SetAnalyzer id=%d buffer_size=%d overlap=%d pixels=%d\n", tx->id, tx->output_samples, overlap, tx->pixels);
+  t_print("WDSP:TX SetAnalyzer id=%d buffer_size=%d overlap=%d pixels=%d\n", tx->id, tx->output_samples, overlap,
+          tx->pixels);
   SetAnalyzer(tx->id,                // id of the TXA channel
               n_pixout,              // 1 = "use same data for scope and waterfall"
               spur_elimination_ffts, // 1 = "no spur elimination"
@@ -1950,6 +1946,7 @@ void tx_ps_onoff(TRANSMITTER *tx, int state) {
 #ifdef WDSPTXDEBUG
   t_print("WDSP:TX id=%d PS OnOff=%d\n", tx->id, state);
 #endif
+
   if (!state) {
     // see above. Ensure some feedback samples still flow into
     // pscc after resetting.
@@ -2018,6 +2015,7 @@ void tx_ps_resume(const TRANSMITTER *tx) {
 #ifdef WDSPTXDEBUG
   t_print("WDSP:TX id=%d PS Resume OneShot=%d\n", tx->id, tx->ps_oneshot);
 #endif
+
   if (tx->ps_oneshot) {
     SetPSControl(tx->id, 0, 1, 0, 0);
   } else {
@@ -2117,7 +2115,7 @@ void tx_set_bandpass(const TRANSMITTER *tx) {
 
 void tx_set_compressor(TRANSMITTER *tx) {
   //
-  // - Although I see not much juice therein, the 
+  // - Although I see not much juice therein, the
   //   usage of CFC alongside with the speech processor
   //   is allowed.
   //
@@ -2126,33 +2124,31 @@ void tx_set_compressor(TRANSMITTER *tx) {
   //
   // - if using COMP: engage CESSB overshoot control
   //
-
   // Run phase rotator and auto-leveler with both COMP and CRC
   SetTXAPHROTRun(tx->id, tx->compressor || tx->cfc);
   SetTXALevelerSt(tx->id, tx->compressor || tx->cfc);
   SetTXALevelerAttack(tx->id, 1);
   SetTXALevelerDecay(tx->id, 500);
   SetTXALevelerTop(tx->id, 6.0);
-
-  SetTXACFCOMPprofile(tx->id, 10, tx->cfc_freq+1, tx->cfc_lvl+1, tx->cfc_post+1);
+  SetTXACFCOMPprofile(tx->id, 10, tx->cfc_freq + 1, tx->cfc_lvl + 1, tx->cfc_post + 1);
   SetTXACFCOMPPrecomp(tx->id, tx->cfc_lvl[0]);
   SetTXACFCOMPPrePeq(tx->id, tx->cfc_post[0]);
   SetTXACFCOMPRun(tx->id, tx->cfc);
   SetTXACFCOMPPeqRun(tx->id, tx->cfc_eq);
-
   // CESSB overshoot control used only with COMP
   SetTXAosctrlRun(tx->id, tx->compressor);
   SetTXACompressorGain(tx->id, tx->compressor_level);
   SetTXACompressorRun(tx->id, tx->compressor);
-
 #ifdef WDSPTXDEBUG
   t_print("WDSP:TX id=%d Compressor=%d Lvl=%g CFC=%d CFC-EQ=%d AllComp=%g AllGain=%g\n",
           tx->id, tx->compressor, tx->compressor_level, tx->cfc, tx->cfc_eq,
           tx->cfc_lvl[0], tx->cfc_post[0]);
+
   for (int i = 1; i < 11; i++) {
     t_print("Chan=%2d Freq=%6g Cmpr=%4g PostGain=%4g\n",
             i, tx->cfc_freq[i], tx->cfc_lvl[i], tx->cfc_post[i]);
   }
+
 #endif
 }
 
@@ -2191,10 +2187,10 @@ void tx_set_detector(const TRANSMITTER *tx) {
     wdspmode = DETECTOR_MODE_SAMPLE;
     break;
   }
+
 #ifdef WDSPTXDEBUG
   t_print("WDSP:TX id=%d Display DetMode=%d\n", tx->id, wdspmode);
 #endif
-
   SetDisplayDetectorMode(tx->id, 0, wdspmode);
 }
 
@@ -2216,9 +2212,9 @@ void tx_set_dexp(const TRANSMITTER *tx) {
   SetDEXPAttackTime(0, tx->dexp_attack);
   SetDEXPReleaseTime(0, tx->dexp_release);
   SetDEXPHoldTime(0, tx->dexp_hold);
-  SetDEXPExpansionRatio(0, pow(10.0, 0.05*tx->dexp_exp));
+  SetDEXPExpansionRatio(0, pow(10.0, 0.05 * tx->dexp_exp));
   SetDEXPHysteresisRatio(0, tx->dexp_hyst);
-  SetDEXPAttackThreshold(0, pow(10.0, 0.05*tx->dexp_trigger));
+  SetDEXPAttackThreshold(0, pow(10.0, 0.05 * tx->dexp_trigger));
   SetDEXPLowCut(0, (double) tx->dexp_filter_low);
   SetDEXPHighCut(0, (double) tx->dexp_filter_high);
   SetDEXPRunSideChannelFilter(0, tx->dexp_filter);
@@ -2236,9 +2232,11 @@ void tx_set_equalizer(TRANSMITTER *tx) {
   SetTXAEQRun(tx->id, tx->eq_enable);
 #ifdef WDSPTXDEBUG
   t_print("WDSP:TX id=%d Equalizer enable=%d allgain=%g\n", tx->id, tx->eq_enable, tx->eq_gain[0]);
+
   for (int i = 1; i < 11; i++) {
     t_print("... Chan=%2d Freq=%6g Gain=%4g\n", i, tx->eq_freq[i], tx->eq_gain[i]);
   }
+
 #endif
 }
 
@@ -2263,10 +2261,10 @@ void tx_set_mode(TRANSMITTER* tx, int mode) {
         set_drive(drive_digi_max);
       }
     }
-#ifdef WDSPTXDEBUG
-  t_print("WDSP:TX id=%d mode=%d\n", tx->id, mode);
-#endif
 
+#ifdef WDSPTXDEBUG
+    t_print("WDSP:TX id=%d mode=%d\n", tx->id, mode);
+#endif
     SetTXAMode(tx->id, mode);
     tx_set_filter(tx);
   }
@@ -2286,6 +2284,7 @@ void tx_set_singletone(const TRANSMITTER *tx, int state, double freq) {
 #ifdef WDSPTXDEBUG
   t_print("WDSP:TX id=%d SingleTone=%d Freq=%g\n", tx->id, state, freq);
 #endif
+
   if (state) {
     SetTXAPostGenToneFreq(tx->id, freq);
     SetTXAPostGenToneMag(tx->id, 0.99999);
@@ -2304,7 +2303,7 @@ void tx_set_singletone(const TRANSMITTER *tx, int state, double freq) {
     SetTXAPostGenRun(tx->id, 0);
 
     if (device == DEVICE_HERMES_LITE2 || device == DEVICE_HERMES_LITE ||
-        device == DEVICE_HERMES || device == DEVICE_STEMLAB || device == DEVICE_STEMLAB_Z20) {
+    device == DEVICE_HERMES || device == DEVICE_STEMLAB || device == DEVICE_STEMLAB_Z20) {
       usleep(100000);
     }
   }
@@ -2324,7 +2323,6 @@ void tx_set_twotone(TRANSMITTER *tx, int state) {
 #ifdef WDSPTXDEBUG
   t_print("WDSP:TX id=%d TwoTone=%d\n", tx->id, state);
 #endif
-
   tx->twotone = state;
 
   if (state) {
@@ -2361,7 +2359,7 @@ void tx_set_twotone(TRANSMITTER *tx, int state) {
     //
     //
     if (device == DEVICE_HERMES_LITE2 || device == DEVICE_HERMES_LITE ||
-        device == DEVICE_HERMES || device == DEVICE_STEMLAB || device == DEVICE_STEMLAB_Z20) {
+    device == DEVICE_HERMES || device == DEVICE_STEMLAB || device == DEVICE_STEMLAB_Z20) {
       usleep(100000);
     }
   }

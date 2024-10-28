@@ -61,7 +61,7 @@ static int which_container = TX_CONTAINER;
 #define CFCPOST 1280
 
 enum _tx_choices {
-  TX_FPS = 0,
+  TX_FPS = TX,
   TX_LINEIN,
   TX_COMP,
   TX_FILTER_LOW,
@@ -130,12 +130,15 @@ static void sel_cb(GtkWidget *widget, gpointer data) {
   case TX_CONTAINER:
     my_container = tx_container;
     break;
+
   case CFC_CONTAINER:
     my_container = cfc_container;
     break;
+
   case DEXP_CONTAINER:
     my_container = dexp_container;
     break;
+
   default:
     // We should never come here
     my_container = NULL;
@@ -145,7 +148,7 @@ static void sel_cb(GtkWidget *widget, gpointer data) {
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) {
     gtk_widget_show(my_container);
     which_container = c;
-  } else{
+  } else {
     gtk_widget_hide(my_container);
   }
 }
@@ -154,22 +157,27 @@ static void spinbtn_cb(GtkWidget *widget, gpointer data) {
   //
   // Handle ALL spin-buttons in this menu
   //
+  int mode = vfo_get_tx_mode();
   int c = GPOINTER_TO_INT(data);
   double v = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
   int    vi = (v >= 0.0) ? (int) (v + 0.5) : (int) (v - 0.5);
-  int d = c & 0xFF00;
+  int d = c & 0xFF00;   // The command class, TX/CFCFREQ/CFCLVL/CFCPOST/DEXP
+  int e = c & 0x00FF;   // channel No. for CRCFREQ/CFCLVL/CFCPOST
 
   if (d == TX) {
     // Spin buttons of the TX menu
     int mode = vfo_get_tx_mode();
+
     switch (c) {
     case TX_LINEIN:
       linein_gain = v;
       break;
+
     case TX_FPS:
       transmitter->fps = vi;
       tx_set_framerate(transmitter);
       break;
+
     case TX_COMP:
       transmitter->compressor_level = vi;
       mode_settings[mode].compressor_level = vi;
@@ -177,85 +185,129 @@ static void spinbtn_cb(GtkWidget *widget, gpointer data) {
       tx_set_compressor(transmitter);
       g_idle_add(ext_vfo_update, NULL);
       break;
+
     case TX_FILTER_LOW:
       tx_filter_low = vi;
       tx_set_filter(transmitter);
       break;
+
     case TX_FILTER_HIGH:
       tx_filter_high = vi;
       tx_set_filter(transmitter);
       break;
+
     case TX_PAN_LOW:
       transmitter->panadapter_low = vi;
       break;
+
     case TX_PAN_HIGH:
       transmitter->panadapter_high = vi;
       break;
+
     case TX_PAN_STEP:
       transmitter->panadapter_step = vi;
       break;
+
     case TX_AM_CARRIER:
       transmitter->am_carrier_level = v;
       tx_set_am_carrier_level(transmitter);
       break;
+
     case TX_TUNE_DRIVE:
       transmitter->tune_drive = vi;
       break;
+
     case TX_DIGI_DRIVE:
       drive_digi_max = v;
+
       if ((mode == modeDIGL || mode == modeDIGU) && transmitter->drive > v + 0.5) {
         set_drive(v);
       }
+
       break;
+
     case TX_SWR_ALARM:
       transmitter->swr_alarm = v;
       break;
     }
   } else if (d == CFCFREQ) {
     // The CFC frequency spin buttons
-    transmitter->cfc_freq[c & 0xFF] = v;
+    transmitter->cfc_freq[e] = v;
+    mode_settings[mode].cfc_freq[e] = v;
+    copy_mode_settings(mode);
     tx_set_compressor(transmitter);
   } else if (d == CFCLVL) {
     // The CFC compression-level spin buttons
-    transmitter->cfc_lvl[c & 0xFF] = v;
+    transmitter->cfc_lvl[e] = v;
+    mode_settings[mode].cfc_lvl[e] = v;
+    copy_mode_settings(mode);
     tx_set_compressor(transmitter);
   } else if (d == CFCPOST) {
     // The CFC Post-equalizer gain spin buttons
-    transmitter->cfc_post[c & 0xFF] = v;
+    transmitter->cfc_post[e] = v;
+    mode_settings[mode].cfc_post[e] = v;
+    copy_mode_settings(mode);
     tx_set_compressor(transmitter);
   } else if (d == DEXP) {
     // The DEXP spin buttons. Note that the spin buttons for the
     // "time" values are in milli-seconds
-    switch(c) {
-      case DEXP_TAU:
-        transmitter->dexp_tau = 0.001 * v;
-        break;
-      case DEXP_ATTACK:
-        transmitter->dexp_attack = 0.001 * v;
-        break;
-      case DEXP_RELEASE:
-        transmitter->dexp_release = 0.001 * v;
-        break;
-      case DEXP_HOLD:
-        transmitter->dexp_hold = 0.001 * v;
-        break;
-      case DEXP_HYST:
-        transmitter->dexp_hyst = v;
-        break;
-      case DEXP_TRIGGER:
-        transmitter->dexp_trigger = vi;
-        break;
-      case DEXP_FILTER_LOW:
-        transmitter->dexp_filter_low = vi;
-        break;
-      case DEXP_FILTER_HIGH:
-        transmitter->dexp_filter_high = vi;
-        break;
-      case DEXP_EXP:
-        // Note this is in dB
-        transmitter->dexp_exp = vi;
-        break;
+    switch (c) {
+    case DEXP_TAU:
+      transmitter->dexp_tau = 0.001 * v;
+      mode_settings[mode].dexp_tau = 0.001*v;
+      copy_mode_settings(mode);
+      break;
+
+    case DEXP_ATTACK:
+      transmitter->dexp_attack = 0.001 * v;
+      mode_settings[mode].dexp_attack = 0.001*v;
+      copy_mode_settings(mode);
+      break;
+
+    case DEXP_RELEASE:
+      transmitter->dexp_release = 0.001 * v;
+      mode_settings[mode].dexp_release = 0.001*v;
+      copy_mode_settings(mode);
+      break;
+
+    case DEXP_HOLD:
+      transmitter->dexp_hold = 0.001 * v;
+      mode_settings[mode].dexp_hold = 0.001*v;
+      copy_mode_settings(mode);
+      break;
+
+    case DEXP_HYST:
+      transmitter->dexp_hyst = v;
+      mode_settings[mode].dexp_hyst = v;
+      copy_mode_settings(mode);
+      break;
+
+    case DEXP_TRIGGER:
+      transmitter->dexp_trigger = vi;
+      mode_settings[mode].dexp_trigger = vi;
+      copy_mode_settings(mode);
+      break;
+
+    case DEXP_FILTER_LOW:
+      transmitter->dexp_filter_low = vi;
+      mode_settings[mode].dexp_filter_low = vi;
+      copy_mode_settings(mode);
+      break;
+
+    case DEXP_FILTER_HIGH:
+      transmitter->dexp_filter_high = vi;
+      mode_settings[mode].dexp_filter_high = vi;
+      copy_mode_settings(mode);
+      break;
+
+    case DEXP_EXP:
+      // Note this is in dB
+      transmitter->dexp_exp = vi;
+      mode_settings[mode].dexp_exp = vi;
+      copy_mode_settings(mode);
+      break;
     }
+
     tx_set_dexp(transmitter);
   }
 }
@@ -275,6 +327,7 @@ static void chkbtn_cb(GtkWidget *widget, gpointer data) {
     case TX_DISPLAY_FILLED:
       transmitter->display_filled = v;
       break;
+
     case TX_COMP_ENABLE:
       transmitter->compressor = v;
       mode_settings[mode].compressor = transmitter->compressor;
@@ -282,20 +335,25 @@ static void chkbtn_cb(GtkWidget *widget, gpointer data) {
       tx_set_compressor(transmitter);
       g_idle_add(ext_vfo_update, NULL);
       break;
+
     case TX_CTCSS_ENABLE:
       transmitter->ctcss_enabled = v;
       tx_set_ctcss(transmitter);
       g_idle_add(ext_vfo_update, NULL);
       break;
+
     case TX_TUNE_USE_DRIVE:
       transmitter->tune_use_drive = v;
       break;
+
     case TX_SWR_PROTECTION:
       transmitter->swr_protection = v;
       break;
+
     case TX_USE_RX_FILTER:
       transmitter->use_rx_filter = v;
       tx_set_filter(transmitter);
+
       if (v) {
         gtk_widget_set_sensitive (tx_spin_low, FALSE);
         gtk_widget_set_sensitive (tx_spin_high, FALSE);
@@ -303,7 +361,9 @@ static void chkbtn_cb(GtkWidget *widget, gpointer data) {
         gtk_widget_set_sensitive (tx_spin_low, TRUE);
         gtk_widget_set_sensitive (tx_spin_high, TRUE);
       }
+
       break;
+
     case TX_LOCAL_MIC:
       if (v) {
         if (audio_open_input() == 0) {
@@ -318,7 +378,9 @@ static void chkbtn_cb(GtkWidget *widget, gpointer data) {
           audio_close_input();
         }
       }
+
       break;
+
     case TX_FM_EMP:
       transmitter->pre_emphasize = !v;
       tx_set_pre_emphasize(transmitter);
@@ -333,10 +395,14 @@ static void chkbtn_cb(GtkWidget *widget, gpointer data) {
       copy_mode_settings(mode);
       g_idle_add(ext_vfo_update, NULL);
       break;
+
     case CFC_EQ:
       transmitter->cfc_eq = v;
+      mode_settings[mode].cfc_eq = v;
+      copy_mode_settings(mode);
       break;
     }
+
     tx_set_compressor(transmitter);
   } else if (d == DEXP) {
     // DEXP menu check buttons
@@ -347,10 +413,14 @@ static void chkbtn_cb(GtkWidget *widget, gpointer data) {
       copy_mode_settings(mode);
       g_idle_add(ext_vfo_update, NULL);
       break;
+
     case DEXP_FILTER:
       transmitter->dexp_filter = v;
+      mode_settings[mode].dexp_filter = v;
+      copy_mode_settings(mode);
       break;
     }
+
     tx_set_dexp(transmitter);
   }
 }
@@ -437,7 +507,6 @@ void tx_menu(GtkWidget *parent) {
   tx_container = gtk_fixed_new();
   cfc_container = gtk_fixed_new();
   dexp_container = gtk_fixed_new();
-
   col++;
   mbtn = gtk_radio_button_new_with_label_from_widget(NULL, "TX Settings");
   gtk_widget_set_name(mbtn, "boldlabel");
@@ -456,7 +525,6 @@ void tx_menu(GtkWidget *parent) {
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn), (which_container == DEXP_CONTAINER));
   gtk_grid_attach(GTK_GRID(grid), btn, col, row, 1, 1);
   g_signal_connect(btn, "toggled", G_CALLBACK(sel_cb), GINT_TO_POINTER(DEXP_CONTAINER));
-
   //
   // TX container and controls therein
   //
@@ -465,8 +533,8 @@ void tx_menu(GtkWidget *parent) {
   gtk_grid_set_column_spacing (GTK_GRID(tx_grid), 5);
   gtk_grid_set_row_spacing (GTK_GRID(tx_grid), 5);
   gtk_container_add(GTK_CONTAINER(tx_container), tx_grid);
-
   row = 0;
+
   if (n_input_devices > 0) {
     row++;
     col = 0;
@@ -530,7 +598,6 @@ void tx_menu(GtkWidget *parent) {
     gtk_widget_set_name(label, "boldlabel");
     gtk_widget_set_halign(label, GTK_ALIGN_END);
     gtk_grid_attach(GTK_GRID(tx_grid), label, col, row, 1, 1);
-
     col++;
     btn = gtk_spin_button_new_with_range(-34.5, 12.0, 1.5);
     gtk_spin_button_set_digits(GTK_SPIN_BUTTON(btn), 1);
@@ -715,16 +782,14 @@ void tx_menu(GtkWidget *parent) {
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), drive_digi_max);
   gtk_grid_attach(GTK_GRID(tx_grid), btn, col, row, 1, 1);
   g_signal_connect(btn, "value-changed", G_CALLBACK(spinbtn_cb), GINT_TO_POINTER(TX_DIGI_DRIVE));
-
   //
   // CFC container and controls therein
   //
   gtk_grid_attach(GTK_GRID(grid), cfc_container, 0, 1, 4, 1);
-  GtkWidget *cfc_grid=gtk_grid_new();
+  GtkWidget *cfc_grid = gtk_grid_new();
   gtk_grid_set_column_spacing (GTK_GRID(cfc_grid), 5);
   gtk_grid_set_row_spacing (GTK_GRID(cfc_grid), 5);
   gtk_container_add(GTK_CONTAINER(cfc_container), cfc_grid);
-
   row = 0;
   btn = gtk_check_button_new_with_label("Use Continuous Frequency Compressor");
   gtk_widget_set_name(btn, "boldlabel");
@@ -736,7 +801,6 @@ void tx_menu(GtkWidget *parent) {
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (btn), transmitter->cfc_eq);
   gtk_grid_attach(GTK_GRID(cfc_grid), btn, 3, row, 3, 1);
   g_signal_connect(btn, "toggled", G_CALLBACK(chkbtn_cb), GINT_TO_POINTER(CFC_EQ));
-
   row++;
   label = gtk_label_new("Add Freq-Indep. Compression:");
   gtk_widget_set_name(label, "boldlabel");
@@ -746,7 +810,6 @@ void tx_menu(GtkWidget *parent) {
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), transmitter->cfc_lvl[0]);
   gtk_grid_attach(GTK_GRID(cfc_grid), btn, 2, row, 1, 1);
   g_signal_connect(btn, "value-changed", G_CALLBACK(spinbtn_cb), GINT_TO_POINTER(CFCLVL));
-
   label = gtk_label_new("Add Freq-Indep. Gain:");
   gtk_widget_set_name(label, "boldlabel");
   gtk_widget_set_halign(label, GTK_ALIGN_END);
@@ -755,12 +818,10 @@ void tx_menu(GtkWidget *parent) {
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), transmitter->cfc_post[0]);
   gtk_grid_attach(GTK_GRID(cfc_grid), btn, 5, row, 1, 1);
   g_signal_connect(btn, "value-changed", G_CALLBACK(spinbtn_cb), GINT_TO_POINTER(CFCPOST));
-
   row++;
   GtkWidget *line = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
   gtk_widget_set_size_request(line, -1, 3);
   gtk_grid_attach(GTK_GRID(cfc_grid), line, 0, row, 6, 1);
-
   // Frequency, Level, Post-Gain
   row++;
   label = gtk_label_new("Frequency");
@@ -787,38 +848,37 @@ void tx_menu(GtkWidget *parent) {
     btn = gtk_spin_button_new_with_range(10.0, 9990.0, 10.0);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), transmitter->cfc_freq[i]);
     gtk_grid_attach(GTK_GRID(cfc_grid), btn, 0, row, 1, 1);
-    g_signal_connect(btn, "value-changed", G_CALLBACK(spinbtn_cb), GINT_TO_POINTER(CFCFREQ+i));
+    g_signal_connect(btn, "value-changed", G_CALLBACK(spinbtn_cb), GINT_TO_POINTER(CFCFREQ + i));
     btn = gtk_spin_button_new_with_range(10.0, 9990.0, 10.0);
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), transmitter->cfc_freq[i+5]);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), transmitter->cfc_freq[i + 5]);
     gtk_grid_attach(GTK_GRID(cfc_grid), btn, 3, row, 1, 1);
-    g_signal_connect(btn, "value-changed", G_CALLBACK(spinbtn_cb), GINT_TO_POINTER(CFCFREQ+i+5));
+    g_signal_connect(btn, "value-changed", G_CALLBACK(spinbtn_cb), GINT_TO_POINTER(CFCFREQ + i + 5));
     btn = gtk_spin_button_new_with_range(0.0, 20.0, 1.0);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), transmitter->cfc_lvl[i]);
     gtk_grid_attach(GTK_GRID(cfc_grid), btn, 1, row, 1, 1);
-    g_signal_connect(btn, "value-changed", G_CALLBACK(spinbtn_cb), GINT_TO_POINTER(CFCLVL+i));
+    g_signal_connect(btn, "value-changed", G_CALLBACK(spinbtn_cb), GINT_TO_POINTER(CFCLVL + i));
     btn = gtk_spin_button_new_with_range(0.0, 20.0, 1.0);
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), transmitter->cfc_lvl[i+5]);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), transmitter->cfc_lvl[i + 5]);
     gtk_grid_attach(GTK_GRID(cfc_grid), btn, 4, row, 1, 1);
-    g_signal_connect(btn, "value-changed", G_CALLBACK(spinbtn_cb), GINT_TO_POINTER(CFCLVL+i+5));
+    g_signal_connect(btn, "value-changed", G_CALLBACK(spinbtn_cb), GINT_TO_POINTER(CFCLVL + i + 5));
     btn = gtk_spin_button_new_with_range(-20.0, 20.0, 1.0);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), transmitter->cfc_post[i]);
     gtk_grid_attach(GTK_GRID(cfc_grid), btn, 2, row, 1, 1);
-    g_signal_connect(btn, "value-changed", G_CALLBACK(spinbtn_cb), GINT_TO_POINTER(CFCPOST+i));
+    g_signal_connect(btn, "value-changed", G_CALLBACK(spinbtn_cb), GINT_TO_POINTER(CFCPOST + i));
     btn = gtk_spin_button_new_with_range(-20.0, 20.0, 1.0);
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), transmitter->cfc_post[i+5]);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), transmitter->cfc_post[i + 5]);
     gtk_grid_attach(GTK_GRID(cfc_grid), btn, 5, row, 1, 1);
-    g_signal_connect(btn, "value-changed", G_CALLBACK(spinbtn_cb), GINT_TO_POINTER(CFCPOST+i+5));
+    g_signal_connect(btn, "value-changed", G_CALLBACK(spinbtn_cb), GINT_TO_POINTER(CFCPOST + i + 5));
   }
 
   //
   // DEXP container and controls therein
   //
   gtk_grid_attach(GTK_GRID(grid), dexp_container, 0, 1, 4, 1);
-  GtkWidget *dexp_grid=gtk_grid_new();
+  GtkWidget *dexp_grid = gtk_grid_new();
   gtk_grid_set_column_spacing (GTK_GRID(dexp_grid), 5);
   gtk_grid_set_row_spacing (GTK_GRID(dexp_grid), 5);
   gtk_container_add(GTK_CONTAINER(dexp_container), dexp_grid);
-
   row = 0;
   btn = gtk_check_button_new_with_label("Use Downward Expander");
   gtk_widget_set_name(btn, "boldlabel");
@@ -830,7 +890,6 @@ void tx_menu(GtkWidget *parent) {
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (btn), transmitter->dexp_filter);
   gtk_grid_attach(GTK_GRID(dexp_grid), btn, 2, row, 1, 1);
   g_signal_connect(btn, "toggled", G_CALLBACK(chkbtn_cb), GINT_TO_POINTER(DEXP_FILTER));
-
   row++;
   label = gtk_label_new("Expansion Factor (dB)");
   gtk_widget_set_name(label, "boldlabel");
@@ -848,7 +907,6 @@ void tx_menu(GtkWidget *parent) {
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), transmitter->dexp_filter_low);
   gtk_grid_attach(GTK_GRID(dexp_grid), btn, 3, row, 1, 1);
   g_signal_connect(btn, "value-changed", G_CALLBACK(spinbtn_cb), GINT_TO_POINTER(DEXP_FILTER_LOW));
-
   row++;
   label = gtk_label_new("Hysteresis Ratio");
   gtk_widget_set_name(label, "boldlabel");
@@ -866,7 +924,6 @@ void tx_menu(GtkWidget *parent) {
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), transmitter->dexp_filter_high);
   gtk_grid_attach(GTK_GRID(dexp_grid), btn, 3, row, 1, 1);
   g_signal_connect(btn, "value-changed", G_CALLBACK(spinbtn_cb), GINT_TO_POINTER(DEXP_FILTER_HIGH));
-
   row++;
   label = gtk_label_new("Trigger Level (dB)");
   gtk_widget_set_name(label, "boldlabel");
@@ -876,47 +933,42 @@ void tx_menu(GtkWidget *parent) {
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), transmitter->dexp_trigger);
   gtk_grid_attach(GTK_GRID(dexp_grid), btn, 1, row, 1, 1);
   g_signal_connect(btn, "value-changed", G_CALLBACK(spinbtn_cb), GINT_TO_POINTER(DEXP_TRIGGER));
-
   row++;
   label = gtk_label_new("Trigger Attack tau (ms)");
   gtk_widget_set_name(label, "boldlabel");
   gtk_widget_set_halign(label, GTK_ALIGN_END);
   gtk_grid_attach(GTK_GRID(dexp_grid), label, 0, row, 1, 1);
   btn = gtk_spin_button_new_with_range(1.0, 250.0, 1.0);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), 1000.0*transmitter->dexp_tau);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), 1000.0 * transmitter->dexp_tau);
   gtk_grid_attach(GTK_GRID(dexp_grid), btn, 1, row, 1, 1);
   g_signal_connect(btn, "value-changed", G_CALLBACK(spinbtn_cb), GINT_TO_POINTER(DEXP_TAU));
-
   row++;
   label = gtk_label_new("Trigger Attack Time (ms)");
   gtk_widget_set_name(label, "boldlabel");
   gtk_widget_set_halign(label, GTK_ALIGN_END);
   gtk_grid_attach(GTK_GRID(dexp_grid), label, 0, row, 1, 1);
   btn = gtk_spin_button_new_with_range(1.0, 250.0, 1.0);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), 1000.0*transmitter->dexp_attack);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), 1000.0 * transmitter->dexp_attack);
   gtk_grid_attach(GTK_GRID(dexp_grid), btn, 1, row, 1, 1);
   g_signal_connect(btn, "value-changed", G_CALLBACK(spinbtn_cb), GINT_TO_POINTER(DEXP_ATTACK));
-
   row++;
   label = gtk_label_new("Trigger Release Time (ms)");
   gtk_widget_set_name(label, "boldlabel");
   gtk_widget_set_halign(label, GTK_ALIGN_END);
   gtk_grid_attach(GTK_GRID(dexp_grid), label, 0, row, 1, 1);
   btn = gtk_spin_button_new_with_range(1.0, 500.0, 1.0);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), 1000.0*transmitter->dexp_release);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), 1000.0 * transmitter->dexp_release);
   gtk_grid_attach(GTK_GRID(dexp_grid), btn, 1, row, 1, 1);
   g_signal_connect(btn, "value-changed", G_CALLBACK(spinbtn_cb), GINT_TO_POINTER(DEXP_RELEASE));
-
   row++;
   label = gtk_label_new("Trigger Hold Time (ms)");
   gtk_widget_set_name(label, "boldlabel");
   gtk_widget_set_halign(label, GTK_ALIGN_END);
   gtk_grid_attach(GTK_GRID(dexp_grid), label, 0, row, 1, 1);
   btn = gtk_spin_button_new_with_range(10.0, 1500.0, 10.0);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), 1000.0*transmitter->dexp_hold);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), 1000.0 * transmitter->dexp_hold);
   gtk_grid_attach(GTK_GRID(dexp_grid), btn, 1, row, 1, 1);
   g_signal_connect(btn, "value-changed", G_CALLBACK(spinbtn_cb), GINT_TO_POINTER(DEXP_HOLD));
-
   sub_menu = dialog;
   gtk_widget_show_all(dialog);
 
@@ -927,17 +979,19 @@ void tx_menu(GtkWidget *parent) {
   // was active when leaving this menu before.
   //
   switch (which_container) {
-    case TX_CONTAINER:
-      gtk_widget_hide(cfc_container);
-      gtk_widget_hide(dexp_container);
-      break;
-    case CFC_CONTAINER:
-      gtk_widget_hide(tx_container);
-      gtk_widget_hide(dexp_container);
-      break;
-    case DEXP_CONTAINER:
-      gtk_widget_hide(tx_container);
-      gtk_widget_hide(cfc_container);
-      break;
+  case TX_CONTAINER:
+    gtk_widget_hide(cfc_container);
+    gtk_widget_hide(dexp_container);
+    break;
+
+  case CFC_CONTAINER:
+    gtk_widget_hide(tx_container);
+    gtk_widget_hide(dexp_container);
+    break;
+
+  case DEXP_CONTAINER:
+    gtk_widget_hide(tx_container);
+    gtk_widget_hide(cfc_container);
+    break;
   }
 }

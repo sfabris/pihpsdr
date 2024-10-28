@@ -378,20 +378,20 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
               snprintf(sf, 32, "%0.1f", 0.1 * interval * i);
               break;
 
-            case 2:
-              {
-                int p = (int) (0.1 * interval * i);
-                // "1000" overwrites the right margin, replace by "1K"
-                if (p == 1000) {
-                  snprintf(sf, 32, "1K");
-                } else {
-                  snprintf(sf, 32, "%d", p);
-                }
-              }
-              break;
-            }
-            cairo_text_extents(cr, sf, &extents);
+            case 2: {
+              int p = (int) (0.1 * interval * i);
 
+              // "1000" overwrites the right margin, replace by "1K"
+              if (p == 1000) {
+                snprintf(sf, 32, "1K");
+              } else {
+                snprintf(sf, 32, "%d", p);
+              }
+            }
+            break;
+            }
+
+            cairo_text_extents(cr, sf, &extents);
             cairo_arc(cr, cx, cx, radius + 5, radians, radians);
             cairo_get_current_point(cr, &x, &y);
             cairo_new_path(cr);

@@ -806,27 +806,35 @@ static int wdspmode(int kenwoodmode) {
   case 1:                // Kenwood LSB
     wdspmode = modeLSB;
     break;
+
   case 2:                // Kenwood USB
     wdspmode = modeUSB;
     break;
+
   case 3:                // Kenwood CW (upper side band)
     wdspmode = modeCWU;
     break;
+
   case 4:                // Kenwood FM
     wdspmode = modeFMN;
     break;
+
   case 5:                // Kenwood AM
     wdspmode = modeAM;
     break;
+
   case 6:                // Kenwood FSK (lower side band)
     wdspmode = modeDIGL;
     break;
+
   case 7:                // Kenwood CW-R (lower side band)
     wdspmode = modeCWL;
     break;
+
   case 9:                // Kenwood FSK-R (upper side band)
     wdspmode = modeDIGU;
     break;
+
   default:
     // NOTREACHED?
     wdspmode = modeLSB;
@@ -875,7 +883,7 @@ static int ts2000_mode(int wdspmode) {
 
   default:
     // NOTREACHED?
-    kenwoodmode = 1;  // LSB 
+    kenwoodmode = 1;  // LSB
     break;
   }
 
@@ -3042,6 +3050,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
           tx_set_twotone(transmitter, atoi(&command[4]));
         }
       }
+
       break;
 
     default:
@@ -5440,7 +5449,7 @@ int parse_cmd(void *data) {
       //ENDDEF
       if (command[2] == ';') {
         snprintf(reply, 256, "SA%d%d%d%d%d%d%dSAT     ;", (sat_mode == SAT_MODE) || (sat_mode == RSAT_MODE), 0, 0, 0,
-                 sat_mode == SAT_MODE, sat_mode == RSAT_MODE, 0);
+        sat_mode == SAT_MODE, sat_mode == RSAT_MODE, 0);
         send_resp(client->fd, reply);
       } else if (command[9] == ';') {
         if (command[2] == '0') {
