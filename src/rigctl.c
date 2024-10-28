@@ -104,7 +104,7 @@ typedef struct _client {
   GThread *thread_id;               // ID of thread that serves the client
   guint andromeda_timer;            // for reporting ANDROMEDA LED states
   guint auto_timer;                 // for auto-reporting FA/FB
-  int auto_reporting;               // auto-reporting (AI, ZZAI) on/off
+  int auto_reporting;               // auto-reporting (AI, ZZAI) 0...3
   int andromeda_type;               // 1: Andromeda, 5: G2Mk2
   int last_fa, last_fb, last_md;    // last VFO-A/B frequency and VFO-A mode reported
   int last_led[MAX_ANDROMEDA_LEDS]; // last status of ANDROMEDA LEDs
@@ -910,10 +910,9 @@ static gboolean autoreport_handler(gpointer data) {
     return FALSE;
   }
 
-  if (client->auto_reporting) {
+  if (client->auto_reporting > 0) {
     long long fa = vfo[VFO_A].ctun ? vfo[VFO_A].ctun_frequency : vfo[VFO_A].frequency;
     long long fb = vfo[VFO_B].ctun ? vfo[VFO_B].ctun_frequency : vfo[VFO_B].frequency;
-    int md = vfo[VFO_A].mode;
     char reply[256];
 
     if (fa != client->last_fa) {
@@ -927,7 +926,11 @@ static gboolean autoreport_handler(gpointer data) {
       send_resp(client->fd, reply);
       client->last_fb = fb;
     }
+  }
 
+  if (client->auto_reporting > 1) {
+    int md = vfo[VFO_A].mode;
+    char reply[256];
     if (md != client->last_md) {
       snprintf(reply, 256, "MD%1d;", ts2000_mode(md));
       send_resp(client->fd, reply);
@@ -1403,19 +1406,19 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //SET       ZZAIx;
       //READ      ZZAI;
       //RESP      ZZAIx;
-      //NOTE      x=0: auto-reporting disabled, x=1: enabled
+      //NOTE      x=0: auto-reporting disabled, x>1: enabled
       //NOTE      Auto-reporting is affected for the client that sends this command.
+      //NOTE      For x=1, only frequency changes are sent via FA/FB commands.
+      //NOTE      For x>1, mode changes are also sent via MD commands.
       //ENDDEF
       if (command[4] == ';') {
         // Query status
-        snprintf(reply, 256, "ZZAI%d;", SET(client->auto_reporting));
+        snprintf(reply, 256, "ZZAI%d;", client->auto_reporting);
         send_resp(client->fd, reply) ;
-      } else if (command[4] == '0' && command[5] == ';') {
-        // disable reporting
-        client->auto_reporting = 0 ;
-      } else if (command[4] == '1' && command[5] == ';') {
-        // enable reporting
-        client->auto_reporting = 1;
+      } else if (command[5] == ';') {
+        client->auto_reporting = command[4] - '0';
+        if (client->auto_reporting < 0) { client->auto_reporting = 0; }
+        if (client->auto_reporting > 3) { client->auto_reporting = 3; }
       } else {
         implemented = FALSE;
       }
@@ -2327,7 +2330,8 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //SET       ZZMAx;
       //READ      ZZMA;
       //RESP      ZZMAx;
-      //NOTE      x=0: RX1 not muted, x=1: muted
+      //NOTE      x=0: RX1 not muted, x=1: muted.
+      //NOTE      This only affects the audio sent to the radio via the HPSDR protocol.
       //ENDDEF
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZMA%d;", receiver[0]->mute_radio);
@@ -2346,6 +2350,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //READ      ZZMB;
       //RESP      ZZMBx;
       //NOTE      x=0: RX2 not muted, x=1: muted
+      //NOTE      This only affects the audio sent to the radio via the HPSDR protocol.
       //ENDDEF
       RXCHECK(1,
       if (command[4] == ';') {
@@ -4249,13 +4254,16 @@ int parse_cmd(void *data) {
       //RESP      AIx;
       //NOTE      x=0: auto-reporting disabled, x=1: enabled
       //NOTE      Auto-reporting is affected for the client that sends this command.
+      //NOTE      For x=1, only frequency changes are sent via FA/FB commands.
+      //NOTE      For x>1, mode changes are also sent via MD commands.
       //ENDDEF
       if (command[2] == ';') {
         snprintf(reply, 256, "AI%d;", client->auto_reporting);
         send_resp(client->fd, reply) ;
       } else if (command[3] == ';') {
-        int id = SET(command[2] == '1');
-        client->auto_reporting = id;
+        client->auto_reporting = command[2] - '0';
+        if (client->auto_reporting < 0) { client->auto_reporting = 0; }
+        if (client->auto_reporting > 3) { client->auto_reporting = 3; }
       }
 
       break;
@@ -6328,7 +6336,7 @@ int launch_serial_rigctl (int id) {
   serial_client[id].done = 0;
   serial_client[id].running = 1;
   serial_client[id].andromeda_timer = 0;
-  serial_client[id].auto_reporting = SerialPorts[id].autoreporting;
+  serial_client[id].auto_reporting = SET(SerialPorts[id].autoreporting);
   serial_client[id].andromeda_type = 0;
   serial_client[id].last_fa = 0;
   serial_client[id].last_fb = 0;
