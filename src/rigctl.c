@@ -6311,7 +6311,7 @@ int launch_serial_rigctl (int id) {
   //
   // ANDROMEDA uses a hard-wired baud rate 9600
   //
-  if (SerialPorts[id].andromeda) {
+  if (SerialPorts[id].andromeda && !SerialPorts[id].g2) {
     baud = B9600;
   }
 

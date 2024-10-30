@@ -53,11 +53,6 @@ static gboolean close_cb () {
   return TRUE;
 }
 
-static void serial_autoreporting_cb(GtkWidget *widget, gpointer data) {
-  int id = GPOINTER_TO_INT(data);
-  SerialPorts[id].autoreporting = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-}
-
 static void tcp_autoreporting_cb(GtkWidget *widget, gpointer data) {
   rigctl_tcp_autoreporting = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 }
@@ -106,6 +101,20 @@ static void serial_port_cb(GtkWidget *widget, gpointer data) {
 
 static void tcp_andromeda_cb(GtkWidget *widget, gpointer data) {
   rigctl_tcp_andromeda = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+}
+
+//
+// Note the following call-backs will never be called for G2-internal serial ports:
+//
+// - serial_autoreporting_cb
+// - andromeda_cb
+// - serial_enable_cb
+// - baud_cb
+//
+//
+static void serial_autoreporting_cb(GtkWidget *widget, gpointer data) {
+  int id = GPOINTER_TO_INT(data);
+  SerialPorts[id].autoreporting = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 }
 
 static void andromeda_cb(GtkWidget *widget, gpointer data) {
@@ -246,47 +255,62 @@ void rigctl_menu(GtkWidget *parent) {
     gtk_entry_set_text(GTK_ENTRY(w), SerialPorts[i].port);
     gtk_grid_attach(GTK_GRID(grid), w, 1, row, 2, 1);
     g_signal_connect(w, "changed", G_CALLBACK(serial_port_cb), GINT_TO_POINTER(i));
-    serial_baud[i] = gtk_combo_box_text_new();
-    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(serial_baud[i]), NULL, "4800 Bd");
-    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(serial_baud[i]), NULL, "9600 Bd");
-    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(serial_baud[i]), NULL, "19200 Bd");
-    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(serial_baud[i]), NULL, "38400 Bd");
 
-    switch (SerialPorts[i].baud) {
-    case B9600:
-      gtk_combo_box_set_active(GTK_COMBO_BOX(serial_baud[i]), 1);
-      break;
+    //
+    // If this serial port is used internally in a G2, there are not user choices
+    // except the port name
+    //
+    if (!SerialPorts[i].g2) {
+      serial_baud[i] = gtk_combo_box_text_new();
+      gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(serial_baud[i]), NULL, "4800 Bd");
+      gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(serial_baud[i]), NULL, "9600 Bd");
+      gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(serial_baud[i]), NULL, "19200 Bd");
+      gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(serial_baud[i]), NULL, "38400 Bd");
 
-    case B19200:
-      gtk_combo_box_set_active(GTK_COMBO_BOX(serial_baud[i]), 2);
-      break;
+      switch (SerialPorts[i].baud) {
+      case B9600:
+        gtk_combo_box_set_active(GTK_COMBO_BOX(serial_baud[i]), 1);
+        break;
 
-    case B38400:
-      gtk_combo_box_set_active(GTK_COMBO_BOX(serial_baud[i]), 3);
-      break;
+      case B19200:
+        gtk_combo_box_set_active(GTK_COMBO_BOX(serial_baud[i]), 2);
+        break;
 
-    default:
-      SerialPorts[i].baud = B4800;
-      gtk_combo_box_set_active(GTK_COMBO_BOX(serial_baud[i]), 0);
-    }
+      case B38400:
+        gtk_combo_box_set_active(GTK_COMBO_BOX(serial_baud[i]), 3);
+        break;
 
-    my_combo_attach(GTK_GRID(grid), serial_baud[i], 3, row, 1, 1);
-    g_signal_connect(serial_baud[i], "changed", G_CALLBACK(baud_cb), GINT_TO_POINTER(i));
-    serial_enable[i] = gtk_check_button_new_with_label("Enable");
-    gtk_widget_set_name(serial_enable[i], "boldlabel");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (serial_enable[i]), SerialPorts[i].enable);
-    gtk_grid_attach(GTK_GRID(grid), serial_enable[i], 4, row, 1, 1);
-    g_signal_connect(serial_enable[i], "toggled", G_CALLBACK(serial_enable_cb), GINT_TO_POINTER(i));
-    w = gtk_check_button_new_with_label("Andromeda");
+      default:
+        SerialPorts[i].baud = B4800;
+        gtk_combo_box_set_active(GTK_COMBO_BOX(serial_baud[i]), 0);
+        break;
+      }
+
+      my_combo_attach(GTK_GRID(grid), serial_baud[i], 3, row, 1, 1);
+      g_signal_connect(serial_baud[i], "changed", G_CALLBACK(baud_cb), GINT_TO_POINTER(i));
+      serial_enable[i] = gtk_check_button_new_with_label("Enable");
+      gtk_widget_set_name(serial_enable[i], "boldlabel");
+      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (serial_enable[i]), SerialPorts[i].enable);
+      gtk_grid_attach(GTK_GRID(grid), serial_enable[i], 4, row, 1, 1);
+      g_signal_connect(serial_enable[i], "toggled", G_CALLBACK(serial_enable_cb), GINT_TO_POINTER(i));
+      w = gtk_check_button_new_with_label("Andromeda");
+      gtk_widget_set_name(w, "boldlabel");
+      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (w), SerialPorts[i].andromeda);
+      gtk_grid_attach(GTK_GRID(grid), w, 5, row, 1, 1);
+      g_signal_connect(w, "toggled", G_CALLBACK(andromeda_cb), GINT_TO_POINTER(i));
+      w = gtk_check_button_new_with_label("AutoRprt");
+      gtk_widget_set_name(w, "boldlabel");
+      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (w), SerialPorts[i].autoreporting);
+      gtk_grid_attach(GTK_GRID(grid), w, 6, row, 1, 1);
+      g_signal_connect(w, "toggled", G_CALLBACK(serial_autoreporting_cb), GINT_TO_POINTER(i));
+   } else {
+    snprintf (str, 64, "This port is used for G2-internal communication");
+    w = gtk_label_new(str);
     gtk_widget_set_name(w, "boldlabel");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (w), SerialPorts[i].andromeda);
-    gtk_grid_attach(GTK_GRID(grid), w, 5, row, 1, 1);
-    g_signal_connect(w, "toggled", G_CALLBACK(andromeda_cb), GINT_TO_POINTER(i));
-    w = gtk_check_button_new_with_label("AutoRprt");
-    gtk_widget_set_name(w, "boldlabel");
-    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (w), SerialPorts[i].autoreporting);
-    gtk_grid_attach(GTK_GRID(grid), w, 6, row, 1, 1);
-    g_signal_connect(w, "toggled", G_CALLBACK(serial_autoreporting_cb), GINT_TO_POINTER(i));
+    gtk_widget_set_halign(w, GTK_ALIGN_START);
+    gtk_grid_attach(GTK_GRID(grid), w, 3, row, 3, 1);
+    w = gtk_entry_new();
+   }
   }
 
   row++;
