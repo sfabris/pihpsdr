@@ -1,9 +1,8 @@
 # pihpsdr
 
-**If you encounter problems with "pulling", look at this:** https://github.com/dl1ycf/pihpsdr/releases/download/v2.3/RenewRepo.pdf
+**piHPSDR Manual: (Release 2.3 Version) ** https://github.com/dl1ycf/pihpsdr/releases/download/v2.3/piHPSDR-Manual.pdf
 
-
-**piHPSDR Manual:** https://github.com/dl1ycf/pihpsdr/releases/download/v2.3/piHPSDR-Manual.pdf
+**piHPSDR Manual: (current Version) ** https://github.com/dl1ycf/pihpsdr/releases/download/current/piHPSDR-Manual.pdf
 
 Standalone code for HPSDR,
 supporting both the old (P1) and new (P2) HPSDR protocols, as well as the SoapySDR framework.
@@ -20,6 +19,7 @@ Consult the Manual (**link given above**) on how to compile/install piHPSDR on y
 
 Latest features:
 
+- added continuous frequency compressor (**CFC**) and downward expander (**DEXP**) to the TX chain
 - in-depth manual (**link given above**)
 - HermesLite-II I/O-board support
 - audio recording (RX capture) and playback (TX)

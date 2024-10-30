@@ -1125,7 +1125,9 @@ see your own downlink signal. In contrast to what is often stated, Duplex mode d
 affect the data stream between the computer and the radio, it \textit{only} determines
 whether the receivers (within the WDSP library) are shut down during transmit or not.
 
-\rett{Mute RX when TX} This option mutes the RX audio while transmitting. It is important
+\rett{Mute RX when TX} Normally, the receivers are shut down while transmitting, except
+in duplex mode. This option (checkbox) mutes the RX audio while transmitting even if running
+Duplex. It is important
 to note that the RX continue to work, so you can see the signals on the RX panel, the
 S-meter works, etc. This option is largely equivalent to moving the AF slider to the
 minimum position while transmitting.
@@ -1918,7 +1920,8 @@ the ADC converter in some HPSDR boards.
 \rett{Preamp}. This checkbox is not shown in Fig. \ref{fig:RXMenu}, it only occurs
 for some legacy HPSDR boards which had a switch-able RX preamp.
 
-\rett{Mute when not active}. If checked, the audio from this receiver is muted when
+\rett{Mute when not active}. If checked, local audio (e.g. to a sound card)
+from this receiver is muted when
 it is not the active receiver.
 
 \rett{Mute Audio to Radio}. If checked, the audio in the HPSDR data stream from this receiver is muted.
@@ -4114,15 +4117,18 @@ state is active, one can change the action assigned to the multi-function encode
 This function is used if one uses one encoder and one push-button to activate the multi-function
 encoder feature.}
 
-\action{Mute}{MUTE}{B}{Toggles the ,,mute'' state of the active receiver. If a receiver is muted, it
-produces zero-amplitude audio output.}
+\action{Mute}{MUTE}{B}{Toggles the ,,mute'' state of the active receiver. If a receiver is muted,
+zero-amplitude audio output is sent to the radio via the HPSDR protocol. This option has no
+effect on local audio (e.g. sent to a sound card).}
 
-\action{Mute RX1}{MUTE1}{B}{Toggles the ,,mute'' state of  RX1. If a receiver is muted, it
-produces zero-amplitude audio output.}
+\action{Mute RX1}{MUTE1}{B}{Toggles the ,,mute'' state of  RX1. If a receiver is muted,
+zero-amplitude audio output is sent to the radio via the HPSDR protocol. This option has no
+effect on local audio (e.g. sent to a sound card).}
 
 \action{Mute RX2}{MUTE2}{B}{Toggles the ,,mute'' state of  RX2. This operation is a no-op
-if only one receiver is running. If a receiver is muted, it
-produces zero-amplitude audio output.}
+if only one receiver is running. If a receiver is muted,
+zero-amplitude audio output is sent to the radio via the HPSDR protocol. This option has no
+effect on local audio (e.g. sent to a sound card).}
 
 \action{NB}{NB}{B}{Cycles through the noise blanker states (NB off/NB1/NB2).}
 
@@ -4637,6 +4643,8 @@ $\phantom{\Big|}${\large Read} & {AI;} \\\hline
 $\phantom{\Big|}${\large Response} & {AIp$_1$;} \\\hline
 $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: auto-reporting disabled, p$_1$=1: enabled} \\
  & \multicolumn{1}{|p{11cm}|}{Auto-reporting is affected for the client that sends this command.} \\
+ & \multicolumn{1}{|p{11cm}|}{For p$_1$=1, only frequency changes are sent via FA/FB commands.} \\
+ & \multicolumn{1}{|p{11cm}|}{For p$_1$>1, mode changes are also sent via MD commands.} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -4787,7 +4795,7 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: AGC OFF, p
 $\phantom{\Big|}$\textbf{\large ID} & Get radio model ID \\\cline{1-2}
 $\phantom{\Big|}${\large Read} & {ID;} \\\hline
 $\phantom{\Big|}${\large Response} & {IDp$_1$p$_1$p$_1$;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{\pH responds ID019; (so does the Kenwood TS-2000)} \\
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{piHPSDR responds ID019; (so does the Kenwood TS-2000)} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -5065,7 +5073,7 @@ $\phantom{\Big|}$\textbf{\large SD} & Set/Read CW break-in hang time \\\cline{1-
 $\phantom{\Big|}${\large Set} & {SDp$_1$p$_1$p$_1$p$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {SD;} \\\hline
 $\phantom{\Big|}${\large Response} & {SDp$_1$p$_1$p$_1$p$_1$;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ = 0...1000 (in ms)} \\
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$ = 0...1000 (in milli seconds)} \\
  & \multicolumn{1}{|p{11cm}|}{when setting, p$_1$ = 0  disables break-in} \\
 \bottomrule
 \end{tabular}
@@ -5275,8 +5283,10 @@ $\phantom{\Big|}$\textbf{\large ZZAI} & Set/Read auto-reporting \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {ZZAIp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZAI;} \\\hline
 $\phantom{\Big|}${\large Response} & {ZZAIp$_1$;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: auto-reporting disabled, p$_1$=1: enabled} \\
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: auto-reporting disabled, p$_1$>1: enabled} \\
  & \multicolumn{1}{|p{11cm}|}{Auto-reporting is affected for the client that sends this command.} \\
+ & \multicolumn{1}{|p{11cm}|}{For p$_1$=1, only frequency changes are sent via FA/FB commands.} \\
+ & \multicolumn{1}{|p{11cm}|}{For p$_1$>1, mode changes are also sent via MD commands.} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -5561,7 +5571,8 @@ $\phantom{\Big|}$\textbf{\large ZZMA} & Mute/Unmute RX1 \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {ZZMAp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZMA;} \\\hline
 $\phantom{\Big|}${\large Response} & {ZZMAp$_1$;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: RX1 not muted, p$_1$=1: muted} \\
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: RX1 not muted, p$_1$=1: muted.} \\
+ & \multicolumn{1}{|p{11cm}|}{This only affects the audio sent to the radio via the HPSDR protocol.} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -5574,6 +5585,7 @@ $\phantom{\Big|}${\large Set} & {ZZMBp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZMB;} \\\hline
 $\phantom{\Big|}${\large Response} & {ZZMBp$_1$;} \\\hline
 $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: RX2 not muted, p$_1$=1: muted} \\
+ & \multicolumn{1}{|p{11cm}|}{This only affects the audio sent to the radio via the HPSDR protocol.} \\
 \bottomrule
 \end{tabular}
 \end{center}

@@ -28,6 +28,7 @@ struct _SERIALPORT {
   int  baud;        // baud rate
   int  enable;      // is it enabled?
   int  andromeda;   // flag for handling ANDROMEDA console
+  int  g2;          // This port is used for G2-internal communication
   int  autoreporting;
 };
 
