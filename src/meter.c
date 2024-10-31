@@ -504,7 +504,6 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
     cairo_text_extents_t extents;
     cairo_set_source_rgba(cr, COLOUR_VFO_BACKGND);
     cairo_paint (cr);
-
     cairo_select_font_face(cr, DISPLAY_FONT_BOLD, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_line_width(cr, PAN_LINE_THICK);
 
@@ -643,7 +642,7 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
       cairo_set_font_size(cr, size);
       snprintf(sf, 32, "%-3d dBm", (int)(max_rxlvl - 0.5));  // assume max_rxlvl < 0 in rounding
       cairo_text_extents(cr, sf, &extents);
-      cairo_move_to(cr, METER_WIDTH - extents.width -5, Y2);
+      cairo_move_to(cr, METER_WIDTH - extents.width - 5, Y2);
       cairo_show_text(cr, sf);
       break;
 

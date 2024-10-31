@@ -913,15 +913,16 @@ static gboolean autoreport_handler(gpointer data) {
   if (client->auto_reporting > 0) {
     long long fa = vfo[VFO_A].ctun ? vfo[VFO_A].ctun_frequency : vfo[VFO_A].frequency;
     long long fb = vfo[VFO_B].ctun ? vfo[VFO_B].ctun_frequency : vfo[VFO_B].frequency;
-    char reply[256];
 
     if (fa != client->last_fa) {
+      char reply[256];
       snprintf(reply, 256, "FA%011lld;", fa);
       send_resp(client->fd, reply);
       client->last_fa = fa;
     }
 
     if (fb != client->last_fb) {
+      char reply[256];
       snprintf(reply, 256, "FB%011lld;", fb);
       send_resp(client->fd, reply);
       client->last_fb = fb;
@@ -930,8 +931,9 @@ static gboolean autoreport_handler(gpointer data) {
 
   if (client->auto_reporting > 1) {
     int md = vfo[VFO_A].mode;
-    char reply[256];
+
     if (md != client->last_md) {
+      char reply[256];
       snprintf(reply, 256, "MD%1d;", ts2000_mode(md));
       send_resp(client->fd, reply);
       client->last_md = md;
@@ -1417,7 +1419,9 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         send_resp(client->fd, reply) ;
       } else if (command[5] == ';') {
         client->auto_reporting = command[4] - '0';
+
         if (client->auto_reporting < 0) { client->auto_reporting = 0; }
+
         if (client->auto_reporting > 3) { client->auto_reporting = 3; }
       } else {
         implemented = FALSE;
@@ -4262,7 +4266,9 @@ int parse_cmd(void *data) {
         send_resp(client->fd, reply) ;
       } else if (command[3] == ';') {
         client->auto_reporting = command[2] - '0';
+
         if (client->auto_reporting < 0) { client->auto_reporting = 0; }
+
         if (client->auto_reporting > 3) { client->auto_reporting = 3; }
       }
 

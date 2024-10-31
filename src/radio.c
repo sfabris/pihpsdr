@@ -995,7 +995,6 @@ void radio_start_radio() {
   // props file, so will be restored therefrom as well.
   //
   optimize_for_touchscreen = 1;
-
   protocol = radio->protocol;
   device = radio->device;
 
@@ -1012,7 +1011,7 @@ void radio_start_radio() {
     SerialPorts[id].andromeda = 0;
     SerialPorts[id].baud = 0;
     SerialPorts[id].autoreporting = 0;
-    SerialPorts[id].g2= 0;
+    SerialPorts[id].g2 = 0;
     snprintf(SerialPorts[id].port, sizeof(SerialPorts[id].port), "/dev/ttyACM%d", id);
   }
 
@@ -2470,6 +2469,7 @@ static void radio_restore_state() {
 
   for (int id = 0; id < MAX_SERIAL; id++) {
     GetPropS1("rigctl_serial_port[%d]", id,                  SerialPorts[id].port);
+
     //
     // For a serial port internally used for G2,
     // only allow changes to the port name
@@ -3047,19 +3047,16 @@ void radio_start_playback() {
   int  eq     = transmitter->eq_enable;
   int  dexp   = transmitter->dexp;
   double gain = transmitter->mic_gain;
-
   transmitter->eq_enable = 0;
   transmitter->compressor = 0;
   transmitter->mic_gain = 0.0;
   transmitter->cfc = 0;
   transmitter->cfc_eq = 0;
   transmitter->dexp = 0;
-
   tx_set_equalizer(transmitter);
   tx_set_mic_gain(transmitter);
   tx_set_compressor(transmitter);
   tx_set_dexp(transmitter);
-
   transmitter->compressor = comp;
   transmitter->cfc = cfc;
   transmitter->cfc_eq = cfc_eq;

@@ -762,46 +762,49 @@ void display_panadapter_messages(cairo_t *cr, int width, unsigned int fps) {
     static unsigned int cap_count = 0;
     double cx = (double) width - 100.0;
     double cy = 30.0;
-
     cairo_set_source_rgba(cr, COLOUR_ATTN);
     cairo_set_font_size(cr, DISPLAY_FONT_SIZE3);
-
     cairo_set_line_width(cr, 2.0);
-    cairo_move_to(cr, cx       , cy +  5.0);
+    cairo_move_to(cr, cx, cy +  5.0);
     cairo_line_to(cr, cx + 90.0, cy +  5.0);
     cairo_line_to(cr, cx + 90.0, cy + 20.0);
-    cairo_line_to(cr, cx       , cy + 20.0);
-    cairo_line_to(cr, cx       , cy +  5.0);
-    if (capture_state == CAP_REPLAY) {
-      cairo_move_to(cr, cx + (90.0*capture_record_pointer)/capture_max, cy +  5.0);
-      cairo_line_to(cr, cx + (90.0*capture_record_pointer)/capture_max, cy + 20.0);
-    }
-    cairo_stroke(cr);
+    cairo_line_to(cr, cx, cy + 20.0);
+    cairo_line_to(cr, cx, cy +  5.0);
 
+    if (capture_state == CAP_REPLAY) {
+      cairo_move_to(cr, cx + (90.0 * capture_record_pointer) / capture_max, cy +  5.0);
+      cairo_line_to(cr, cx + (90.0 * capture_record_pointer) / capture_max, cy + 20.0);
+    }
+
+    cairo_stroke(cr);
     cairo_move_to(cr, cx, cy);
 
     switch (capture_state) {
     case CAP_RECORDING:
       cairo_show_text(cr, "Recording");
-      cairo_rectangle(cr, cx, cy + 5.0, (90.0*capture_record_pointer)/capture_max, 15.0);
+      cairo_rectangle(cr, cx, cy + 5.0, (90.0 * capture_record_pointer) / capture_max, 15.0);
       cairo_fill(cr);
       break;
+
     case CAP_REPLAY:
       cairo_set_source_rgba(cr, COLOUR_ALARM);
       cairo_show_text(cr, "Replay");
-      cairo_rectangle(cr, cx + 1.0, cy + 6.0, (90.0*capture_replay_pointer)/capture_max - 1.0, 13.0);
+      cairo_rectangle(cr, cx + 1.0, cy + 6.0, (90.0 * capture_replay_pointer) / capture_max - 1.0, 13.0);
       cairo_fill(cr);
       break;
+
     case CAP_AVAIL:
       cairo_show_text(cr, "Recorded");
-      cairo_rectangle(cr, cx, cy + 5.0, (90.0*capture_record_pointer)/capture_max, 15.0);
+      cairo_rectangle(cr, cx, cy + 5.0, (90.0 * capture_record_pointer) / capture_max, 15.0);
       cairo_fill(cr);
       cap_count++;
-      if (cap_count > 30*fps) {
+
+      if (cap_count > 30 * fps) {
         capture_state = CAP_GOTOSLEEP;
         schedule_action(CAPTURE, PRESSED, 0);
         cap_count = 0;
       }
+
       break;
     }
   }
