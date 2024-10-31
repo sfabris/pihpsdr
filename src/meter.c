@@ -492,17 +492,19 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
       }
     }
   } else {
+    //
+    // Digital meter, both RX and TX:
+    // Mic level display
+    //
     int text_location;
     int Y1 = METER_HEIGHT / 4;
     int Y2 = Y1 + METER_HEIGHT / 3;
     int Y4 = 4 * Y1 - 6;
     int size;
+    cairo_text_extents_t extents;
     cairo_set_source_rgba(cr, COLOUR_VFO_BACKGND);
     cairo_paint (cr);
-    //
-    // Digital meter, both RX and TX:
-    // Mic level display
-    //
+
     cairo_select_font_face(cr, DISPLAY_FONT_BOLD, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_line_width(cr, PAN_LINE_THICK);
 
@@ -639,8 +641,9 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
 
       cairo_set_source_rgba(cr, COLOUR_ATTN);
       cairo_set_font_size(cr, size);
-      snprintf(sf, 32, "%d dBm", (int)(max_rxlvl - 0.5));  // assume max_rxlvl < 0 in rounding
-      cairo_move_to(cr, text_location, Y2);
+      snprintf(sf, 32, "%-3d dBm", (int)(max_rxlvl - 0.5));  // assume max_rxlvl < 0 in rounding
+      cairo_text_extents(cr, sf, &extents);
+      cairo_move_to(cr, METER_WIDTH - extents.width -5, Y2);
       cairo_show_text(cr, sf);
       break;
 
