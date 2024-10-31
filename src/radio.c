@@ -303,6 +303,7 @@ double div_phase = 0.0;    // phase for diversity (in degrees, 0 ... 360)
 // (Equalizers are switched off during capture and replay)
 //
 int capture_state = CAP_INIT;
+const int capture_max = 480000;  // 10 seconds
 int capture_record_pointer;
 int capture_replay_pointer;
 double *capture_data = NULL;

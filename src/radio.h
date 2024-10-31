@@ -71,7 +71,7 @@ enum _region_enum {
 };
 
 enum _capture_state {
-  CAP_INIT = 0,            // util first press
+  CAP_INIT = 0,            // util first recording
   CAP_RECORDING,           // audio is being recorded
   CAP_RECORD_DONE,         // record buffer full
   CAP_AVAIL,               // audio recording finished
@@ -255,6 +255,7 @@ extern double div_cos, div_sin;
 extern double div_gain, div_phase;
 
 extern int capture_state;
+extern const int capture_max;
 extern int capture_record_pointer;
 extern int capture_replay_pointer;
 extern double *capture_data;

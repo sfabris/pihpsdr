@@ -715,7 +715,7 @@ int process_action(void *data) {
         // Hitting "capture" during RX when nothing has ever been
         // recorded: allocate audio capture buffer, and start recording
         //
-        capture_data = g_new(double, 480000);
+        capture_data = g_new(double, capture_max);
         radio_start_capture();
         capture_record_pointer = 0;
         capture_state = CAP_RECORDING;
@@ -744,7 +744,7 @@ int process_action(void *data) {
         //
         // The two states only differ in whether recording stops due
         // to user request (CAP_RECORDING) or because the audio
-        // buffer was full (CAP_RECORDING_DONE)
+        // buffer was full (CAP_RECORD_DONE)
         //
         radio_end_capture();
         capture_state = CAP_AVAIL;

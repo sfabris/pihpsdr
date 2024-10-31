@@ -1095,7 +1095,7 @@ static void rx_process_buffer(RECEIVER *rx) {
 #endif
 
     if (rx == active_receiver && capture_state == CAP_RECORDING) {
-      if (capture_record_pointer < 480000) {
+      if (capture_record_pointer < capture_max) {
         //
         // normalize samples:
         // when using AGC, the samples of strong s9 signals are about 0.8
