@@ -76,7 +76,9 @@ enum _capture_state {
   CAP_RECORD_DONE,         // record buffer full
   CAP_AVAIL,               // audio recording finished
   CAP_REPLAY,              // audio is being re-played
-  CAP_REPLAY_DONE          // all audio has been sent
+  CAP_REPLAY_DONE,         // all audio has been sent
+  CAP_GOTOSLEEP,           // hide capture state display
+  CAP_SLEEPING             // capture state is hidden
 };
 
 //

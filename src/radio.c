@@ -3011,7 +3011,7 @@ void radio_end_capture() {
     if (t > max) { max = t; }
   }
 
-  t_print("%s: max=%f\n", __FUNCTION__, max);
+  //t_print("%s: max=%f\n", __FUNCTION__, max);
 
   if (max > 0.05) {
     //
@@ -3038,17 +3038,32 @@ void radio_start_playback() {
   // - turn off TX equalizer   but keep equalizer  info in transmitter->eq_enable
   // - turn off TX compression but keep compressor info in transmitter->compression
   // - set mic gain  to zero   but keep mic_gain   info in transmitter->mic_gain
+  // - disable CFC             but keep            info in transmitter->mic_gain
+  // - disable DEXP            but keep            info in transmitter->mic_gain
   //
   int  comp   = transmitter->compressor;
+  int  cfc    = transmitter->cfc;
+  int  cfc_eq = transmitter->cfc_eq;
   int  eq     = transmitter->eq_enable;
+  int  dexp   = transmitter->dexp;
   double gain = transmitter->mic_gain;
+
   transmitter->eq_enable = 0;
   transmitter->compressor = 0;
   transmitter->mic_gain = 0.0;
+  transmitter->cfc = 0;
+  transmitter->cfc_eq = 0;
+  transmitter->dexp = 0;
+
   tx_set_equalizer(transmitter);
   tx_set_mic_gain(transmitter);
   tx_set_compressor(transmitter);
+  tx_set_dexp(transmitter);
+
   transmitter->compressor = comp;
+  transmitter->cfc = cfc;
+  transmitter->cfc_eq = cfc_eq;
+  transmitter->dexp = dexp;
   transmitter->eq_enable  = eq;
   transmitter->mic_gain = gain;
 }
@@ -3059,8 +3074,10 @@ void radio_end_playback() {
   // - TX equalizer on/off
   // - TX compressor on/off
   // - TX mic gain setting
+  // - CFC and DEXP
   //
   tx_set_equalizer(transmitter);
   tx_set_mic_gain(transmitter);
   tx_set_compressor(transmitter);
+  tx_set_dexp(transmitter);
 }
