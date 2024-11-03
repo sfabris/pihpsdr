@@ -1793,60 +1793,6 @@ The \bltt{Mode} menu lets you change the mode of the active receiver, so you can
 say, from LSB to CWU or DIGU. The mode menu simply lists the available modes, the current
 one is highlighted (Fig. \ref{fig:ModeMenu}).
 
-\subsection{RX/TX ,,profiles''}
- Many settings such as filter choices, noise reduction
-settings, equaliser settings, and TX compressor settings
- are only reasonable for a specific mode and need be re-adjusted if one changes
- the mode. For example, one might wish to use
- different VFO step sizes for different modes, and get the step size chosen for that
- mode automatically if one switches to that mode. Likewise, one often has specific settings
- for equalisers and TX compression that are valid for voice modes but not for digital modes.
-
- To this end, the settings given below are combined in a ,,RX/TX profile'' that
- is associated with a certain mode or a certain group of modes. Modes grouped
- together are USB/LSB/DSB, CWU/CWL, and DIGU/DIGL. This has been done because
- if one has figured out optimal settings for e.q. the TX and RX equalisers for LSB,
- one most likely wants to have the same settings automatically for USB as well.
- When the mode of the VFO controlling RX1, RX2, or the transmitter is changed,
- the settings for that VFO/receiver/transmitter will be loaded from the profile.
-
- Here is the list of settings that form the RX/TX profile:
-
-\begin{center}
-\begin{tabular}{l}
-\toprule
-$\bullet$ Filter type \cr
-$\bullet$ CW peak filter (on/off) \cr
-$\bullet$ VFO step size  \cr
-$\bullet$ RX Noise reduction (all settings) \cr
-$\bullet$ RX Noise blanker (all settings) \cr
-$\bullet$ RX Automatic notch filter (on/off) \cr
-$\bullet$ RX Spectral  noise blanker (on/off) \cr
-$\bullet$ RX AGC characteristic (slow/medium/fast etc.) \cr
-$\bullet$ RX equaliser (all settings) \cr
-$\bullet$ TX equaliser (all settings) \cr
-$\bullet$ TX speech processor (on/off, compression level) \cr
-$\bullet$ TX continuous frequency compressor (CFC, all settings) \cr
-$\bullet$ TX downward expander (DEXP, on/off) \cr
-\bottomrule
-\end{tabular}
-\end{center}
-
-A profile is not only loaded if a mode is explicitly changed, but also when the mode changes
-because one has copied/swapped VFOs, changed the band or the band stack, or recalled a memory slot.
-
-A receiver- or VFO-speficic setting will be updated in the profile if it is changed and if this
-change applies to the active receiver. It is then stored in the profile associated with the mode
-(group)
-of the active receiver. Changing a transmitter-specific setting (TX equaliser, CFC, or DEXP) always
-leads to profile update of the profile associated with the mode (group) of the VFO that controls the
-transmitter frequency (that is, VFO-A if not working  split, and VFO-B if working split). The updated
-profile will only become effective upon the next mode change to that mode.
-
-Note that the concepts of mode groups implies that the profile associated with, say, LSB is
-automatically updated if the USB profile is updated, such that the profiles of the mode  within
-a mode group (although stored separately for historical reasons) will be identical.
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The \texttt{Memory}  menu}
 \label{sec:memmenu}
@@ -3657,6 +3603,136 @@ shown in Fig. \ref{fig:SwitchMenuV2} which match the functions printed on the en
 \caption{The Switches menu for Controller2.}
 \label{fig:SwitchMenuV2}
 \end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Miscellaneous Topics}
+There are several topics that are not best explained in the course of the \textit{tour de force} through
+the menus. These will be handled in this section.
+
+\section{RX/TX profiles}
+ Many settings such as VFO step sizes, filter choices, noise reduction
+settings, equaliser settings, and TX compressor settings
+ are only reasonable for a specific mode and need be re-adjusted if one changes
+ the mode. For example, one might wish to use
+ different VFO step sizes for different modes, and get the step size chosen for that
+ mode automatically if one switches to that mode. The same applies to noise reduction
+ settings which are very different for CW and SSB. For digital modes (DIGU/DIGL),
+ one normally does not want neither noise reduction or equalizer being active on the RX
+ side, nor a speech processor for transmitting.
+ 
+ On the other side, one often wants the same modes for USB and LSB, or for DIGU and DIGL.
+ Therefore mode groups have been defined that encompass USB/LSB/DSB, or CWU/CWL, or
+ DIGU/DIGL. AM and FM, on the other hand, ,,mode groups'' with only one member.
+ 
+ Each mode now has an associated RX/TX profile containing lots of settings (see below).
+ When switching a mode (either by an explicit request, or implicitly by a VFO swap/copy
+ operation, a band or bandstack change, or by recalling a memory slot), the profile of
+ that mode overwrites the current settings.
+ 
+ The RX/TX profile for a specific mode (group) is updated whenever one of the setting
+ contained in the profile is updated for RX1 or for the transmitter. Note that the
+ mode-specific RX/TX profile is also applied to RX2 if the mode of RX2 is changed,
+ but changing the settings for RX2 does not update the profile.
+ 
+ For example, if you have adjusted the noise reduction settings while operating USB,
+ these settings are stored in the RX/TX profiles of the USB, LSB, and DSB modes. Whenever
+ switching to USB, LSB or DSB in the future (until the profile is changed again), these
+ settings become active. So you can quickly switch, say, between USB/LSB, CWU/CWL and
+ DIGU/DIGL and always get the settings that you have chosen for that mode.
+
+ Here is the list of settings that form the RX/TX profile:
+
+\begin{center}
+\begin{tabular}{l}
+\toprule
+$\bullet$ Filter type \cr
+$\bullet$ CW peak filter (on/off) \cr
+$\bullet$ VFO step size  \cr
+$\bullet$ RX Noise reduction (all settings) \cr
+$\bullet$ RX Noise blanker (all settings) \cr
+$\bullet$ RX Automatic notch filter (on/off) \cr
+$\bullet$ RX Spectral  noise blanker (on/off) \cr
+$\bullet$ RX AGC characteristic (slow/medium/fast etc.) \cr
+$\bullet$ RX equaliser (all settings) \cr
+$\bullet$ TX equaliser (all settings) \cr
+$\bullet$ TX speech processor (on/off, compression level) \cr
+$\bullet$ TX continuous frequency compressor (CFC, all settings) \cr
+$\bullet$ TX downward expander (DEXP, on/off) \cr
+\bottomrule
+\end{tabular}
+\end{center}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Audio recording and replay}
+\label{sec:capture}
+Audio recording and replay is typically used in QSOs to let your QSO partner listen to its own transmission,
+and how it arrived at your site. It is not meant to do automatic SSB CQ calls etc., here a dedicated
+,,voice keyer'' software should be used. The main restriction of the record\&replay facility in piHPSDR is
+that only a single piece of audio can be stored, and that the maximum length of this piece is about 10 seconds.
+
+Because the main purpose of this feature is to play back a recorded transmission of your QSO partner,
+the RX equaliser is not used while recording (but noise reduction etc. is still active!). Likewise,
+when replaying, the TX equalizer, the TX speech processor, the continouus frequency compressor (CFC),
+and the downward expander (DEXP)
+are temporarily deactivated. Furthermore, the recorded audio is normalized such that it peaks at full
+amplitude, and therefore, the TX mic gain is set to 0 dB while replaying.
+
+The \pH recording and replay feature requires a single button triggering the \bltt{Capture} action,
+so this action must either be mapped to a MIDI/GPIO push-button or to one of the toolbar buttons.
+To avoid blind flying, the status of the recording/playback is indicated in the top right corner of
+the panadapter in the main window, thus a pandapter is required (waterfall-only setups won't show the
+record/playback status).
+
+In the normal ,,idle'' situation, nothing is shown on the panadapter. This is the case if the \bltt{Capture}
+button has not yet been used since the start of the \pH program, or if the last recording/playback is
+more then 30 seconds ago. If noting is on the screen, one has to push the \bltt{Capture} button once and
+a string \rett{Recorded} string in yellow color will appear in the top right corner of the panadapter, 
+and below a horizontal progress bar that indicates how long the actual recording is: a full bar corresponds
+to maximum filling which corresponds to 10 seconds, but this can easily be changed at compile time.
+Fig. \ref{fig:capture1} shows the status bar, as it has been brought up by hitting the \bltt{Capture} button.
+
+\begin{figure}[ht]
+\center
+\includegraphics[width=6cm]{Capture1.png}
+\caption{The Recording/Playback status bar.}
+\label{fig:capture1}
+\end{figure}
+
+As can be seen, the length of the currently stored recording is about half of the maximum length. If hitting
+the \bltt{Capture} button for the very first time, the length of the stored recording is of course zero. If
+the \rett{Recorded} string is shown in the panadapter, hitting the \bltt{Capture} button again will either
+start a new recording (while RXing) or start the replay (if hitting the button while TXing).
+If a new recording is done, the status string will change to \rett{Recording} and the yellow progress bar
+will fill from the left to the right. Recording will stop at the latest if the bar hits the right end 
+(that is, if the audio buffer is full), but can also by stopped before that if hitting the \bltt{Capture}
+button. During replay, the status string changes to \rett{Replay} (written in red color), the progress bar
+turns read and starts from the left until (at the latest) all of the actual recording (marked by a small
+vertical yellow line) is completely replayed (Fig. \ref{fig:capture2}). Again, the replay can be stopped any time by hitting
+the \bltt{Capture} button. 
+\begin{figure}[ht]
+\center
+\includegraphics[width=6cm]{Capture2.png}
+\caption{Replaying recorded audio data}
+\label{fig:capture2}
+\end{figure}
+
+After the replay is done, the status line again changes to \rett{Recorded} (see Fig. \ref{fig:capture1})
+and the recorded audio can, if one wants, be replayed again. If the status line has been shown for about
+30 seconds without any recording or replaying taking place, it is hidden and can be shown again by
+hitting the \bltt{Capture} button.
+
+So the things to remember are:
+\begin{itemize}
+\item{If no recording/playback status is shown in the top left of the panadapter, hitthe  \bltt{Capture} button
+to show it.}
+\item{If the status line reads \rett{Recorded}, then the bar indicats how much audio data has been recorded. Hitting
+\bltt{Capture} now deletes this audio and starts a new recording (if RXing) or replays the recorded audio
+(if TXing).}
+\item{If recording (status text = \rett{Recording}) or replaying (status text = \rett{Replay}, a moving progress
+bar shows how much has already been recorded/replayed.}
+\item{Recording automatically stops if the buffer is full, and replaying automatically stops is all recorded audio
+has been replayed. In both cases, hitting the \bltt{Capture} button ends recording/replay before the end has been reached.}
+\end{itemize}
 
 
 \appendix
@@ -3907,17 +3983,8 @@ frequency range of the radio.}
 {Open the \texttt{BANDSTACK} menu.}
 
 \action{Capture}{CAPTUR}{B}
-{Capture/Replay button: during RX, pressing this button starts capturing up to 10 seconds
-of the RX  audio to an internal buffer, capturing continues until the button is pressed again
-or the buffer is full. During TX, pressing this button replaces TX audio samples by
-samples from this buffer, again until the button is pressed again or the buffer content
-has been completely replayed.
-{\bf Note that the RX equalisers are switched off during recording, and the TX equaliser and compressor
-is switched off during playback.}
-The volume of the recorded audio is normalised by applying an appropriate scale
-factor to the entire recording (this is a linear operation, in contrast to compression).
-This also implies that during playback, the mic gain is temporarily set to unity (0 dB).
-}
+{Capture/Replay button: The procedure for audio recording and replay is described
+in detail in chapter \ref{sec:capture}.}
 
 \action{Cmpr On/Off}{COMP}{B}
 {Toggle the state (on/off) of the compressor used in the TX audio input. Note that the CESSB overshoot
