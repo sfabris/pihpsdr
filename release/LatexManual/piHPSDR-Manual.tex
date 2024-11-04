@@ -1872,7 +1872,8 @@ it is not the active receiver.
 
 \rett{Mute Audio to Radio}. If checked, the audio in the HPSDR data stream from this receiver is muted.
 This has only an effect for Protocol-1 and Protocol-2 (not for SoapySDR), and only affects headphones/speakers
-connected to the radio. Local audio is not affected. The main use of this checkbox is
+connected to the radio. Local audio (to a sound card or a virtual audio cable)
+is not affected. The main use of this checkbox is
 to mute a radio-connected headphone while doing digi mode via local RX output.
 
 \rett{Bypass ADC0 RX filters}. This box is only shown if the ALEX filter board
@@ -3619,21 +3620,21 @@ settings, equaliser settings, and TX compressor settings
  settings which are very different for CW and SSB. For digital modes (DIGU/DIGL),
  one normally does not want neither noise reduction or equalizer being active on the RX
  side, nor a speech processor for transmitting.
- 
+
  On the other side, one often wants the same modes for USB and LSB, or for DIGU and DIGL.
  Therefore mode groups have been defined that encompass USB/LSB/DSB, or CWU/CWL, or
  DIGU/DIGL. AM and FM, on the other hand, ,,mode groups'' with only one member.
- 
+
  Each mode now has an associated RX/TX profile containing lots of settings (see below).
  When switching a mode (either by an explicit request, or implicitly by a VFO swap/copy
  operation, a band or bandstack change, or by recalling a memory slot), the profile of
  that mode overwrites the current settings.
- 
+
  The RX/TX profile for a specific mode (group) is updated whenever one of the setting
  contained in the profile is updated for RX1 or for the transmitter. Note that the
  mode-specific RX/TX profile is also applied to RX2 if the mode of RX2 is changed,
  but changing the settings for RX2 does not update the profile.
- 
+
  For example, if you have adjusted the noise reduction settings while operating USB,
  these settings are stored in the RX/TX profiles of the USB, LSB, and DSB modes. Whenever
  switching to USB, LSB or DSB in the future (until the profile is changed again), these
@@ -3686,7 +3687,7 @@ record/playback status).
 In the normal ,,idle'' situation, nothing is shown on the panadapter. This is the case if the \bltt{Capture}
 button has not yet been used since the start of the \pH program, or if the last recording/playback is
 more then 30 seconds ago. If noting is on the screen, one has to push the \bltt{Capture} button once and
-a string \rett{Recorded} string in yellow color will appear in the top right corner of the panadapter, 
+a string \rett{Recorded} string in yellow color will appear in the top right corner of the panadapter,
 and below a horizontal progress bar that indicates how long the actual recording is: a full bar corresponds
 to maximum filling which corresponds to 10 seconds, but this can easily be changed at compile time.
 Fig. \ref{fig:capture1} shows the status bar, as it has been brought up by hitting the \bltt{Capture} button.
@@ -3703,12 +3704,12 @@ the \bltt{Capture} button for the very first time, the length of the stored reco
 the \rett{Recorded} string is shown in the panadapter, hitting the \bltt{Capture} button again will either
 start a new recording (while RXing) or start the replay (if hitting the button while TXing).
 If a new recording is done, the status string will change to \rett{Recording} and the yellow progress bar
-will fill from the left to the right. Recording will stop at the latest if the bar hits the right end 
+will fill from the left to the right. Recording will stop at the latest if the bar hits the right end
 (that is, if the audio buffer is full), but can also by stopped before that if hitting the \bltt{Capture}
 button. During replay, the status string changes to \rett{Replay} (written in red color), the progress bar
 turns read and starts from the left until (at the latest) all of the actual recording (marked by a small
 vertical yellow line) is completely replayed (Fig. \ref{fig:capture2}). Again, the replay can be stopped any time by hitting
-the \bltt{Capture} button. 
+the \bltt{Capture} button.
 \begin{figure}[ht]
 \center
 \includegraphics[width=6cm]{Capture2.png}
@@ -4185,17 +4186,26 @@ This function is used if one uses one encoder and one push-button to activate th
 encoder feature.}
 
 \action{Mute}{MUTE}{B}{Toggles the ,,mute'' state of the active receiver. If a receiver is muted,
-zero-amplitude audio output is sent to the radio via the HPSDR protocol. This option has no
-effect on local audio (e.g. sent to a sound card).}
+zero-amplitude audio output is sent to the radio via the HPSDR protocol.
+This has only an effect for Protocol-1 and Protocol-2 (not for SoapySDR), and only affects headphones/speakers
+connected to the radio. Local audio (to a sound card or a virtual audio cable)
+is not affected. The main use of this action is
+to mute a radio-connected headphone while doing digi mode via local RX output.}
 
 \action{Mute RX1}{MUTE1}{B}{Toggles the ,,mute'' state of  RX1. If a receiver is muted,
-zero-amplitude audio output is sent to the radio via the HPSDR protocol. This option has no
-effect on local audio (e.g. sent to a sound card).}
+zero-amplitude audio output is sent to the radio via the HPSDR protocol.
+This has only an effect for Protocol-1 and Protocol-2 (not for SoapySDR), and only affects headphones/speakers
+connected to the radio. Local audio (to a sound card or a virtual audio cable)
+is not affected. The main use of this action is
+to mute a radio-connected headphone while doing digi mode via local RX output..}
 
 \action{Mute RX2}{MUTE2}{B}{Toggles the ,,mute'' state of  RX2. This operation is a no-op
 if only one receiver is running. If a receiver is muted,
-zero-amplitude audio output is sent to the radio via the HPSDR protocol. This option has no
-effect on local audio (e.g. sent to a sound card).}
+zero-amplitude audio output is sent to the radio via the HPSDR protocol.
+This has only an effect for Protocol-1 and Protocol-2 (not for SoapySDR), and only affects headphones/speakers
+connected to the radio. Local audio (to a sound card or a virtual audio cable)
+is not affected. The main use of this action is
+to mute a radio-connected headphone while doing digi mode via local RX output.}
 
 \action{NB}{NB}{B}{Cycles through the noise blanker states (NB off/NB1/NB2).}
 
@@ -5882,7 +5892,7 @@ $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{ANDROMEDA extension
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter[Connect a Morse Key]{Attaching Morse Keys or Paddles}
+\chapter[Connecting a Morse Key]{Attaching Morse Keys or Paddles}
 \label{sec:ConnectCW}
 
 \section{CW priorities}
@@ -5956,16 +5966,16 @@ In the case of \texttt{Controller1} the GPIO lines that can be used for CW are
 \item{GPIO line 10 for \bltt{CW Key (keyer)}}
 \end{itemize}
 
-For \texttt{Controller2}, there are not enough ,,spare'' GPIO lines to fully
+For the other controllers, there are not enough ,,spare'' GPIO lines to fully
 support CW over GPIO. Appendix \ref{sec:gpio} lists in detail which GPIO line
 is used by which controller option.
 
 All lines are active-low lines with a pull-up, so the active state is reached
 by connecting the input line to ground. See Appendix \ref{sec:actionlist} for
 an explanation of the commands. Briefly, use \bltt{CW Left} and \bltt{CW Right}
-when using \pH's internal iambic keyer, and use \bltt{PTT (keyer)} and
+when using the \pH internal iambic keyer, and use \bltt{PTT (keyer)} and
 \bltt{CW Key (keyer)} when using an external keyer. Note when using an external
-keyer, it must generate both a key-down and a PTT signal, and it must be configured
+keyer. The external keyer must generate both a key-down and a PTT signal, and it must be configured
 such that the PTT signal arrives earlier than the first key-down. The required time
 delay between PTT and the first key-down depends  on how fast \pH can do the
 RX/TX transition, and this for examples depends on whether you have one or two receivers
@@ -5982,10 +5992,8 @@ The ALSA audio module for Linux, as well as the PortAudio audio  module for MacO
 
 \textbf{MIDI.}
 If running \pH on non-RaspPi Linux or Macintosh computers, there are no GPIO
-lines. The same problem arises for piHPDSR running on a RaspPi if using the
-Controller2 or the G2 front panel, simply because nearly all GPIO lines are
-reserved for the controller.
-In these cases, the best
+lines. The same problem arises for piHPDSR running on a RaspPi and using a controller
+which does not leave enough spare GPIO lines. In these cases, the best
 choice to get "the key into the computer" is to use MIDI. There are low-cost
 micro controllers which can be programmed such that they act as MIDI input devices
 if connected (via USB) to the host computer (in the simplest case, 32U4 based
@@ -6008,7 +6016,7 @@ the latest event received. Proceed as follows:
 
 \begin{itemize}
 \item{Press and hold one of the two paddles. The keyer will start sending a NoteOn
-message for PTT, and then infinitely send NoteOn/Off messages for key up/down.
+message for PTT, but then soon infinitely send NoteOn/Off messages for key up/down.
 Use the \bltt{MIDI} menu to assign the \bltt{CW Key (keyer)} action to this MIDI event.}
 \item{Then, release the paddle. Some time (the hang time of the keyer) after the last
 key-up, a NoteOff message for PTT will be sent. After this, you can assign the
@@ -6228,8 +6236,8 @@ since (as far as I know) \pH has not yet been adapted to run with the Windows op
 system.
 
 There is not much to say here, because this setup is largely the same as for conventional
-(analog) rigs: you need a sound interface connected to the computer running the digi program,
-and then you connect the sound interface either to the headphone and mic jacks of the radio,
+(analog) rigs: you need a sound card connected to the computer running the digi program,
+and then you connect the sound card either to the headphone and mic jacks of the radio,
 or to the input/output of a sound card connected to the computer running \pH. In the
 latter case, you have to select this sound-card for local audio output in the \bltt{RX} menu,
 and for local microphone input in the \bltt{TX} menu.
@@ -6237,15 +6245,16 @@ and for local microphone input in the \bltt{TX} menu.
 Unless you are using VOX, you also need a CAT command connection between the digi mode program
 and \pH. Via CAT commands, the digi mode program can induce RX/TX transitions in \pH,
 change frequencies or modes, etc. If both computers are connected via ethernet,
-TCP is the method of choice for such a connection. \pH listens on port 19090 (by default,
-can be changed in the \bltt{RigCtl} menu). For standard digi mode operation, choose the
+TCP is the method of choice for such a connection. \pH listens on port 19090 (TCP CAT
+connection must be enabled in the \bltt{RigCtl} menu, and the port number can also
+be changed there). For standard digi mode operation, choose the
 Kenwood TS-2000 radio model. If your digi mode program can use the \texttt{hamlib} CAT connection
 library (for example, both FLdigi and WSJTX can), choose the ,,OpenHPSDR PiHPSDR'' radio
 model.
 
 If there is no ethernet connection between the computer running \pH and the computer
 running the digi mode program, you need two USB-to-serial interfaces and must connect them
-via a null modem. Then use the serial port both in \pH (\bltt{RigCtl} menu) and the
+via a null modem. Then enable CAT on the serial port both in \pH (\bltt{RigCtl} menu) and the
 digi mode program.
 
 \section[\pH and Digi on same computer]{Running \pH and Digi on the same computer}
@@ -6638,7 +6647,7 @@ To have compile-time options different from the default ones, you have to create
 file within the \pH directory which has the name \grtt{make.config.pihpdsr}.
 
 If this file does not exist, compilation proceeds with the default options.
-If you create this file, it should lines of the form
+If you create this file, it should contain lines of the form
 
 \texttt{OPTION=VALUE}
 
@@ -6647,7 +6656,7 @@ to the option. In most cases, the value is either \texttt{ON} or \texttt{OFF} de
 the compile-time option shall be activated or not.
 The exception is the \texttt{AUDIO} option, which may take various values
 (see below). For example, for compilation without GPIO support the file \grtt{make.config.pihpdsr}
-has to contain the line
+contains the line
 
 \texttt{GPIO=OFF}
 
@@ -6672,6 +6681,10 @@ have GPIO lines. For MacOS, this option is automatically disabled.
 If you do not plan to let \pH control any of the GPIO I/O lines you better compile without this option.
 This is especially true if you plan to attach some third-party hardware (such as sound card ,,hats'')
 to the GPIO.
+
+{\bf G2 Ultra.} Second-generation ANAN G2 radios ,,G2 Ultra'' have a micro-controller inside that
+controls the front panel and communicates with \pH over a serial line. For these machines, it is
+recommended to compile with GPIO turned OFF.
 }
 
 \item[\rett{MIDI}] {(default: \texttt{ON})
@@ -6690,20 +6703,22 @@ This option includes support for legacy HPSDR hardware connected via USB.
 }
 
 \item[\rett{SOAPYSDR}] {(default: \texttt{OFF})
-This option enables \pH to communicate with radios through the SoapySDR library.
+This option enables \pH to communicate with radios through the SoapySDR library. If this library
+is not present on your system, this option must be turned OFF. If you do not plan to connect SoapySDR
+radios, turning OFF this option may accelerate \pH startup a little bit.
 }
 
 \item[\rett{STEMLAB}] {(default: \texttt{OFF})
-This is an option for RedPitaya based radios. These have an SDR app that must be
-started before one can connect. If you have a RedPitaya exclusively being used as a radio, this
+This is an option for RedPitaya based radios that have a web interface that must be used
+to start the SDR application. If you have a RedPitaya exclusively being used as a radio, this
 app is most likely auto-started when powering up the RedPitaya so you do not need the STEMLAB
-option. This option allows to start the SDR application on the RedPitaya through the web interface.
-If you have a RedPitaya and no autostart of the SDR application there, and not compiled \pH
-with the STEMLAB option, you can open a web browser, start the SDR application on the RedPitaya,
+option.
+If you have a RedPitaya and no autostart of the SDR application, and not compiled \pH
+with the STEMLAB option, you can open a web browser on your host computer, start the SDR application on the RedPitaya,
 and then start \pH. With the STEMLAB option, this can all be done by \pH.
 }
 
-\item[\rett{AUDIO}] {(default: \texttt{PULSE})
+\item[\rett{AUDIO}] {(default: empty)
 On Linux systems (including the Raspberry PI), if setting the value to \texttt{ALSA},
 the standard Linux ALSA sound library is used for local audio
 output and local microphone input. In all other cases
@@ -6722,6 +6737,12 @@ reduction facilities which are based on  \texttt{rnnnoise} and \texttt{libspecbl
  that the WDSP shared library is installed in /usr/local/lib, while the WDSP header file
  is installed in /usr/local/include. The \texttt{wdsp} directory which is part of
  the \pH repository is not used if \texttt{EXTENDED\_NR} is activated.
+
+{\bf Note:} When I  checked the repository mentioned above in November 2024, it seems that the
+WDSP version is outdated (version 1.23) so it cannot be used with \pH. Ask the maintainer
+of that repository to update their code if you want to use it. Note that since version 1.25, WDSP
+contains a new and highly effective ,,trained'' NR2 noise reduction which was very well
+received by the community.
 }
 
 \item[\rett{SERVER}] {(default: \texttt{OFF})
@@ -6743,10 +6764,11 @@ This section is only for \pH running on RaspberryPi or similar systems with a GP
 input/output) header. \pH uses \texttt{libgpiod} to access the GPIO, so this may also apply to
 other single-board computers with a GPIO.
 
-\begin{figure}[ht]
+\begin{figure}[ht!]
 \center
-\includegraphics[width=15cm]{GPIO.pdf}
-\caption{GPIO lines used with various controllers.}
+\includegraphics[width=14cm]{GPIO.pdf}
+\caption{GPIO lines used with various controllers. Note that Controller2V2 and the G2 front panel
+share the used GPIO lines.}
 \label{fig:GPIO}
 \end{figure}
 
@@ -7161,8 +7183,10 @@ stems from missing, corrupt, or outdated SoapySDR libraries which are not part o
 
 \textit{This procedure has been tested on several Macintosh models, including a MacBook Air with an
 M1 Apple Silicon CPU, a MacMini with an M2 pro CPU, and a somewhat older MacMini with an Intel CPU.
-In the last year, MacOS operating systems from version 10.15 (,,Catalina'') through 14.5 (,,Sonoma'')
-have been used. Very old MacOS systems (e.g. Catalina) are no longer supported by HomeBrew.}
+In the last years, MacOS operating systems from version 10.15 (,,Catalina'') through 15.1 (,,Sequoia'')
+have been used. Very old MacOS systems (e.g. Catalina) are no longer supported by HomeBrew. Installing
+\pH on these is still possible but requires (really) advanced skills, so take care to use a Mac with an operating
+system still supported by HomeBrew.}
 
 If you want to run piHPDSR on an Apple Macintosh computer (iMac, Mac Mini, iBook Air, PowerBook), then
 you \textit{have to} compile \pH from the sources. Producing a precompiled binary that can be
@@ -7208,17 +7232,18 @@ not present by default. But this is easily cured. Simply open a terminal window 
 
 (you will need internet access to perform this task). This installs the so-called Command Line Tools,
 which we absolutely need to proceed. But even with the Command Line Tools installed, additional
-commands and libraries are needed. Fortunately there are packages out there which just contain
-these.
+commands and libraries are needed. Fortunately, there exist packages that allow for easy installation
+of such additional libraries.
 The most popular such ,,Unix enabler'' packages are \texttt{MacPorts} and \texttt{HomeBrew}, I
 am using
 \texttt{HomeBrew} but I know that \pH can be compiled and run successfully with \texttt{MacPorts}
-as well. The deal is as simply as follows: if you use \texttt{MacPorts} then you are on your own, or
+as well. If you use \texttt{MacPorts} then you are on your own, or
 have to rely on \pH installations done by the \texttt{MacPorts} folks. For \texttt{HomeBrew},
 I provide semi-automatic installation scripts that do all the complicated stuff for you. The choice,
-\texttt{HomeBrew} vs. \texttt{MacPorts}, is up to you, but my recommendation is to go for \texttt{HomeBrew}.
+\texttt{HomeBrew} vs. \texttt{MacPorts}, is up to you, but my recommendation is obviously
+to go for \texttt{HomeBrew}.
 
-To install from the sources, open a terminal window. If you do so, you get
+To load all required libraries and commands, open a terminal window. If you do so, you get
 a prompt and are in your home directory. It is assumed that no directory named \texttt{pihpsdr}
 exists. If it does, then this is likely a left-over from some previous
 attempt to install the program and then it should be moved elsewhere, since it may contain
@@ -7259,8 +7284,9 @@ to switch between version with the \texttt{git} command can be given in this man
 }
 \end{center}
 
-The libinstall command installs the
- \texttt{HomeBrew} universe, and the installation starts with asking you for the administrator
+The ,,git clone'' command loads the \pH repository, and the libinstall.sh command (that is
+within this repository) installs the
+ \texttt{HomeBrew} universe. Installing \texttt{HomeBrew} starts with asking you for the administrator
  password, tells you what it wants to do and requires hitting \texttt{Enter} to proceed.
  On Apple Silicon Macs, you will be asked the administrator again at a later stage,
  since here we have to create three symbolic links in \texttt{/usr/local} (see the end of this section),
@@ -7289,9 +7315,11 @@ you do not plan to compile \pH with the SOAPYSDR option. You also do not need
 to manually disable the GPIO option since on MacOS, the GPIO and SATURN options
 do not apply and are automatically deactivated. Without changing the compile time
 options (see Appendix \ref{sec:compiletime}) the MIDI option is the only one you get
-on MacOS.
+on MacOS. Changing compile-time options is described in detail in Appendix \ref{sec:compiletime}
+and involves the creation of a file \texttt{make.config.pihpsdr} within the \texttt{pihpsdr}
+directory.
 
-Compiling the program then only requires two commands
+Compiling \pH then only requires two commands
 
 \grtt{cd \$HOME/pihpsdr} \\
 \grtt{make app}
