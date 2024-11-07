@@ -497,9 +497,10 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
     // Mic level display
     //
     int text_location;
-    int Y1 = METER_HEIGHT / 4;
-    int Y2 = Y1 + METER_HEIGHT / 3;
-    int Y4 = 4 * Y1 - 6;
+    int Y0 = (METER_HEIGHT - 65) / 2;
+    int Y1 = Y0 + 15;
+    int Y2 = Y1 + 24;
+    int Y4 = Y2 + 24;
     int size;
     cairo_text_extents_t extents;
     cairo_set_source_rgba(cr, COLOUR_VFO_BACKGND);
@@ -557,7 +558,7 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
         cairo_set_line_width(cr, PAN_LINE_THICK);
         cairo_set_source_rgba(cr, COLOUR_METER);
 
-        for (i = 0; i < 54; i++) {
+        for (i = 0; i < 54; i+=6) {
           cairo_move_to(cr, 5 + i, Y4 - 10);
 
           if (i % 18 == 0) {
