@@ -1937,6 +1937,30 @@ void radio_set_tune(int state) {
     }
 
     if (state) {
+      //
+      // Ron has reported that TX underruns occur if TUNEing with
+      // compressor or CFC engaged, and that this can be
+      // suppressed by either turning off the phase rotator or
+      // by *NOT* silencing the TX audio samples while TUNEing.
+      //
+      // Experimentally, this means the phase rotator may make
+      // funny things when it sees only zero samples.
+      //
+      // A clean solution is to disable compressor/CFC temporarily
+      // while TUNEing.
+      //
+      int save_cfc  = transmitter->cfc;
+      int save_cmpr = transmitter->compressor;
+      transmitter->cfc = 0;
+      transmitter->compressor = 0;
+      tx_set_compressor(transmitter);
+      //
+      // Keep previous state in transmitter data, so we just need
+      // call tx_set_compressor when TUNEing ends.
+      //
+      transmitter->cfc = save_cfc;
+      transmitter->compressor = save_cmpr;
+
       if (transmitter->puresignal && ! transmitter->ps_oneshot) {
         //
         // DL1YCF:
@@ -2062,6 +2086,7 @@ void radio_set_tune(int state) {
         //
         tx_ps_resume(transmitter);
       }
+      tx_set_compressor(transmitter);
 
       tune = state;
       radio_calc_drive_level();
