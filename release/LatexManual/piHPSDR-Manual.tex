@@ -1855,13 +1855,16 @@ can be used for connecting a dedicated RX antenna.
 \textbf{Note: Diversity}. When using \bltt{Diversity} reception, the ADC setting is
 overridden, since there data streams from ADC0 and ADC1 are combined (mixed).
 
-
-
 \rett{Dither}. When checked, the ,,dither'' bit is set which affects the operation of
 the ADC converter in some HPSDR boards.
 
 \rett{Random}. When checked, the ,,random'' bit is set which affects the operation of
 the ADC converter in some HPSDR boards.
+
+\textbf{Note:} On radios where the ,,dither'' and ,,random'' bits have no effect, these
+two check boxes do not appear. Examples for such radios are RedPitaya based radios,
+the HermesLite-II or the RadioBerry, or all radios connected through the SoapySDR
+library.
 
 \rett{Preamp}. This checkbox is not shown in Fig. \ref{fig:RXMenu}, it only occurs
 for some legacy HPSDR boards which had a switch-able RX preamp.
@@ -1876,22 +1879,24 @@ connected to the radio. Local audio (to a sound card or a virtual audio cable)
 is not affected. The main use of this checkbox is
 to mute a radio-connected headphone while doing digi mode via local RX output.
 
-\rett{Bypass ADC0 RX filters}. This box is only shown if the ALEX filter board
+\rett{Bypass ADC0 RX filters}. This box is only shown if the radio is an HPSDR radio
+and an ALEX filter board
 is selected (see the \bltt{Radio} menu). If checked, the filters in the RF front-end for ADC0
-are by-passed during receive. This option will normally only used for radios that
-have band-pass filters in the front end, if one operates two receivers both running
+are by-passed during receive. This option will normally only be used for radios that
+have band-pass filters in the front end, and if one operates two receivers both running
 on ADC0 data on different bands. Without checking this option, only the signals for
-the band of the active receiver will pass. Older radios (up to Anan-100/200)  have a
+the band of the active receiver will pass the RF frontend filters.
+Older radios (up to Anan-100/200)  have a
 combination of a low-pass and a high-pass filter in the RX path to ADC0. If these
 radios run two receivers, the low-pass filter is selected based on the higher
 of the two RX frequencies, and the high-pass filters is selected based on the
 lower one. This ensures that the signals for both receivers fall into  the filter
 pass band.
 
-\rett{Bypass ADC1 RX filters}. This box is only shown if the RF front-end for ADC1
-features a filter board (Anan-7000/8000 and G2 radios),
-and if the ALEX filter board
-is selected (see the \bltt{Radio} menu). If checked, the filters in the RF front-end for ADC1
+\rett{Bypass ADC1 RX filters}. This box is only shown for HPSDR radios with the ALEX filter board
+selected (see the \bltt{Radio} menu), and if the RF front-end for ADC1
+features a filter board (Anan-7000/8000 and G2 radios).
+If checked, the filters in the RF front-end for ADC1
 are by-passed during receive.
 
 \rett{Local Audio Output:} If checked, the audio from this radio is sent to a local
