@@ -1444,9 +1444,9 @@ void saturn_handle_general_packet(bool FromNetwork, uint8_t *PacketBuffer) {
   SetFreqPhaseWord((bool)(Byte & 8));
   Byte = *(uint8_t*)(PacketBuffer + 38);              // enable timeout
   HW_Timer_Enable = ((bool)(Byte & 1));
-  Byte = *(uint8_t*)(PacketBuffer + 58);              // flag bits
+  Byte = *(uint8_t*)(PacketBuffer + 58);              // Only Bit0 used for "PA enable"
   SetPAEnabled((bool)(Byte & 1));
-  SetApolloEnabled((bool)(Byte & 2));
+  //SetApolloEnabled((bool)(Byte & 2));
   Byte = *(uint8_t*)(PacketBuffer + 59);              // Alex enable bits
   SetAlexEnabled(Byte);
   return;
