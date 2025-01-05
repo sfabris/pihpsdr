@@ -1697,3 +1697,11 @@ void saturn_handle_duc_specific(bool FromNetwork, unsigned char *UDPInBuffer) {
   SetADCAttenuator(eADC1, Byte, false, true);
   return;
 }
+
+//
+// Some functions calls to get the "allowed" SATURN FPGA version numbers
+//
+int saturn_minor_version_min() { return FIRMWARE_MIN_MINOR; }
+int saturn_minor_version_max() { return FIRMWARE_MAX_MINOR; }
+int saturn_major_version_min() { return FIRMWARE_MIN_MAJOR; }
+int saturn_major_version_max() { return FIRMWARE_MAX_MAJOR; }
