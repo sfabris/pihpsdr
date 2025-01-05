@@ -1004,6 +1004,13 @@ void radio_start_radio() {
     have_saturn_xdma = 1;
   }
 
+  protocol = radio->protocol;
+  device = radio->device;
+
+  if (device == NEW_DEVICE_SATURN && (strcmp(radio->info.network.interface_name, "XDMA") == 0)) {
+    have_saturn_xdma = 1;
+  }
+
   for (int id = 0; id < MAX_SERIAL; id++) {
     //
     // Apply some default values. The name ttyACMx is suitable for
@@ -1013,7 +1020,11 @@ void radio_start_radio() {
     SerialPorts[id].andromeda = 0;
     SerialPorts[id].baud = 0;
     SerialPorts[id].autoreporting = 0;
+<<<<<<< HEAD
     SerialPorts[id].g2 = 0;
+=======
+    SerialPorts[id].g2= 0;
+>>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
     snprintf(SerialPorts[id].port, sizeof(SerialPorts[id].port), "/dev/ttyACM%d", id);
   }
 
@@ -2520,6 +2531,7 @@ static void radio_restore_state() {
 
   for (int id = 0; id < MAX_SERIAL; id++) {
     GetPropS1("rigctl_serial_port[%d]", id,                  SerialPorts[id].port);
+<<<<<<< HEAD
 
     //
     // For a serial port internally used for G2,
@@ -2531,6 +2543,18 @@ static void radio_restore_state() {
       GetPropI1("rigctl_serial_baud_rate[%i]", id,             SerialPorts[id].baud);
       GetPropI1("rigctl_serial_autoreporting[%d]", id,         SerialPorts[id].autoreporting);
 
+=======
+    //
+    // For a serial port internally used for G2,
+    // only allow changes to the port name
+    //
+    if (!SerialPorts[id].g2) {
+      GetPropI1("rigctl_serial_enable[%d]", id,                SerialPorts[id].enable);
+      GetPropI1("rigctl_serial_andromeda[%d]", id,             SerialPorts[id].andromeda);
+      GetPropI1("rigctl_serial_baud_rate[%i]", id,             SerialPorts[id].baud);
+      GetPropI1("rigctl_serial_autoreporting[%d]", id,         SerialPorts[id].autoreporting);
+
+>>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
       if (SerialPorts[id].andromeda) {
         SerialPorts[id].baud = B9600;
       }

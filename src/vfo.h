@@ -122,7 +122,10 @@ struct _mode_settings {
   double tx_eq_gain[11];
   int compressor;                   // TX compressor on/off
   double compressor_level;          // TX compressor level
+<<<<<<< HEAD
   double mic_gain;                  // TX mic gain
+=======
+>>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
   int dexp;                         // Downward Expander (DEXP) on/off
   int dexp_trigger;                 // DEXP trigger level (dB)
   double dexp_tau;                  // DEXP averaging time constant

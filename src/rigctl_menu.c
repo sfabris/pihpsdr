@@ -350,6 +350,7 @@ void rigctl_menu(GtkWidget *parent) {
       gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (w), SerialPorts[i].autoreporting);
       gtk_grid_attach(GTK_GRID(grid), w, 6, row, 1, 1);
       g_signal_connect(w, "toggled", G_CALLBACK(serial_autoreporting_cb), GINT_TO_POINTER(i));
+<<<<<<< HEAD
     } else {
       snprintf (str, 64, "This port is used for G2-internal communication");
       w = gtk_label_new(str);
@@ -357,6 +358,16 @@ void rigctl_menu(GtkWidget *parent) {
       gtk_widget_set_halign(w, GTK_ALIGN_START);
       gtk_grid_attach(GTK_GRID(grid), w, 3, row, 3, 1);
     }
+=======
+   } else {
+    snprintf (str, 64, "This port is used for G2-internal communication");
+    w = gtk_label_new(str);
+    gtk_widget_set_name(w, "boldlabel");
+    gtk_widget_set_halign(w, GTK_ALIGN_START);
+    gtk_grid_attach(GTK_GRID(grid), w, 3, row, 3, 1);
+    w = gtk_entry_new();
+   }
+>>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
   }
 
 #ifdef TCI

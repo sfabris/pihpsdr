@@ -165,6 +165,12 @@ static void spinbtn_cb(GtkWidget *widget, gpointer data) {
   int e = c & 0x00FF;   // channel No. for CRCFREQ/CFCLVL/CFCPOST
 
   if (d == TX) {
+<<<<<<< HEAD
+=======
+    // Spin buttons of the TX menu
+    int mode = vfo_get_tx_mode();
+
+>>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
     switch (c) {
     case TX_LINEIN:
       linein_gain = v;
@@ -251,25 +257,41 @@ static void spinbtn_cb(GtkWidget *widget, gpointer data) {
     switch (c) {
     case DEXP_TAU:
       transmitter->dexp_tau = 0.001 * v;
+<<<<<<< HEAD
       mode_settings[mode].dexp_tau = 0.001 * v;
+=======
+      mode_settings[mode].dexp_tau = 0.001*v;
+>>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
       copy_mode_settings(mode);
       break;
 
     case DEXP_ATTACK:
       transmitter->dexp_attack = 0.001 * v;
+<<<<<<< HEAD
       mode_settings[mode].dexp_attack = 0.001 * v;
+=======
+      mode_settings[mode].dexp_attack = 0.001*v;
+>>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
       copy_mode_settings(mode);
       break;
 
     case DEXP_RELEASE:
       transmitter->dexp_release = 0.001 * v;
+<<<<<<< HEAD
       mode_settings[mode].dexp_release = 0.001 * v;
+=======
+      mode_settings[mode].dexp_release = 0.001*v;
+>>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
       copy_mode_settings(mode);
       break;
 
     case DEXP_HOLD:
       transmitter->dexp_hold = 0.001 * v;
+<<<<<<< HEAD
       mode_settings[mode].dexp_hold = 0.001 * v;
+=======
+      mode_settings[mode].dexp_hold = 0.001*v;
+>>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
       copy_mode_settings(mode);
       break;
 
