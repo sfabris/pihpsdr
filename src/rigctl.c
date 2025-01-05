@@ -105,7 +105,8 @@ typedef struct _client {
   guint andromeda_timer;            // for reporting ANDROMEDA LED states
   guint auto_timer;                 // for auto-reporting FA/FB
   int auto_reporting;               // auto-reporting (AI, ZZAI) 0...3
-  int andromeda_type;               // 1: Andromeda, 5: G2Mk2
+  int andromeda_type;               // 1:Andromeda, 4:G2Mk1 with CM5 upgrade, 5:G2 ultra
+  int last_v;                       // Last push-button state received
   int last_fa, last_fb, last_md;    // last VFO-A/B frequency and VFO-A mode reported
   int last_led[MAX_ANDROMEDA_LEDS]; // last status of ANDROMEDA LEDs
 } CLIENT;
@@ -951,12 +952,18 @@ static gboolean andromeda_handler(gpointer data) {
   CLIENT *client = (CLIENT *)data;
   char reply[256];
 
-  if (!client->running) {
-    return FALSE;
+  if (!client->running || client->andromeda_type == 4) {
+    //
+    // If the client is no longer running, remove source.
+    // The same applies for ANDROMEDA type-4 clients since there
+    // are no LEDs on a G2MkI panel
+    //
+    return G_SOURCE_REMOVE;
   }
 
   //
   // Do not proceed until Andromeda version is known
+  // Send a ZZZS command and re-trigger the handler
   //
   if (client->andromeda_type < 1) {
     snprintf(reply, 256, "ZZZS;");
@@ -976,11 +983,16 @@ static gboolean andromeda_handler(gpointer data) {
         new = mox;
         break;
 
+      case 2:
+        // ATU has TUNE solution
+        break;
+
       case 3:
         new = tune;
         break;
 
       case 4:
+        // According to the ANAN document this is LED #5
         if (can_transmit) {
           new = transmitter->puresignal;
         } else {
@@ -990,7 +1002,12 @@ static gboolean andromeda_handler(gpointer data) {
         break;
 
       case 5:
+        // According to the ANAN document this is LED #5
         new = diversity_enabled;
+        break;
+
+      case 6:
+        // shift LED handled by Rick's code
         break;
 
       case 7:
@@ -1017,7 +1034,7 @@ static gboolean andromeda_handler(gpointer data) {
 
     if (client->andromeda_type == 5) {
       //
-      // G2Mk2 console
+      // G2Mk2 (a.k.a. G2 Ultra) console
       //
       switch (led) {
       case 1:
@@ -1070,6 +1087,18 @@ static gboolean andromeda_handler(gpointer data) {
   }
 
   return TRUE;
+}
+
+static gboolean andromeda_oneshot_handler(gpointer data) {
+  //
+  // This is the handler, called once, so it has to return
+  // G_SOURCE_REMOVE. It is intended to be exectuted via
+  // g_idle_add() at the end of a ZZZP handling when
+  // "immediate" LED update is desired.
+  //
+  (void) andromeda_handler(data);
+
+  return G_SOURCE_REMOVE;
 }
 
 static gpointer rigctl_server(gpointer data) {
@@ -1178,6 +1207,7 @@ static gpointer rigctl_server(gpointer data) {
     tcp_client[spare].last_fa         = -1;
     tcp_client[spare].last_fb         = -1;
     tcp_client[spare].last_md         = -1;
+    tcp_client[spare].last_v          = 0;
 
     for (int i = 0; i < MAX_ANDROMEDA_LEDS; i++) {
       tcp_client[spare].last_led[i] = -1;
@@ -3340,6 +3370,9 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         }
 
         schedule_action(VFO, RELATIVE, -steps);
+      } else {
+        // unexpected command format
+        implemented = FALSE;
       }
 
       break;
@@ -3356,100 +3389,128 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //NOTE      y=0-9 is the number of ticks
       //NOTE
       //ENDDEF
+
       if (command[7] == ';') {
+        int v, p;
+        p = 10 * (command[4] - '0') + (command[5] - '0');
+        v = command[6] - '0';
+
+        if (p > 50) {
+          p -= 50;
+          v = -v;
+        }
+
+        if (v == 0) {
+          // This should not happen, but if, just do nothing
+          break;
+        }
+
+        //
+        // At this place, p is the encoder number (1...20) and
+        // v the number of ticks (-9 ... 9)
+        //
+
         if (client->andromeda_type == 1) {
           //
-          // ANDROMEDA console
+          // ANDROMEDA console with six double-encoders
+          // Enc1/2, ..., Enc11/12. The silk print given
+          // below comes from the ApacheLabs document
+          // 1022_Andromeda-manual-v1.pdf.
+          // Note that Enc11 is here implemented as MICgain
+          // but the silk print reads MULTI.
           //
-          int v, p;
-
-          if ((command[4] - 0x30) < 2) {
-            p = (command[4] - 0x2b) * 10;
-            v = 0;
-          } else {
-            p = (command[4] - 0x30) * 10;
-            v = 1;
-          }
-
-          p += (command[5] - 0x30);
-
           if (!locked) switch (p) {
-            case 51: // RX1 AF Gain
-              schedule_action(AF_GAIN_RX1, RELATIVE, (v == 0) ? 1 : -1);
+            // Enc1/2: "RX1 AF/RF"
+            case 1:
+              schedule_action(AF_GAIN_RX1, RELATIVE, v);
               break;
 
-            case 52: // RX1 RF (better: AGC) Gain
-              schedule_action(AGC_GAIN_RX1, RELATIVE, (v == 0) ? 1 : -1);
+            case 2:
+              schedule_action(AGC_GAIN_RX1, RELATIVE, v);
               break;
 
-            case 53: // RX2 AF Gain
-              schedule_action(AF_GAIN_RX2, RELATIVE, (v == 0) ? 1 : -1);
+            // Enc3/4: "RX2 AF/RF"
+            case 3:
+              schedule_action(AF_GAIN_RX2, RELATIVE, v);
               break;
 
-            case 54: // RX2 RF (better: AGC) Gain
-              schedule_action(AGC_GAIN_RX2, RELATIVE, (v == 0) ? 1 : -1);
+            case 4:
+              schedule_action(AGC_GAIN_RX2, RELATIVE, v);
               break;
 
-            case 55: // Filter Cut High
-              schedule_action(FILTER_CUT_HIGH, RELATIVE, (v == 0) ? 1 : -1);
+            // Enc5/6: "IF FILTER HIGH/LOW CUT"
+            case 5:
+              schedule_action(FILTER_CUT_HIGH, RELATIVE, v);
               break;
 
-            case 56: // Filter Cut Low
-              schedule_action(FILTER_CUT_LOW, RELATIVE, (v == 0) ? 1 : -1);
+            case 6:
+              schedule_action(FILTER_CUT_LOW, RELATIVE, v);
               break;
 
-            case 57: // Diversity Gain
-              if (diversity_enabled) { schedule_action(DIV_GAIN, RELATIVE, (v == 0) ? 1 : -1); }
-
+            // Enc7/8: "DIVERSITY GAIN/PHASE"
+            case 7:
+              schedule_action(DIV_GAIN, RELATIVE, v);
               break;
 
-            case 58: // Diversity Phase
-              if (diversity_enabled) { schedule_action(DIV_PHASE, RELATIVE, (v == 0) ? 1 : -1); }
-
+            case 8:
+              schedule_action(DIV_PHASE, RELATIVE, v);
               break;
 
-            case 59: // RIT of the VFO of the active receiver
-              if (vfo[active_receiver->id].rit_enabled) { schedule_action(RIT, RELATIVE, (v == 0) ? 1 : -1); }
-
-              break;
-
-            case 60: // XIT
-              if (vfo[vfo_get_tx_vfo()].xit_enabled) { schedule_action(XIT, RELATIVE, (v == 0) ? 1 : -1); }
+            // Enc9/10: "RIT/XIT"
+            case 9: // RIT of the VFO of the active receiver
+              schedule_action(RIT, RELATIVE, v);
 
               break;
 
-            case 61: // Mic Gain
-              schedule_action(MIC_GAIN, RELATIVE, (v == 0) ? 1 : -1);
+            case 10:
+              schedule_action(XIT, RELATIVE, v);
+
               break;
 
-            case 62: // Drive
-              schedule_action(DRIVE, RELATIVE, (v == 0) ? 1 : -1);
+            //Enc11/12: "MULTI/DRIVE", but here implemented as "MIC/DRIVE"
+            case 11:
+              schedule_action(MIC_GAIN, RELATIVE, v);
+              break;
+
+            case 12:
+              schedule_action(DRIVE, RELATIVE, v);
               break;
             }
-        } // end of andromeda console
+        }
 
-        if (client->andromeda_type == 5) {
+        if (client->andromeda_type == 4) {
           //
-          // G2Mk2 console
+          // upgraded G2Mk1 panel
           //
-          int v, p;
-          p = 10 * (command[4] - '0') + (command[5] - '0');
-          v = command[6] - '0';
-
-          if (p > 50) {
-            p -= 50;
-            v = -v;
-          }
-
-          if (v == 0) {
-            // nothing to do
+          switch (p) {
+          case 1:  // RX AF
+            schedule_action(AF_GAIN, RELATIVE, v);
+            break;
+          case 2:  // RX AGC
+            schedule_action(AGC_GAIN, RELATIVE, v);
+            break;
+          case 5:  // IF filter high
+            schedule_action(FILTER_CUT_HIGH, RELATIVE, v);
+            break;
+          case 6:  // IF filter low
+            schedule_action(FILTER_CUT_LOW, RELATIVE, v);
+            break;
+          case 9:  // RIT
+            schedule_action(RIT, RELATIVE, v);
+            break;
+          case 10:  // RIT
+            schedule_action(XIT, RELATIVE, v);
+            break;
+          case 11:  // MULTI
+            schedule_action(MULTI_ENC, RELATIVE, v);
+            break;
+          case 12:  // DRIVE
+            schedule_action(DRIVE, RELATIVE, v);
             break;
           }
+        }
 
-          //
-          // p encodes the encoder (1-20) and v the ticks (-9 ... 9)
-          // Note: lock status should be handled in actions.c
-          //
+        if (client->andromeda_type == 5) {
           switch (p) {
           case 1:  // RX2 AF Gain
             schedule_action(AF_GAIN_RX2, RELATIVE, v);
@@ -3484,7 +3545,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
             break;
 
-          case 8:  // Atten
+          case 8:  // Attenuation
             schedule_action(ATTENUATION, RELATIVE, v);
             break;
 
@@ -3505,7 +3566,11 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
             break;
           }
         } // end of G2Mk2 console
-      } //end of command format check
+
+      } else {
+        // unexpected command format
+        implemented = FALSE;
+      }
 
       break;
 
@@ -3517,7 +3582,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //NOTE      The LED with number x shall be switched on (y=1)
       //NOTE      or off (y=0).
       //ENDDEF
-      implemented = FALSE;  // this command should never ARRIVE
+      implemented = FALSE;  // this command should never ARRIVE from the console
       break;
 
     case 'P': //ZZZP ANDROMEDA command
@@ -3530,12 +3595,36 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //NOTE      pressed(y=1) or pressed for a longer time (y=2).
       //ENDDEF
       if (command[7] == ';') {
-        int v = (command[6] - 0x30);
-        int p = (command[4] - 0x30) * 10;
-        p += command[5] - 0x30;
+        int p = 10*(command[4] - '0') + (command[5] - '0');
+        int v = (command[6] - '0');
+
+        //
+        // The Andromeda console will send a v=0 --> v=1 --> v=0 sequence for a short press,
+        // so we have characteristic transitions tr01 (0-->1, upon pressing), tr12 (1-->2, after waiting),
+        // tr10 (1-->0, upon release) and tr20 (2-->0, upon release). For any button, either the sequence
+        // {tr01,tr01} is generated (short press) or the sequence {tr01,tr12,tr20} (long press).
+        //
+        // We have to distinguish "normal" buttons from "long" buttons. "normal" buttons make no difference
+        // between a short and a long press but "long" buttons may generate different actions for short
+        // and long presses.
+        //
+        // "Normal" buttons should generate a "PRESSED" upon tr01 and (if required) a "RELEASED" upon (tr10 || tr20).
+        // "Long" buttons generate a "PRESSED" for the short-press event upon tr10,
+        // and a "PRESSED" for the long-press event upon tr12.
+        //
+        // ATTENTION: no RELEASE event is ever triggered for a "long" button. Such events are currently required
+        //            only for PTT, RIT_PLUS, RIT_MINS, XIT_PLUS, XIT_MINUS, and CW keyer actions, which may be associated
+        //            to the "function keys" F1-F8 on the original ANDROMEDA console.
+        //            In all other cases, there is no need to bother the system with RELEASE events.
+        //
+        // NOTE: Rick's code for the original ANDROMEDA console remains unchanged.
+        //
+        //
 
         if (client->andromeda_type == 1) {
-          // original ANDROMEDA console
+          //
+          // Rick's original ANDROMEDA console, ending with a "break"
+          //
           static int numpad_active = 0;
           static int longpress = 0;
 
@@ -3852,54 +3941,150 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
               }
             }
           }
+          break;
         } // end of the "type=1" section
 
+        int tr01, tr10, tr12, tr20;
+
+        tr01 = 0;  // indicates a v=0 --> v=1 transision
+        tr12 = 0;  // indicates a v=1 --> v=2 transision
+        tr10 = 0;  // indicates a v=1 --> v=0 transision
+        tr20 = 0;  // indicates a v=2 --> v=0 transision
+
+        if (client->last_v == 0 && v == 1) { tr01 = 1; }
+        if (client->last_v == 1 && v == 2) { tr12 = 1; }
+        if (client->last_v == 1 && v == 0) { tr10 = 1; }
+        if (client->last_v == 2 && v == 0) { tr20 = 1; }
+
+        client->last_v = v;
+
+        if (client->andromeda_type == 4) {
+          //
+          // Upgraded G2 MkI
+          //
+          switch (p) {
+          case 1:  // RX Mute
+            if (tr01) { schedule_action(MUTE, PRESSED, 0); }
+
+            break;
+
+          case 5:  // IF filter default
+            if (tr01) { schedule_action(FILTER_CUT_DEFAULT, PRESSED, 0); }
+
+            break;
+
+          case 9:  // Clear RIT and XIT
+            if (tr01) {
+              schedule_action(RIT_CLEAR, PRESSED, 0);
+              schedule_action(XIT_CLEAR, PRESSED, 0);
+            }
+
+            break;
+
+          case 11:  // Cycle through Multifunction assignment
+            if (tr01) { schedule_action(MULTI_BUTTON, PRESSED, 0); }
+
+            break;
+
+          case 21:  // cycle the tool bar
+            if (tr01) { schedule_action(FUNCTION, PRESSED, 0); }
+
+            break;
+
+          case 30:  // Band+
+            if (tr01) { schedule_action(BAND_PLUS, PRESSED, 0); }
+
+            break;
+
+          case 31:  // Mode+
+            if (tr01) { schedule_action(MODE_PLUS, PRESSED, 0); }
+
+            break;
+
+          case 32:  // Filter+
+            if (tr01) { schedule_action(MODE_PLUS, PRESSED, 0); }
+
+            break;
+
+          case 33:  // Band-
+            if (tr01) { schedule_action(BAND_MINUS, PRESSED, 0); }
+
+            break;
+
+          case 34:  // Mode-
+            if (tr01) { schedule_action(MODE_MINUS, PRESSED, 0); }
+
+            break;
+
+          case 35:  // Filter-
+            if (tr01) { schedule_action(FILTER_MINUS, PRESSED, 0); }
+
+            break;
+
+          case 36:  // A to B
+            if (tr01) { schedule_action(A_TO_B, PRESSED, 0); }
+
+            break;
+
+          case 37:  // B to A
+            if (tr01) { schedule_action(B_TO_A, PRESSED, 0); }
+
+            break;
+
+          case 38:  // Toggle Split
+            if (tr01) { schedule_action(SPLIT, PRESSED, 0); }
+
+            break;
+
+          case 42:  // RIT on/off
+            if (tr01) { schedule_action(RIT_ENABLE, PRESSED, 0); }
+
+            break;
+
+          case 43:  // XIT on/off
+            if (tr01) { schedule_action(XIT_ENABLE, PRESSED, 0); }
+
+            break;
+
+          case 44:  // LOCK on/off
+            if (tr01) { schedule_action(LOCK, PRESSED, 0); }
+
+            break;
+
+          case 45:  // CTUN on/off
+            if (tr01) { schedule_action(CTUN, PRESSED, 0); }
+
+            break;
+
+          case 47:  // MOX
+            if (tr01) { schedule_action(MOX, PRESSED, 0); }
+
+            break;
+
+          case 50:  // TUNE
+            if (tr01) { schedule_action(TUNE, PRESSED, 0); }
+
+            break;
+          }
+        }
+
         if (client->andromeda_type == 5) {
-          // G2 Mk2 console, shift key is handled in console
-          int PRESS     = 0;  // indicates a v=0 --> v=1 transision
-          int LONGPRESS = 0;  // indicates a v=1 --> v=2 transision
-          //int RELEASE   = 0;  // indicates a v=1 --> v=0 transision
-          static int last_v = 0;
-
-          if (last_v == 0 && v == 1) { PRESS     = 1; }
-
-          //if (last_v == 1 && v == 0) RELEASE   = 1;
-          if (last_v == 1 && v == 2) { LONGPRESS = 1; }
-
           //
-          // For buttons which only have one action defined, schedule action upon PRESS
+          // G2 Ultra
           //
-          // For buttons which have both a "short press" and "long press" action defined:
-          // Here the convention is such that the "short press" action may be executed
-          // before the long press  is detected.
-          // Example: Pressing the Band+ button (#16) for a long time will first
-          // cycle upwards through the list of bands (PRESS action), an then open
-          // the BAND menu (LONGPRESS action).
-          //
-          // Note the Arduino software is such that it generates a (v=1,v=0) sequence upon a short
-          // press and a (v=1,v=2,v=0) sequence upon a long press, and that no events for other
-          // buttons or encoders are emitted during that sequence. Note a v=2 --> v=0 transition
-          // will be ignored (except setting last_v to zero).
-          //
-          // What about LEDs? We rely on the ANDROMEDA reporter task to update the LEDs. This is
-          // because our "actions" here go to the GTK queue, and are executed at some unknown time
-          // in the future. We shall switch LEDs when piHPSDR changes state at the earliest!
-          //
-          last_v = v;
-
           switch (p) {
           case 1:  // RX2 Mute
-            if (PRESS) { schedule_action(MUTE_RX2, PRESSED, 0); }
+            if (tr01) { schedule_action(MUTE_RX2, PRESSED, 0); }
 
             break;
 
           case 2:  // RX1 Mute
-            if (PRESS) { schedule_action(MUTE_RX1, PRESSED, 0); }
+            if (tr01) { schedule_action(MUTE_RX1, PRESSED, 0); }
 
             break;
 
           case 3: // Change multifunction assignment
-            if (PRESS) { schedule_action(MULTI_BUTTON, PRESSED, 0); }
+            if (tr01) { schedule_action(MULTI_BUTTON, PRESSED, 0); }
 
             break;
 
@@ -3907,37 +4092,37 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
             break;
 
           case 5:  // Toggle two-tone
-            if (PRESS) { schedule_action(TWO_TONE, PRESSED, 0); }
+            if (tr01) { schedule_action(TWO_TONE, PRESSED, 0); }
 
             break;
 
           case 6:  // Toggle tune
-            if (PRESS) { schedule_action(TUNE, PRESSED, 0); }
+            if (tr01) { schedule_action(TUNE, PRESSED, 0); }
 
             break;
 
           case 7:  // Toggle MOX
-            if (PRESS) { schedule_action(MOX, PRESSED, 0); }
+            if (tr01) { schedule_action(MOX, PRESSED, 0); }
 
             break;
 
           case 8: // toggle CTUN
-            if (PRESS) { schedule_action(CTUN, PRESSED, 0); }
+            if (tr01) { schedule_action(CTUN, PRESSED, 0); }
 
             break;
 
           case 9: // toggle LOCK
-            if (PRESS) { schedule_action(LOCK, PRESSED, 0); }
+            if (tr01) { schedule_action(LOCK, PRESSED, 0); }
 
             break;
 
           case 10: // switch active receiver
-            if (PRESS) { schedule_action(SWAP_RX, PRESSED, 0); }
+            if (tr01) { schedule_action(SWAP_RX, PRESSED, 0); }
 
             break;
 
           case 11: // toggle between off/RIT/XIT
-            if (PRESS) {
+            if (tr01) {
               if ((vfo[active_receiver->id].rit_enabled == 0) && (vfo[vfo_get_tx_vfo()].xit_enabled == 0)) {
                 vfo_rit_onoff(active_receiver->id, 1);
                 vfo_xit_onoff(0);
@@ -3953,7 +4138,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
             break;
 
           case 12: // clear RIT and XIT
-            if (PRESS) {
+            if (tr01) {
               schedule_action(RIT_CLEAR, PRESSED, 0);
               schedule_action(XIT_CLEAR, PRESSED, 0);
             }
@@ -3961,70 +4146,70 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
             break;
 
           case 13:  // Reset variable filter
-            if (PRESS) { schedule_action(FILTER_CUT_DEFAULT, PRESSED, 0); }
+            if (tr01) { schedule_action(FILTER_CUT_DEFAULT, PRESSED, 0); }
 
             break;
 
           case 14:  // Select next mode
-            if (PRESS) {
+            if (tr10) {
               schedule_action(MODE_PLUS, PRESSED, 0);
             }
 
-            if (LONGPRESS) {
+            if (tr12) {
               schedule_action(MENU_MODE, PRESSED, 0);
             }
 
             break;
 
           case 15:  // Select next filter
-            if (PRESS) {
+            if (tr10) {
               schedule_action(FILTER_PLUS, PRESSED, 0);
             }
 
-            if (LONGPRESS) {
+            if (tr12) {
               schedule_action(MENU_FILTER, PRESSED, 0);
             }
 
             break;
 
           case 16:  // Select next band
-            if (PRESS) {
+            if (tr01) {
               schedule_action(BAND_PLUS, PRESSED, 0);
             }
 
-            if (LONGPRESS) {
+            if (tr12) {
               schedule_action(MENU_BAND, PRESSED, 0);
             }
 
             break;
 
           case 17:  // Select previous mode
-            if (PRESS) { schedule_action(MODE_MINUS, PRESSED, 0); }
+            if (tr01) { schedule_action(MODE_MINUS, PRESSED, 0); }
 
             break;
 
           case 18:  // Select previous filter
-            if (PRESS) { schedule_action(FILTER_MINUS, PRESSED, 0); }
+            if (tr01) { schedule_action(FILTER_MINUS, PRESSED, 0); }
 
             break;
 
           case 19:  // Select previous band
-            if (PRESS) { schedule_action(BAND_MINUS, PRESSED, 0); }
+            if (tr01) { schedule_action(BAND_MINUS, PRESSED, 0); }
 
             break;
 
           case 20:  // A to B
-            if (PRESS) { schedule_action(A_TO_B, PRESSED, 0); }
+            if (tr01) { schedule_action(A_TO_B, PRESSED, 0); }
 
             break;
 
           case 21:  // B to A
-            if (PRESS) { schedule_action(B_TO_A, PRESSED, 0); }
+            if (tr01) { schedule_action(B_TO_A, PRESSED, 0); }
 
             break;
 
           case 22:  // Toggle Split
-            if (PRESS) { schedule_action(SPLIT, PRESSED, 0); }
+            if (tr01) { schedule_action(SPLIT, PRESSED, 0); }
 
             break;
 
@@ -4041,62 +4226,62 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
             break;
 
           case 27:  // 160m
-            if (PRESS) { schedule_action(BAND_160, PRESSED, 0); }
+            if (tr01) { schedule_action(BAND_160, PRESSED, 0); }
 
             break;
 
           case 28:  // 80m
-            if (PRESS) { schedule_action(BAND_80, PRESSED, 0); }
+            if (tr01) { schedule_action(BAND_80, PRESSED, 0); }
 
             break;
 
           case 29:  // 60m
-            if (PRESS) { schedule_action(BAND_60, PRESSED, 0); }
+            if (tr01) { schedule_action(BAND_60, PRESSED, 0); }
 
             break;
 
           case 30:  // 40m
-            if (PRESS) { schedule_action(BAND_40, PRESSED, 0); }
+            if (tr01) { schedule_action(BAND_40, PRESSED, 0); }
 
             break;
 
           case 31:  // 30m
-            if (PRESS) { schedule_action(BAND_30, PRESSED, 0); }
+            if (tr01) { schedule_action(BAND_30, PRESSED, 0); }
 
             break;
 
           case 32:  // 20m
-            if (PRESS) { schedule_action(BAND_20, PRESSED, 0); }
+            if (tr01) { schedule_action(BAND_20, PRESSED, 0); }
 
             break;
 
           case 33:  // 17m
-            if (PRESS) { schedule_action(BAND_17, PRESSED, 0); }
+            if (tr01) { schedule_action(BAND_17, PRESSED, 0); }
 
             break;
 
           case 34:  // 15m
-            if (PRESS) { schedule_action(BAND_15, PRESSED, 0); }
+            if (tr01) { schedule_action(BAND_15, PRESSED, 0); }
 
             break;
 
           case 35:  // 12m
-            if (PRESS) { schedule_action(BAND_12, PRESSED, 0); }
+            if (tr01) { schedule_action(BAND_12, PRESSED, 0); }
 
             break;
 
           case 36:  // 10m
-            if (PRESS) { schedule_action(BAND_10, PRESSED, 0); }
+            if (tr01) { schedule_action(BAND_10, PRESSED, 0); }
 
             break;
 
           case 37:  // 6m
-            if (PRESS) { schedule_action(BAND_6, PRESSED, 0); }
+            if (tr01) { schedule_action(BAND_6, PRESSED, 0); }
 
             break;
 
           case 38:  // LF
-            if (PRESS) { schedule_action(BAND_136, PRESSED, 0); }
+            if (tr01) { schedule_action(BAND_136, PRESSED, 0); }
 
             break;
 
@@ -4107,12 +4292,21 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
             break;
 
           case 41:  // Toggle Diversity
-            if (PRESS) { schedule_action(DIV, PRESSED, 0); }
+            if (tr01) { schedule_action(DIV, PRESSED, 0); }
 
             break;
           }  // end of big button switch statement
         }    // end of G2Mk2 ZZZP code
-      }  // end of check on correct response format
+
+        //
+        // Schedule LED update
+        //
+        g_idle_add(andromeda_oneshot_handler, (gpointer) client);
+
+      } else {
+        // all ANDROMEDA types, unexpected command format
+        implemented = FALSE;
+      }
 
       break;
 
