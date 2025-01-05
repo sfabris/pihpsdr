@@ -105,12 +105,8 @@ typedef struct _client {
   guint andromeda_timer;            // for reporting ANDROMEDA LED states
   guint auto_timer;                 // for auto-reporting FA/FB
   int auto_reporting;               // auto-reporting (AI, ZZAI) 0...3
-<<<<<<< HEAD
   int andromeda_type;               // 1:Andromeda, 4:G2Mk1 with CM5 upgrade, 5:G2 ultra
   int last_v;                       // Last push-button state received
-=======
-  int andromeda_type;               // 1: Andromeda, 5: G2Mk2
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
   int last_fa, last_fb, last_md;    // last VFO-A/B frequency and VFO-A mode reported
   int last_led[MAX_ANDROMEDA_LEDS]; // last status of ANDROMEDA LEDs
 } CLIENT;
@@ -918,10 +914,6 @@ static gboolean autoreport_handler(gpointer data) {
   if (client->auto_reporting > 0) {
     long long fa = vfo[VFO_A].ctun ? vfo[VFO_A].ctun_frequency : vfo[VFO_A].frequency;
     long long fb = vfo[VFO_B].ctun ? vfo[VFO_B].ctun_frequency : vfo[VFO_B].frequency;
-<<<<<<< HEAD
-=======
-    char reply[256];
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
 
     if (fa != client->last_fa) {
       char reply[256];
@@ -937,16 +929,10 @@ static gboolean autoreport_handler(gpointer data) {
       client->last_fb = fb;
     }
   }
-<<<<<<< HEAD
 
   if (client->auto_reporting > 1) {
     int md = vfo[VFO_A].mode;
-=======
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
 
-  if (client->auto_reporting > 1) {
-    int md = vfo[VFO_A].mode;
-    char reply[256];
     if (md != client->last_md) {
       char reply[256];
       snprintf(reply, 256, "MD%1d;", ts2000_mode(md));
@@ -1448,17 +1434,10 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //SET       ZZAIx;
       //READ      ZZAI;
       //RESP      ZZAIx;
-<<<<<<< HEAD
       //NOTE      x=0: auto-reporting disabled, x>0: enabled.
       //NOTE      Auto-reporting is affected for the client that sends this command.
       //CONT      For x=1, only frequency changes are sent via FA/FB commands.
       //CONT      For x>1, mode changes are also sent via MD commands.
-=======
-      //NOTE      x=0: auto-reporting disabled, x>1: enabled
-      //NOTE      Auto-reporting is affected for the client that sends this command.
-      //NOTE      For x=1, only frequency changes are sent via FA/FB commands.
-      //NOTE      For x>1, mode changes are also sent via MD commands.
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
       //ENDDEF
       if (command[4] == ';') {
         // Query status
@@ -1466,13 +1445,9 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         send_resp(client->fd, reply) ;
       } else if (command[5] == ';') {
         client->auto_reporting = command[4] - '0';
-<<<<<<< HEAD
 
         if (client->auto_reporting < 0) { client->auto_reporting = 0; }
 
-=======
-        if (client->auto_reporting < 0) { client->auto_reporting = 0; }
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
         if (client->auto_reporting > 3) { client->auto_reporting = 3; }
       } else {
         implemented = FALSE;
@@ -2386,11 +2361,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //READ      ZZMA;
       //RESP      ZZMAx;
       //NOTE      x=0: RX1 not muted, x=1: muted.
-<<<<<<< HEAD
       //CONT      This only affects the audio sent to the radio via the HPSDR protocol.
-=======
-      //NOTE      This only affects the audio sent to the radio via the HPSDR protocol.
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
       //ENDDEF
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZMA%d;", receiver[0]->mute_radio);
@@ -2408,13 +2379,8 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //SET       ZZMBx;
       //READ      ZZMB;
       //RESP      ZZMBx;
-<<<<<<< HEAD
       //NOTE      x=0: RX2 not muted, x=1: muted.
       //CONT      This only affects the audio sent to the radio via the HPSDR protocol.
-=======
-      //NOTE      x=0: RX2 not muted, x=1: muted
-      //NOTE      This only affects the audio sent to the radio via the HPSDR protocol.
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
       //ENDDEF
       RXCHECK(1,
       if (command[4] == ';') {
@@ -4481,26 +4447,17 @@ int parse_cmd(void *data) {
       //RESP      AIx;
       //NOTE      x=0: auto-reporting disabled, x>0: enabled.
       //NOTE      Auto-reporting is affected for the client that sends this command.
-<<<<<<< HEAD
       //CONT      For x=1, only frequency changes are sent via FA/FB commands.
       //CONT      For x>1, mode changes are also sent via MD commands.
-=======
-      //NOTE      For x=1, only frequency changes are sent via FA/FB commands.
-      //NOTE      For x>1, mode changes are also sent via MD commands.
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
       //ENDDEF
       if (command[2] == ';') {
         snprintf(reply, 256, "AI%d;", client->auto_reporting);
         send_resp(client->fd, reply) ;
       } else if (command[3] == ';') {
         client->auto_reporting = command[2] - '0';
-<<<<<<< HEAD
 
         if (client->auto_reporting < 0) { client->auto_reporting = 0; }
 
-=======
-        if (client->auto_reporting < 0) { client->auto_reporting = 0; }
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
         if (client->auto_reporting > 3) { client->auto_reporting = 3; }
       }
 

@@ -104,17 +104,10 @@ const VFO_BAR_LAYOUT vfo_layout_list[] = {
     .rit_y = 160,
     .xit_x = 1200,
     .xit_y = 160,
-<<<<<<< HEAD
     .filter_x = 1320,
     .filter_y = 43,
     .multifn_x = 1400,
     .multifn_y = 160 
-=======
-    .filter_x = 730,
-    .filter_y = 43,
-    .multifn_x = 775,
-    .multifn_y = 160,
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
   },
 
   //

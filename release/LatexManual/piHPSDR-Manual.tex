@@ -285,23 +285,12 @@ single encoders. This special case is not covered in this manual.}
 on a single shaft), or a clone thereof.
 This controller is denoted Controller2 in the rest of this manual.}
 \item[G2 Front Panel]{Choose this if you have an Anan G2 radio with a built-in controller.}
-<<<<<<< HEAD
 \item[G2 Mk2 Panel]{Choose this if you have an Anan G2 Mk2 (also known as ,,G2 Ultra'')
 radio (with LEDs in the front panel).
 This not only tells \pH not to use any GPIO lines, but also to use a serial line to connect to the front panel.
 So this setting is needed for G2 Mk2 even if \pH is compiled without GPIO support.}
 \end{itemize}
 
-=======
-\item[G2 Mk2 Panel]{Choose this if you have an Anan G2 Mk2 radio (with LEDs in the front panel).}
-\end{itemize}
-
-If \pH is compiles without GPIO support, you can only choose between \rett{No Controller} and
-\rett{G2 Mk2 Panel} (the latter is controlled by a serial connection rather than by GPIO lines).
-The effect of choosing \rett{G2 Mk2 Panel} is that \pH will then use a default when configuring
-the serial lines that is suitable of an Anan G2-MkII radio.
-
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
 \textbf{Attention.} Be sure to choose a controller only if such a controller is actually connected to your
 Raspberry Pi. Unexpected things can happen if you chose one type of controller here but have totally different
 hardware connected to the GPIO. For example, if you have a so-called ,,audio hat'' attached to the RaspPi
@@ -1811,63 +1800,6 @@ The \bltt{Mode} menu lets you change the mode of the active receiver, so you can
 say, from LSB to CWU or DIGU. The mode menu simply lists the available modes, the current
 one is highlighted (Fig. \ref{fig:ModeMenu}).
 
-<<<<<<< HEAD
-=======
-\subsection{RX/TX ,,profiles''}
- Many settings such as filter choices, noise reduction
-settings, equaliser settings, and TX compressor settings
- are only reasonable for a specific mode and need be re-adjusted if one changes
- the mode. For example, one might wish to use
- different VFO step sizes for different modes, and get the step size chosen for that
- mode automatically if one switches to that mode. Likewise, one often has specific settings
- for equalisers and TX compression that are valid for voice modes but not for digital modes.
-
- To this end, the settings given below are combined in a ,,RX/TX profile'' that
- is associated with a certain mode or a certain group of modes. Modes grouped
- together are USB/LSB/DSB, CWU/CWL, and DIGU/DIGL. This has been done because
- if one has figured out optimal settings for e.q. the TX and RX equalisers for LSB,
- one most likely wants to have the same settings automatically for USB as well.
- When the mode of the VFO controlling RX1, RX2, or the transmitter is changed,
- the settings for that VFO/receiver/transmitter will be loaded from the profile.
-
- Here is the list of settings that form the RX/TX profile:
-
-\begin{center}
-\begin{tabular}{l}
-\toprule
-$\bullet$ Filter type \cr
-$\bullet$ CW peak filter (on/off) \cr
-$\bullet$ VFO step size  \cr
-$\bullet$ RX Noise reduction (all settings) \cr
-$\bullet$ RX Noise blanker (all settings) \cr
-$\bullet$ RX Automatic notch filter (on/off) \cr
-$\bullet$ RX Spectral  noise blanker (on/off) \cr
-$\bullet$ RX AGC characteristic (slow/medium/fast etc.) \cr
-$\bullet$ RX equaliser (all settings) \cr
-$\bullet$ TX equaliser (all settings) \cr
-$\bullet$ TX speech processor (on/off, compression level) \cr
-$\bullet$ TX continuous frequency compressor (CFC, all settings) \cr
-$\bullet$ TX downward expander (DEXP, on/off) \cr
-\bottomrule
-\end{tabular}
-\end{center}
-
-A profile is not only loaded if a mode is explicitly changed, but also when the mode changes
-because one has copied/swapped VFOs, changed the band or the band stack, or recalled a memory slot.
-
-A receiver- or VFO-speficic setting will be updated in the profile if it is changed and if this
-change applies to the active receiver. It is then stored in the profile associated with the mode
-(group)
-of the active receiver. Changing a transmitter-specific setting (TX equaliser, CFC, or DEXP) always
-leads to profile update of the profile associated with the mode (group) of the VFO that controls the
-transmitter frequency (that is, VFO-A if not working  split, and VFO-B if working split). The updated
-profile will only become effective upon the next mode change to that mode.
-
-Note that the concepts of mode groups implies that the profile associated with, say, LSB is
-automatically updated if the USB profile is updated, such that the profiles of the mode  within
-a mode group (although stored separately for historical reasons) will be identical.
-
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The \texttt{Memory}  menu}
 \label{sec:memmenu}
@@ -1954,7 +1886,6 @@ connected to the radio. Local audio (to a sound card or a virtual audio cable)
 is not affected. The main use of this checkbox is
 to mute a radio-connected headphone while doing digi mode via local RX output.
 
-<<<<<<< HEAD
 \rett{Bypass ADC0 RX filters}. This box is only shown if the radio is an HPSDR radio
 and an ALEX filter board
 is selected (see the \bltt{Radio} menu). If checked, the filters in the RF front-end for ADC0
@@ -1963,31 +1894,16 @@ have band-pass filters in the front end, and if one operates two receivers both 
 on ADC0 data on different bands. Without checking this option, only the signals for
 the band of the active receiver will pass the RF frontend filters.
 Older radios (up to Anan-100/200)  have a
-=======
-\rett{Bypass ADC0 RX filters}. This box is only shown if the ALEX filter board
-is selected (see the \bltt{Radio} menu). If checked, the filters in the RF front-end for ADC0
-are by-passed during receive. This option will normally only used for radios that
-have band-pass filters in the front end, if one operates two receivers both running
-on ADC0 data on different bands. Without checking this option, only the signals for
-the band of the active receiver will pass. Older radios (up to Anan-100/200)  have a
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
 combination of a low-pass and a high-pass filter in the RX path to ADC0. If these
 radios run two receivers, the low-pass filter is selected based on the higher
 of the two RX frequencies, and the high-pass filters is selected based on the
 lower one. This ensures that the signals for both receivers fall into  the filter
 pass band.
 
-<<<<<<< HEAD
 \rett{Bypass ADC1 RX filters}. This box is only shown for HPSDR radios with the ALEX filter board
 selected (see the \bltt{Radio} menu), and if the RF front-end for ADC1
 features a filter board (Anan-7000/8000 and G2 radios).
 If checked, the filters in the RF front-end for ADC1
-=======
-\rett{Bypass ADC1 RX filters}. This box is only shown if the RF front-end for ADC1
-features a filter board (Anan-7000/8000 and G2 radios),
-and if the ALEX filter board
-is selected (see the \bltt{Radio} menu). If checked, the filters in the RF front-end for ADC1
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
 are by-passed during receive.
 
 \rett{Local Audio Output:} If checked, the audio from this radio is sent to a local
@@ -3335,11 +3251,7 @@ Which names to use
 is highly operating system dependent. On a RaspPi,  USB-to-serial
 adapters (which are nowadays the standard way to add serial ports to a computer) have names such as
 \texttt{/dev/ttyACM0} or \texttt{/dev/USB0} (on RaspPi) or \texttt{/dev/tty.usbserial-....} (on MacOS).
-<<<<<<< HEAD
 The serial port shown in the third line of Fig. \ref{fig:CATmenu}, \texttt{/dev/ttyAMA3},
-=======
-The serial port shown in the third line of Fig. \ref{fig:RigCtlMenu}, \texttt{/dev/ttyAMA3},
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
 is used on the Anan G2-Ultra radios for communicating with the front panel. If you chose
 \rett{G2 Mk2 Panel} in the discovery menu, this port will be assigned by default to the third
 slot and it is also enabled, this can be changed in the CAT/TCI menu and will then also be written to
@@ -3348,13 +3260,8 @@ the props file.
 ports, you must know the proper name (e.g. by looking at the contents of the \texttt{/dev} directory).
 Named pipes can be created everywhere in the file system hierarchy using the command
 ,,\texttt{mkdir -p <some\_arbitrary\_name>}''. Names pipes can be used for the communication between \pH
-<<<<<<< HEAD
 and another program running on the same computer, and are only meaningful if that other program neither
 supports CAT-over-TCP nor TCI.
-=======
-and another program running on the same computer, and are only meaningful if that other program does not
-support CAT-over-TCP.
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
 
 To the right of the serial port text field, there is a pop-down menu for choosing the baud rate. Only 4800,
 9600, 19200, and 38400 baud are offered, but this should cover most cases.
@@ -4315,7 +4222,6 @@ This function is used if one uses one encoder and one push-button to activate th
 encoder feature.}
 
 \action{Mute}{MUTE}{B}{Toggles the ,,mute'' state of the active receiver. If a receiver is muted,
-<<<<<<< HEAD
 zero-amplitude audio output is sent to the radio via the HPSDR protocol.
 This has only an effect for Protocol-1 and Protocol-2 (not for SoapySDR), and only affects headphones/speakers
 connected to the radio. Local audio (to a sound card or a virtual audio cable)
@@ -4336,19 +4242,6 @@ This has only an effect for Protocol-1 and Protocol-2 (not for SoapySDR), and on
 connected to the radio. Local audio (to a sound card or a virtual audio cable)
 is not affected. The main use of this action is
 to mute a radio-connected headphone while doing digi mode via local RX output.}
-=======
-zero-amplitude audio output is sent to the radio via the HPSDR protocol. This option has no
-effect on local audio (e.g. sent to a sound card).}
-
-\action{Mute RX1}{MUTE1}{B}{Toggles the ,,mute'' state of  RX1. If a receiver is muted,
-zero-amplitude audio output is sent to the radio via the HPSDR protocol. This option has no
-effect on local audio (e.g. sent to a sound card).}
-
-\action{Mute RX2}{MUTE2}{B}{Toggles the ,,mute'' state of  RX2. This operation is a no-op
-if only one receiver is running. If a receiver is muted,
-zero-amplitude audio output is sent to the radio via the HPSDR protocol. This option has no
-effect on local audio (e.g. sent to a sound card).}
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
 
 \action{NB}{NB}{B}{Cycles through the noise blanker states (NB off/NB1/NB2).}
 
@@ -4861,15 +4754,8 @@ $\phantom{\Big|}$\textbf{\large AI} & Sets/Reads auto reporting status \\\cline{
 $\phantom{\Big|}${\large Set} & {AIp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {AI;} \\\hline
 $\phantom{\Big|}${\large Response} & {AIp$_1$;} \\\hline
-<<<<<<< HEAD
 $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: auto-reporting disabled, p$_1$$>$0: enabled.} \\
  & \multicolumn{1}{|p{11cm}|}{Auto-reporting is affected for the client that sends this command. For p$_1$=1, only frequency changes are sent via FA/FB commands. For p$_1$$>$1, mode changes are also sent via MD commands.} \\
-=======
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: auto-reporting disabled, p$_1$=1: enabled} \\
- & \multicolumn{1}{|p{11cm}|}{Auto-reporting is affected for the client that sends this command.} \\
- & \multicolumn{1}{|p{11cm}|}{For p$_1$=1, only frequency changes are sent via FA/FB commands.} \\
- & \multicolumn{1}{|p{11cm}|}{For p$_1$>1, mode changes are also sent via MD commands.} \\
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
 \bottomrule
 \end{tabular}
 \end{center}
@@ -5477,15 +5363,8 @@ $\phantom{\Big|}$\textbf{\large ZZAI} & Set/Read auto-reporting \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {ZZAIp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZAI;} \\\hline
 $\phantom{\Big|}${\large Response} & {ZZAIp$_1$;} \\\hline
-<<<<<<< HEAD
 $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: auto-reporting disabled, p$_1$$>$0: enabled.} \\
  & \multicolumn{1}{|p{11cm}|}{Auto-reporting is affected for the client that sends this command. For p$_1$=1, only frequency changes are sent via FA/FB commands. For p$_1$$>$1, mode changes are also sent via MD commands.} \\
-=======
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: auto-reporting disabled, p$_1$>1: enabled} \\
- & \multicolumn{1}{|p{11cm}|}{Auto-reporting is affected for the client that sends this command.} \\
- & \multicolumn{1}{|p{11cm}|}{For p$_1$=1, only frequency changes are sent via FA/FB commands.} \\
- & \multicolumn{1}{|p{11cm}|}{For p$_1$>1, mode changes are also sent via MD commands.} \\
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
 \bottomrule
 \end{tabular}
 \end{center}
@@ -5764,12 +5643,7 @@ $\phantom{\Big|}$\textbf{\large ZZMA} & Mute/Unmute RX1 \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {ZZMAp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZMA;} \\\hline
 $\phantom{\Big|}${\large Response} & {ZZMAp$_1$;} \\\hline
-<<<<<<< HEAD
 $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: RX1 not muted, p$_1$=1: muted. This only affects the audio sent to the radio via the HPSDR protocol.} \\
-=======
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: RX1 not muted, p$_1$=1: muted.} \\
- & \multicolumn{1}{|p{11cm}|}{This only affects the audio sent to the radio via the HPSDR protocol.} \\
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
 \bottomrule
 \end{tabular}
 \end{center}
@@ -5781,12 +5655,7 @@ $\phantom{\Big|}$\textbf{\large ZZMB} & Mute/Unmute RX2 \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {ZZMBp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZMB;} \\\hline
 $\phantom{\Big|}${\large Response} & {ZZMBp$_1$;} \\\hline
-<<<<<<< HEAD
 $\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: RX2 not muted, p$_1$=1: muted. This only affects the audio sent to the radio via the HPSDR protocol.} \\
-=======
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: RX2 not muted, p$_1$=1: muted} \\
- & \multicolumn{1}{|p{11cm}|}{This only affects the audio sent to the radio via the HPSDR protocol.} \\
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
 \bottomrule
 \end{tabular}
 \end{center}
@@ -6834,15 +6703,9 @@ radios, turning OFF this option may accelerate \pH startup a little bit.
 This is an option for RedPitaya based radios that have a web interface that must be used
 to start the SDR application. If you have a RedPitaya exclusively being used as a radio, this
 app is most likely auto-started when powering up the RedPitaya so you do not need the STEMLAB
-<<<<<<< HEAD
 option.
 If you have a RedPitaya and no autostart of the SDR application, and not compiled \pH
 with the STEMLAB option, you can open a web browser on your host computer, start the SDR application on the RedPitaya,
-=======
-option. This option allows to start the SDR application on the RedPitaya through the web interface.
-If you have a RedPitaya and no autostart of the SDR application there, and not compiled \pH
-with the STEMLAB option, you can open a web browser, start the SDR application on the RedPitaya,
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
 and then start \pH. With the STEMLAB option, this can all be done by \pH.
 This option is not activated by default since it delays the startup a little bit  and  this should  be
 avoided if  there is no need for it, and it needs the \texttt{libcurl}  library to be installed on your system.
@@ -7368,13 +7231,8 @@ not present by default. But this is easily cured. Simply open a terminal window 
 
 (you will need internet access to perform this task). This installs the so-called Command Line Tools,
 which we absolutely need to proceed. But even with the Command Line Tools installed, additional
-<<<<<<< HEAD
 commands and libraries are needed. Fortunately, there exist packages that allow for easy installation
 of such additional libraries.
-=======
-commands and libraries are needed. Fortunately there are packages out there which just contain
-these.
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
 The most popular such ,,Unix enabler'' packages are \texttt{MacPorts} and \texttt{HomeBrew}, I
 am using
 \texttt{HomeBrew} but I know that \pH can be compiled and run successfully with \texttt{MacPorts}
@@ -7425,14 +7283,9 @@ to switch between version with the \texttt{git} command can be given in this man
 }
 \end{center}
 
-<<<<<<< HEAD
 The ,,git clone'' command loads the \pH repository, and the libinstall.sh command (that is
 within this repository) installs the
  \texttt{HomeBrew} universe. Installing \texttt{HomeBrew} starts with asking you for the administrator
-=======
-The libinstall command installs the
- \texttt{HomeBrew} universe, and the installation starts with asking you for the administrator
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
  password, tells you what it wants to do and requires hitting \texttt{Enter} to proceed.
  On Apple Silicon Macs, you will be asked the administrator again at a later stage,
  since here we have to create three symbolic links in \texttt{/usr/local} (see the end of this section),

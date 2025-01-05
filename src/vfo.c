@@ -111,20 +111,12 @@ static void modesettingsSaveState() {
     SetPropI1("modeset.%d.filter", i,                mode_settings[i].filter);
     SetPropI1("modeset.%d.cwPeak", i,                mode_settings[i].cwPeak);
     SetPropI1("modeset.%d.step", i,                  mode_settings[i].step);
-<<<<<<< HEAD
-=======
-
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
     SetPropI1("modeset.%d.nb", i,                    mode_settings[i].nb);
     SetPropF1("modeset.%d.nb_tau", i,                mode_settings[i].nb_tau);
     SetPropF1("modeset.%d.nb_hang", i,               mode_settings[i].nb_hang);
     SetPropF1("modeset.%d.nb_advtime", i,            mode_settings[i].nb_advtime);
     SetPropF1("modeset.%d.nb_thresh", i,             mode_settings[i].nb_thresh);
     SetPropI1("modeset.%d.nb2_mode", i,              mode_settings[i].nb2_mode);
-<<<<<<< HEAD
-=======
-
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
     SetPropI1("modeset.%d.nr", i,                    mode_settings[i].nr);
     SetPropI1("modeset.%d.nr_agc", i,                mode_settings[i].nr_agc);
     SetPropI1("modeset.%d.nr2_gain_method", i,       mode_settings[i].nr2_gain_method);
@@ -139,26 +131,14 @@ static void modesettingsSaveState() {
     SetPropF1("modeset.%d.nr4_noise_rescale", i,     mode_settings[i].nr4_noise_rescale);
     SetPropF1("modeset.%d.nr4_post_filter_threshold", i, mode_settings[i].nr4_post_filter_threshold);
 #endif
-<<<<<<< HEAD
-=======
-
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
     SetPropI1("modeset.%d.anf", i,                   mode_settings[i].anf);
     SetPropI1("modeset.%d.snb", i,                   mode_settings[i].snb);
     SetPropI1("modeset.%d.agc", i,                   mode_settings[i].agc);
     SetPropI1("modeset.%d.en_rxeq", i,               mode_settings[i].en_rxeq);
-<<<<<<< HEAD
     SetPropI1("modeset.%d.en_txeq", i,               mode_settings[i].en_txeq);
     SetPropI1("modeset.%d.compressor", i,            mode_settings[i].compressor);
     SetPropF1("modeset.%d.compressor_level", i,      mode_settings[i].compressor_level);
     SetPropF1("modeset.%d.mic_gain", i,              mode_settings[i].mic_gain);
-=======
-
-    SetPropI1("modeset.%d.en_txeq", i,               mode_settings[i].en_txeq);
-    SetPropI1("modeset.%d.compressor", i,            mode_settings[i].compressor);
-    SetPropF1("modeset.%d.compressor_level", i,      mode_settings[i].compressor_level);
-
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
     SetPropI1("modeset.%d.dexp", i,                  mode_settings[i].dexp);
     SetPropI1("modeset.%d.dexp_trigger", i,          mode_settings[i].dexp_trigger);
     SetPropF1("modeset.%d.dexp_tau", i,              mode_settings[i].dexp_tau);
@@ -170,10 +150,6 @@ static void modesettingsSaveState() {
     SetPropI1("modeset.%d.dexp_filter", i,           mode_settings[i].dexp_filter);
     SetPropI1("modeset.%d.dexp_filter_low", i,       mode_settings[i].dexp_filter_low);
     SetPropI1("modeset.%d.dexp_filter_high", i,      mode_settings[i].dexp_filter_high);
-<<<<<<< HEAD
-=======
-
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
     SetPropI1("modeset.%d.cfc", i,                   mode_settings[i].cfc);
     SetPropI1("modeset.%d.cfc_eq", i,                mode_settings[i].cfc_eq);
 
@@ -232,20 +208,12 @@ static void modesettingsRestoreState() {
     // set defaults that are the same  for all modes
     //
     mode_settings[i].cwPeak = 0;
-<<<<<<< HEAD
-=======
-
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
     mode_settings[i].nb = 0;
     mode_settings[i].nb_tau = 0.00001;
     mode_settings[i].nb_advtime = 0.00001;
     mode_settings[i].nb_hang = 0.00001;
     mode_settings[i].nb_thresh = 4.95;
     mode_settings[i].nb2_mode = 0;
-<<<<<<< HEAD
-=======
-
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
     mode_settings[i].nr = 0;
     mode_settings[i].nr_agc = 0;
     mode_settings[i].nr2_gain_method = 0;
@@ -260,22 +228,13 @@ static void modesettingsRestoreState() {
     mode_settings[i].nr4_noise_rescale = 2.0;
     mode_settings[i].nr4_post_filter_threshold = 2.0;
 #endif
-<<<<<<< HEAD
-=======
-
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
     mode_settings[i].anf = 0;
     mode_settings[i].snb = 0;
     mode_settings[i].en_rxeq = 0;
-
     mode_settings[i].en_txeq = 0;
     mode_settings[i].compressor = 0;
     mode_settings[i].compressor_level = 0.0;
-<<<<<<< HEAD
     mode_settings[i].mic_gain = 0.0;
-=======
-
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
     mode_settings[i].dexp = 0;
     mode_settings[i].dexp_trigger = -25;
     mode_settings[i].dexp_tau = 0.01;
@@ -287,10 +246,6 @@ static void modesettingsRestoreState() {
     mode_settings[i].dexp_filter = 0;
     mode_settings[i].dexp_filter_low = 1000;
     mode_settings[i].dexp_filter_high = 2000;
-<<<<<<< HEAD
-=======
-   
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
     mode_settings[i].cfc = 0;
     mode_settings[i].cfc_eq = 0;
 
@@ -334,27 +289,15 @@ static void modesettingsRestoreState() {
     mode_settings[i].tx_eq_freq[10] =  5000.0;
     mode_settings[i].rx_eq_freq[10] =  5000.0;
     mode_settings[i].cfc_freq  [10] =  5000.0;
-<<<<<<< HEAD
     GetPropI1("modeset.%d.filter", i,                mode_settings[i].filter);
     GetPropI1("modeset.%d.cwPeak", i,                mode_settings[i].cwPeak);
     GetPropI1("modeset.%d.step", i,                  mode_settings[i].step);
-=======
-
-    GetPropI1("modeset.%d.filter", i,                mode_settings[i].filter);
-    GetPropI1("modeset.%d.cwPeak", i,                mode_settings[i].cwPeak);
-    GetPropI1("modeset.%d.step", i,                  mode_settings[i].step);
-
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
     GetPropI1("modeset.%d.nb", i,                    mode_settings[i].nb);
     GetPropF1("modeset.%d.nb_tau", i,                mode_settings[i].nb_tau);
     GetPropF1("modeset.%d.nb_hang", i,               mode_settings[i].nb_hang);
     GetPropF1("modeset.%d.nb_advtime", i,            mode_settings[i].nb_advtime);
     GetPropF1("modeset.%d.nb_thresh", i,             mode_settings[i].nb_thresh);
     GetPropI1("modeset.%d.nb2_mode", i,              mode_settings[i].nb2_mode);
-<<<<<<< HEAD
-=======
-
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
     GetPropI1("modeset.%d.nr", i,                    mode_settings[i].nr);
     GetPropI1("modeset.%d.nr_agc", i,                mode_settings[i].nr_agc);
     GetPropI1("modeset.%d.nr2_gain_method", i,       mode_settings[i].nr2_gain_method);
@@ -369,26 +312,14 @@ static void modesettingsRestoreState() {
     GetPropF1("modeset.%d.nr4_noise_rescale", i,     mode_settings[i].nr4_noise_rescale);
     GetPropF1("modeset.%d.nr4_post_filter_threshold", i, mode_settings[i].nr4_post_filter_threshold);
 #endif
-<<<<<<< HEAD
-=======
-
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
     GetPropI1("modeset.%d.anf", i,                   mode_settings[i].anf);
     GetPropI1("modeset.%d.snb", i,                   mode_settings[i].snb);
     GetPropI1("modeset.%d.agc", i,                   mode_settings[i].agc);
     GetPropI1("modeset.%d.en_rxeq", i,               mode_settings[i].en_rxeq);
-<<<<<<< HEAD
     GetPropI1("modeset.%d.en_txeq", i,               mode_settings[i].en_txeq);
     GetPropI1("modeset.%d.compressor", i,            mode_settings[i].compressor);
     GetPropF1("modeset.%d.compressor_level", i,      mode_settings[i].compressor_level);
     GetPropF1("modeset.%d.mic_gain", i,              mode_settings[i].mic_gain);
-=======
-
-    GetPropI1("modeset.%d.en_txeq", i,               mode_settings[i].en_txeq);
-    GetPropI1("modeset.%d.compressor", i,            mode_settings[i].compressor);
-    GetPropF1("modeset.%d.compressor_level", i,      mode_settings[i].compressor_level);
-
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
     GetPropI1("modeset.%d.dexp", i,                  mode_settings[i].dexp);
     GetPropI1("modeset.%d.dexp_trigger", i,          mode_settings[i].dexp_trigger);
     GetPropF1("modeset.%d.dexp_tau", i,              mode_settings[i].dexp_tau);
@@ -400,10 +331,6 @@ static void modesettingsRestoreState() {
     GetPropI1("modeset.%d.dexp_filter", i,           mode_settings[i].dexp_filter);
     GetPropI1("modeset.%d.dexp_filter_low", i,       mode_settings[i].dexp_filter_low);
     GetPropI1("modeset.%d.dexp_filter_high", i,      mode_settings[i].dexp_filter_high);
-<<<<<<< HEAD
-=======
-
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
     GetPropI1("modeset.%d.cfc", i,                   mode_settings[i].cfc);
     GetPropI1("modeset.%d.cfc_eq", i,                mode_settings[i].cfc_eq);
 
@@ -670,15 +597,8 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
   //
   if ((id == vfo_get_tx_vfo()) && can_transmit) {
     transmitter->eq_enable        = mode_settings[m].en_txeq;
-<<<<<<< HEAD
     transmitter->compressor       = mode_settings[m].compressor;
     transmitter->compressor_level = mode_settings[m].compressor_level;
-=======
-
-    transmitter->compressor       = mode_settings[m].compressor;
-    transmitter->compressor_level = mode_settings[m].compressor_level;
-
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
     transmitter->dexp             = mode_settings[m].dexp;
     transmitter->dexp_trigger     = mode_settings[m].dexp_trigger;
     transmitter->dexp_tau         = mode_settings[m].dexp_tau;
@@ -690,10 +610,6 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
     transmitter->dexp_filter      = mode_settings[m].dexp_filter;
     transmitter->dexp_filter_low  = mode_settings[m].dexp_filter_low;
     transmitter->dexp_filter_high = mode_settings[m].dexp_filter_high;
-<<<<<<< HEAD
-=======
-
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
     transmitter->cfc              = mode_settings[m].cfc;
     transmitter->cfc_eq           = mode_settings[m].cfc_eq;
 
@@ -707,11 +623,8 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
 
     tx_set_compressor(transmitter);
     tx_set_dexp(transmitter);
-<<<<<<< HEAD
 
     set_mic_gain(mode_settings[m].mic_gain);
-=======
->>>>>>> 328c9d5b18539b1a263ded844858e53b801486ba
   }
 
   //
@@ -720,7 +633,6 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
   rx_set_agc(rx);
   update_noise();
   update_eq();
-
   g_idle_add(ext_vfo_update, NULL);
 }
 
