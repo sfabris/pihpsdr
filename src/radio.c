@@ -958,6 +958,7 @@ static void radio_create_visual() {
 }
 
 void radio_start_radio() {
+  char *cp;
   //
   // Debug code. Placed here at the start of the program. piHPSDR  implicitly assumes
   //             that the entires in the action table (actions.c) are sorted by their
@@ -1017,31 +1018,68 @@ void radio_start_radio() {
     snprintf(SerialPorts[id].port, sizeof(SerialPorts[id].port), "/dev/ttyACM%d", id);
   }
 
-  //
-  // On a G2-Mk2 (alias G2 Ultra), enable last serial port for the
-  // built-in ANDROMEDA-type panel on /dev/ttyAMA1.
-  //
-  if (controller == G2_V2 && have_saturn_xdma) {
-    SerialPorts[MAX_SERIAL - 1].enable = 1;
-    SerialPorts[MAX_SERIAL - 1].andromeda = 1;
-    SerialPorts[MAX_SERIAL - 1].baud = B9600;
-    SerialPorts[MAX_SERIAL - 1].autoreporting = 0;
-    SerialPorts[MAX_SERIAL - 1].g2 = 1;
-    snprintf(SerialPorts[MAX_SERIAL - 1].port, sizeof(SerialPorts[MAX_SERIAL - 1].port), "/dev/ttyAMA1");
+  if (have_saturn_xdma) {
+    cp = realpath("/dev/ttyAMA1", NULL);
+    if (cp != NULL) {
+      //
+      // On a G2-Mk2 (alias G2 Ultra), enable last serial port for the
+      // built-in ANDROMEDA-type panel on /dev/ttyAMA1.
+      //
+      SerialPorts[MAX_SERIAL - 1].enable = 1;
+      SerialPorts[MAX_SERIAL - 1].andromeda = 1;
+      SerialPorts[MAX_SERIAL - 1].baud = B9600;
+      SerialPorts[MAX_SERIAL - 1].autoreporting = 0;
+      SerialPorts[MAX_SERIAL - 1].g2 = 1;
+      snprintf(SerialPorts[MAX_SERIAL - 1].port, sizeof(SerialPorts[MAX_SERIAL - 1].port), "%s", cp);
+      free(cp);
+    }
+  }
+
+  if (have_saturn_xdma && have_racm5) {
+    cp = realpath("/dev/ttyS7", NULL);
+    if (cp != NULL) {
+      //
+      // On G2's with CM5 module (both Mk1 and Mk2!), we will always have
+      // ANDROMEDA-type control. That is, in this  case overwrite the default
+      // G2Mk2 settings! Note that for some reason, the RadxaCM5 module has 115.2k
+      // as the *lowest* possible baud rate.
+      //
+      SerialPorts[MAX_SERIAL - 1].enable = 1;
+      SerialPorts[MAX_SERIAL - 1].andromeda = 1;
+      SerialPorts[MAX_SERIAL - 1].baud = B115200;
+      SerialPorts[MAX_SERIAL - 1].autoreporting = 0;
+      SerialPorts[MAX_SERIAL - 1].g2 = 1;
+      snprintf(SerialPorts[MAX_SERIAL - 1].port, sizeof(SerialPorts[MAX_SERIAL - 1].port), "%s", cp);
+      free(cp);
+    }
+  }
+
+  if (have_saturn_xdma) {
+    cp = realpath("/dev/serial/by-id/g2-front-serial-usb", NULL);
+    if (cp != NULL) {
+      //
+      // Newer G2 factory builds use "udev" rules to identify the correct serial interface
+      // for ANDROMEDA control. If this applies we overwrite what is contained in the last serial
+      // port
+      //
+      SerialPorts[MAX_SERIAL - 1].enable = 1;
+      SerialPorts[MAX_SERIAL - 1].andromeda = 1;
+      SerialPorts[MAX_SERIAL - 1].baud = B9600;
+      SerialPorts[MAX_SERIAL - 1].autoreporting = 0;
+      SerialPorts[MAX_SERIAL - 1].g2 = 1;
+      snprintf(SerialPorts[MAX_SERIAL - 1].port, sizeof(SerialPorts[MAX_SERIAL - 1].port), "%s", cp);
+      free(cp);
+    }
   }
 
   //
-  // On G2's with CM5 module (both Mk1 and Mk2!), we will always have
-  // ANDROMEDA-type control. That is, in this  case overwrite the default
-  // G2Mk2 settings!
+  // Finally, check if the serial port in the last slot already occurs in one of the
+  // previous ones. In this case, replace that one.
   //
-  if (have_saturn_xdma && have_racm5) {
-    SerialPorts[MAX_SERIAL - 1].enable = 1;
-    SerialPorts[MAX_SERIAL - 1].andromeda = 1;
-    SerialPorts[MAX_SERIAL - 1].baud = B115200;
-    SerialPorts[MAX_SERIAL - 1].autoreporting = 0;
-    SerialPorts[MAX_SERIAL - 1].g2 = 1;
-    snprintf(SerialPorts[MAX_SERIAL - 1].port, sizeof(SerialPorts[MAX_SERIAL - 1].port), "/dev/ttyS7");
+  for (int id = 0; id < MAX_SERIAL - 1; id++) {
+    if (!strcmp(SerialPorts[id].port, SerialPorts[MAX_SERIAL -1].port)) {
+      snprintf(SerialPorts[id].port, sizeof(SerialPorts[id].port), "/dev/ttyACM%d", MAX_SERIAL - 1);
+    }
   }
 
   if (device == DEVICE_METIS || device == DEVICE_OZY || device == NEW_DEVICE_ATLAS) {
