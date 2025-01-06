@@ -1387,7 +1387,8 @@ void saturn_handle_high_priority(bool FromNetwork, unsigned char *UDPInBuffer) {
   SetXvtrEnable((bool)(Byte & 1));
   SetSpkrMute((bool)((Byte >> 1) & 1));
   Byte = (uint8_t)(UDPInBuffer[1401]);
-  SetOpenCollectorOutputs(Byte);
+  // According to  P2, the seven OC bits are b1:7
+  SetOpenCollectorOutputs(Byte >> 1);
   Byte = (uint8_t)(UDPInBuffer[1402]);
   SetUserOutputBits(Byte);
   //
