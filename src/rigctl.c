@@ -3537,12 +3537,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
             break;
 
           case 7:  // RIT or XIT
-            if ((vfo[active_receiver->id].rit_enabled == 0) && (vfo[vfo_get_tx_vfo()].xit_enabled == 1)) {
-              schedule_action(XIT, RELATIVE, v);
-            } else {
-              schedule_action(RIT, RELATIVE, v);
-            }
-
+            schedule_action(RITXIT, RELATIVE, v);
             break;
 
           case 8:  // Attenuation
@@ -3965,105 +3960,82 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
           switch (p) {
           case 1:  // RX Mute
             if (tr01) { schedule_action(MUTE, PRESSED, 0); }
-
             break;
 
           case 5:  // IF filter default
             if (tr01) { schedule_action(FILTER_CUT_DEFAULT, PRESSED, 0); }
-
             break;
 
           case 9:  // Clear RIT and XIT
-            if (tr01) {
-              schedule_action(RIT_CLEAR, PRESSED, 0);
-              schedule_action(XIT_CLEAR, PRESSED, 0);
-            }
-
+            if (tr01) { schedule_action(RITXIT_CLEAR, PRESSED, 0); }
             break;
 
           case 11:  // Cycle through Multifunction assignment
             if (tr01) { schedule_action(MULTI_BUTTON, PRESSED, 0); }
-
             break;
 
           case 21:  // cycle the tool bar
             if (tr01) { schedule_action(FUNCTION, PRESSED, 0); }
-
             break;
 
           case 30:  // Band+
             if (tr01) { schedule_action(BAND_PLUS, PRESSED, 0); }
-
             break;
 
           case 31:  // Mode+
             if (tr01) { schedule_action(MODE_PLUS, PRESSED, 0); }
-
             break;
 
           case 32:  // Filter+
             if (tr01) { schedule_action(MODE_PLUS, PRESSED, 0); }
-
             break;
 
           case 33:  // Band-
             if (tr01) { schedule_action(BAND_MINUS, PRESSED, 0); }
-
             break;
 
           case 34:  // Mode-
             if (tr01) { schedule_action(MODE_MINUS, PRESSED, 0); }
-
             break;
 
           case 35:  // Filter-
             if (tr01) { schedule_action(FILTER_MINUS, PRESSED, 0); }
-
             break;
 
           case 36:  // A to B
             if (tr01) { schedule_action(A_TO_B, PRESSED, 0); }
-
             break;
 
           case 37:  // B to A
             if (tr01) { schedule_action(B_TO_A, PRESSED, 0); }
-
             break;
 
           case 38:  // Toggle Split
             if (tr01) { schedule_action(SPLIT, PRESSED, 0); }
-
             break;
 
           case 42:  // RIT on/off
             if (tr01) { schedule_action(RIT_ENABLE, PRESSED, 0); }
-
             break;
 
           case 43:  // XIT on/off
             if (tr01) { schedule_action(XIT_ENABLE, PRESSED, 0); }
-
             break;
 
           case 44:  // LOCK on/off
             if (tr01) { schedule_action(LOCK, PRESSED, 0); }
-
             break;
 
           case 45:  // CTUN on/off
             if (tr01) { schedule_action(CTUN, PRESSED, 0); }
-
             break;
 
           case 47:  // MOX
             if (tr01) { schedule_action(MOX, PRESSED, 0); }
-
             break;
 
           case 50:  // TUNE
             if (tr01) { schedule_action(TUNE, PRESSED, 0); }
-
             break;
           }
         }
@@ -4075,17 +4047,14 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
           switch (p) {
           case 1:  // RX2 Mute
             if (tr01) { schedule_action(MUTE_RX2, PRESSED, 0); }
-
             break;
 
           case 2:  // RX1 Mute
             if (tr01) { schedule_action(MUTE_RX1, PRESSED, 0); }
-
             break;
 
           case 3: // Change multifunction assignment
             if (tr01) { schedule_action(MULTI_BUTTON, PRESSED, 0); }
-
             break;
 
           case 4:  // ATU, not yet used
@@ -4093,124 +4062,78 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
           case 5:  // Toggle two-tone
             if (tr01) { schedule_action(TWO_TONE, PRESSED, 0); }
-
             break;
 
           case 6:  // Toggle tune
             if (tr01) { schedule_action(TUNE, PRESSED, 0); }
-
             break;
 
           case 7:  // Toggle MOX
             if (tr01) { schedule_action(MOX, PRESSED, 0); }
-
             break;
 
           case 8: // toggle CTUN
             if (tr01) { schedule_action(CTUN, PRESSED, 0); }
-
             break;
 
           case 9: // toggle LOCK
             if (tr01) { schedule_action(LOCK, PRESSED, 0); }
-
             break;
 
           case 10: // switch active receiver
             if (tr01) { schedule_action(SWAP_RX, PRESSED, 0); }
-
             break;
 
           case 11: // toggle between off/RIT/XIT
-            if (tr01) {
-              if ((vfo[active_receiver->id].rit_enabled == 0) && (vfo[vfo_get_tx_vfo()].xit_enabled == 0)) {
-                vfo_rit_onoff(active_receiver->id, 1);
-                vfo_xit_onoff(0);
-              } else if ((vfo[active_receiver->id].rit_enabled == 1) && (vfo[vfo_get_tx_vfo()].xit_enabled == 0)) {
-                vfo_rit_onoff(active_receiver->id, 0);
-                vfo_xit_onoff(1);
-              } else {
-                vfo_rit_onoff(active_receiver->id, 0);
-                vfo_xit_onoff(0);
-              }
-            }
-
+            if (tr01) { schedule_action(RITSELECT, PRESSED, 0); }
             break;
 
           case 12: // clear RIT and XIT
-            if (tr01) {
-              schedule_action(RIT_CLEAR, PRESSED, 0);
-              schedule_action(XIT_CLEAR, PRESSED, 0);
-            }
-
+            if (tr01) { schedule_action(RITXIT_CLEAR, PRESSED, 0); }
             break;
 
           case 13:  // Reset variable filter
             if (tr01) { schedule_action(FILTER_CUT_DEFAULT, PRESSED, 0); }
-
             break;
 
           case 14:  // Select next mode
-            if (tr10) {
-              schedule_action(MODE_PLUS, PRESSED, 0);
-            }
-
-            if (tr12) {
-              schedule_action(MENU_MODE, PRESSED, 0);
-            }
+            if (tr10) { schedule_action(MODE_PLUS, PRESSED, 0); }
+            if (tr12) { schedule_action(MENU_MODE, PRESSED, 0); }
 
             break;
 
           case 15:  // Select next filter
-            if (tr10) {
-              schedule_action(FILTER_PLUS, PRESSED, 0);
-            }
-
-            if (tr12) {
-              schedule_action(MENU_FILTER, PRESSED, 0);
-            }
-
+            if (tr10) { schedule_action(FILTER_PLUS, PRESSED, 0); }
+            if (tr12) { schedule_action(MENU_FILTER, PRESSED, 0); }
             break;
 
           case 16:  // Select next band
-            if (tr01) {
-              schedule_action(BAND_PLUS, PRESSED, 0);
-            }
-
-            if (tr12) {
-              schedule_action(MENU_BAND, PRESSED, 0);
-            }
-
+            if (tr01) { schedule_action(BAND_PLUS, PRESSED, 0); }
+            if (tr12) { schedule_action(MENU_BAND, PRESSED, 0); }
             break;
 
           case 17:  // Select previous mode
             if (tr01) { schedule_action(MODE_MINUS, PRESSED, 0); }
-
             break;
 
           case 18:  // Select previous filter
             if (tr01) { schedule_action(FILTER_MINUS, PRESSED, 0); }
-
             break;
 
           case 19:  // Select previous band
             if (tr01) { schedule_action(BAND_MINUS, PRESSED, 0); }
-
             break;
 
           case 20:  // A to B
             if (tr01) { schedule_action(A_TO_B, PRESSED, 0); }
-
             break;
 
           case 21:  // B to A
             if (tr01) { schedule_action(B_TO_A, PRESSED, 0); }
-
             break;
 
           case 22:  // Toggle Split
             if (tr01) { schedule_action(SPLIT, PRESSED, 0); }
-
             break;
 
           case 23:  // F1, to be defined
@@ -4227,62 +4150,50 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
           case 27:  // 160m
             if (tr01) { schedule_action(BAND_160, PRESSED, 0); }
-
             break;
 
           case 28:  // 80m
             if (tr01) { schedule_action(BAND_80, PRESSED, 0); }
-
             break;
 
           case 29:  // 60m
             if (tr01) { schedule_action(BAND_60, PRESSED, 0); }
-
             break;
 
           case 30:  // 40m
             if (tr01) { schedule_action(BAND_40, PRESSED, 0); }
-
             break;
 
           case 31:  // 30m
             if (tr01) { schedule_action(BAND_30, PRESSED, 0); }
-
             break;
 
           case 32:  // 20m
             if (tr01) { schedule_action(BAND_20, PRESSED, 0); }
-
             break;
 
           case 33:  // 17m
             if (tr01) { schedule_action(BAND_17, PRESSED, 0); }
-
             break;
 
           case 34:  // 15m
             if (tr01) { schedule_action(BAND_15, PRESSED, 0); }
-
             break;
 
           case 35:  // 12m
             if (tr01) { schedule_action(BAND_12, PRESSED, 0); }
-
             break;
 
           case 36:  // 10m
             if (tr01) { schedule_action(BAND_10, PRESSED, 0); }
-
             break;
 
           case 37:  // 6m
             if (tr01) { schedule_action(BAND_6, PRESSED, 0); }
-
             break;
 
           case 38:  // LF
             if (tr01) { schedule_action(BAND_136, PRESSED, 0); }
-
             break;
 
           case 39:  // Reserved
@@ -4293,9 +4204,9 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
           case 41:  // Toggle Diversity
             if (tr01) { schedule_action(DIV, PRESSED, 0); }
-
             break;
-          }  // end of big button switch statement
+          }
+
         }    // end of G2Mk2 ZZZP code
 
         //
