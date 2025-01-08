@@ -1023,13 +1023,14 @@ void radio_start_radio() {
     // controller. The cases are in increasing priority here. It is assumed
     // that a non-upgraded G2MkI will find no serial interface at all.
     //
+
+    //
+    // It has been reported that on some original G2 Ultras, the port name
+    // may change from /dev/ttyAMA1 to /dev/ttyS3.
+    //
     cp = realpath("/dev/ttyS3", NULL);
     if (cp != NULL) {
       t_print("Found Andromeda serial port /dev/ttyS3 ==> %s\n",  cp);
-      //
-      // On a G2-Mk2 (alias G2 Ultra), enable last serial port for the
-      // built-in ANDROMEDA-type panel on /dev/ttyS3.
-      //
       SerialPorts[MAX_SERIAL - 1].enable = 1;
       SerialPorts[MAX_SERIAL - 1].andromeda = 1;
       SerialPorts[MAX_SERIAL - 1].baud = B9600;
@@ -1039,13 +1040,12 @@ void radio_start_radio() {
       free(cp);
     }
 
+    //
+    // This is the standard case on original G2-Ultras
+    //
     cp = realpath("/dev/ttyAMA1", NULL);
     if (cp != NULL) {
       t_print("Found Andromeda serial port /dev/ttyAMA1 ==> %s\n",  cp);
-      //
-      // On a G2-Mk2 (alias G2 Ultra), enable last serial port for the
-      // built-in ANDROMEDA-type panel on /dev/ttyAMA1.
-      //
       SerialPorts[MAX_SERIAL - 1].enable = 1;
       SerialPorts[MAX_SERIAL - 1].andromeda = 1;
       SerialPorts[MAX_SERIAL - 1].baud = B9600;
@@ -1055,15 +1055,13 @@ void radio_start_radio() {
       free(cp);
     }
 
+    //
+    // This is only supposed to exist on Radxa CM5 modules without udev preparation
+    // and requires 115000 baud
+    //
     cp = realpath("/dev/ttyS7", NULL);
     if (cp != NULL) {
       t_print("Found Andromeda serial port /dev/ttyS7 ==> %s\n",  cp);
-      //
-      // On G2's with CM5 module (both Mk1 and Mk2!), we will always have
-      // ANDROMEDA-type control. That is, in this  case overwrite the default
-      // G2Mk2 settings! Note that for some reason, the RadxaCM5 module has 115.2k
-      // as the *lowest* possible baud rate.
-      //
       SerialPorts[MAX_SERIAL - 1].enable = 1;
       SerialPorts[MAX_SERIAL - 1].andromeda = 1;
       SerialPorts[MAX_SERIAL - 1].baud = B115200;
@@ -1073,14 +1071,15 @@ void radio_start_radio() {
       free(cp);
     }
 
-    cp = realpath("/dev/serial/by-id/g2-front-serial-uart", NULL);
+    //
+    // Newer G2 factory builds use "udev" rules to identify the correct serial interface
+    // for ANDROMEDA control. If this applies we overwrite what is contained in the last serial
+    // port
+    //
+
+    cp = realpath("/dev/serial/by-id/g2-front-9600", NULL);
     if (cp != NULL) {
-      t_print("Found /dev/serial/by-id/g2-front-serial-uart ==> %s\n",  cp);
-      //
-      // Newer G2 factory builds use "udev" rules to identify the correct serial interface
-      // for ANDROMEDA control. If this applies we overwrite what is contained in the last serial
-      // port
-      //
+      t_print("Found /dev/serial/by-id/g2-front-9600 ==> %s\n",  cp);
       SerialPorts[MAX_SERIAL - 1].enable = 1;
       SerialPorts[MAX_SERIAL - 1].andromeda = 1;
       SerialPorts[MAX_SERIAL - 1].baud = B9600;
@@ -1090,14 +1089,21 @@ void radio_start_radio() {
       free(cp);
     }
 
+    cp = realpath("/dev/serial/by-id/g2-front-115200", NULL);
+    if (cp != NULL) {
+      t_print("Found /dev/serial/by-id/g2-front-115200 ==> %s\n",  cp);
+      SerialPorts[MAX_SERIAL - 1].enable = 1;
+      SerialPorts[MAX_SERIAL - 1].andromeda = 1;
+      SerialPorts[MAX_SERIAL - 1].baud = B115200;
+      SerialPorts[MAX_SERIAL - 1].autoreporting = 0;
+      SerialPorts[MAX_SERIAL - 1].g2 = 1;
+      snprintf(SerialPorts[MAX_SERIAL - 1].port, sizeof(SerialPorts[MAX_SERIAL - 1].port), "%s", cp);
+      free(cp);
+    }
+
     cp = realpath("/dev/serial/by-id/g2-front-serial-usb", NULL);
     if (cp != NULL) {
       t_print("Found /dev/serial/by-id/g2-front-serial-usb ==> %s\n",  cp);
-      //
-      // Newer G2 factory builds use "udev" rules to identify the correct serial interface
-      // for ANDROMEDA control. If this applies we overwrite what is contained in the last serial
-      // port
-      //
       SerialPorts[MAX_SERIAL - 1].enable = 1;
       SerialPorts[MAX_SERIAL - 1].andromeda = 1;
       SerialPorts[MAX_SERIAL - 1].baud = B9600;
