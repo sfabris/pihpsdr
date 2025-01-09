@@ -326,6 +326,20 @@ gint window_y_pos = 0;
 
 int rx_height;
 
+typedef struct {
+  char *port;
+  int baud;
+} SaturnSerialPort;
+
+static SaturnSerialPort SaturnSerialPortsList[] = {
+   {"/dev/serial/by-id/g2-front-9600", B9600},
+   {"/dev/serial/by-id/g2-front-115200", B115200},
+   {"/dev/ttyAMA1", B9600},
+   {"/dev/ttyS3", B9600},
+   {"/dev/ttyS7", B115200},
+   {NULL, 0}
+};
+
 static void radio_restore_state();
 
 void radio_stop() {
@@ -957,7 +971,6 @@ static void radio_create_visual() {
 }
 
 void radio_start_radio() {
-  char *cp;
   //
   // Debug code. Placed here at the start of the program. piHPSDR  implicitly assumes
   //             that the entires in the action table (actions.c) are sorted by their
@@ -1017,109 +1030,26 @@ void radio_start_radio() {
     snprintf(SerialPorts[id].port, sizeof(SerialPorts[id].port), "/dev/ttyACM%d", id);
   }
 
+  //
+  // On G2-Ultra systems, we need to know the serial port used for the
+  // connection to the uC of the panel. This could be a uart or a
+  // USB connection. We go through a list of "bona fide" device names
+  // and take the first "match".
+  //
+  // Note any serial setting set by this mechanism is read-only
+  //
   if (have_saturn_xdma) {
-    //
-    // Try to find a serial interface that can connect to an ANDROMEDA panel
-    // controller. The cases are in increasing priority here. It is assumed
-    // that a non-upgraded G2MkI will find no serial interface at all.
-    //
-
-    //
-    // It has been reported that on some original G2 Ultras, the port name
-    // may change from /dev/ttyAMA1 to /dev/ttyS3.
-    //
-    cp = realpath("/dev/ttyS3", NULL);
-    if (cp != NULL) {
-      t_print("Found Andromeda serial port /dev/ttyS3 ==> %s\n",  cp);
-      SerialPorts[MAX_SERIAL - 1].enable = 1;
-      SerialPorts[MAX_SERIAL - 1].andromeda = 1;
-      SerialPorts[MAX_SERIAL - 1].baud = B9600;
-      SerialPorts[MAX_SERIAL - 1].autoreporting = 0;
-      SerialPorts[MAX_SERIAL - 1].g2 = 1;
-      snprintf(SerialPorts[MAX_SERIAL - 1].port, sizeof(SerialPorts[MAX_SERIAL - 1].port), "%s", cp);
-      free(cp);
-    }
-
-    //
-    // This is the standard case on original G2-Ultras
-    //
-    cp = realpath("/dev/ttyAMA1", NULL);
-    if (cp != NULL) {
-      t_print("Found Andromeda serial port /dev/ttyAMA1 ==> %s\n",  cp);
-      SerialPorts[MAX_SERIAL - 1].enable = 1;
-      SerialPorts[MAX_SERIAL - 1].andromeda = 1;
-      SerialPorts[MAX_SERIAL - 1].baud = B9600;
-      SerialPorts[MAX_SERIAL - 1].autoreporting = 0;
-      SerialPorts[MAX_SERIAL - 1].g2 = 1;
-      snprintf(SerialPorts[MAX_SERIAL - 1].port, sizeof(SerialPorts[MAX_SERIAL - 1].port), "%s", cp);
-      free(cp);
-    }
-
-    //
-    // This is only supposed to exist on Radxa CM5 modules without udev preparation
-    // and requires 115000 baud
-    //
-    cp = realpath("/dev/ttyS7", NULL);
-    if (cp != NULL) {
-      t_print("Found Andromeda serial port /dev/ttyS7 ==> %s\n",  cp);
-      SerialPorts[MAX_SERIAL - 1].enable = 1;
-      SerialPorts[MAX_SERIAL - 1].andromeda = 1;
-      SerialPorts[MAX_SERIAL - 1].baud = B115200;
-      SerialPorts[MAX_SERIAL - 1].autoreporting = 0;
-      SerialPorts[MAX_SERIAL - 1].g2 = 1;
-      snprintf(SerialPorts[MAX_SERIAL - 1].port, sizeof(SerialPorts[MAX_SERIAL - 1].port), "%s", cp);
-      free(cp);
-    }
-
-    //
-    // Newer G2 factory builds use "udev" rules to identify the correct serial interface
-    // for ANDROMEDA control. If this applies we overwrite what is contained in the last serial
-    // port
-    //
-
-    cp = realpath("/dev/serial/by-id/g2-front-9600", NULL);
-    if (cp != NULL) {
-      t_print("Found /dev/serial/by-id/g2-front-9600 ==> %s\n",  cp);
-      SerialPorts[MAX_SERIAL - 1].enable = 1;
-      SerialPorts[MAX_SERIAL - 1].andromeda = 1;
-      SerialPorts[MAX_SERIAL - 1].baud = B9600;
-      SerialPorts[MAX_SERIAL - 1].autoreporting = 0;
-      SerialPorts[MAX_SERIAL - 1].g2 = 1;
-      snprintf(SerialPorts[MAX_SERIAL - 1].port, sizeof(SerialPorts[MAX_SERIAL - 1].port), "%s", cp);
-      free(cp);
-    }
-
-    cp = realpath("/dev/serial/by-id/g2-front-115200", NULL);
-    if (cp != NULL) {
-      t_print("Found /dev/serial/by-id/g2-front-115200 ==> %s\n",  cp);
-      SerialPorts[MAX_SERIAL - 1].enable = 1;
-      SerialPorts[MAX_SERIAL - 1].andromeda = 1;
-      SerialPorts[MAX_SERIAL - 1].baud = B115200;
-      SerialPorts[MAX_SERIAL - 1].autoreporting = 0;
-      SerialPorts[MAX_SERIAL - 1].g2 = 1;
-      snprintf(SerialPorts[MAX_SERIAL - 1].port, sizeof(SerialPorts[MAX_SERIAL - 1].port), "%s", cp);
-      free(cp);
-    }
-
-    cp = realpath("/dev/serial/by-id/g2-front-serial-usb", NULL);
-    if (cp != NULL) {
-      t_print("Found /dev/serial/by-id/g2-front-serial-usb ==> %s\n",  cp);
-      SerialPorts[MAX_SERIAL - 1].enable = 1;
-      SerialPorts[MAX_SERIAL - 1].andromeda = 1;
-      SerialPorts[MAX_SERIAL - 1].baud = B9600;
-      SerialPorts[MAX_SERIAL - 1].autoreporting = 0;
-      SerialPorts[MAX_SERIAL - 1].g2 = 1;
-      snprintf(SerialPorts[MAX_SERIAL - 1].port, sizeof(SerialPorts[MAX_SERIAL - 1].port), "%s", cp);
-      free(cp);
-    }
-
-    //
-    // Finally, check if the serial port in the last slot already occurs in one of the
-    // previous ones. In this case, replace that one.
-    //
-    for (int id = 0; id < MAX_SERIAL - 1; id++) {
-      if (!strcmp(SerialPorts[id].port, SerialPorts[MAX_SERIAL -1].port)) {
-        snprintf(SerialPorts[id].port, sizeof(SerialPorts[id].port), "/dev/ttyACM%d", MAX_SERIAL - 1);
+    for (SaturnSerialPort *ChkSerial = SaturnSerialPortsList; ChkSerial->port != NULL; ChkSerial++) {
+      char *cp = realpath(ChkSerial->port, NULL);
+      if (cp != NULL) {
+        SerialPorts[MAX_SERIAL - 1].enable = 1;
+        SerialPorts[MAX_SERIAL - 1].andromeda = 1;
+        SerialPorts[MAX_SERIAL - 1].baud = ChkSerial->baud;
+        SerialPorts[MAX_SERIAL - 1].autoreporting = 0;
+        SerialPorts[MAX_SERIAL - 1].g2 = 1;
+        snprintf(SerialPorts[MAX_SERIAL - 1].port, sizeof(SerialPorts[MAX_SERIAL - 1].port), "%s", cp);
+        t_print("Serial port %s used for G2 panel with %d baud\n", cp, ChkSerial->baud);
+        break;
       }
     }
   }
@@ -2599,13 +2529,12 @@ static void radio_restore_state() {
   }
 
   for (int id = 0; id < MAX_SERIAL; id++) {
-    GetPropS1("rigctl_serial_port[%d]", id,                  SerialPorts[id].port);
 
     //
-    // For a serial port internally used for G2,
-    // only allow changes to the port name
+    // Do not overwrite a "detected" port
     //
     if (!SerialPorts[id].g2) {
+      GetPropS1("rigctl_serial_port[%d]", id,                  SerialPorts[id].port);
       GetPropI1("rigctl_serial_enable[%d]", id,                SerialPorts[id].enable);
       GetPropI1("rigctl_serial_andromeda[%d]", id,             SerialPorts[id].andromeda);
       GetPropI1("rigctl_serial_baud_rate[%i]", id,             SerialPorts[id].baud);

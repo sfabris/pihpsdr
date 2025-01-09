@@ -293,21 +293,20 @@ void rigctl_menu(GtkWidget *parent) {
   for (int i = 0; i < MAX_SERIAL; i++) {
     char str[64];
     row++;
-    snprintf (str, 64, "Serial");
-    w = gtk_label_new(str);
-    gtk_widget_set_name(w, "boldlabel");
-    gtk_widget_set_halign(w, GTK_ALIGN_END);
-    gtk_grid_attach(GTK_GRID(grid), w, 0, row, 1, 1);
-    w = gtk_entry_new();
-    gtk_entry_set_text(GTK_ENTRY(w), SerialPorts[i].port);
-    gtk_grid_attach(GTK_GRID(grid), w, 1, row, 2, 1);
-    g_signal_connect(w, "changed", G_CALLBACK(serial_port_cb), GINT_TO_POINTER(i));
 
     //
-    // If this serial port is used internally in a G2, there are not user choices
-    // except the port name
+    // If this serial port is used internally in a G2 simply state port name
     //
     if (!SerialPorts[i].g2) {
+      snprintf (str, 64, "Serial");
+      w = gtk_label_new(str);
+      gtk_widget_set_name(w, "boldlabel");
+      gtk_widget_set_halign(w, GTK_ALIGN_END);
+      gtk_grid_attach(GTK_GRID(grid), w, 0, row, 1, 1);
+      w = gtk_entry_new();
+      gtk_entry_set_text(GTK_ENTRY(w), SerialPorts[i].port);
+      gtk_grid_attach(GTK_GRID(grid), w, 1, row, 2, 1);
+      g_signal_connect(w, "changed", G_CALLBACK(serial_port_cb), GINT_TO_POINTER(i));
       serial_baud[i] = gtk_combo_box_text_new();
       gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(serial_baud[i]), NULL, "4800 Bd");
       gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(serial_baud[i]), NULL, "9600 Bd");
@@ -351,11 +350,11 @@ void rigctl_menu(GtkWidget *parent) {
       gtk_grid_attach(GTK_GRID(grid), w, 6, row, 1, 1);
       g_signal_connect(w, "toggled", G_CALLBACK(serial_autoreporting_cb), GINT_TO_POINTER(i));
     } else {
-      snprintf (str, 64, "This port is used for G2-internal communication");
+      snprintf (str, 64, "Serial %s is used for G2-internal communication", SerialPorts[i].port);
       w = gtk_label_new(str);
       gtk_widget_set_name(w, "boldlabel");
       gtk_widget_set_halign(w, GTK_ALIGN_START);
-      gtk_grid_attach(GTK_GRID(grid), w, 3, row, 3, 1);
+      gtk_grid_attach(GTK_GRID(grid), w, 0, row, 6, 1);
     }
   }
 

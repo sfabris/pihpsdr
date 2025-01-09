@@ -810,6 +810,7 @@ void gpio_default_encoder_actions(int ctrlr) {
 
   switch (ctrlr) {
   case NO_CONTROLLER:
+  case G2_V2:
   default:
     default_encoders = NULL;
     break;
@@ -849,6 +850,7 @@ void gpio_default_switch_actions(int ctrlr) {
   switch (ctrlr) {
   case NO_CONTROLLER:
   case CONTROLLER1:
+  case G2_V2:
   default:
     default_switches = NULL;
     break;
@@ -953,6 +955,16 @@ void gpio_set_defaults(int ctrlr) {
     switches = my_switches;
     break;
 
+  case G2_V2:
+    //
+    // There are no GPIO lines that the user can use
+    //
+    memcpy(my_encoders, encoders_no_controller, sizeof(my_encoders));
+    memcpy(my_switches, switches_no_controller, sizeof(my_switches));
+    encoders = my_encoders;
+    switches = my_switches;
+    break;
+
   case NO_CONTROLLER:
   default:
     //
@@ -978,7 +990,12 @@ void gpioRestoreState() {
   GetPropI0("controller",                                         controller);
 #ifndef GPIO
 
-  controller = NO_CONTROLLER;
+  //
+  // If not compiled for GPIO, we can only have the G2Mk2 or  none
+  //
+  if (controller != G2_V2) {
+    controller = NO_CONTROLLER;
+  }
 
 #endif
   gpio_set_defaults(controller);
@@ -1231,6 +1248,10 @@ static struct gpiod_line *setup_output_line(struct gpiod_chip *chip, int offset,
 
 #endif
 
+//
+// With a G2_V2 controller gpio_init() is essentially a no-op,
+// since no special lines are defined (have_button is not set)
+//
 int gpio_init() {
 #ifdef GPIO
   int ret = 0;
@@ -1367,12 +1388,12 @@ int gpio_init() {
     cwout_line = setup_output_line(chip, CWOUT_LINE, 1);
   }
 
-  if (have_button || (controller != NO_CONTROLLER)) {
+  if (have_button || (controller != NO_CONTROLLER && controller != G2_V2)) {
     monitor_thread_id = g_thread_new( "gpiod monitor", monitor_thread, NULL);
     t_print("%s: monitor_thread: id=%p\n", __FUNCTION__, monitor_thread_id);
   }
 
-  if (controller != NO_CONTROLLER) {
+  if (controller != NO_CONTROLLER && controller != G2_V2) {
     rotary_encoder_thread_id = g_thread_new( "encoders", rotary_encoder_thread, NULL);
     t_print("%s: rotary_encoder_thread: id=%p\n", __FUNCTION__, rotary_encoder_thread_id);
   }
