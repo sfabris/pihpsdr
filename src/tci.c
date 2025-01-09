@@ -358,7 +358,7 @@ void send_mode(CLIENT *client, int v) {
 
 void send_close(CLIENT *client) {
   RESPONSE *resp = g_new(RESPONSE, 1);
-  if (rigctl_debug) { t_print("TCI%d CLOSE\n"); }
+  if (rigctl_debug) { t_print("TCI%d CLOSE\n",client->seq); }
   resp->client = client;
   resp->type   = opCLOSE;
   resp->msg[0] = 0;
@@ -376,7 +376,7 @@ void send_ping(CLIENT *client) {
 
 void send_pong(CLIENT *client) {
   RESPONSE *resp = g_new(RESPONSE, 1);
-  if (rigctl_debug) { t_print("TCI%d PONG\n"); }
+  if (rigctl_debug) { t_print("TCI%d PONG\n",client->seq); }
   resp->client = client;
   resp->type   = opPONG;
   resp->msg[0] = 0;
