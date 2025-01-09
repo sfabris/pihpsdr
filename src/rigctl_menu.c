@@ -112,16 +112,18 @@ static void rigctl_tcp_enable_cb(GtkWidget *widget, gpointer data) {
 //
 static void serial_port_cb(GtkWidget *widget, gpointer data) {
   int id = GPOINTER_TO_INT(data);
-
-  if (SerialPorts[id].enable) {
-    //
-    // If this port is running, do not allow changes and
-    // re-init the text entry field
-    //
+  const char *cp = gtk_entry_get_text(GTK_ENTRY(widget));
+  //
+  // If the serial port is already running, do not allow changes.
+  //
+  // If the last serial port is marked as a G2-internal port,
+  // and if the same port name is used, do not allow changes
+  //
+  if (SerialPorts[id].enable ||
+     (SerialPorts[MAX_SERIAL-1].g2 && !strcmp(SerialPorts[MAX_SERIAL-1].port, cp))) {
     gtk_entry_set_text(GTK_ENTRY(widget), SerialPorts[id].port);
   } else {
-    const char *cp = gtk_entry_get_text(GTK_ENTRY(widget));
-    STRLCPY(SerialPorts[id].port, cp, sizeof(SerialPorts[id].port));
+    snprintf(SerialPorts[id].port, sizeof(SerialPorts[id].port), "%s", cp);
   }
 }
 

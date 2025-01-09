@@ -6389,7 +6389,7 @@ static gpointer serial_server(gpointer data) {
 int launch_serial_rigctl (int id) {
   int fd;
   int baud;
-  t_print("%s: Open Serial Port %s\n", __FUNCTION__, SerialPorts[id].port);
+  t_print("%s:  Port %s\n", __FUNCTION__, SerialPorts[id].port);
   //
   // Use O_NONBLOCK to prevent "hanging" upon open(), set blocking mode
   // later.
@@ -6412,6 +6412,7 @@ int launch_serial_rigctl (int id) {
   if (SerialPorts[id].andromeda && !SerialPorts[id].g2) {
     baud = B9600;
   }
+  t_print("%s: Baud rate=%d\n", __FUNCTION__, baud);
 
   serial_client[id].fifo = 0;
 
