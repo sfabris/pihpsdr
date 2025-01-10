@@ -1,6 +1,12 @@
 LIST OF RECENT PIHPSDR CHANGES
 ==============================
 
+January 2025:
+-------------
+
+- Better support for G2's with uC-controlled panels,
+- including automatic serial port detection
+
 December 2024:
 --------------
 - Added a (stripped-down) TCI server for use with
