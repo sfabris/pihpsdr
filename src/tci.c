@@ -27,6 +27,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
+#include <ctype.h>
 
 #include <openssl/sha.h>
 #include <openssl/evp.h>
@@ -198,7 +199,7 @@ static int send_frame(void *data) {
     return G_SOURCE_REMOVE;
   }
 
-  int length = strlen(msg);
+  size_t length = strlen(msg);
   frame[0] = 128 | type;
 
   if (length <= 125) {
@@ -211,7 +212,7 @@ static int send_frame(void *data) {
     start = 4;
   }
 
-  for (int i = 0; i < length; i++) {
+  for (size_t i = 0; i < length; i++) {
     frame[start + i] = msg[i];
   }
 
@@ -250,6 +251,9 @@ static int send_frame(void *data) {
 }
 
 void send_text(CLIENT *client, char *msg) {
+  if (!client->running) {
+    return;
+  }
   if (rigctl_debug) { t_print("TCI%d response: %s\n", client->seq, msg); }
   RESPONSE *resp=g_new(RESPONSE, 1);
   resp->client = client;
@@ -800,6 +804,10 @@ static gpointer tci_listener(gpointer data) {
   send_text(client, "if:0,1,0;");
   send_text(client, "if:1,0,0;");
   send_text(client, "if:1,1,0;");
+  send_vfo(client, VFO_A);
+  send_vfo(client, VFO_B);
+  send_mode(client, VFO_A);
+  send_mode(client, VFO_B);
   send_text(client, "rx_enable:0,true;");
   send_text(client, "rx_enable:1,true;");
   send_text(client, "tx_enable:0,true;");
@@ -837,7 +845,12 @@ static gpointer tci_listener(gpointer data) {
     if (numbytes > 0) {
       switch(type) {
       case opTEXT:
-        if (rigctl_debug) { t_print("TCI%d command rcvd=%s\n", client->seq, msg); }
+        for (size_t i=0; i< strlen(msg); i++) {
+          msg[i] = tolower(msg[i]);
+        }
+        if (rigctl_debug) {
+          t_print("TCI%d command rcvd=%s\n", client->seq, msg);
+        }
         //
         // Separate into commands and arguments, and then process the incoming
         // commands according to the following list
