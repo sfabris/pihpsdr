@@ -398,6 +398,12 @@ void send_trx_count(CLIENT *client) {
   send_text(client, "trx_count:2;");
 }
 
+void send_cwspeed(CLIENT *client) {
+  char msg[MAXMSGSIZE];
+  snprintf(msg, MAXMSGSIZE, "cw_macros_speed:%d;",cw_keyer_speed);
+  send_text(client, msg);
+}
+
 void send_smeter(CLIENT *client, int v) {
   //
   // UNDOCUMENTED in the TCI protocol, but MLDX sends this
@@ -730,6 +736,7 @@ int digest_frame(unsigned char *buff, char *msg,  int offset, int *type) {
 
   if (len == 127) {
     // Do not even try
+    t_print("%s: excessive length\n", __FUNCTION__);
     return 0;
   }
 
@@ -743,7 +750,7 @@ int digest_frame(unsigned char *buff, char *msg,  int offset, int *type) {
     head += 4;
   }
 
-  if (head + len < offset) {
+  if (head + len > offset) {
     return 0;
   }
 
@@ -839,10 +846,9 @@ static gpointer tci_listener(gpointer data) {
     }
     offset += numbytes;
     //
-    // If there is enough data in the frame, process it
+    // The chunk just read may contain more than one frame
     //
-    numbytes =  digest_frame(buff, msg, offset, &type);
-    if (numbytes > 0) {
+    while ((numbytes =  digest_frame(buff, msg, offset, &type)) > 0) {
       switch(type) {
       case opTEXT:
         for (size_t i=0; i< strlen(msg); i++) {
@@ -893,6 +899,8 @@ static gpointer tci_listener(gpointer data) {
           send_vfo(client, (*arg[1] == '1') ? 1 : 0);
         } else if (!strcmp(arg[0],"rx_smeter")) {
           send_smeter(client, (*arg[1] == '1') ? 1 : 0);
+        } else if (!strcmp(arg[0],"cw_macros_speed")) {
+          send_cwspeed(client);
         }
         break;
       case opPING:
