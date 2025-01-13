@@ -4094,7 +4094,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
             if (tr01) { schedule_action(RITXIT_CLEAR, PRESSED, 0); }
             break;
 
-          case 13:  // right edge upper encoder, push-button, SHIFT OFF, silk print: "MULTI", default: FILTER_CUT_DEFAULT
+          case 13:  // right edge upper encoder, push-button, SHIFT OFF, silk print: "MULTI 2", default: FILTER_CUT_DEFAULT
             if (tr01) { schedule_action(FILTER_CUT_DEFAULT, PRESSED, 0); }
             break;
 
@@ -4210,7 +4210,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
           case 40:  // Reserved
             break;
 
-          case 41:  // right edge upper encoder, push-button, SHIFT ON, silk print: "MULTI", default: DIV
+          case 41:  // right edge upper encoder, push-button, SHIFT ON, silk print: "MULTI 2", default: DIV
             if (tr01) { schedule_action(DIV, PRESSED, 0); }
             break;
           }
