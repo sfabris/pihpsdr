@@ -57,7 +57,6 @@
 #include "actions.h"
 #include "new_menu.h"
 #include "zoompan.h"
-#include "exit_menu.h"
 #include "message.h"
 #include "mystring.h"
 
@@ -3480,83 +3479,86 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
         if (client->andromeda_type == 4) {
           //
-          // upgraded G2Mk1 panel
+          // upgraded G2Mk1 panel encoders
           //
           switch (p) {
-          case 1:  // RX AF
+          case 1:  // left edge lower encoder inner knob, silk print: "RX AF/AGC", default: AF_GAIN
             schedule_action(AF_GAIN, RELATIVE, v);
             break;
-          case 2:  // RX AGC
+          case 2:  // left edge lower encoder outer knob, silk print: "RX AF/AGC", default: AGC_GAIN
             schedule_action(AGC_GAIN, RELATIVE, v);
             break;
-          case 5:  // IF filter high
+          case 5:  // right edge upper encoder inner knob, silk print: "Multi 1" (?), default: FILTER_CUT_HIGH
             schedule_action(FILTER_CUT_HIGH, RELATIVE, v);
             break;
-          case 6:  // IF filter low
+          case 6:  // right edge upper encoder outer knob, silk print: "Multi 1" (?), default: FILTER_CUT_LOW
             schedule_action(FILTER_CUT_LOW, RELATIVE, v);
             break;
-          case 9:  // RIT
+          case 9:  // right edge lower encoder inner knob, silk print: "Multi 2" (?), default: RIT
             schedule_action(RIT, RELATIVE, v);
             break;
-          case 10:  // RIT
+          case 10:  // right edge lower encoder outer knob, silk print: "Multi 2" (?), default: XIT
             schedule_action(XIT, RELATIVE, v);
             break;
-          case 11:  // MULTI
+          case 11:  // left edge upper encoder inner knob, silk print: "MIC/DRIVE", default: MULTI_ENC
             schedule_action(MULTI_ENC, RELATIVE, v);
             break;
-          case 12:  // DRIVE
+          case 12:  // left edge upper encoder outer knob, silk print: "MIC/DRIVE", default: TX_DRIVE
             schedule_action(DRIVE, RELATIVE, v);
             break;
           }
         }
 
         if (client->andromeda_type == 5) {
+          //
+          // G2 Ultra panel encoders
+          //
           switch (p) {
-          case 1:  // RX2 AF Gain
+          case 1:  // left edge lower encoder, inner knob, silk print: "RX2 AF/AGC", default: AF_GAIN_RX2
             schedule_action(AF_GAIN_RX2, RELATIVE, v);
             break;
 
-          case 2:  // RX2 AGC Gain
+          case 2:  // left edge lower encoder, outer knob, silk print: "RX2 AF/AGC", default: AGC_GAIN_RX2
             schedule_action(AGC_GAIN_RX2, RELATIVE, v);
             break;
 
-          case 3:  // RX1 AF Gain
+          case 3: // left edge upper encoder (directly below power button), inner knob, silk print: "RX1 AF/AGC", default: AF_GAIN_RX1
             schedule_action(AF_GAIN_RX1, RELATIVE, v);
             break;
 
-          case 4:  // RX1 AGC Gain
+          case 4:  // left edge upper encoder (directly below power button), outer knob, silk print: "RX1 AF/AGC", default: AGC_GAIN_RX1
             schedule_action(AGC_GAIN_RX1, RELATIVE, v);
             break;
 
-          case 5:  // MultiFunction encoder
+          case 5:  // encoder between power button and screen, inner knob, silk print: "DRIVE/MULTI", default: MULTI_ENC
             schedule_action(MULTI_ENC, RELATIVE, v);
             break;
 
-          case 6:  // TX drive
+          case 6:  // encoder between power button and screen, outer knob, silk print: "DRIVE/MULTI", default: DRIVE
             schedule_action(DRIVE, RELATIVE, v);
             break;
 
-          case 7:  // RIT or XIT
+          case 7:  // right edge lower encoder inner knob, silk print: "RIT/ATTN", default: RIXXIT
             schedule_action(RITXIT, RELATIVE, v);
             break;
 
-          case 8:  // Attenuation
+          case 8:  // right edge lower encoder outer knob, silk print: "RIT/ATTN", default: ATTENUATION
             schedule_action(ATTENUATION, RELATIVE, v);
             break;
 
-          case 9:  // RX filter high
+          case 9:  // right edge upper encoder inner knob, (shift OFF), silk print:" MULTI 2" (?), default: FILTER_CUT_HIGH
             schedule_action(FILTER_CUT_HIGH, RELATIVE, v);
             break;
 
-          case 10:  // RX filter low
+          case 10:  // right edge upper encoder outer knob (shift OFF), silk print:" MULTI 2" (?), default: FILTER_CUT_LOW
             schedule_action(FILTER_CUT_LOW, RELATIVE, v);
             break;
 
-          case 11:  // DIVERSITY gain
+          case 11:  // right edge upper encoder inner knob, (shift ON), silk print:" MULTI 2" (?), default: DIVERSITY_GAIN
             schedule_action(DIV_GAIN, RELATIVE, v);
             break;
 
-          case 12:  // DIVERSITY phase
+          case 12:  // right edge upper encoder outer knob, (shift ON), silk print:" MULTI 2" (?), default: DIVERSITY_PHASE
             schedule_action(DIV_PHASE, RELATIVE, v);
             break;
           }
@@ -3955,86 +3957,86 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
         if (client->andromeda_type == 4) {
           //
-          // Upgraded G2 MkI
+          // upgraded G2Mk1 panel push-buttons (including those of the encoders)
           //
           switch (p) {
-          case 1:  // RX Mute
+          case 1:  // left edge lower encoder push-button, silk print: "RX AF/AGC", default: MUTE
             if (tr01) { schedule_action(MUTE, PRESSED, 0); }
             break;
 
-          case 5:  // IF filter default
+          case 5:  // right edge upper encoder push-button, silk print: "Multi 1", default: FILTER_CUT_DEFAULT
             if (tr01) { schedule_action(FILTER_CUT_DEFAULT, PRESSED, 0); }
             break;
 
-          case 9:  // Clear RIT and XIT
+          case 9:  // right edge lower encoder push-button, silk print: "Multi 2", default: RITXIT_CLEAR
             if (tr01) { schedule_action(RITXIT_CLEAR, PRESSED, 0); }
             break;
 
-          case 11:  // Cycle through Multifunction assignment
+          case 11:  // left edge upper encoder push-button, silk print: "MIC/DRIVE", default: MULTI_BUTTON
             if (tr01) { schedule_action(MULTI_BUTTON, PRESSED, 0); }
             break;
 
-          case 21:  // cycle the tool bar
+          case 21:  // 4x3 pad, row 4, column 1, silk print: "FCN", default: FUNCTION
             if (tr01) { schedule_action(FUNCTION, PRESSED, 0); }
             break;
 
-          case 30:  // Band+
+          case 30:  // 4x3 pad, row 1, column 3, silk print: "Band+", default: BAND_PLUS
             if (tr01) { schedule_action(BAND_PLUS, PRESSED, 0); }
             break;
 
-          case 31:  // Mode+
+          case 31:  // 4x3 pad, row 1, column 1, silk print: "Mode+", default: MODE_PLUS
             if (tr01) { schedule_action(MODE_PLUS, PRESSED, 0); }
             break;
 
-          case 32:  // Filter+
-            if (tr01) { schedule_action(MODE_PLUS, PRESSED, 0); }
+          case 32:  // 4x3 pad, row 1, column 2, silk print: "Fil+", default: FILTER_PLUS
+            if (tr01) { schedule_action(FILTER_PLUS, PRESSED, 0); }
             break;
 
-          case 33:  // Band-
+          case 33:  // 4x3 pad, row 2, column 3, silk print: "Band-", default: BAND_MINUS
             if (tr01) { schedule_action(BAND_MINUS, PRESSED, 0); }
             break;
 
-          case 34:  // Mode-
+          case 34:  // 4x3 pad, row 2, column 1, silk print: "Mode-", default: MODE_MINUX
             if (tr01) { schedule_action(MODE_MINUS, PRESSED, 0); }
             break;
 
-          case 35:  // Filter-
+          case 35:  // 4x3 pad, row 2, column 3, silk print: "Fil-", default: FILTER_MINUS
             if (tr01) { schedule_action(FILTER_MINUS, PRESSED, 0); }
             break;
 
-          case 36:  // A to B
+          case 36:  // 4x3 pad, row 3, column 1, silk print: "A>B", default: A_TO_B
             if (tr01) { schedule_action(A_TO_B, PRESSED, 0); }
             break;
 
-          case 37:  // B to A
+          case 37:  // 4x3 pad, row 3, column 2, silk print: "B>A", default: B_TO_A
             if (tr01) { schedule_action(B_TO_A, PRESSED, 0); }
             break;
 
-          case 38:  // Toggle Split
+          case 38: // 4x3 pad, row 3, column 3, silk print: "Split", default: SPLIT
             if (tr01) { schedule_action(SPLIT, PRESSED, 0); }
             break;
 
-          case 42:  // RIT on/off
+          case 42:  // 4x3 pad, row 4, column 2, silk print: "RIT", default: RIT_ENABLE
             if (tr01) { schedule_action(RIT_ENABLE, PRESSED, 0); }
             break;
 
-          case 43:  // XIT on/off
+          case 43:  // 4x3 pad, row 4, column 3, silk print: "XIT", default: XIT_ENABLE
             if (tr01) { schedule_action(XIT_ENABLE, PRESSED, 0); }
             break;
 
-          case 44:  // LOCK on/off
+          case 44:  // right button below VFO knob, silk print: "LOCK", default: LOCK
             if (tr01) { schedule_action(LOCK, PRESSED, 0); }
             break;
 
-          case 45:  // CTUN on/off
+          case 45:  // left button below VFO knob, silk print: "CTUNE", default: CTUN
             if (tr01) { schedule_action(CTUN, PRESSED, 0); }
             break;
 
-          case 47:  // MOX
+          case 47:  // upper button left of the screen, silk print: "MOX", default: MOX
             if (tr01) { schedule_action(MOX, PRESSED, 0); }
             break;
 
-          case 50:  // TUNE
+          case 50:  // lower button left of screen, silk print: "2TONE/TUNE", default: TUNE
             if (tr01) { schedule_action(TUNE, PRESSED, 0); }
             break;
           }
@@ -4042,157 +4044,163 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
         if (client->andromeda_type == 5) {
           //
-          // G2 Ultra
+          // G2 Ultra panel push-buttons, including encoder buttons
           //
           switch (p) {
-          case 1:  // RX2 Mute
+          case 1:  // left edge lower encoder, push-button, silk print: "RX2 AF/AGC", default: MUTE_RX2
             if (tr01) { schedule_action(MUTE_RX2, PRESSED, 0); }
             break;
 
-          case 2:  // RX1 Mute
+          case 2:  // left edge upper encoder (directly below power button), push-button, silk print: "RX1 AF/AGC", default: MUTE_RX1
             if (tr01) { schedule_action(MUTE_RX1, PRESSED, 0); }
             break;
 
-          case 3: // Change multifunction assignment
+          case 3: // encoder between power button and screen, push-button, silk print: "DRIVE/MULTI", default: MULTI_BUTTON
             if (tr01) { schedule_action(MULTI_BUTTON, PRESSED, 0); }
             break;
 
-          case 4:  // ATU, not yet used
+          case 4:  // lowest of the four buttons left of the screen, silk print: "ATU", not yet used
             break;
 
-          case 5:  // Toggle two-tone
+          case 5:  // second-lowest of the four buttons left of the screen, silk print: "2TONE", default: TWO_TONE
             if (tr01) { schedule_action(TWO_TONE, PRESSED, 0); }
             break;
 
-          case 6:  // Toggle tune
+          case 6:  // second-highest of the four buttons left of the screen, silk print: "TUNE", default: TUNE
             if (tr01) { schedule_action(TUNE, PRESSED, 0); }
             break;
 
-          case 7:  // Toggle MOX
+          case 7:  // highest of the four buttons left of the screen, silk print: "MOX", default: MOX
             if (tr01) { schedule_action(MOX, PRESSED, 0); }
             break;
 
-          case 8: // toggle CTUN
+          case 8: // lower left of the VFO knob, silk print: "CTUNE", default: CTUN
             if (tr01) { schedule_action(CTUN, PRESSED, 0); }
             break;
 
-          case 9: // toggle LOCK
+          case 9: // lower right of the VFO knob, silk print: "LOCK", default: LOCK
             if (tr01) { schedule_action(LOCK, PRESSED, 0); }
             break;
 
-          case 10: // switch active receiver
+          case 10: // button with silk print "A/B", default: SWAP_RX
             if (tr01) { schedule_action(SWAP_RX, PRESSED, 0); }
             break;
 
-          case 11: // toggle between off/RIT/XIT
+          case 11: // button with silk print "RIT/XIT", default: RITSELECT
             if (tr01) { schedule_action(RITSELECT, PRESSED, 0); }
             break;
 
-          case 12: // clear RIT and XIT
+          case 12: // right edge lower encoder, push-button, silk print: "RIT/XIT", default: RITCIT_CLEAR
             if (tr01) { schedule_action(RITXIT_CLEAR, PRESSED, 0); }
             break;
 
-          case 13:  // Reset variable filter
+          case 13:  // right edge upper encoder, push-button, silk print: "MULTI", default: FILTER_CUT_DEFAULT
             if (tr01) { schedule_action(FILTER_CUT_DEFAULT, PRESSED, 0); }
             break;
 
-          case 14:  // Select next mode
+          case 14:  // 4x3 pad row 1 col 1, silk print: "160/MODE+", "no Band", default: MODE_PLUS, long: MENU_MODE
             if (tr10) { schedule_action(MODE_PLUS, PRESSED, 0); }
             if (tr12) { schedule_action(MENU_MODE, PRESSED, 0); }
-
             break;
 
-          case 15:  // Select next filter
+          case 15:  // 4x3 pad row 1 col 2, silk print: "80/FIL+", "no Band", default: FILTER_PLUS, long: MENU_FILTER
             if (tr10) { schedule_action(FILTER_PLUS, PRESSED, 0); }
             if (tr12) { schedule_action(MENU_FILTER, PRESSED, 0); }
             break;
 
-          case 16:  // Select next band
+          case 16:  // 4x3 pad row 1 col 3, silk print: "60/BAND+", "no Band", default: BAND_PLUS, long: MENU_BAND
             if (tr01) { schedule_action(BAND_PLUS, PRESSED, 0); }
             if (tr12) { schedule_action(MENU_BAND, PRESSED, 0); }
             break;
 
-          case 17:  // Select previous mode
+          case 17:  // 4x3 pad row 2 col 1, silk print: "40/MODE-", "no Band", default: MODE_MINUS
             if (tr01) { schedule_action(MODE_MINUS, PRESSED, 0); }
             break;
 
-          case 18:  // Select previous filter
+          case 18:  // 4x3 pad row 2 col 2, silk print: "30/FIL-", "no Band", default: FILTER_MINUS
             if (tr01) { schedule_action(FILTER_MINUS, PRESSED, 0); }
             break;
 
-          case 19:  // Select previous band
+          case 19:  // 4x3 pad row 2 col 3, silk print: "20/BAND-", "no Band", default: BAND_MINUS
             if (tr01) { schedule_action(BAND_MINUS, PRESSED, 0); }
             break;
 
-          case 20:  // A to B
+          case 20:  // 4x3 pad row 3 col 1, silk print: "17/A>B", "no Band", default: A_TO_B
             if (tr01) { schedule_action(A_TO_B, PRESSED, 0); }
             break;
 
-          case 21:  // B to A
+          case 21:  // 4x3 pad row 3 col 2, silk print: "15/B>A", "no Band", default: B_TO_A
             if (tr01) { schedule_action(B_TO_A, PRESSED, 0); }
             break;
 
-          case 22:  // Toggle Split
+          case 22:  // 4x3 pad row 3 col 3, silk print: "12/SPLIT", "no Band", default: SPLIT
             if (tr01) { schedule_action(SPLIT, PRESSED, 0); }
             break;
 
-          case 23:  // F1, to be defined
+          case 23:  // 4x3 pad row 4 col 1, silk print: "10/F1", "no Band", default: SNB, long: MENU_NOISE
+            if (tr10) { schedule_action(SNB, PRESSED, 0); }
+            if (tr12) { schedule_action(MENU_NOISE, PRESSED, 0); }
             break;
 
-          case 24:  // F2, to be defined
+          case 24:  // 4x3 pad row 4 col 2, silk print: "6/F2", "no Band", default: NB, long: MENU_NOISE
+            if (tr10) { schedule_action(NB, PRESSED, 0); }
+            if (tr12) { schedule_action(MENU_NOISE, PRESSED, 0); }
             break;
 
-          case 25:  // F3, to be defined
+          case 25:  // 4x3 pad row 4 col 3, silk print: "LF/HF/F3", "no Band", default: NR, long: MENU_NOISE
+            if (tr10) { schedule_action(NR, PRESSED, 0); }
+            if (tr12) { schedule_action(MENU_NOISE, PRESSED, 0); }
+            break;
             break;
 
           case 26:  // unused
             break;
 
-          case 27:  // 160m
+          case 27:  // 4x3 pad row 1 col 1, silk print: "160/MODE+", "Band", default: BAND_160
             if (tr01) { schedule_action(BAND_160, PRESSED, 0); }
             break;
 
-          case 28:  // 80m
+          case 28:  // 4x3 pad row 1 col 2, silk print: "80/FIL+", "Band", default: BAND_80
             if (tr01) { schedule_action(BAND_80, PRESSED, 0); }
             break;
 
-          case 29:  // 60m
+          case 29:  // 4x3 pad row 1 col 3, silk print: "60/BAND+", "Band", default: BAND_60
             if (tr01) { schedule_action(BAND_60, PRESSED, 0); }
             break;
 
-          case 30:  // 40m
+          case 30:  // 4x3 pad row 2 col 1, silk print: "40/MODE-", "Band", default: BAND_40
             if (tr01) { schedule_action(BAND_40, PRESSED, 0); }
             break;
 
-          case 31:  // 30m
+          case 31:  // 4x3 pad row 2 col 2, silk print: "30/FIL-", "Band", default: BAND_30
             if (tr01) { schedule_action(BAND_30, PRESSED, 0); }
             break;
 
-          case 32:  // 20m
+          case 32:  // 4x3 pad row 2 col 3, silk print: "20/BAND-", "Band", default: BAND_20
             if (tr01) { schedule_action(BAND_20, PRESSED, 0); }
             break;
 
-          case 33:  // 17m
+          case 33:  // 4x3 pad row 3 col 1, silk print: "17/A>B", "Band", default: BAND_17
             if (tr01) { schedule_action(BAND_17, PRESSED, 0); }
             break;
 
-          case 34:  // 15m
+          case 34:  // 4x3 pad row 3 col 2, silk print: "15/B>A", "Band", default: BAND_15
             if (tr01) { schedule_action(BAND_15, PRESSED, 0); }
             break;
 
-          case 35:  // 12m
+          case 35:  // 4x3 pad row 3 col 3, silk print: "12/SPLIT", "Band", default: BAND_12
             if (tr01) { schedule_action(BAND_12, PRESSED, 0); }
             break;
 
-          case 36:  // 10m
+          case 36:  // 4x3 pad row 4 col 1, silk print: "10/F1", "Band", default: BAND_10
             if (tr01) { schedule_action(BAND_10, PRESSED, 0); }
             break;
 
-          case 37:  // 6m
+          case 37:  // 4x3 pad row 4 col 2, silk print: "6/F2", "Band", default: BAND_6
             if (tr01) { schedule_action(BAND_6, PRESSED, 0); }
             break;
 
-          case 38:  // LF
+          case 38:  // 4x3 pad row 4 col 3, silk print: "LF/HF/F3", "Band", default: BAND_136
             if (tr01) { schedule_action(BAND_136, PRESSED, 0); }
             break;
 
@@ -4304,13 +4312,7 @@ int parse_cmd(void *data) {
     //SET       \#S;
     //ENDDEF
     if (command[1] == 'S' && command[2] == ';') {
-      stop_program();
-#ifdef __APPLE__
-      (void) system("shutdown -h now");
-#else
-      (void) system("shutdown -h -P now");
-#endif
-      _exit(0);
+      schedule_action(SHUTDOWN, PRESSED, 0);
     } else {
       implemented = FALSE;
     }
@@ -5339,9 +5341,7 @@ int parse_cmd(void *data) {
         int pwrc = atoi(&command[2]);
 
         if ( pwrc == 0 ) {
-          stop_program();
-          system("sudo /sbin/shutdown -P now");
-          _exit(0);
+          schedule_action(SHUTDOWN, PRESSED, 0);
         } else {
           // power-on command. Should there be a reply?
           // snprintf(reply, 256, "PS1;");
