@@ -185,7 +185,7 @@ static int send_frame(void *data) {
   RESPONSE *response = (RESPONSE *) data;
   CLIENT *client = response->client;
   int type = response->type;
-  char *msg = response->msg;
+  const char *msg = response->msg;
 
   unsigned char frame[1024];
   unsigned char *p;
@@ -715,7 +715,7 @@ static gpointer tci_server(gpointer data) {
   return NULL;
 }
 
-int digest_frame(unsigned char *buff, char *msg,  int offset, int *type) {
+int digest_frame(const unsigned char *buff, char *msg,  int offset, int *type) {
   //
   // If the buffer contains enough data for a complete frame,
   // produce the payload in "msg" and return the number of
@@ -777,10 +777,9 @@ int digest_frame(unsigned char *buff, char *msg,  int offset, int *type) {
 static gpointer tci_listener(gpointer data) {
   CLIENT *client = (CLIENT *)data;
   t_print("%s: starting client: socket=%d\n", __FUNCTION__, client->fd);
-  int numbytes;
-  int   offset = 0;
-  unsigned char  buff [MAXDATASIZE];
-  char  msg  [MAXDATASIZE];
+  int offset = 0;
+  unsigned char buff [MAXDATASIZE];
+  char msg [MAXDATASIZE];
   const int ARGLEN=16;
   int argc;
   char *arg[ARGLEN];
@@ -828,6 +827,7 @@ static gpointer tci_listener(gpointer data) {
   send_text(client, "ready;");
 
   while (client->running) {
+    int numbytes;
     int type;
     //
     // This can happen when a very long command has arrived...
