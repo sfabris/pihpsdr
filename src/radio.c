@@ -1036,7 +1036,7 @@ void radio_start_radio() {
   // USB connection. We go through a list of "bona fide" device names
   // and take the first "match".
   //
-  // Note any serial setting set by this mechanism is read-only
+  // Note any serial setting set by this mechanism now is read-only
   //
   if (have_saturn_xdma) {
     for (SaturnSerialPort *ChkSerial = SaturnSerialPortsList; ChkSerial->port != NULL; ChkSerial++) {
@@ -1050,6 +1050,8 @@ void radio_start_radio() {
         snprintf(SerialPorts[MAX_SERIAL - 1].port, sizeof(SerialPorts[MAX_SERIAL - 1].port), "%s", cp);
         t_print("Serial port %s used for G2 panel with %d baud\n", cp, ChkSerial->baud);
         break;
+      } else {
+        t_print("Serial port %s not found.\n", ChkSerial->port);
       }
     }
   }

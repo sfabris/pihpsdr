@@ -299,12 +299,15 @@ void rigctl_menu(GtkWidget *parent) {
     //
     // If this serial port is used internally in a G2 simply state port name
     //
+    snprintf (str, 64, "Serial");
+    w = gtk_label_new(str);
+    gtk_widget_set_name(w, "boldlabel");
+    gtk_widget_set_halign(w, GTK_ALIGN_END);
+    gtk_grid_attach(GTK_GRID(grid), w, 0, row, 1, 1);
+    //
+    // If this serial port is used internally in a G2 simply state port name
+    //
     if (!SerialPorts[i].g2) {
-      snprintf (str, 64, "Serial");
-      w = gtk_label_new(str);
-      gtk_widget_set_name(w, "boldlabel");
-      gtk_widget_set_halign(w, GTK_ALIGN_END);
-      gtk_grid_attach(GTK_GRID(grid), w, 0, row, 1, 1);
       w = gtk_entry_new();
       gtk_entry_set_text(GTK_ENTRY(w), SerialPorts[i].port);
       gtk_grid_attach(GTK_GRID(grid), w, 1, row, 2, 1);
@@ -352,11 +355,16 @@ void rigctl_menu(GtkWidget *parent) {
       gtk_grid_attach(GTK_GRID(grid), w, 6, row, 1, 1);
       g_signal_connect(w, "toggled", G_CALLBACK(serial_autoreporting_cb), GINT_TO_POINTER(i));
     } else {
-      snprintf (str, 64, "Serial %s is used for G2-internal communication", SerialPorts[i].port);
+      //
+      // If the Serial port is used for the G2 panel, just report port name.
+      // If it is not enabled, this means the initial launch_serial() failed.
+      //
+      snprintf (str, 64, "%s %s for G2-internal communication", SerialPorts[i].port,
+                 SerialPorts[i].enable ? "used" : "failed");
       w = gtk_label_new(str);
       gtk_widget_set_name(w, "boldlabel");
       gtk_widget_set_halign(w, GTK_ALIGN_START);
-      gtk_grid_attach(GTK_GRID(grid), w, 0, row, 6, 1);
+      gtk_grid_attach(GTK_GRID(grid), w, 1, row, 5, 1);
     }
   }
 
