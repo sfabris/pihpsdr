@@ -4151,7 +4151,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
             if (tr10) { schedule_action(NR, PRESSED, 0); }
             if (tr12) { schedule_action(MENU_NOISE, PRESSED, 0); }
             break;
-            break;
 
           case 26:  // unused
             break;
