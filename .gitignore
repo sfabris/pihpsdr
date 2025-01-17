@@ -5,10 +5,10 @@ GNUmakefile
 *.o
 *.diff
 *.orig
-pihpsdr
-pihpsdr.app
-hpsdrsim
-wdspWisdom*
+./pihpsdr
+./pihpsdr.app
+./hpsdrsim
+./wdspWisdom*
 *.props
 ip.addr
 hpsdr.png
