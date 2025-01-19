@@ -6858,7 +6858,7 @@ remove it from \pH in the future.
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter[RaspPi GPIO lines]{GPIO Lines for Controllers, CW, PTT}
+\chapter[RaspPi GPIO lines]{RaspPi GPIO Lines for Controllers/Panels, CW, PTT}
 \label{sec:gpio}
 This section is only for \pH running on RaspberryPi or similar systems with a GPIO (general purpose
 input/output) header. \pH uses \texttt{libgpiod} to access the GPIO, so this may also apply to
@@ -7087,8 +7087,19 @@ exists. If it does, then this is likely a left-over from some previous
 attempt to install the program and then it should be moved elsewhere, since it may contain
 files with saved preferences (\texttt{*.props}) which you may want to re-use.
 
+\textbf{\color{red}Note for Anan-G2 radios.} On these radios, the factory installation contains
+the \texttt{pihpsdr} directory in \texttt{\$HOME/github} rather than in \texttt{\$HOME}. It
+makes sense to keep this location. So rename the directory \texttt{\$HOME/github/pihpsdr}
+to (say)  \texttt{\$HOME/github/pihpsdr.backup} to have a backup of the existing
+installation, this also makes sure that after the renaming there is no directory
+with name \texttt{pihpsdr} left in \texttt{\$HOME/github}. Then you can use the
+following instructions provided that you replace the commands \grtt{cd \$HOME} with
+\grtt{cd \$HOME/github}.
+
+\clearpage
 The \pH repository is downloaded, and support libraries are installed, with the commands
 
+\grtt{cd \$HOME} \\
 \grtt{git clone https://github.com/dl1ycf/pihpsdr} \\
 \grtt{cd pihpsdr} \\
 \grtt{LINUX/libinstall.sh} \\
@@ -7127,21 +7138,46 @@ last command my take some time. The first command loads the complete \pH reposit
 my GitHub account. The last command (\texttt{libinstall.sh}) contains all the magic,
 it not only loads all required RaspberryPi OS packages,
 but also loads and installs further libraries \pH depends on,
-including the SoapySDR library as well as SoapySDR modules for the Adalm Pluto and RTL SDR sticks.
-
-\textbf{Note.} The SoapySDR library, and all SoapySDR modules, must be compiled from the sources
-(and the libinstall.sh script does so). The reason is, that SoapySDR in the standard repository
-is quite outdated (version 0.7) while piHPDSR requires a more recent version (0.8) because the
-SoapySDR API has changed from 0.7 to 0.8. This note is obsolete if in your Linux distribution
-SoapySDR is already updated to version 0.8.
-
-The libinstall procedure also does some other things for you, including creating a desktop icon
+including the core SoapySDR library. The libinstall procedure also does some other things for you, including creating a desktop icon
 for \pH. If you are on a Desktop PC running LINUX, you will get error messages about
 libraries such as libgpiod that are missing in the repository, which you can ignore.
 
-\textbf{Note:} If you install on a Desktop PC running LINUX, or if you are on a RaspPi but use
+\textbf{\color{red}SoapySDR Note.} The SoapySDR library, and all SoapySDR modules, must be compiled from the sources
+(and the libinstall.sh script does so). The reason is, that SoapySDR in the standard repository
+is quite outdated (version 0.7) while piHPDSR requires a more recent version (0.8) because the
+SoapySDR API has changed from 0.7 to 0.8. The necessity to compile SoapySDR from the sources
+may be dropped in the future, if the libraries in the standard repositiories are all updated
+to the 0.8 API. Use the \grtt{SoapySDRUtil -info} command (see below for a sample output) to
+verify that the SoapySDR core has correctly been installed.
+
+\textbf{\color{red}Support for specific SoapySDR radios.} The script \texttt{libinstall.sh} only compiles
+and install the SoapySDR core library, since this is a prerequisite for compiling \pH with
+the SOAPYSDR compile-time option. Support for specific radios is available in the \texttt{LINUX}
+directory in form of installation scripts, these have the name \texttt{soapy.}\textit{your-radio}\texttt{.sh}.
+At the moment, there is support for the Adalm Pluto, for RTL sticks, for AirSpy radios, and
+for the SDRplay. I have put together and tested scripts for the Pluto and for RTL sticks,
+since I have the hardware and can test it. The other scripts that install support modules
+for SoapySDR radios have been contributed by \pH users who have those radios and managed
+to compose an automatic install script for the required SoapySDR modules. Use the
+\grtt{SoapySDRUtil -find} command (see below for a sample output) to verify that SoapySDR
+``finds'' your radio. If SoapySDR does not find it, \pH cannot connect. To install the (radio specific)
+SoapySDR module for an Adalm Pluto (to give an example), you can type in at this place
+
+\grtt{cd \$HOME/pihpsdr}
+\grtt{LINUX/soapy.pluto.sh}
+
+\bigskip
+
+\textbf{\color{red} GPIO Note:} If you install on a Desktop PC running LINUX, or if you are on a RaspPi but use
 the GPIO I/O lines for some other purpose, you must de-activate the GPIO compile time option
 first, as described in Appendix \ref{sec:compiletime}.
+
+\textbf{\color{red}Anan G2-Ultra note:}For the Anan G2-Ultra radios (those with a dozen (or so) LEDs on
+the front panel and a 8-inch screen), as well as for original G2 radios (without LEDs and with a 7-inch screen)
+where the CPU board has been upgraded to a Radxa CM5 module, \pH should also be compiled \textit{without} (!) the
+GPIO compile time option.
+
+\bigskip
 
 It is clear that double-clicking the \pH desktop icon at this stage leads nowhere,
 since first you need to compile the program.
@@ -7157,7 +7193,7 @@ But if you make changes (e.g. changing the compile time options as described in
 Appendix \ref{sec:compiletime}, or apply some code modifications)
 and want to re-compile later, this sequence is the safest way to create a new binary,
 namely go to the pihpsdr
-directory and recompile by executing ,,make''.
+directory and recompile by executing ``make''.
 
 \begin{figure}[ht]
 \center
@@ -7184,19 +7220,12 @@ as audio module. If you want, for example, use SoapySDR hardware such as the Ada
 or RTL sticks, you have to enable \texttt{SOAPYSDR} and recompile as described in
 Appendix \ref{sec:compiletime}.
 
+\bigskip
 
-\textbf{Checking the SoapySDR installation.}
-
+\textbf{\color{red}Checking the SoapySDR installation.}
 If you do not plan to use SoapySDR devices, you need not compile with \texttt{SOAPYSDR}
 enabled and can skip the rest of this section.
 
-The installation of the SoapySDR core and the modules for the Adalm Pluto and for RTL SDR
-sticks is the most complicated task performed by the \texttt{libinstall.sh} command.
-Although I tried hard to let everything be done auto-magically, you may want to check
-if everything went well. If not, and if you do not plan to activate the SOAPYSDR compile time
-option, you can simply ignore this.
-
-\clearpage
 To check the SoapySDR installation, open a new terminal
 window and just type the command (be careful to use the correct capitalisation!)
 
@@ -7240,17 +7269,18 @@ then you probably have installed SoapySDR on your computer
 from
 the standard repositories, and this is not going to work. The \texttt{libinstall.sh} command  has been
 designed
-to work (and has been tested on) a plain vanilla operating system, not on a ,,spoiled'' one
+to work (and has been tested on) a plain vanilla operating system, not on a ``spoiled'' one
 where the user has manually installed additional software packages that may induce incompatibilities.
 The best way out of such a problem is to re-install Linux (on a RaspPi, simply use a new SD card to do so).
 
 I think in the near future, the standard repositories will also advance to SoaySDR version 0.8, and then
-the installation procedure \texttt{libinstall.sh} no longer needs to download and compile SoapySDR and all
-its modules, they can simply be taken from the ,,official'' distribution.
+the installation procedure no longer needs to download and compile SoapySDR and all
+its modules, they can simply be taken from the ``official'' distribution.
 
-\clearpage
+\bigskip
+
 To verify that a given hardware (e.g. an RTL stick, or an Adalm Pluto) is properly detected by the
-SoapySDR library, type in the command
+SoapySDR library, connect the radio, possibly reboot the RaspPi, and type in the command
 
 \grtt{SoapySDRUtil -find}
 
@@ -7283,7 +7313,7 @@ stems from missing, corrupt, or outdated SoapySDR libraries which are not part o
 
 \textit{This procedure has been tested on several Macintosh models, including a MacBook Air with an
 M1 Apple Silicon CPU, a MacMini with an M2 pro CPU, and a somewhat older MacMini with an Intel CPU.
-In the last years, MacOS operating systems from version 10.15 (,,Catalina'') through 15.1 (,,Sequoia'')
+In the last years, MacOS operating systems from version 10.15 (,,Catalina'') through 15.2 (,,Sequoia'')
 have been used. Very old MacOS systems (e.g. Catalina) are no longer supported by HomeBrew. Installing
 \pH on these is still possible but requires (really) advanced skills, so take care to use a Mac with an operating
 system still supported by HomeBrew.}
