@@ -22,6 +22,10 @@ PIHPSDR=$TARGET/release/pihpsdr
 
 RASPI=`cat /proc/cpuinfo | grep Model | grep -c Raspberry`
 
+if [ $RASPI -eq 0 ]; then
+RASPI=`uname -n |  grep -c saturn-radxa`
+fi
+
 echo
 echo "=============================================================="
 echo "Script file absolute position  is " $SCRIPTFILE
