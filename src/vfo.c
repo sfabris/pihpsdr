@@ -1347,7 +1347,7 @@ static gboolean vfo_draw_cb (GtkWidget *widget,
 // Elements whose x-coordinate is zero are not drawn
 //
 void vfo_update() {
-  char wid[4];
+  char wid[6];
   if (!vfo_surface) { return; }
 
   int id = active_receiver->id;
@@ -1376,14 +1376,10 @@ void vfo_update() {
     snprintf(wid, sizeof(wid), "%3d", w);
   } else if (w < 9950) {
     w = 100 * ((w+50) / 100); // between 1000 and 9900
-    if (w % 1000 == 0) {
-     // print "3k" rather than "3k0" for a width of 3000
-     snprintf(wid, sizeof(wid), "%dk", w/1000);
-    } else {
-     // print "2k7" for a width of 2700
-     snprintf(wid, sizeof(wid), "%dk%d", w/1000, (w % 1000) / 100);
-    }
+    // print "2.7k" for a width of 2700
+    snprintf(wid, sizeof(wid), "%d.%dk", w/1000, (w % 1000) / 100);
   } else {
+    // print "11k" for a width of 11000
     w = (w+500) / 1000;
     snprintf(wid, sizeof(wid), "%2dk", w);
   }

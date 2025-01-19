@@ -22,6 +22,10 @@ PIHPSDR=$TARGET/release/pihpsdr
 
 RASPI=`cat /proc/cpuinfo | grep Model | grep -c Raspberry`
 
+if [ $RASPI -eq 0 ]; then
+RASPI=`uname -n |  grep -c saturn-radxa`
+fi
+
 echo
 echo "=============================================================="
 echo "Script file absolute position  is " $SCRIPTFILE
@@ -239,9 +243,7 @@ cp $PIHPSDR/hpsdr_icon.png $TARGET
 
 ################################################################
 #
-# h) RaspPi only:
-#    default GPIO lines to input + pullup(NO LONGER NEEDED)
-#    copy XDMA rules
+# h) RaspPi only: copy udev rules for XDMA and serial lines
 #
 ################################################################
 
@@ -252,38 +254,11 @@ echo
 echo "... Final RaspPi Setup."
 echo
 
-#if test -f "/boot/config.txt"; then
-#  echo "... putting GPIO stuff into /boot/config.txt"
-#  if grep -q "gpio=4-13,16-27=ip,pu" /boot/config.txt; then
-#    echo "!!! /boot/config.txt already contains gpio setup."
-#  else
-#    echo "... /boot/config.txt does not contain gpio setup - adding it."
-#    echo "... Please reboot system for this to take effect."
-#    cat <<EGPIO | sudo tee -a /boot/config.txt > /dev/null
-#[all]
-## setup GPIO for pihpsdr controllers
-#gpio=4-13,16-27=ip,pu
-#EGPIO
-#  fi
-#fi
+echo " ...copying SATURN udev rules"
+sudo cp $PIHPSDR/60-xdma.rules        /etc/udev/rules.d/
+sudo cp $PIHPSDR/xdma-udev-command.sh /etc/udev/rules.d/
+sudo cp $PIHPSDR/61-g2-serial.rules   /etc/udev/rules.d/
 #
-#if test -f "/boot/firmware/config.txt"; then
-#  echo "... putting GPIO stuff into /boot/firmware/config.txt"
-#  if grep -q "gpio=4-13,16-27=ip,pu" /boot/firmware/config.txt; then
-#    echo "!!! /boot/firmware/config.txt already contains gpio setup."
-#  else
-#    echo "... /boot/firmware/config.txt does not contain gpio setup - adding it."
-#    echo "... Please reboot system for this to take effect."
-#    cat <<EGPIO | sudo tee -a /boot/firmware/config.txt > /dev/null
-#[all]
-## setup GPIO for pihpsdr controllers
-#gpio=4-13,16-27=ip,pu
-#EGPIO
-#  fi
-#fi
-
-echo " ...copying XDMA udev rules"
-sudo cp $PIHPSDR/60-xdma.rules $PIHPSDR/xdma-udev-command.sh /etc/udev/rules.d/
 sudo udevadm control --reload-rules
 sudo udevadm trigger
 
