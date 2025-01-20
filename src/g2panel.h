@@ -16,7 +16,7 @@
 *
 */
 
-void g2panelSaveState();
+void g2panelSaveState(int andromeda_type, int *buttonvec, int *encodervec);
 void g2panelRestoreState(int andromeda_type, int *buttonvec, int *encodervec);
 void g2panel_execute_encoder(int *vec, int p, int v);
 void g2panel_execute_button(int *vec, int p, int tr01, int tr10, int tr12, int tr20);

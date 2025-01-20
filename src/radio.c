@@ -2518,10 +2518,6 @@ static void radio_restore_state() {
   GetPropI0("tci_port",                                      tci_port);
   GetPropI0("tci_txonly",                                    tci_txonly);
 #endif
-  GetPropI0("rigctl_tcp_enable",                             rigctl_tcp_enable);
-  GetPropI0("rigctl_tcp_andromeda",                          rigctl_tcp_andromeda);
-  GetPropI0("rigctl_tcp_autoreporting",                      rigctl_tcp_autoreporting);
-  GetPropI0("rigctl_port_base",                              rigctl_tcp_port);
   GetPropI0("mute_spkr_amp",                                 mute_spkr_amp);
   GetPropI0("adc0_filter_bypass",                            adc0_filter_bypass);
   GetPropI0("adc1_filter_bypass",                            adc1_filter_bypass);
@@ -2532,24 +2528,6 @@ static void radio_restore_state() {
 
   for (int i = 0; i < 11; i++) {
     GetPropF1("pa_trim[%d]", i,                              pa_trim[i]);
-  }
-
-  for (int id = 0; id < MAX_SERIAL; id++) {
-
-    //
-    // Do not overwrite a "detected" port
-    //
-    if (!SerialPorts[id].g2) {
-      GetPropS1("rigctl_serial_port[%d]", id,                  SerialPorts[id].port);
-      GetPropI1("rigctl_serial_enable[%d]", id,                SerialPorts[id].enable);
-      GetPropI1("rigctl_serial_andromeda[%d]", id,             SerialPorts[id].andromeda);
-      GetPropI1("rigctl_serial_baud_rate[%i]", id,             SerialPorts[id].baud);
-      GetPropI1("rigctl_serial_autoreporting[%d]", id,         SerialPorts[id].autoreporting);
-
-      if (SerialPorts[id].andromeda) {
-        SerialPorts[id].baud = B9600;
-      }
-    }
   }
 
   for (int i = 0; i < n_adc; i++) {
@@ -2585,6 +2563,7 @@ static void radio_restore_state() {
   memRestoreState();
   vfo_restore_state();
   gpioRestoreActions();
+  rigctlRestoreState();
 #ifdef MIDI
   midiRestoreState();
 #endif
@@ -2736,10 +2715,6 @@ void radio_save_state() {
   SetPropI0("tci_port",                                      tci_port);
   SetPropI0("tci_txonly",                                    tci_txonly);
 #endif
-  SetPropI0("rigctl_tcp_enable",                             rigctl_tcp_enable);
-  SetPropI0("rigctl_tcp_andromeda",                          rigctl_tcp_andromeda);
-  SetPropI0("rigctl_tcp_autoreporting",                      rigctl_tcp_autoreporting);
-  SetPropI0("rigctl_port_base",                              rigctl_tcp_port);
   SetPropI0("mute_spkr_amp",                                 mute_spkr_amp);
   SetPropI0("adc0_filter_bypass",                            adc0_filter_bypass);
   SetPropI0("adc1_filter_bypass",                            adc1_filter_bypass);
@@ -2750,14 +2725,6 @@ void radio_save_state() {
 
   for (int i = 0; i < 11; i++) {
     SetPropF1("pa_trim[%d]", i,                              pa_trim[i]);
-  }
-
-  for (int id = 0; id < MAX_SERIAL; id++) {
-    SetPropI1("rigctl_serial_enable[%d]", id,                SerialPorts[id].enable);
-    SetPropI1("rigctl_serial_andromeda[%d]", id,             SerialPorts[id].andromeda);
-    SetPropI1("rigctl_serial_baud_rate[%i]", id,             SerialPorts[id].baud);
-    SetPropS1("rigctl_serial_port[%d]", id,                  SerialPorts[id].port);
-    SetPropI1("rigctl_serial_autoreporting[%d]", id,         SerialPorts[id].autoreporting);
   }
 
   for (int i = 0; i < n_adc; i++) {
@@ -2793,7 +2760,7 @@ void radio_save_state() {
   memSaveState();
   vfo_save_state();
   gpioSaveActions();
-  g2panelSaveState();
+  rigctlSaveState();
 #ifdef MIDI
   midiSaveState();
 #endif

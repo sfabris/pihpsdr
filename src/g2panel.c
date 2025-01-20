@@ -47,7 +47,7 @@ int *g2panel_default_buttons(int andromeda_type) {
     // left edge lower encoder push-button, silk print: "RX AF/AGC", default: MUTE
     result[1] = MUTE;
     // right edge upper encoder push-button, silk print: "Multi 1", default: FILTER_CUT_DEFAULT
-    result[5] = MUTE;
+    result[5] = FILTER_CUT_DEFAULT;
     // right edge lower encoder push-button, silk print: "Multi 2", default: RITXIT_CLEAR
     result[9] = RITXIT_CLEAR;
     // left edge upper encoder push-button, silk print: "MIC/DRIVE", default: MULTI_BUTTON
@@ -164,7 +164,7 @@ int *g2panel_default_buttons(int andromeda_type) {
     // 4x3 pad row 4 col 2, silk print: "6/F2", "Band", default: BAND_6
     result[37] = BAND_6;
     // 4x3 pad row 4 col 3, silk print: "LF/HF/F3", "Band", default: BAND_136
-    result[38] = BAND_6;
+    result[38] = BAND_136;
     // Not used
     result[39] = NO_ACTION;
     // Not used

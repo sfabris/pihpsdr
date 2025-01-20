@@ -31,7 +31,6 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "receiver.h"
 
 #include "andromeda.h"
 #include "toolbar.h"
@@ -57,11 +56,14 @@
 #include "new_protocol.h"
 #include "old_protocol.h"
 #include "iambic.h"
+#include "receiver.h"
 #include "actions.h"
 #include "new_menu.h"
 #include "zoompan.h"
 #include "message.h"
 #include "mystring.h"
+#include "property.h"
+#include "g2panel.h"
 
 #include <math.h>
 
@@ -913,7 +915,8 @@ static gboolean autoreport_handler(gpointer data) {
     //
     // return and remove timer
     //
-    return FALSE;
+    client->auto_timer = 0;
+    return G_SOURCE_REMOVE;
   }
 
   if (client->auto_reporting > 0) {
@@ -963,6 +966,7 @@ static gboolean andromeda_handler(gpointer data) {
     // The same applies for ANDROMEDA type-4 clients since there
     // are no LEDs on a G2MkI panel
     //
+    client->andromeda_timer = 0;
     return G_SOURCE_REMOVE;
   }
 
@@ -5721,15 +5725,22 @@ int launch_serial_rigctl (int id) {
 
   //
   // Initialize the rest of the CLIENT data structure
+  // (except fd and fifo)
   //
-  serial_client[id].busy = 0;
-  serial_client[id].done = 0;
-  serial_client[id].running = 1;
-  serial_client[id].andromeda_timer = 0;
-  serial_client[id].auto_reporting = SET(SerialPorts[id].autoreporting);
-  serial_client[id].andromeda_type = 0;
-  serial_client[id].last_fa = 0;
-  serial_client[id].last_fb = 0;
+  serial_client[id].busy               = 0;
+  serial_client[id].done               = 0;
+  serial_client[id].running            = 1;
+  serial_client[id].andromeda_timer    = 0;
+  serial_client[id].auto_reporting     = SET(SerialPorts[id].autoreporting);
+  serial_client[id].andromeda_type     = 0;
+  serial_client[id].last_fa            = -1;
+  serial_client[id].last_fb            = -1;
+  serial_client[id].last_md            = -1;
+  serial_client[id].last_v             = 0;
+  serial_client[id].shift              = 0;
+  serial_client[id].buttonvec          = NULL;
+  serial_client[id].encodervec         = NULL;
+
 
   for (int i = 0; i < MAX_ANDROMEDA_LEDS; i++) {
     serial_client[id].last_led[i] = -1;
@@ -5813,4 +5824,77 @@ void launch_tcp_rigctl () {
   // Start TCP thread
   //
   rigctl_server_thread_id = g_thread_new( "rigctl server", rigctl_server, GINT_TO_POINTER(rigctl_tcp_port));
+}
+void rigctlRestoreState() {
+  GetPropI0("rigctl_tcp_enable",                             rigctl_tcp_enable);
+  GetPropI0("rigctl_tcp_andromeda",                          rigctl_tcp_andromeda);
+  GetPropI0("rigctl_tcp_autoreporting",                      rigctl_tcp_autoreporting);
+  GetPropI0("rigctl_port_base",                              rigctl_tcp_port);
+
+  for (int id = 0; id < MAX_SERIAL; id++) {
+
+    //
+    // Do not overwrite a "detected" port
+    //
+    if (!SerialPorts[id].g2) {
+      GetPropS1("rigctl_serial_port[%d]", id,                  SerialPorts[id].port);
+      GetPropI1("rigctl_serial_enable[%d]", id,                SerialPorts[id].enable);
+      GetPropI1("rigctl_serial_andromeda[%d]", id,             SerialPorts[id].andromeda);
+      GetPropI1("rigctl_serial_baud_rate[%i]", id,             SerialPorts[id].baud);
+      GetPropI1("rigctl_serial_autoreporting[%d]", id,         SerialPorts[id].autoreporting);
+
+      if (SerialPorts[id].andromeda) {
+        SerialPorts[id].baud = B9600;
+      }
+    }
+  }
+
+  //
+  // G2 panel settings are restored when the panel is detected
+  //
+}
+
+void rigctlSaveState() {
+  SetPropI0("rigctl_tcp_enable",                             rigctl_tcp_enable);
+  SetPropI0("rigctl_tcp_andromeda",                          rigctl_tcp_andromeda);
+  SetPropI0("rigctl_tcp_autoreporting",                      rigctl_tcp_autoreporting);
+  SetPropI0("rigctl_port_base",                              rigctl_tcp_port);
+
+  for (int id = 0; id < MAX_SERIAL; id++) {
+    SetPropI1("rigctl_serial_enable[%d]", id,                SerialPorts[id].enable);
+    SetPropI1("rigctl_serial_andromeda[%d]", id,             SerialPorts[id].andromeda);
+    SetPropI1("rigctl_serial_baud_rate[%i]", id,             SerialPorts[id].baud);
+    SetPropS1("rigctl_serial_port[%d]", id,                  SerialPorts[id].port);
+    SetPropI1("rigctl_serial_autoreporting[%d]", id,         SerialPorts[id].autoreporting);
+  }
+
+  //
+  // Save Andromeda controller settings. Only types 4 and 5 are saved.
+  // Only the first controller found is saved, and the search order is:
+  // a) serial clients from the last to the first
+  // b) tcp clients from the first to the last
+  //
+  for (int id = MAX_SERIAL-1; id >= 0; id--) {
+    if (serial_client[id].running && 
+            (serial_client[id].andromeda_type == 4 || serial_client[id].andromeda_type == 5) &&
+            serial_client[id].buttonvec != NULL &&
+            serial_client[id].encodervec != NULL) {
+      g2panelSaveState(serial_client[id].andromeda_type,
+                       serial_client[id].buttonvec,
+                       serial_client[id].encodervec);
+      return;
+    }
+  }
+
+  for (int id = 0; id < MAX_TCP_CLIENTS; id++) {
+    if (tcp_client[id].running && 
+            (tcp_client[id].andromeda_type == 4 || tcp_client[id].andromeda_type == 5) &&
+            tcp_client[id].buttonvec != NULL &&
+            tcp_client[id].encodervec != NULL) {
+      g2panelSaveState(tcp_client[id].andromeda_type,
+                       tcp_client[id].buttonvec,
+                       tcp_client[id].encodervec);
+      return;
+    }
+  }
 }
