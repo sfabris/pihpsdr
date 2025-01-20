@@ -20,7 +20,8 @@ THISDIR=`dirname $SCRIPTFILE`
 
 ################################################################
 #
-# SOAPY: SDRPlay support (contributed by Mitch)
+# SOAPY: SDRPlay support (contributed by Mitch AB4MW)
+#                        (tested on RaspPi for SDRPlay RSP1a)
 #
 ################################################################
 
