@@ -36,6 +36,7 @@
 #include "audio.h"
 #include "discovered.h"
 #include "filter.h"
+#include "g2panel.h"
 #include "main.h"
 #include "mode.h"
 #include "radio.h"
@@ -2792,6 +2793,7 @@ void radio_save_state() {
   memSaveState();
   vfo_save_state();
   gpioSaveActions();
+  g2panelSaveState();
 #ifdef MIDI
   midiSaveState();
 #endif
