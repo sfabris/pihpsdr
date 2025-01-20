@@ -20,7 +20,9 @@ THISDIR=`dirname $SCRIPTFILE`
 
 ################################################################
 #
-# SOAPY: AirSpy support (contributed by Mitch)
+# SOAPY: AirSpy support (contributed by Mitch AB4MW)
+#                       (tested on RaspPi for Airspy HF+ Dual
+#                                         and AirSpy HF+ Discovery)
 #
 ################################################################
 
