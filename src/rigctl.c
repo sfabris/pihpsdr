@@ -64,6 +64,7 @@
 #include "mystring.h"
 #include "property.h"
 #include "g2panel.h"
+#include "main.h"
 
 #include <math.h>
 
@@ -3537,14 +3538,21 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         t_print("RIGCTL:INFO: Andromeda Client: Type:%c%c h/w:%c%c s/w:%c%c%c\n",
                 command[4], command[5],
                 command[6], command[7], command[8], command[9], command[10]);
-        //
-        // Initialize commands. This is all a no-op if the type is not 4 or 5
-        //
-        if (client->buttonvec) { g_free(client->buttonvec); }
-        if (client->encodervec) { g_free(client->encodervec); }
-        client->buttonvec  = g2panel_default_buttons(client->andromeda_type);
-        client->encodervec = g2panel_default_encoders(client->andromeda_type);
-        g2panelRestoreState(client->andromeda_type, client->buttonvec, client->encodervec);
+
+        if (client->andromeda_type == 4 || client->andromeda_type == 5) {
+          //
+          // Initialize commands.
+          //
+          if (client->buttonvec) { g_free(client->buttonvec); }
+          if (client->encodervec) { g_free(client->encodervec); }
+          client->buttonvec  = g2panel_default_buttons(client->andromeda_type);
+          client->encodervec = g2panel_default_encoders(client->andromeda_type);
+          g2panelRestoreState(client->andromeda_type, client->buttonvec, client->encodervec);
+          //
+          // This takes care the G2panel menu is shown in the main menu
+          //
+          if (controller == NO_CONTROLLER) { controller = G2_V2; }
+        }
       }
 
       break;

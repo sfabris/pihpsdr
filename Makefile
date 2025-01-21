@@ -473,6 +473,7 @@ src/fft_menu.c \
 src/filter.c \
 src/filter_menu.c \
 src/g2panel.c \
+src/g2panel_menu.c \
 src/gpio.c \
 src/i2c.c \
 src/iambic.c \
@@ -563,6 +564,7 @@ src/fft_menu.h \
 src/filter.h \
 src/filter_menu.h \
 src/g2panel.h \
+src/g2panel_menu.h \
 src/gpio.h \
 src/iambic.h \
 src/i2c.h \
@@ -647,6 +649,7 @@ src/fft_menu.o \
 src/filter.o \
 src/filter_menu.o \
 src/g2panel.o \
+src/g2panel_menu.o \
 src/gpio.o \
 src/iambic.o \
 src/i2c.o \

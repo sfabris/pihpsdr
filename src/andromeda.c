@@ -193,7 +193,7 @@ int andromeda_execute_button(int v, int p) {
 
         vfo_band_changed(active_receiver->id ? VFO_B : VFO_A, band);
         shift = 0;
-      } else if (v == 1) {
+      } else if (!shift && v == 1) {
         if (p == 30) { start_tx(); }                                  // MODE DATA
         else if (p == 31) { schedule_action(MODE_PLUS, PRESSED, 0); } // MODE+
         else if (p == 32) { schedule_action(FILTER_PLUS, PRESSED, 0); } // FILTER+

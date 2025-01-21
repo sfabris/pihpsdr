@@ -50,6 +50,7 @@
 #include "ps_menu.h"
 #include "encoder_menu.h"
 #include "switch_menu.h"
+#include "g2panel_menu.h"
 #include "toolbar_menu.h"
 #include "vfo_menu.h"
 #include "fft_menu.h"
@@ -197,6 +198,12 @@ static gboolean switch_cb (GtkWidget *widget, GdkEventButton *event, gpointer da
 }
 
 #endif
+
+static gboolean g2panel_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
+  cleanup();
+  g2panel_menu(top_window);
+  return TRUE;
+}
 
 static gboolean toolbar_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
   cleanup();
@@ -720,6 +727,14 @@ void new_menu() {
     }
 
 #endif
+
+    if (controller == G2_V2) {
+      GtkWidget *g2panel_b = gtk_button_new_with_label("G2 Panel");
+      g_signal_connect (g2panel_b, "button-press-event", G_CALLBACK(g2panel_cb), NULL);
+      gtk_grid_attach(GTK_GRID(grid), g2panel_b, col, row, 1, 1);
+      row++;
+    }
+
     // cppcheck-suppress redundantAssignment
     row = maxrow;
     //
