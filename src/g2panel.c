@@ -28,6 +28,7 @@
 
 #include "actions.h"
 #include "property.h"
+#include "g2panel_menu.h"
 
 int *g2panel_default_buttons(int andromeda_type) {
   //
@@ -247,53 +248,61 @@ int *g2panel_default_encoders(int andromeda_type) {
   return result;
 }
 
-void g2panel_execute_button(int *vec, int button, int tr01, int tr10, int tr12, int tr20) {
+void g2panel_execute_button(int type, int *vec, int button, int tr01, int tr10, int tr12, int tr20) {
   enum ACTION action;
   if (vec == NULL || button < 0 || button > 99) { return; }
 
-  action = vec[button];
-  if (action == NO_ACTION) { return; }
+  if (g2panel_menu_is_open) {
+    g2panel_change_button(type, vec, button);
+  } else {
+    action = vec[button];
+    if (action == NO_ACTION) { return; }
 
-  //
-  // Some actions have a special second "longpress" meaning
-  //
-  switch (action) {
-  case BAND_PLUS:
-  case BAND_MINUS:
-    if (tr10) { schedule_action(action, PRESSED, 0); }
-    if (tr12) { schedule_action(MENU_BAND, PRESSED, 0); }
-    break;
-  case FILTER_PLUS:
-  case FILTER_MINUS:
-    if (tr10) { schedule_action(action, PRESSED, 0); }
-    if (tr12) { schedule_action(MENU_FILTER, PRESSED, 0); }
-    break;
-  case MODE_PLUS:
-  case MODE_MINUS:
-    if (tr10) { schedule_action(action, PRESSED, 0); }
-    if (tr12) { schedule_action(MENU_MODE, PRESSED, 0); }
-    break;
-  case ANF:
-  case SNB:
-  case NB:
-  case NR:
-    if (tr10) { schedule_action(action, PRESSED, 0); }
-    if (tr12) { schedule_action(MENU_NOISE, PRESSED, 0); }
-    break;
-  default:
-    if (tr01) { schedule_action(action, PRESSED, 0); }
-    if (tr10 || tr20) { schedule_action(action, RELEASED, 0); }
-    break;
+    //
+    // Some actions have a special second "longpress" meaning
+    //
+    switch (action) {
+    case BAND_PLUS:
+    case BAND_MINUS:
+      if (tr10) { schedule_action(action, PRESSED, 0); }
+      if (tr12) { schedule_action(MENU_BAND, PRESSED, 0); }
+      break;
+    case FILTER_PLUS:
+    case FILTER_MINUS:
+      if (tr10) { schedule_action(action, PRESSED, 0); }
+      if (tr12) { schedule_action(MENU_FILTER, PRESSED, 0); }
+      break;
+    case MODE_PLUS:
+    case MODE_MINUS:
+      if (tr10) { schedule_action(action, PRESSED, 0); }
+      if (tr12) { schedule_action(MENU_MODE, PRESSED, 0); }
+      break;
+    case ANF:
+    case SNB:
+    case NB:
+    case NR:
+      if (tr10) { schedule_action(action, PRESSED, 0); }
+      if (tr12) { schedule_action(MENU_NOISE, PRESSED, 0); }
+      break;
+    default:
+      if (tr01) { schedule_action(action, PRESSED, 0); }
+      if (tr10 || tr20) { schedule_action(action, RELEASED, 0); }
+      break;
+    }
   }
 }
 
-void g2panel_execute_encoder(int *vec, int encoder, int val) {
+void g2panel_execute_encoder(int type, int *vec, int encoder, int val) {
   enum ACTION action;
   if (vec == NULL || encoder < 0 || encoder > 49) { return; }
 
-  action = vec[encoder];
-  if (action == NO_ACTION) { return; }
-  schedule_action(action, RELATIVE, val);
+  if (g2panel_menu_is_open) {
+    g2panel_change_encoder(type, vec, encoder);
+  } else {
+    action = vec[encoder];
+    if (action == NO_ACTION) { return; }
+    schedule_action(action, RELATIVE, val);
+  }
 }
 
 //

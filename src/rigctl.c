@@ -3426,7 +3426,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         if (client->andromeda_type == 1) {
           andromeda_execute_encoder(p, v);
         } else {
-          g2panel_execute_encoder(client->encodervec, p, v);
+          g2panel_execute_encoder(client->andromeda_type, client->encodervec, p, v);
         }
       } else {
         // unexpected command format
@@ -3504,7 +3504,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
           client->last_v = v;
 
-          g2panel_execute_button(client->buttonvec, p, tr01, tr10, tr12, tr20);
+          g2panel_execute_button(client->andromeda_type, client->buttonvec, p, tr01, tr10, tr12, tr20);
         }
         //
         // Schedule LED update, in case the state has changed
