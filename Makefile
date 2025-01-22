@@ -975,7 +975,11 @@ src/filter_menu.o: src/bandstack.h src/filter.h src/mode.h src/radio.h
 src/filter_menu.o: src/adc.h src/dac.h src/discovered.h src/receiver.h
 src/filter_menu.o: src/transmitter.h src/vfo.h src/ext.h src/client_server.h
 src/filter_menu.o: src/message.h
-src/g2panel.o: src/actions.h src/property.h src/mystring.h
+src/g2panel.o: src/actions.h src/property.h src/mystring.h src/g2panel_menu.h
+src/g2panel_menu.o: src/new_menu.h src/radio.h src/adc.h src/dac.h
+src/g2panel_menu.o: src/discovered.h src/receiver.h src/transmitter.h
+src/g2panel_menu.o: src/message.h src/actions.h src/action_dialog.h
+src/g2panel_menu.o: src/g2panel.h
 src/gpio.o: src/band.h src/bandstack.h src/channel.h src/discovered.h
 src/gpio.o: src/mode.h src/filter.h src/toolbar.h src/gpio.h src/radio.h
 src/gpio.o: src/adc.h src/dac.h src/receiver.h src/transmitter.h src/main.h
@@ -1037,10 +1041,11 @@ src/new_menu.o: src/band_menu.h src/bandstack_menu.h src/mode_menu.h
 src/new_menu.o: src/filter_menu.h src/noise_menu.h src/agc_menu.h
 src/new_menu.o: src/vox_menu.h src/diversity_menu.h src/tx_menu.h
 src/new_menu.o: src/ps_menu.h src/encoder_menu.h src/switch_menu.h
-src/new_menu.o: src/toolbar_menu.h src/vfo_menu.h src/fft_menu.h src/main.h
-src/new_menu.o: src/actions.h src/gpio.h src/old_protocol.h
-src/new_menu.o: src/new_protocol.h src/MacOS.h src/server_menu.h src/midi.h
-src/new_menu.o: src/midi_menu.h src/screen_menu.h src/saturn_menu.h
+src/new_menu.o: src/g2panel_menu.h src/toolbar_menu.h src/vfo_menu.h
+src/new_menu.o: src/fft_menu.h src/main.h src/actions.h src/gpio.h
+src/new_menu.o: src/old_protocol.h src/new_protocol.h src/MacOS.h
+src/new_menu.o: src/server_menu.h src/midi.h src/midi_menu.h
+src/new_menu.o: src/screen_menu.h src/saturn_menu.h
 src/new_protocol.o: src/main.h src/alex.h src/audio.h src/receiver.h
 src/new_protocol.o: src/band.h src/bandstack.h src/new_protocol.h src/MacOS.h
 src/new_protocol.o: src/discovered.h src/mode.h src/filter.h src/radio.h
@@ -1116,15 +1121,15 @@ src/receiver.o: src/sliders.h src/actions.h src/waterfall.h
 src/receiver.o: src/new_protocol.h src/MacOS.h src/old_protocol.h
 src/receiver.o: src/soapy_protocol.h src/ext.h src/client_server.h
 src/receiver.o: src/new_menu.h src/message.h
-src/rigctl.o: src/receiver.h src/andromeda.h src/toolbar.h src/gpio.h
-src/rigctl.o: src/band_menu.h src/sliders.h src/transmitter.h src/actions.h
+src/rigctl.o: src/andromeda.h src/toolbar.h src/gpio.h src/band_menu.h
+src/rigctl.o: src/sliders.h src/receiver.h src/transmitter.h src/actions.h
 src/rigctl.o: src/rigctl.h src/radio.h src/adc.h src/dac.h src/discovered.h
 src/rigctl.o: src/channel.h src/filter.h src/mode.h src/g2panel.h src/band.h
 src/rigctl.o: src/bandstack.h src/filter_menu.h src/vfo.h src/agc.h
 src/rigctl.o: src/store.h src/ext.h src/client_server.h src/rigctl_menu.h
 src/rigctl.o: src/noise_menu.h src/new_protocol.h src/MacOS.h
 src/rigctl.o: src/old_protocol.h src/iambic.h src/new_menu.h src/zoompan.h
-src/rigctl.o: src/message.h src/mystring.h
+src/rigctl.o: src/message.h src/mystring.h src/property.h src/main.h
 src/rigctl_menu.o: src/new_menu.h src/rigctl_menu.h src/rigctl.h src/band.h
 src/rigctl_menu.o: src/bandstack.h src/radio.h src/adc.h src/dac.h
 src/rigctl_menu.o: src/discovered.h src/receiver.h src/transmitter.h
