@@ -19,8 +19,8 @@
 //
 // WDSP channel numbers
 //
-#ifndef _CHANNEL_H
-#define _CHANNEL_H
+#ifndef _CHANNEL_H_
+#define _CHANNEL_H_
 
 #define CHANNEL_RX0 0
 #define CHANNEL_RX1 1

@@ -16,14 +16,9 @@
 *
 */
 
-#ifndef _G2PANEL_MENU_H
-#define _G2PANEL_MENU_H
+#include <gtk/gtk.h>
 
 extern void g2panel_menu(GtkWidget *parent);
-extern void assign_g2panel_button(int *code);
-extern void assign_g2panel_encoder(int *code);
-extern void g2panel_change_button(int type, int *vec, int button);
-extern void g2panel_change_encoder(int type, int *vec, int encoder);
+extern void g2panel_change_command(int andromeda_type, int type, int *buttonvec, int *encodervec, int pos);
 
 extern int g2panel_menu_is_open;
-#endif

@@ -22,55 +22,54 @@
  * With a kindly assist from Jae, K5JAE who has helped
  * greatly with hamlib integration!
  */
+
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <fcntl.h>
+#include <math.h>
 #include <string.h>
 #include <termios.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-
-#include "andromeda.h"
-#include "toolbar.h"
-#include "band_menu.h"
-#include "sliders.h"
-#include "rigctl.h"
-#include "radio.h"
-#include "channel.h"
-#include "filter.h"
-#include "mode.h"
-#include "filter.h"
-#include "g2panel.h"
-#include "band.h"
-#include "bandstack.h"
-#include "filter_menu.h"
-#include "vfo.h"
-#include "transmitter.h"
-#include "agc.h"
-#include "store.h"
-#include "ext.h"
-#include "rigctl_menu.h"
-#include "noise_menu.h"
-#include "new_protocol.h"
-#include "old_protocol.h"
-#include "iambic.h"
-#include "receiver.h"
-#include "actions.h"
-#include "new_menu.h"
-#include "zoompan.h"
-#include "message.h"
-#include "mystring.h"
-#include "property.h"
-#include "g2panel.h"
-#include "main.h"
-
-#include <math.h>
-
 #include <sys/socket.h>
 #include <arpa/inet.h> //inet_addr
 #include <netinet/tcp.h>
+
+#include "actions.h"
+#include "agc.h"
+#include "andromeda.h"
+#include "band.h"
+#include "band_menu.h"
+#include "bandstack.h"
+#include "channel.h"
+#include "ext.h"
+#include "filter.h"
+#include "filter_menu.h"
+#include "g2panel.h"
+#include "g2panel_menu.h"
+#include "iambic.h"
+#include "main.h"
+#include "message.h"
+#include "mystring.h"
+#include "mode.h"
+#include "new_menu.h"
+#include "new_protocol.h"
+#include "noise_menu.h"
+#include "old_protocol.h"
+#include "property.h"
+#include "radio.h"
+#include "receiver.h"
+#include "rigctl.h"
+#include "rigctl_menu.h"
+#include "sliders.h"
+#include "store.h"
+#include "toolbar.h"
+#include "transmitter.h"
+#include "vfo.h"
+#include "zoompan.h"
+
 
 unsigned int rigctl_tcp_port = 19090;
 int rigctl_tcp_enable = 0;
@@ -3426,7 +3425,12 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         if (client->andromeda_type == 1) {
           andromeda_execute_encoder(p, v);
         } else {
-          g2panel_execute_encoder(client->andromeda_type, client->encodervec, p, v);
+          if (g2panel_menu_is_open) {
+            g2panel_change_command(client->andromeda_type, CONTROLLER_ENCODER,
+                                   client->buttonvec, client->encodervec, p);
+          } else {
+            g2panel_execute_encoder(client->andromeda_type, client->encodervec, p, v);
+          }
         }
       } else {
         // unexpected command format
@@ -3504,7 +3508,17 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
           client->last_v = v;
 
-          g2panel_execute_button(client->andromeda_type, client->buttonvec, p, tr01, tr10, tr12, tr20);
+          if (g2panel_menu_is_open) {
+            //
+            // It is enough to "fire" this upon initial press
+            //
+            if (tr01) {
+              g2panel_change_command(client->andromeda_type, CONTROLLER_SWITCH,
+                                     client->buttonvec, client->encodervec, p);
+            }
+          } else {
+            g2panel_execute_button(client->andromeda_type, client->buttonvec, p, tr01, tr10, tr12, tr20);
+          }
         }
         //
         // Schedule LED update, in case the state has changed
@@ -4633,8 +4647,8 @@ int parse_cmd(void *data) {
       //SET       PSx;
       //READ      PS;
       //RESP      PSx;
-      //NOTE      x = 0: Power on, x=1: off
-      //NOTE      When setting, x=0 is ignored and x=1 leads to shutdown
+      //NOTE      x = 1: Power on, x=0: off
+      //NOTE      When setting, x=1 is ignored and x=0 leads to shutdown
       //NOTE      Reading always reports x=1
       //ENDDEF
       if (command[2] == ';') {
@@ -5883,7 +5897,7 @@ void rigctlSaveState() {
   // b) tcp clients from the first to the last
   //
   for (int id = MAX_SERIAL-1; id >= 0; id--) {
-    if (serial_client[id].running && 
+    if (serial_client[id].running &&
             (serial_client[id].andromeda_type == 4 || serial_client[id].andromeda_type == 5) &&
             serial_client[id].buttonvec != NULL &&
             serial_client[id].encodervec != NULL) {
@@ -5895,7 +5909,7 @@ void rigctlSaveState() {
   }
 
   for (int id = 0; id < MAX_TCP_CLIENTS; id++) {
-    if (tcp_client[id].running && 
+    if (tcp_client[id].running &&
             (tcp_client[id].andromeda_type == 4 || tcp_client[id].andromeda_type == 5) &&
             tcp_client[id].buttonvec != NULL &&
             tcp_client[id].encodervec != NULL) {

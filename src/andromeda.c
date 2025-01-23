@@ -25,12 +25,12 @@
 #include <sys/types.h>
 
 #include "actions.h"
-#include "toolbar.h"
-#include "radio.h"
-#include "new_menu.h"
 #include "band.h"
-#include "vfo.h"
 #include "ext.h"
+#include "new_menu.h"
+#include "radio.h"
+#include "toolbar.h"
+#include "vfo.h"
 
 static int numpad_active = 0;
 static int longpress = 0;

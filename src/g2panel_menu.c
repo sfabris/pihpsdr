@@ -18,18 +18,19 @@
 
 #include <gtk/gtk.h>
 
+#include "action_dialog.h"
+#include "actions.h"
+#include "g2panel.h"
+#include "message.h"
 #include "new_menu.h"
 #include "radio.h"
-#include "message.h"
-#include "actions.h"
-#include "action_dialog.h"
-#include "g2panel.h"
 
 
 int g2panel_menu_is_open = 0;
-static int *last_vec = NULL;
-static int last_andromeda_type = 0;
-static int last_type = 0;
+static int *last_buttonvec = NULL;
+static int *last_encodervec = NULL;
+static int last_andromeda_type = 0;  // 4 or 5
+static int last_type = 0;            // CONTROLLER_SWITCH or CONTROLLER_ENCODER
 static int action_chosen = NO_ACTION;
 static int last_pos = 0;
 
@@ -57,32 +58,40 @@ static gboolean close_cb () {
 }
 
 static gboolean action_cb(GtkWidget *widget, gpointer data) {
-  action_chosen = action_dialog(dialog, last_type, last_vec[last_pos]);
-  last_vec[last_pos] = action_chosen;
-  //t_print("%s: new action=%d\n", __FUNCTION__, thisAction);
+  switch (last_type) {
+  case CONTROLLER_SWITCH:
+    action_chosen = action_dialog(dialog, CONTROLLER_SWITCH, last_buttonvec[last_pos]);
+    last_buttonvec[last_pos] = action_chosen;
+    break;
+  case CONTROLLER_ENCODER:
+    action_chosen = action_dialog(dialog, CONTROLLER_ENCODER, last_encodervec[last_pos]);
+    last_encodervec[last_pos] = action_chosen;
+    break;
+  }
   gtk_button_set_label(GTK_BUTTON(newAction), ActionTable[action_chosen].str);
   return TRUE;
 }
 
 static gboolean restore_cb(GtkWidget *widget, gpointer data) {
   int *vec;
-  switch (last_type) {
-  case CONTROLLER_SWITCH:
-    vec = g2panel_default_buttons(last_andromeda_type);
-    if (vec != NULL) {
-      for (int i = 0; i <= 99; i++) { last_vec[i] = vec[i]; }
-      g_free(vec);
-    }
-    break;
-  case CONTROLLER_ENCODER:
-    vec = g2panel_default_encoders(last_andromeda_type);
-    if (vec != NULL) {
-      for (int i = 0; i <= 99; i++) { last_vec[i] = vec[i]; }
-      g_free(vec);
-    }
-    break;
+  vec = g2panel_default_buttons(last_andromeda_type);
+  if (vec != NULL) {
+    for (int i = 0; i <= 99; i++) { last_buttonvec[i] = vec[i]; }
+    g_free(vec);
   }
-  gtk_button_set_label(GTK_BUTTON(newAction), ActionTable[last_vec[last_pos]].str);
+  vec = g2panel_default_encoders(last_andromeda_type);
+  if (vec != NULL) {
+    for (int i = 0; i <= 49; i++) { last_encodervec[i] = vec[i]; }
+    g_free(vec);
+  }
+  //
+  // Update command button to reflect the new setting
+  //
+  if (last_type == CONTROLLER_SWITCH) {
+    gtk_button_set_label(GTK_BUTTON(newAction), ActionTable[last_buttonvec[last_pos]].str);
+  } else {
+    gtk_button_set_label(GTK_BUTTON(newAction), ActionTable[last_encodervec[last_pos]].str);
+  }
   return TRUE;
 }
 
@@ -133,7 +142,7 @@ void g2panel_menu(GtkWidget *parent) {
 
   row++;
   row++;
-  restore = gtk_button_new_with_label("Restore factory settings for ENCODERS");
+  restore = gtk_button_new_with_label("Restore factory settings for encoders and buttons");
   gtk_widget_set_name(restore, "medium_button");
   g_signal_connect(restore, "button-press-event", G_CALLBACK(restore_cb), NULL);
   gtk_grid_attach(GTK_GRID(grid), restore, 0, row, 8, 1);
@@ -146,38 +155,32 @@ void g2panel_menu(GtkWidget *parent) {
   gtk_widget_hide(restore);
 }
 
-void assign_g2panel_button(int *code) {
-  t_print("%s: code=%d\n", *code);
-}
-
-void assign_g2panel_encoder(int *code) {
-  t_print("%s: code=%d\n", *code);
-}
-
-void g2panel_change_button(int type, int *vec, int button) {
+void g2panel_change_command(int andromeda_type, int type, int *buttonvec, int *encodervec, int pos) {
   char str[128];
-  last_vec = vec;
-  last_andromeda_type = type;
-  last_pos = button;
-  last_type = CONTROLLER_SWITCH;
-  snprintf(str, 128, "Button #%d", button);
-  gtk_label_set_text(GTK_LABEL(last_label), str);
-  gtk_button_set_label(GTK_BUTTON(newAction), ActionTable[vec[last_pos]].str);
-  gtk_button_set_label(GTK_BUTTON(restore), "Restore factory settings for BUTTONS");
-  gtk_widget_show(newAction);
-  gtk_widget_show(restore);
-}
+  last_buttonvec = buttonvec;
+  last_encodervec = encodervec;
+  last_andromeda_type = andromeda_type;
+  last_pos = pos;
+  last_type = type; // CONTROLLER_SWITCH or CONTROLLER_ENCODER
 
-void g2panel_change_encoder(int type, int *vec, int encoder) {
-  char str[128];
-  last_vec = vec;
-  last_andromeda_type = type;
-  last_pos = encoder;
-  last_type = CONTROLLER_ENCODER;
-  snprintf(str, 128, "Encoder #%d", encoder);
+  if (pos < 0) { pos = 0; }
+
+  switch (type) {
+  case CONTROLLER_SWITCH:
+    snprintf(str, 128, "Button #%d", last_pos);
+    if (pos > 99) { pos = 0; }
+    gtk_button_set_label(GTK_BUTTON(newAction), ActionTable[buttonvec[last_pos]].str);
+    break;
+  case CONTROLLER_ENCODER:
+    snprintf(str, 128, "Encoder #%d", last_pos);
+    if (pos > 49) { pos = 0; }
+    gtk_button_set_label(GTK_BUTTON(newAction), ActionTable[encodervec[last_pos]].str);
+    break;
+  default:
+    snprintf(str, 128, "UNKNOWN #%d", last_pos);
+    break;
+  }
   gtk_label_set_text(GTK_LABEL(last_label), str);
-  gtk_button_set_label(GTK_BUTTON(newAction), ActionTable[vec[last_pos]].str);
-  gtk_button_set_label(GTK_BUTTON(restore), "Restore factory settings for ENCODERS");
   gtk_widget_show(newAction);
   gtk_widget_show(restore);
 }

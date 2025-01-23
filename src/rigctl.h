@@ -16,8 +16,10 @@
 *
 */
 
-#ifndef RIGCTL_H
-#define RIGCTL_H
+#ifndef _RIGCTL_H_
+#define _RIGCTL_H_
+
+#include <gtk/gtk.h>
 
 struct _SERIALPORT {
   //
