@@ -281,6 +281,10 @@ void g2panel_execute_button(int type, int *vec, int button, int tr01, int tr10, 
     if (tr10) { schedule_action(action, PRESSED, 0); }
     if (tr12) { schedule_action(MENU_NOISE, PRESSED, 0); }
     break;
+  case TWO_TONE:
+    if (tr10) { schedule_action(action, PRESSED, 0); }
+    if (tr12) { schedule_action(MENU_PS, PRESSED, 0); }
+    break;
   default:
     if (tr01) { schedule_action(action, PRESSED, 0); }
     if (tr10 || tr20) { schedule_action(action, RELEASED, 0); }
