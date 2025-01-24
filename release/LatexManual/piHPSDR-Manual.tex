@@ -997,10 +997,15 @@ control and fine tuning. They are organised in six columns, namely radio related
 menus (first column), VFO related menus (second column), RX and TX related menus (third
 and fourth column), menus affecting both RX and TX (fifth column) and, finally,
 menus for adjusting how you can control \pH (sixth column), either via Toolbar,
-MIDI, or GPIO encoders or switches. \textbf{,,Encoders''} are knobs which you can turn, and which
-can be used to change AF volume or TX output power. \textbf{,,Switches''} are push-buttons which
-can be used to trigger a function such as transmitting a carrier for tuning, toggle
-between RX and TX, open a menu, and so forth.
+MIDI, GPIO encoders/switches or the new G2-ultra front panel.
+ 
+Not all menus appear in all cases: For example, the \bltt{Encoders} and \bltt{Switches}
+menus shown in Fig. \ref{fig:MainMenu} are only present if \pH is controlled by
+a GPIO-based controller. If, instead, a G2-Ultra type front panel is detected, a menu
+\bltt{G2panel} appears in that place which lets you assign non-default functions to
+buttons and encoders of the front panel. If there is neither a GPIO controller nor
+a G2-Ultra front panel, the last column of the main menu ends with the \bltt{MIDI}
+menu.
 
 Whenever one of the sub-menus is closed, /pH writes its settings to the props file. This is not done
 automatically (that is, periodically) because on some systems I/O operations affect
@@ -3556,7 +3561,7 @@ to change the VFO frequency.
 \begin{figure}[ht!]
 \center
 \includegraphics[width=12cm]{g2_frontpanel.png}
-\caption{A picture of the G2 front panel (image courtesy of Apache Labs).}
+\caption{A picture of the (first generation) G2 front panel (image courtesy of Apache Labs).}
 \label{fig:g2_frontpanel}
 \end{figure}
 
@@ -3566,16 +3571,17 @@ to change the VFO frequency.
 \caption{The Encoder menu for the G2 front panel controller}
 \label{fig:EncoderMenuG2}
 \end{figure}
-The encoders menu can be used to assign functions to the encoders of a
-\pH Controller1, Controller2 or the G2 front panel (first version without LEDs)
-controller. For the second-generation G2 front panels (with LEDs), the functions
-of the knobs and buttons are hard-wired.
-This implies that if \texttt{No Controller} or \texttt{G2 Mk2 Panel} has been chosen
-in the initial discovery screen
-(Fig. \ref{fig:Start}), this menu is not available.
-Note that the ,,large knob'' of these controllers
-cannot be assigned a function, it is hard-wired to the \bltt{VFO} function.
+The \bltt{Encoders} menu can be used to assign functions to the encoders of a
+GPIO-based controller, that is, either a
+Controller1, Controller2 or the G2 front panel of the first-generation Anan-G2 radios
+(those without LEDs and a 7-inch screen). For the second-generation G2 radios
+(``G2 Ultra'') with LEDs and an 8-inch screen in the panel, see the \bltt{G2panel} 
+menu, chapter \ref{sec:G2panelMenu}.
 
+This implies that this menu is only available if \pH has been compiled with GPIO support,
+and if furthermore on the initial (discovery) screen one of the controllers mentioned above have
+been selected. Note further that the ,,large knob'' of these controllers
+cannot be assigned a non-default function, this knob is hard-wired to the \bltt{VFO} function.
 
 
 While the function of this menu is the same in all three cases (Controller1, Controller2,
@@ -3651,14 +3657,19 @@ function printed on the enclosure.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The \texttt{Switches} Menu}
 
-The encoders menu can be used to assign functions to the push buttons of a
-\pH  Controller2 or the G2 front panel controller.
-If \texttt{No Controller}, \texttt{Controller1} or \texttt{G2 Mk2 Panel}
-has been chosen in the initial discovery screen
-(Fig. \ref{fig:Start}), this menu is not available. This menu is not available
+he \bltt{Switches} menu can be used to assign functions to the encoders of a
+GPIO-based controllers Controller2 or the G2 front panel of the first-generation Anan-G2 radios
+(those without LEDs and a 7-inch screen). For the second-generation G2 radios
+(``G2 Ultra'') with LEDs and an 8-inch screen in the panel, see the \bltt{G2panel} 
+menu, chapter \ref{sec:G2panelMenu}.
+
+This implies that this menu is only available if \pH has been compiled with GPIO support,
+and if furthermore on the initial (discovery) screen one of the controllers mentioned above have
+been selected. Note that this menu is also not available
 for the Controller1 because the eight push buttons of this controller are hard-wired to
 the toolbar buttons and their functions as thus assigned via the \bltt{Toolbar} menu
 (see Chapter \ref{sec:toolbarmenu}).
+
 
 On the G2 front panel (see Fig. \ref{fig:g2_frontpanel}),
  there are a lot of push buttons: at the left edge, to the right
@@ -3700,6 +3711,76 @@ shown in Fig. \ref{fig:SwitchMenuV2} which match the functions printed on the en
 \caption{The Switches menu for Controller2.}
 \label{fig:SwitchMenuV2}
 \end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The \texttt{G2panel} Menu}
+\label{sec:G2panelMenu}
+
+\begin{figure}[ht]
+\center
+\includegraphics[width=10cm]{g2ultra.png}
+\caption{The front panel of a second-generation G2 radio(image courtesy of Apache Labs).} 
+\label{fig:g2ultrapanel}
+\end{figure}
+
+The \bltt{G2panel} menu becomes available as soon as the presence of a second-generation G2 front panel
+(G2 Ultra or upgraded first-generation G2s) has been detected. These panels communicate with \pH through
+a serial line connection using an ANDROMEDA-like protocol. Fig. \ref{fig:g2ultrapanel} shows the front
+panel of a G2-Ultra. In contrast to a first-generation G2, it has an 8-inch screen and panel contains 
+several LEDs. The \bltt{G2panel} menu also applies to first-generation G2 radios with an upgraded
+compute module running \pH. Part of such an upgrade is an additional micro controller that handles the
+panel and communicates with \pH via a serial line connection.
+
+Note that this menu cannot be used to assign a non-default command to the VFO knob.
+After first opening the \bltt{G2panel} menu, it looks quite empty (Fig. \ref{fig:g2panelmenu-initial}):
+
+\begin{figure}[ht]
+\center
+\includegraphics[width=8cm]{g2panelmenu-1.png}
+\caption{The \bltt{G2panel} menu, just opened.} 
+\label{fig:g2panelmenu-initial}
+\end{figure}
+
+As long as this menu is open, the front panel seems inoperative. The reason is, that all button and
+encoder event are ``digested'' by the menu itself. As soon as a button is pressed or an encoder is
+turned in either direction, the menu records which controller was last used, and reports the last
+recorded action (either a button press or turning an encoder knob). For example, after pressing
+the TUNE button, the menu changes to the following (Fig. \ref{fig2:g2panelmenu-recorded}):
+
+\begin{figure}[ht]
+\center
+\includegraphics[width=8cm]{g2panelmenu-2.png}
+\caption{The \bltt{G2panel} menu, reporting the last ``panel action''.} 
+\label{fig:g2panelmenu-initial}
+\end{figure}
+
+So the menu states that the last ``panel action'' recorded was a button press (the internal code number
+of the button is of little importance here), and that the \pH command assigned to this button was
+\bltt{Tune}. Furthermore, once there has been communication between the panel and the \bltt{G2panel}
+menu, a large button appears at the bottom of the menu which can be used to overwrite all button and
+encoder assignments with the factory default.
+
+I you wish to assign a new command to this button (it is the last button you have touched), simply
+click into the button in the second line which states which command is currently assigned. In our
+example, it is the button with the label \bltt{Tune}. Clicking this button opens the same
+``action dialog'' already discussed in the previous sections. In this dialog, you can choose a
+new command to be assigned with that button. In our example, I have chosen the \bltt{Cmpr On/Off}
+command which switches TX compression on/off (Fig. \ref{fig:g2panelmenu-chosen}).
+
+\begin{figure}[ht]
+\center
+\includegraphics[width=8cm]{g2panelmenu-3.png}
+\caption{The \bltt{G2panel} menu, reporting the newly chosen command.} 
+\label{fig:g2panelmenu-chosen}
+\end{figure}
+
+If one wants to assign new commands to other buttons or encoder, just press the button or turn the
+encoder, and the menu will report a new ``last panel action'' and lets you assign a new command
+to that button or encoder. If all assignments have been made, close the menu and the new panel
+functions become operative.
+
+Note that your assignments are permanent. They will be stored in the props file and be restored
+the next time you start \pH. If you think your choices were not that clever, you can always go back
+to the factory settings, which will then overwrite your personal assignments in the props file as well.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Miscellaneous Topics}
