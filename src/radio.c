@@ -330,16 +330,17 @@ int rx_height;
 
 typedef struct {
   char *port;
-  int baud;
+  speed_t speed;
+  int baud_as_integer;
 } SaturnSerialPort;
 
 static SaturnSerialPort SaturnSerialPortsList[] = {
-   {"/dev/serial/by-id/g2-front-9600", B9600},
-   {"/dev/serial/by-id/g2-front-115200", B115200},
-   {"/dev/ttyAMA1", B9600},
-   {"/dev/ttyS3", B9600},
-   {"/dev/ttyS7", B115200},
-   {NULL, 0}
+   {"/dev/serial/by-id/g2-front-9600", B9600, 9600},
+   {"/dev/serial/by-id/g2-front-115200", B115200, 115200},
+   {"/dev/ttyAMA1", B9600, 9600},
+   {"/dev/ttyS3", B9600, 9600},
+   {"/dev/ttyS7", B115200, 115200},
+   {NULL, 0, 0}
 };
 
 static void radio_restore_state();
@@ -1026,7 +1027,7 @@ void radio_start_radio() {
     //
     SerialPorts[id].enable = 0;
     SerialPorts[id].andromeda = 0;
-    SerialPorts[id].baud = 0;
+    SerialPorts[id].speed = 0;
     SerialPorts[id].autoreporting = 0;
     SerialPorts[id].g2 = 0;
     snprintf(SerialPorts[id].port, sizeof(SerialPorts[id].port), "/dev/ttyACM%d", id);
@@ -1046,11 +1047,12 @@ void radio_start_radio() {
       if (cp != NULL) {
         SerialPorts[MAX_SERIAL - 1].enable = 1;
         SerialPorts[MAX_SERIAL - 1].andromeda = 1;
-        SerialPorts[MAX_SERIAL - 1].baud = ChkSerial->baud;
+        SerialPorts[MAX_SERIAL - 1].speed = ChkSerial->speed;
         SerialPorts[MAX_SERIAL - 1].autoreporting = 0;
         SerialPorts[MAX_SERIAL - 1].g2 = 1;
         snprintf(SerialPorts[MAX_SERIAL - 1].port, sizeof(SerialPorts[MAX_SERIAL - 1].port), "%s", cp);
-        t_print("Serial port %s used for G2 panel with %d baud\n", cp, ChkSerial->baud);
+        t_print("Serial port %s ==> %s used for G2 panel with %d baud\n",
+                ChkSerial->port, cp, ChkSerial->baud_as_integer);
         break;
       } else {
         t_print("Serial port %s not found.\n", ChkSerial->port);
