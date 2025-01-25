@@ -4,8 +4,11 @@ LIST OF RECENT PIHPSDR CHANGES
 January 2025:
 -------------
 
+- a new G2panel menu where you can assign pihpsdr commands
+  to buttons/encoders of the new G2-ultra  panel
+
 - Better support for G2's with uC-controlled panels,
-- including automatic serial port detection
+  including automatic serial port detection
 
 December 2024:
 --------------
