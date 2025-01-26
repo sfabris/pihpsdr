@@ -18,6 +18,7 @@
 
 #include <gtk/gtk.h>
 
+#include "appearance.h"
 #include "css.h"
 #include "message.h"
 
@@ -77,8 +78,19 @@
 // displayed on a large screen
 //
 //////////////////////////////////////////////////////////////////////////////////////////
+
+char *cssfont[] = {"FreeSans","Roboto Mono", "OpenSans", "Monaco" };
+
+const int num_css_fonts = sizeof(cssfont) / sizeof(char *);
+int which_css_font = 0;
+
+//
+// This string will be printed using printf, it contains
+// a single data element %s, that is, the font family name
+// from cssfont[]
+//
 char *css =
-  "  * { font-family: Sans; }\n"
+  "  * { font-family: %s; }\n"
   "  combobox { font-size: 15px; }\n"
   "  button   { font-size: 15px; }\n"
   "  checkbutton label { font-size: 15px; }\n"
@@ -89,113 +101,107 @@ char *css =
   "  notebook { font-size: 15px; }\n"
   "  #boldlabel {\n"
   "    padding: 3px;\n"
-  "    font-family: Sans;\n"
   "    font-weight: bold;\n"
   "    font-size: 15px;\n"
   "  }\n"
   "  #slider1   {\n"
   "    padding: 3px;\n"
-  "    font-family: Sans;\n"
   "    font-weight: bold;\n"
   "    font-size: 16px;\n"
   "  }\n"
   "  #slider2   {\n"
   "    padding: 3px;\n"
-  "    font-family: Sans;\n"
   "    font-weight: normal;\n"
   "    font-size: 18px;\n"
   "  }\n"
   "  #slider3   {\n"
   "    padding: 3px;\n"
-  "    font-family: Sans;\n"
   "    font-weight: normal;\n"
   "    font-size: 22px;\n"
   "  }\n"
   "  #big_txt {\n"
-  "    font-family: Sans;\n"
   "    font-size: 22px;\n"
   "    font-weight: bold;\n"
   "    }\n"
   "  #med_txt {\n"
-  "    font-family: Sans;\n"
   "    font-size: 18px;\n"
   "    }\n"
   "  #small_txt {\n"
-  "    font-family: Sans;\n"
   "    font-weight: bold;\n"
   "    font-size: 12px;\n"
   "    }\n"
   "  #close_button {\n"
   "    padding: 5px;\n"
-  "    font-family: Sans;\n"
   "    font-size: 15px;\n"
   "    font-weight: bold;\n"
-  "    border: 1px solid rgb(50%, 50%, 50%);\n"
+  "    border: 1px solid rgb(50%%, 50%%, 50%%);\n"
   "    }\n"
   "  #small_button {\n"
   "    padding: 1px;\n"
-  "    font-family: Sans;\n"
   "    font-size: 15px;\n"
   "    }\n"
   "  #medium_button {\n"
   "    padding: 1px;\n"
-  "    font-family: Sans;\n"
   "    font-size: 20px;\n"
   "    }\n"
   "  #large_button {\n"
   "    padding: 1px;\n"
-  "    font-family: Sans;\n"
   "    font-size: 25px;\n"
   "    }\n"
   "  #small_button_with_border {\n"
   "    padding: 3px;\n"
-  "    font-family: Sans;\n"
   "    font-size: 15px;\n"
-  "    border: 1px solid rgb(50%, 50%, 50%);\n"
+  "    border: 1px solid rgb(50%%, 50%%, 50%%);\n"
   "    }\n"
   "  #small_toggle_button {\n"
   "    padding: 1px;\n"
-  "    font-family: Sans;\n"
   "    font-size: 15px;\n"
   "    background-image: none;\n"
   "    }\n"
   "  #small_toggle_button:checked {\n"
   "    padding: 1px;\n"
-  "    font-family: Sans;\n"
   "    font-size: 15px;\n"
   "    background-image: none;\n"
-  "    background-color: rgb(100%, 20%, 20%);\n"    // background if selected
-  "    color: rgb(100%,100%,100%);\n"               // text if selected
+  "    background-color: rgb(100%%, 20%%, 20%%);\n"    // background if selected
+  "    color: rgb(100%%,100%%,100%%);\n"               // text if selected
   "    }\n"
   "  #popup_scale slider {\n"
-  "    background: rgb(  0%,  0%, 100%);\n"         // Slider handle
+  "    background: rgb(  0%%,  0%%, 100%%);\n"         // Slider handle
   "    }\n"
   "  #popup_scale trough {\n"
-  "    background: rgb( 50%,50%, 100%);\n"         // Slider bar
+  "    background: rgb( 50%%,50%%, 100%%);\n"         // Slider bar
   "    }\n"
   "  #popup_scale value {\n"
-  "    color: rgb(100%, 10%, 10%);\n"              // digits
+  "    color: rgb(100%%, 10%%, 10%%);\n"              // digits
   "    font-size: 15px;\n"
   "    }\n"
   "  checkbutton check {\n"
-  "    border: 1px solid rgb(50%, 50%, 50%);\n"
+  "    border: 1px solid rgb(50%%, 50%%, 50%%);\n"
   "    }\n"
   "  radiobutton radio {\n"
-  "    border: 1px solid rgb(50%, 50%, 50%);\n"
+  "    border: 1px solid rgb(50%%, 50%%, 50%%);\n"
   "    }\n"
-  "  headerbar { min-height: 0px; padding: 0px; margin: 0px; font-size: 15px; font-family: Sans; }\n"
+  "  headerbar { min-height: 0px; padding: 0px; margin: 0px; font-size: 15px; }\n"
   ;
 
 //
 // If CSS loading from a file named default.css is successful, take that
-// Otherwise load the default settings hard-coded above
+// Otherwise load the default settings hard-coded above.
+// If the CSS comes from a file, its font family name is not changed,
+// but the argument "font" in any case applies to the VFO bar
 //
-void load_css() {
+void load_css(int font) {
   GtkCssProvider *provider;
   GdkDisplay *display;
   GdkScreen *screen;
   GError *error;
   int rc;
+
+  if (font < 0) { font = 0; }
+  if (font >= num_css_fonts) { font = num_css_fonts -1; }
+  DISPLAY_FONT_FACE = cssfont[font];
+  which_css_font = font;
+
   provider = gtk_css_provider_new ();
   display = gdk_display_get_default ();
   screen = gdk_display_get_default_screen (display);
@@ -210,7 +216,10 @@ void load_css() {
     t_print("%s: CSS data loaded from file default.css\n", __FUNCTION__);
   } else {
     t_print("%s: failed to load CSS data from file default.css\n", __FUNCTION__);
-    rc = gtk_css_provider_load_from_data(provider, css, -1, &error);
+    t_print("%s: load default CSS data with font=%s\n", __FUNCTION__, cssfont[font]);
+    char str[2048];
+    snprintf(str, 2024, css, cssfont[font]);
+    rc = gtk_css_provider_load_from_data(provider, str, -1, &error);
     g_clear_error(&error);
 
     if (rc) {
