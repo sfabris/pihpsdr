@@ -308,7 +308,7 @@ static int init(void *data) {
     }
 
     char text[1024];
-    snprintf(text, 1024, "Please do not close this window until wisdom plans are completed ...\n\n... %s",
+    snprintf(text, 1024, "Do not close window until wisdom plans are completed ...\n\n... %s",
              wisdom_get_status());
     status_text(text);
   }
@@ -331,6 +331,11 @@ static void activate_pihpsdr(GtkApplication *app, gpointer data) {
   t_print("version: %s\n", unameData.version);
   t_print("machine: %s\n", unameData.machine);
   load_css();
+  //
+  // Start with default font. The selected
+  // becomes active if the radio is started
+  //
+  load_font(0);
 
   GdkDisplay *display = gdk_display_get_default();
 

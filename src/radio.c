@@ -40,6 +40,7 @@
 #ifdef CLIENT_SERVER
   #include "client_server.h"
 #endif
+#include "css.h"
 #include "dac.h"
 #include "discovered.h"
 #include "ext.h"
@@ -2419,6 +2420,7 @@ static void radio_restore_state() {
   GetPropI0("rx_stack_horizontal",                           rx_stack_horizontal);
   GetPropI0("vfo_layout",                                    vfo_layout);
   GetPropI0("optimize_touchscreen",                          optimize_for_touchscreen);
+  GetPropI0("which_css_font",                                which_css_font);
 
   //
   // TODO: I think some further options related to the GUI
@@ -2576,6 +2578,10 @@ static void radio_restore_state() {
     n2adr_oc_settings(); // Apply default OC settings for N2ADR board
   }
 
+  //
+  // 3.) select font
+  //
+  load_font(which_css_font);
   g_mutex_unlock(&property_mutex);
 }
 
@@ -2624,6 +2630,7 @@ void radio_save_state() {
   SetPropI0("rx_stack_horizontal",                           rx_stack_horizontal);
   SetPropI0("vfo_layout",                                    vfo_layout);
   SetPropI0("optimize_touchscreen",                          optimize_for_touchscreen);
+  SetPropI0("which_css_font",                                which_css_font);
   //
   // TODO: I think some further options related to the GUI
   // have to be moved up here for Client-Server operation

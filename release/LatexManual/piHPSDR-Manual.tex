@@ -1338,13 +1338,18 @@ the author.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The \texttt{Screen} Menu}
 
-The \bltt{Screen} menu lets you dynamically change the size of the \pH main
-window, and choose between different VFO bar layouts. Furthermore, one
+The \bltt{Screen} menu lets you dynamically change the font used by \pH and 
+the size of the \pH main
+window, it also lets you choose between different VFO bar layouts that are designed to fit
+on a screen with a given width. Furthermore, one
 can select whether the Zoom/Pan, the Sliders, or the Toolbar area are shown or hidden.
 The possibility to adjust
 the screen size has been the most frequent feature request in the last years,
 so I finally decided to implement it. The menu is opened
 via the main menu and the \bltt{Screen} button and is shown in Fig. \ref{fig:ScreenMenu}.
+To demonstrate the effect of choosing another font, the entire \pH window is shown,
+the \rett{Roboto Mono} font has just been chosen. The figure shows how the menu window,
+the slider area and the VFO bar have switched to  the new font.
 
 \begin{figure}[ht]
 \center
@@ -1353,9 +1358,24 @@ via the main menu and the \bltt{Screen} button and is shown in Fig. \ref{fig:Scr
 \label{fig:ScreenMenu}
 \end{figure}
 
-The window width and height can be chosen with the spin buttons shown. The minimum
-values for width and height are 640 and 400, the maximum values are determined by
-the resolution of the monitor. If more than one monitor is attached, the dimension
+In the first line there is a combo-box for choosing the font. Currently, the choices
+are \rett{FreeSans}, \rett{Roboto Mono}, \rett{Open Sans} and \rett{Piboto}. Changing
+the font affects all menus, the slider, zoom and tool bars, as well as the VFO bar.
+The default font is \rett{FreeSans} simply because it is supposed to be available on all
+systems. The \rett{Open Sans} and \rett{Piboto} fonts are often told to have a
+better on-screen legibility. Some people prefer mono-spaced fonts, therefore \rett{Roboto Mono}
+is included in the list. Be prepeared that the layout looks not OK if you choose a font
+that is not installed on your system. The \rett{Roboto Mono} font can be downloaded
+free of charge from the internet, installation on LINUX usually requires to create
+a directory \texttt{\$HOME/.fonts} (if it not exists already), copy the downloaded
+font files (\texttt{*.otf} or \texttt{*.ttf} to that directory and run the command
+\texttt{fc-cache -v -f} in a terminal window. Installation on MacOS is usually done
+simply by double-clicking a \texttt{*.ttf} file (this opens the FontBook application)
+and then click on the "Install" button.
+
+The spin buttons in the next line can be used to adjust the window width and height.
+The minimum values for width and height are 640 and 400, the maximum values are determined by
+the size of the monitor. If more than one monitor is attached, the dimension
 of the monitor on which the initial \pH window was opened determines
 the maximum width and height. Changes made in the spin buttons become effective
 immediately. If \pH is in full screen mode (see below), you can change the
@@ -1386,7 +1406,8 @@ The VFO bar has been described in detail in chapter
 \ref{sec:VFObar}. If you choose a VFO bar layout that is wider than the current
 window width allows, the window width is automatically adjusted (increased). On the
 other hand, choosing a VFO bar layout that is smaller than before does not affect
-the screen dimensions.
+the screen dimensions, but there will then be some empty space between the VFO-B
+frequency and the meter.
 
 \begin{figure}[ht!]
 \center
@@ -1399,12 +1420,12 @@ Fig. \ref{fig:640x400} shows, as an example, \pH running in a window as small
 as 640*400 pixels. It is admitted that this looks rather squeezed, and this
 will only be useful if a single receiver is run with no waterfall. However, for
 portable operations such small windows are often desired,
-if \pH is to be run alongside with a logbook and/or digi mode program on a small laptop.
+if \pH is to be run alongside with a logbook and digi mode program on a  laptop.
 Note that the \pH menus are designed to fit on a window 800*480 pixels large, so
 it is not recommended to run \pH on a \textit{screen} that small. On the other hand,
 if \pH is run on a laptop in a small 640*400 window, then menus may be larger than
-that but still fit well on the screen (thus hiding, momentarily, the window of,
-say, your logbook program) and are perfectly usable.
+that but still fit well on the screen (thus hiding, momentarily, the window of some
+other program) and are perfectly usable.
 
 \rett{Stack receivers horizontally}. If checked, this puts the panels
 of the two receivers (if two receivers are used) side-by-side instead of on top
@@ -1451,8 +1472,12 @@ either arrive too fast or too slow, such that the first-in/first-out queue of TX
 inside the FPGA of the radio either overflows or drains.
 
 \textbf{High SWR} During TX, an SWR above the SWR threshold has been detected. If this occurs
-frequently, check your antenna. The SWR threshold (default: 3.0) can be set in the
-\bltt{TX} menu.
+frequently, check your antenna. The SWR warning threshold (default: 3.0) can be set in the
+\bltt{TX} menu. Because the forward and reflected power used to calculate the SWR have
+possibly been measured at slightly different points in time, the calculated SWR may be
+much too high at the beginning or the end of an RF pulse. \pH has been instrumented to
+avoid such false warnings by using power readings averaged over some time, but it still
+cannot be excluded that a too high SWR is reported for a short amount of time.
 
 \rett{Display PA current} If this is checked, the PA supply voltage and the PA current
 are shown while transmitting. This data is only available for Orion-II and SATURN boards

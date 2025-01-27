@@ -4,6 +4,9 @@ LIST OF RECENT PIHPSDR CHANGES
 January 2025:
 -------------
 
+- dynamically change the font piHPSDR is using
+  (in the Screen menu)
+
 - a new G2panel menu where you can assign pihpsdr commands
   to buttons/encoders of the new G2-ultra  panel
 
