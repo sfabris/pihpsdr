@@ -323,7 +323,7 @@ const VFO_BAR_LAYOUT vfo_layout_list[] = {
 
     .vfo_a_x = -5,
     .vfo_a_y = 47,
-    .vfo_b_x = -315,
+    .vfo_b_x = -310,
     .vfo_b_y = 47,
 
     .mode_x = 5,
@@ -334,7 +334,7 @@ const VFO_BAR_LAYOUT vfo_layout_list[] = {
     .nr_y = 15,
     .nb_x = 282,
     .nb_y = 15,
-    .anf_x = 315,
+    .anf_x = 310,
     .anf_y = 15,
     .snb_x = 350,
     .snb_y = 15,
@@ -367,7 +367,7 @@ const VFO_BAR_LAYOUT vfo_layout_list[] = {
     .split_y = 63,
     .sat_x = 282,
     .sat_y = 63,
-    .rit_x = 315,
+    .rit_x = 310,
     .rit_y = 63,
     .xit_x = 395,
     .xit_y = 63,
