@@ -18,7 +18,6 @@
 
 #include <gtk/gtk.h>
 
-#include "appearance.h"
 #include "css.h"
 #include "message.h"
 
@@ -243,7 +242,6 @@ void load_css() {
     t_print("%s: CSS data loaded from file default.css\n", __FUNCTION__);
   } else {
     t_print("%s: failed to load CSS data from file default.css\n", __FUNCTION__);
-    t_print("%s: load default CSS data with font=%s\n", __FUNCTION__, cssfont[which_css_font]);
     rc = gtk_css_provider_load_from_data(provider, css, -1, &error);
     g_clear_error(&error);
 
