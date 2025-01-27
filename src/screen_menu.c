@@ -100,7 +100,7 @@ static gboolean close_cb () {
 
 static void font_cb(GtkWidget *widget, gpointer data) {
   int choice = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
-  load_css(choice);
+  load_font(choice);
   g_idle_add(ext_vfo_update, NULL);
 }
 

@@ -79,7 +79,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////////////
 
-char *cssfont[] = {"FreeSans","Roboto Mono", "OpenSans", "Monaco" };
+char *cssfont[] = {"FreeSans","Roboto Mono", "Open Sans", "Piboto" };
 
 const int num_css_fonts = sizeof(cssfont) / sizeof(char *);
 int which_css_font = 0;
@@ -90,7 +90,6 @@ int which_css_font = 0;
 // from cssfont[]
 //
 char *css =
-  "  * { font-family: %s; }\n"
   "  combobox { font-size: 15px; }\n"
   "  button   { font-size: 15px; }\n"
   "  checkbutton label { font-size: 15px; }\n"
@@ -134,7 +133,7 @@ char *css =
   "    padding: 5px;\n"
   "    font-size: 15px;\n"
   "    font-weight: bold;\n"
-  "    border: 1px solid rgb(50%%, 50%%, 50%%);\n"
+  "    border: 1px solid rgb(50%, 50%, 50%);\n"
   "    }\n"
   "  #small_button {\n"
   "    padding: 1px;\n"
@@ -151,7 +150,7 @@ char *css =
   "  #small_button_with_border {\n"
   "    padding: 3px;\n"
   "    font-size: 15px;\n"
-  "    border: 1px solid rgb(50%%, 50%%, 50%%);\n"
+  "    border: 1px solid rgb(50%, 50%, 50%);\n"
   "    }\n"
   "  #small_toggle_button {\n"
   "    padding: 1px;\n"
@@ -162,27 +161,60 @@ char *css =
   "    padding: 1px;\n"
   "    font-size: 15px;\n"
   "    background-image: none;\n"
-  "    background-color: rgb(100%%, 20%%, 20%%);\n"    // background if selected
-  "    color: rgb(100%%,100%%,100%%);\n"               // text if selected
+  "    background-color: rgb(100%, 20%, 20%);\n"    // background if selected
+  "    color: rgb(100%,100%,100%);\n"               // text if selected
   "    }\n"
   "  #popup_scale slider {\n"
-  "    background: rgb(  0%%,  0%%, 100%%);\n"         // Slider handle
+  "    background: rgb(  0%,  0%, 100%);\n"         // Slider handle
   "    }\n"
   "  #popup_scale trough {\n"
-  "    background: rgb( 50%%,50%%, 100%%);\n"         // Slider bar
+  "    background: rgb( 50%,50%, 100%);\n"         // Slider bar
   "    }\n"
   "  #popup_scale value {\n"
-  "    color: rgb(100%%, 10%%, 10%%);\n"              // digits
+  "    color: rgb(100%, 10%, 10%);\n"              // digits
   "    font-size: 15px;\n"
   "    }\n"
   "  checkbutton check {\n"
-  "    border: 1px solid rgb(50%%, 50%%, 50%%);\n"
+  "    border: 1px solid rgb(50%, 50%, 50%);\n"
   "    }\n"
   "  radiobutton radio {\n"
-  "    border: 1px solid rgb(50%%, 50%%, 50%%);\n"
+  "    border: 1px solid rgb(50%, 50%, 50%);\n"
   "    }\n"
   "  headerbar { min-height: 0px; padding: 0px; margin: 0px; font-size: 15px; }\n"
   ;
+
+void load_font(int font) {
+  GtkCssProvider *provider;
+  GdkDisplay *display;
+  GdkScreen *screen;
+  GError *error;
+  char str[128];
+  int rc;
+
+  if (font < 0) { font = 0; }
+  if (font >= num_css_fonts) { font = num_css_fonts -1; }
+  which_css_font = font;
+
+  provider = gtk_css_provider_new ();
+  display = gdk_display_get_default ();
+  screen = gdk_display_get_default_screen (display);
+  gtk_style_context_add_provider_for_screen (screen,
+      GTK_STYLE_PROVIDER(provider),
+      GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+
+  error = NULL;
+  snprintf(str, sizeof(str), "  * { font-family: %s; }\n", cssfont[which_css_font]);
+  rc = gtk_css_provider_load_from_data(provider, str, -1, &error);
+  g_clear_error(&error);
+
+  if (rc) {
+    t_print("%s: CSS font set to %s\n", __FUNCTION__, cssfont[which_css_font]);
+  } else {
+    t_print("%s: failed to set CSS font\n", __FUNCTION__);
+  }
+
+  g_object_unref (provider);
+}
 
 //
 // If CSS loading from a file named default.css is successful, take that
@@ -190,17 +222,12 @@ char *css =
 // If the CSS comes from a file, its font family name is not changed,
 // but the argument "font" in any case applies to the VFO bar
 //
-void load_css(int font) {
+void load_css() {
   GtkCssProvider *provider;
   GdkDisplay *display;
   GdkScreen *screen;
   GError *error;
   int rc;
-
-  if (font < 0) { font = 0; }
-  if (font >= num_css_fonts) { font = num_css_fonts -1; }
-  DISPLAY_FONT_FACE = cssfont[font];
-  which_css_font = font;
 
   provider = gtk_css_provider_new ();
   display = gdk_display_get_default ();
@@ -216,10 +243,8 @@ void load_css(int font) {
     t_print("%s: CSS data loaded from file default.css\n", __FUNCTION__);
   } else {
     t_print("%s: failed to load CSS data from file default.css\n", __FUNCTION__);
-    t_print("%s: load default CSS data with font=%s\n", __FUNCTION__, cssfont[font]);
-    char str[2048];
-    snprintf(str, 2024, css, cssfont[font]);
-    rc = gtk_css_provider_load_from_data(provider, str, -1, &error);
+    t_print("%s: load default CSS data with font=%s\n", __FUNCTION__, cssfont[which_css_font]);
+    rc = gtk_css_provider_load_from_data(provider, css, -1, &error);
     g_clear_error(&error);
 
     if (rc) {

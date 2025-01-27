@@ -2581,7 +2581,7 @@ static void radio_restore_state() {
   //
   // 3.) select font
   //
-  load_css(which_css_font);
+  load_font(which_css_font);
   g_mutex_unlock(&property_mutex);
 }
 

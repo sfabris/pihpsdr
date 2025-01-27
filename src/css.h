@@ -20,5 +20,6 @@ extern const int  num_css_fonts;
 extern int  which_css_font;
 extern char *css;
 extern char *cssfont[];
-extern void load_css(int font);
+extern void load_font(int font);
+extern void load_css(void);
 

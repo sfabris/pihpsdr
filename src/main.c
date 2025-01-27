@@ -330,11 +330,12 @@ static void activate_pihpsdr(GtkApplication *app, gpointer data) {
   t_print("release: %s\n", unameData.release);
   t_print("version: %s\n", unameData.version);
   t_print("machine: %s\n", unameData.machine);
+  load_css();
   //
-  // Start with default font. The selected font
+  // Start with default font. The selected
   // becomes active if the radio is started
   //
-  load_css(0);
+  load_font(0);
 
   GdkDisplay *display = gdk_display_get_default();
 

@@ -26,7 +26,9 @@
 // that is calculated based on available space.
 //
 //
-extern char *DISPLAY_FONT_FACE;
+#include "css.h"
+
+#define DISPLAY_FONT_FACE  cssfont[which_css_font]
 #define DISPLAY_FONT_SIZE1 10                       // no longer used, this is too small for elder hams
 #define DISPLAY_FONT_SIZE2 12                       // used for SWR, FWD in Tx meter, S-meter ticks, and panadapter labels
 #define DISPLAY_FONT_SIZE3 16                       // used for warning/info in panadapters

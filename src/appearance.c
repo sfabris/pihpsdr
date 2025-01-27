@@ -34,7 +34,6 @@
 
 #include "appearance.h"
 
-char *DISPLAY_FONT_FACE = "FreeSans";
 //
 // When a VFO bar layout that fits is searched in this list,
 // first mathing layout is taken,
