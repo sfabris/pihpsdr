@@ -494,6 +494,67 @@ void rx_panadapter_update(RECEIVER *rx) {
     }
   #endif
   */
+ // Add these variables
+  int num_peaks = 2;
+  gboolean peaks_in_passband = TRUE; // Set to FALSE for entire chart
+  double peaks[2] = {-200.0, -200.0};
+  int peak_positions[2] = {0, 0};
+
+  // Detect peaks
+  double filter_left_bound = peaks_in_passband ? filter_left : 0;
+  double filter_right_bound = peaks_in_passband ? filter_right : mywidth;
+
+  for (i = 1; i < mywidth; i++) {
+      if (i >= filter_left_bound && i <= filter_right_bound) {
+          double s = (double)samples[i + pan] + soffset;
+          if (s > peaks[1]) {
+              if (s > peaks[0]) {
+                  peaks[1] = peaks[0];
+                  peak_positions[1] = peak_positions[0];
+                  peaks[0] = s;
+                  peak_positions[0] = i;
+              } else {
+                  peaks[1] = s;
+                  peak_positions[1] = i;
+              }
+          }
+      }
+  }
+
+  // Print peak information (optional for debugging)
+  printf("Peak 1: Level = %.2f dBm, Position = %d\n", peaks[0], peak_positions[0]);
+  printf("Peak 2: Level = %.2f dBm, Position = %d\n", peaks[1], peak_positions[1]);
+
+    // Draw peak values on the chart
+  #define COLOUR_PAN_TEXT 1.0, 1.0, 1.0, 1.0 // Define white color with full opacity
+  cairo_set_source_rgba(cr, COLOUR_PAN_TEXT); // Set text color
+  cairo_select_font_face(cr, DISPLAY_FONT_FACE, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+  cairo_set_font_size(cr, DISPLAY_FONT_SIZE2);
+
+    for (int j = 0; j < num_peaks; j++) {
+      if (peak_positions[j] > 0) {
+          char peak_label[32];
+          snprintf(peak_label, sizeof(peak_label), "%.1f dBm", peaks[j]);
+          cairo_text_extents_t extents;
+          cairo_text_extents(cr, peak_label, &extents);
+
+          // Calculate text position: slightly above the peak
+          double text_x = peak_positions[j];
+          double text_y = floor((rx->panadapter_high - peaks[j]) 
+                                * (double)myheight 
+                                / (rx->panadapter_high - rx->panadapter_low)) - 5;
+
+          // Ensure text stays within the drawing area
+          if (text_y < extents.height) {
+              text_y = extents.height; // Push text down to fit inside the top boundary
+          }
+
+          // Draw text
+          cairo_move_to(cr, text_x - (extents.width / 2.0), text_y);
+          cairo_show_text(cr, peak_label);
+      }
+  }
+
   if (rx->id == 0 && !radio_is_remote) {
     display_panadapter_messages(cr, mywidth, rx->fps);
   }
