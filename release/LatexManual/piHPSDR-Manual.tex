@@ -82,15 +82,16 @@ including a Raspberry Pi (hence
 the name \pH), but equally well on Linux desktop or laptop computers, and on Apple Macintosh (Mac OSX)
 computers which have a Unix variant under the hood.
 It is possible to run
-/pH under the Windows operating system, see e.g. \texttt{https://github.com/ew8bak/pihpsdr}.
-This page reports how to set up an ,,ecosystem'' under Windows which can then be used to compile
+\pH under the Windows operating system, see e.g. \texttt{https://github.com/ew8bak/pihpsdr}.
+There you find instructions on how to set up an ,,ecosystem'' under Windows which can then be used to compile
 \pH. The resource mentioned seems to come with an older version of \pH, but others have reported
 that using that ,,ecosystem'' it is possible to run the version of \pH described in this document
 as well. Note that this is what has been reported to me, I never tried to use \pH under Windows
 myself.
 
 
-Although \pH can be operated entirely by using mouse and keyboard as input devices, many users prefer to
+Although \pH can be operated entirely by using mouse (or touchscreen) 
+and keyboard as input devices, many users prefer to
 have physical push-buttons and/or knobs or dials. To this end, \pH can control push-buttons and rotary
 encoders connected to the GPIO (general purpose input/output)
 lines of a Raspberry Pi. At least two generations of such controllers have
@@ -105,7 +106,7 @@ which
 have successfully been used with \pH. A third possibility to control \pH is via a serial interface
 through CAT (computer aided transceiver) commands. The CAT model used by \pH is based on the Kenwood
 TS-2000 command set with lots of PowerSDR extensions. The ANDROMEDA controller uses such CAT commands to
-communicate with /pH, so using CAT is, in addition to MIDI, the second option to have buttons and knobs
+communicate with \pH, so using CAT is, in addition to MIDI, the second option to have buttons and knobs
 for general (non-GPIO) computers.
 
 Using a touch-screen instead of a mouse offers the possibility to put the actual radio hardware together
@@ -122,7 +123,7 @@ rather quickly over time, I do no longer have precompiled binaries in the reposi
 usually only work on a specific hardware, and with a specific variant (e.g. 32-bit compared to 64-bit) of
 the operating system. It is therefore necessary to build \pH \textit{on the target system}
 from the sources. I know this sounds daunting to non-LINUX-nerds. But I have put much effort into making
-the installation/compilation procedure semi-automatic and easy-to-use for non-nerds.
+the installation/compilation procedure semi-automatic and easy-to-use for ``the rest of us''.
 To this end, I provide so-called shell scripts which do all the work behind the scene.
 The procedure is described in some detail in Appendix \ref{sec:installsources} for Linux (including RaspPi)
 computers and in Appendix \ref{sec:installmacosx} for Mac OSX. Several ,,absolute beginners'' have meanwhile
@@ -242,25 +243,31 @@ automatically started. So in normal operation, when starting \pH subsequently, a
 still valid, the radio is started without user intervention. If this option is activated and one radio is
 present, you will not see this menu, so in order to make further changes here, you have to disconnect the
 radio from the ethernet cable, start \pH until you see this menu, and update the \rett{Protocols}
-settings. Then you can re-discover using the \rett{Discover} button.}
+settings. Then you can re-discover using the \rett{Discover} button.
+If you have an Anan-G2 radio and activated \texttt{Autostart}, then you have a problem. Since always
+exactly one radio (the G2) is discovered, you will always step over the discovery menu and start the
+radio right away, which means you cannot change any setting in the discovery menu. The only way
+to get of of this trap is to remove the file \texttt{protocols.props} in the directory where \pH
+stores its settings. On a G2, this is usually \texttt{\$HOME/github/pihpsdr}.
+
+}
 \end{itemize}
 
-See Appendix \ref{sec:compiletime} on how to specify the compile time options.
 
 Sometimes \pH needs to know the IP address of the radio. This is, for example, the case for the
 \texttt{STEMlab} discovery
 described above. In such a case the IP address in numerical form (xxx.xxx.xxx.xxx) can be entered in the box
 with the label \rett{Radio IP Addr:}. If a legal IP address is contained in this box, protocol-1 and
 protocol-2 discovery queries
-will also sent to the IP address specified, in addition to the standard broadcast discovery packets which
+will also be sent to the IP address specified, in addition to the standard broadcast discovery packets which
 can only reach
 radios on the same network segment. With a known IP address (and if supported by the radio),  one can
 connect to radios which are not on the same sub-net as the computer, in principle you can connect to any
 radio on the world
 provided it is on the internet. However, the original HPSDR standard states that a broadcast packet must be
-used, so several
-radios won't reply. On the other hand, there are some radios such as a RedPitaya or a HermesLite-II which
-allow being discovered by such a routed packet.
+used, so radios strictly adhering to that standard
+won't reply. On the other hand, there are some radios such as a RedPitaya or a HermesLite-II which
+allow being discovered by such a routed (non-broadcast) packet.
 
 The \rett{Discover} button re-starts the discovery process. This is useful if the radio has been powered up
 too late and
@@ -269,7 +276,7 @@ was not yet ready when \pH was started. Simply press \rett{Discover} to start an
 The combo-box (pop-down menu) to the left of the \rett{Discover} button lets you choose which type of GPIO
 controller you
 have attached to the computer.  If compiled with GPIO support (this can also be done for
-programs running on a Raspberry Pi or on an internal Raspberry module of Anan G2 radios),
+programs running on a Raspberry Pi or on an internal Raspberry module of first-generation (2023) Anan G2 radios),
 the menu lets you choose between
 
 \begin{itemize}[font=\texttt, left=80pt]
@@ -287,15 +294,18 @@ This controller is denoted Controller2 in the rest of this manual.}
 \item[G2 Front Panel]{Choose this if you have an Anan G2 radio with a built-in controller.}
 \item[G2 Mk2 Panel]{Choose this if you have an Anan G2 Mk2 (also known as ,,G2 Ultra'')
 radio (with LEDs in the front panel).
-This not only tells \pH not to use any GPIO lines, but also to use a serial line to connect to the front panel.
-So this setting is needed for G2 Mk2 even if \pH is compiled without GPIO support.}
+This tells \pH not to use any GPIO lines, if it is compied with GPIO support. However, it is
+strongly recommended \textit{not} to eable GPIO for G2 Ultras. Previously, \pH required this choice
+to set up the serial line for the panel controller of the G2 Ultras, but this is now handled
+automatically.}
 \end{itemize}
 
 \textbf{Attention.} Be sure to choose a controller only if such a controller is actually connected to your
 Raspberry Pi. Unexpected things can happen if you chose one type of controller here but have totally different
 hardware connected to the GPIO. For example, if you have a so-called ,,audio hat'' attached to the RaspPi
 GPIO, then it is safest to choose \texttt{No Controller} to avoid \pH using GPIO lines actually used
-by the audio hat.
+by the audio hat. The same applies to G2 Ultras where GPIO lines may be used for serial connection
+to the panel.
 
 All settings (protocols, controller, IP address) made in this menu are stored in the global (radio
 independent) settings
@@ -729,13 +739,12 @@ which has been selected, if its width has been adjusted
 e.g. by using controller knobs.
 In Fig. \ref{fig:VFObar}, the text is \rett{USB 2.7k}
 which indicates that the  mode
-is USB using the filter width is about 2.7 kHz. If the filter
-width has not been temporarily modified (for fighting QRM)
-using a controller or panel button, then this agrees with the
-name of the chosen filter except for the two variable filters
-(\texttt{Var1} and \texttt{Var2}) which are there for each mode
-(see the \bltt{Filter} menu). So note the VFO bar reports the
-actual filter width and not the name of the chosen filter.
+is USB and the filter width is about 2.7 kHz.
+Note the VFO bar reports the
+\textit{actual} filter width and not the name of the chosen filter,
+the actual filter width can be temporarily modified for QRM fighting
+if one has e.g. a console or a penal with knobs assigned to the \bltt{Filter Cut High/Low}
+commands.
 For the CW (CWU and CWL) modes, the CW speed (in wpm) and the side tone
 frequency (in Hz) is stated as well. For CW, the filter size may be appended
 by a ,,P'', which indicates whether the CW audio peak filter (see the
@@ -856,11 +865,9 @@ indicator becomes yellow and shows the offset of the true
 TX frequency from the VFO dial frequency.
 
 Finally, in the top right corner you see a symbol with a green and a red line
-that only occurs if
-one of the variable filters (\texttt{Var1} or \texttt{Var2}) have been
-selected. The green caret indicates the default filter edges,  while the
-red one above denotes the current filter edges.
-
+which show the actual RX filter edges (in red) compared to the nominal
+filter edges (in green). Both filter edges normally agree unless the actual
+filter edge has been temporarily modified, e.g. to cope with QRM.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Meter section}
 \label{sec:MeterSection}
@@ -1353,7 +1360,7 @@ the slider area and the VFO bar have switched to  the new font.
 
 \begin{figure}[ht]
 \center
-\includegraphics[width=10cm]{ScreenMenu.png}
+\includegraphics[width=12cm]{ScreenMenu.png}
 \caption{The \bltt{Screen} menu.}
 \label{fig:ScreenMenu}
 \end{figure}
@@ -1364,14 +1371,20 @@ the font affects all menus, the slider, zoom and tool bars, as well as the VFO b
 The default font is \rett{FreeSans} simply because it is supposed to be available on all
 systems. The \rett{Open Sans} and \rett{Piboto} fonts are often told to have a
 better on-screen legibility. Some people prefer mono-spaced fonts, therefore \rett{Roboto Mono}
-is included in the list. Be prepeared that the layout looks not OK if you choose a font
-that is not installed on your system. The \rett{Roboto Mono} font can be downloaded
+is included in the list.
+
+It is possible that the VFO bar layout looks not OK if you choose a font
+that is not installed on your system because the system then falls back to some
+other font that is hard to predict. The list of fonts currently installed can be
+obtained with the \texttt{fc-list} command, but
+if one or more of these fonts are not available on your system, this can easily be
+cured: all fonts offered in the menu can be downloaded
 free of charge from the internet, installation on LINUX usually requires to create
-a directory \texttt{\$HOME/.fonts} (if it not exists already), copy the downloaded
-font files (\texttt{*.otf} or \texttt{*.ttf} to that directory and run the command
-\texttt{fc-cache -v -f} in a terminal window. Installation on MacOS is usually done
-simply by double-clicking a \texttt{*.ttf} file (this opens the FontBook application)
-and then click on the "Install" button.
+a directory \texttt{\$HOME/.fonts} (if it not exists already), then copy the downloaded
+font files (\texttt{*.otf} or \texttt{*.ttf}) to that directory and run the command
+\texttt{fc-cache -v -f} in a terminal window. Installation on MacOS is even simpler:
+double-clicking a font  (\texttt{*.ttf}) file will opens the FontBook application
+which shows you the new font, and then click on the "Install" button.
 
 The spin buttons in the next line can be used to adjust the window width and height.
 The minimum values for width and height are 640 and 400, the maximum values are determined by
@@ -1394,20 +1407,23 @@ the first one in the list that does fit is automatically selected, and the
 current choice shown in the
  pop-down menu \rett{Select VFO bar layout} is updated. This menu lets you choose
  the layout of the VFO
-bar. In Fig. \ref{fig:VFObarChoice} the pre-defined layouts are shown.
+bar. In Fig. \ref{fig:VFObarChoice} five pre-defined layouts are shown.
 
 
 
 These layouts require a screen size of 1152, 1024, 896, 800, and 640 pixels (from top to
 bottom). Screens slightly wider (about 50 pixel) than these minimal values then allow for a larger meter
 area with increased readability, this enlarged meter is automatically used if the display
-width permits.
+width permits. There is one even larger VFO bar (for a screen width of 1960 pixels) available
+that is not shown but does not look different from the topmost one in Fig. \ref{fig:VFObarChoice}.
 The VFO bar has been described in detail in chapter
 \ref{sec:VFObar}. If you choose a VFO bar layout that is wider than the current
 window width allows, the window width is automatically adjusted (increased). On the
 other hand, choosing a VFO bar layout that is smaller than before does not affect
 the screen dimensions, but there will then be some empty space between the VFO-B
-frequency and the meter.
+frequency and the meter. The smallest VFO bars do not offer enough space to display all controls
+For example, the indicator for the downward expander and the actual filter edges are  missing
+in  the smallest layouts, but if one is restricted to such small screen one has to live with it.
 
 \begin{figure}[ht!]
 \center
@@ -1480,8 +1496,8 @@ avoid such false warnings by using power readings averaged over some time, but i
 cannot be excluded that a too high SWR is reported for a short amount of time.
 
 \rett{Display PA current} If this is checked, the PA supply voltage and the PA current
-are shown while transmitting. This data is only available for Orion-II and SATURN boards
-(Anan-7000/8000 and Anan-G2 and the HermesLite-II).
+are shown while transmitting. Such data is only available for Orion-II and SATURN boards
+(Anan-7000/8000 and Anan-G2) and the HermesLite-II.
  For the HermesLite-II, the PA temperature and the PA current are shown.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The \texttt{Display} Menu}
@@ -2947,7 +2963,7 @@ are reversed, so you need not re-wire your paddle.
 
 \begin{figure}[ht]
 \center
-\includegraphics[width=10cm]{DSPMenu.png}
+\includegraphics[width=8cm]{DSPMenu.png}
 \caption{The DSP menu.}
 \label{fig:DSPMenu}
 \end{figure}
