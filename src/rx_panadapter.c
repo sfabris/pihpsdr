@@ -102,6 +102,16 @@ static gboolean panadapter_scroll_event_cb(GtkWidget *widget, GdkEventScroll *ev
   return rx_scroll_event(widget, event, data);
 }
 
+int compare_doubles(const void *a, const void *b) {
+    double arg1 = *(const double *)a;
+    double arg2 = *(const double *)b;
+
+    if (arg1 < arg2) return -1;
+    if (arg1 > arg2) return 1;
+    return 0;
+}
+
+
 void rx_panadapter_update(RECEIVER *rx) {
   int i;
   float *samples;
@@ -494,36 +504,101 @@ void rx_panadapter_update(RECEIVER *rx) {
     }
   #endif
   */
- // Add these variables
-  int num_peaks = 2;
-  gboolean peaks_in_passband = TRUE; // Set to FALSE for entire chart
+    int num_peaks = 2;
+  gboolean peaks_in_passband = TRUE; // Detect peaks in filter passband
+  gboolean hide_noise = TRUE;        // Ignore peaks below noise level
+  double noise_percentile = 50.0;    // Percentile for noise level
+  int ignore_range_divider = 16; // Divider to calculate the ignore range
+  int ignore_range = (mywidth + ignore_range_divider - 1) / ignore_range_divider; // Round up
   double peaks[2] = {-200.0, -200.0};
   int peak_positions[2] = {0, 0};
 
-  // Detect peaks
-  double filter_left_bound = peaks_in_passband ? filter_left : 0;
-  double filter_right_bound = peaks_in_passband ? filter_right : mywidth;
+  // Dynamically allocate a copy of samples for sorting
+  double *sorted_samples = malloc(mywidth * sizeof(double));
+  if (sorted_samples == NULL) {
+      fprintf(stderr, "Memory allocation failed.\n");
+      return; // Handle memory allocation failure
+  }
+  for (int i = 0; i < mywidth; i++) {
+      sorted_samples[i] = (double)samples[i + rx->pan] + soffset;
+  }
 
-  for (i = 1; i < mywidth; i++) {
-      if (i >= filter_left_bound && i <= filter_right_bound) {
-          double s = (double)samples[i + pan] + soffset;
-          if (s > peaks[1]) {
-              if (s > peaks[0]) {
-                  peaks[1] = peaks[0];
-                  peak_positions[1] = peak_positions[0];
-                  peaks[0] = s;
-                  peak_positions[0] = i;
-              } else {
-                  peaks[1] = s;
-                  peak_positions[1] = i;
+  // Sort the samples to calculate the noise level
+  if (hide_noise) {
+      qsort(sorted_samples, mywidth, sizeof(double), compare_doubles);
+      int index = (int)((noise_percentile / 100.0) * mywidth);
+      double noise_level = sorted_samples[index];
+      free(sorted_samples); // Free memory after use
+
+      // Detect peaks
+      double filter_left_bound = peaks_in_passband ? filter_left : 0;
+      double filter_right_bound = peaks_in_passband ? filter_right : mywidth;
+      int ignored_until = -1; // Tracks the position up to which peaks are ignored
+
+      for (int i = 1; i < mywidth - 1; i++) {
+          if (i >= filter_left_bound && i <= filter_right_bound) {
+              double s = (double)samples[i + rx->pan] + soffset;
+
+              // Check if the point is a peak
+              if (s >= noise_level && s > samples[i - 1 + rx->pan] && s > samples[i + 1 + rx->pan]) {
+                  // If inside the ignored range, replace the previous peak if this one is higher
+                  if (i <= ignored_until) {
+                      if (s > peaks[num_peaks - 1]) {
+                          peaks[num_peaks - 1] = s;
+                          peak_positions[num_peaks - 1] = i;
+
+                          // Sort peaks to maintain descending order
+                          for (int j = num_peaks - 1; j > 0; j--) {
+                              if (peaks[j] > peaks[j - 1]) {
+                                  double temp_peak = peaks[j];
+                                  peaks[j] = peaks[j - 1];
+                                  peaks[j - 1] = temp_peak;
+
+                                  int temp_pos = peak_positions[j];
+                                  peak_positions[j] = peak_positions[j - 1];
+                                  peak_positions[j - 1] = temp_pos;
+                              }
+                          }
+                      }
+                  } else {
+                      // Add this peak if it’s higher than the lowest tracked peak
+                      if (s > peaks[num_peaks - 1]) {
+                          peaks[num_peaks - 1] = s;
+                          peak_positions[num_peaks - 1] = i;
+
+                          // Sort peaks to maintain descending order
+                          for (int j = num_peaks - 1; j > 0; j--) {
+                              if (peaks[j] > peaks[j - 1]) {
+                                  double temp_peak = peaks[j];
+                                  peaks[j] = peaks[j - 1];
+                                  peaks[j - 1] = temp_peak;
+
+                                  int temp_pos = peak_positions[j];
+                                  peak_positions[j] = peak_positions[j - 1];
+                                  peak_positions[j - 1] = temp_pos;
+                              }
+                          }
+
+                          // Set ignored range
+                          ignored_until = i + ignore_range;
+                      }
+                  }
               }
           }
       }
+
+  } else {
+      free(sorted_samples); // Free memory if noise filtering is disabled
   }
 
-  // Print peak information (optional for debugging)
-  printf("Peak 1: Level = %.2f dBm, Position = %d\n", peaks[0], peak_positions[0]);
-  printf("Peak 2: Level = %.2f dBm, Position = %d\n", peaks[1], peak_positions[1]);
+  // Debug prints for detected peaks
+  //for (int j = 0; j < num_peaks; j++) {
+  //    if (peak_positions[j] > 0) {
+  //        printf("Peak %d: Level = %.2f dBm, Position = %d\n", j + 1, peaks[j], peak_positions[j]);
+  //    }
+ //}
+
+
 
     // Draw peak values on the chart
   #define COLOUR_PAN_TEXT 1.0, 1.0, 1.0, 1.0 // Define white color with full opacity
