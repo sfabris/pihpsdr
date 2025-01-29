@@ -517,7 +517,7 @@ void rx_panadapter_update(RECEIVER *rx) {
   int ignore_range_divider = rx->panadapter_ignore_range_divider;
   int ignore_range = (mywidth + ignore_range_divider - 1) / ignore_range_divider; // Round up
 
-  double peaks[num_peaks]; // = {-200.0, -200.0};
+  double peaks[num_peaks];
   int peak_positions[num_peaks];
   for(int a=0;a<num_peaks;a++){
     peaks[a] = -200;
@@ -546,7 +546,6 @@ void rx_panadapter_update(RECEIVER *rx) {
   // Detect peaks
   double filter_left_bound = peaks_in_passband ? filter_left : 0;
   double filter_right_bound = peaks_in_passband ? filter_right : mywidth;
-  int ignored_until = -1; // Tracks the position up to which peaks are ignored
 
   for (int i = 1; i < mywidth - 1; i++) {
       if (i >= filter_left_bound && i <= filter_right_bound) {
@@ -554,48 +553,59 @@ void rx_panadapter_update(RECEIVER *rx) {
 
           // Check if the point is a peak
           if ((!hide_noise || s >= noise_level) && s > samples[i - 1 + rx->pan] && s > samples[i + 1 + rx->pan]) {
-              // If inside the ignored range, replace the previous peak if this one is higher
-              if (i <= ignored_until) {
-                  if (s > peaks[num_peaks - 1]) {
-                      peaks[num_peaks - 1] = s;
-                      peak_positions[num_peaks - 1] = i;
+              int replace_index = -1;
+              int start_range = i - ignore_range;
+              int end_range = i + ignore_range;
 
-                      // Sort peaks to maintain descending order
-                      for (int j = num_peaks - 1; j > 0; j--) {
-                          if (peaks[j] > peaks[j - 1]) {
-                              double temp_peak = peaks[j];
-                              peaks[j] = peaks[j - 1];
-                              peaks[j - 1] = temp_peak;
-
-                              int temp_pos = peak_positions[j];
-                              peak_positions[j] = peak_positions[j - 1];
-                              peak_positions[j - 1] = temp_pos;
-                          }
+              // Check if the peak is within the ignore range of any existing peak
+              for (int j = 0; j < num_peaks; j++) {
+                  if (peak_positions[j] >= start_range && peak_positions[j] <= end_range) {
+                      if (s > peaks[j]) {
+                          replace_index = j;
+                          break;
+                      } else {
+                          replace_index = -2;
+                          break;
                       }
-                  }
-              } else {
-                  // Add this peak if it's higher than the lowest tracked peak
-                  if (s > peaks[num_peaks - 1]) {
-                      peaks[num_peaks - 1] = s;
-                      peak_positions[num_peaks - 1] = i;
-
-                      // Sort peaks to maintain descending order
-                      for (int j = num_peaks - 1; j > 0; j--) {
-                          if (peaks[j] > peaks[j - 1]) {
-                              double temp_peak = peaks[j];
-                              peaks[j] = peaks[j - 1];
-                              peaks[j - 1] = temp_peak;
-
-                              int temp_pos = peak_positions[j];
-                              peak_positions[j] = peak_positions[j - 1];
-                              peak_positions[j - 1] = temp_pos;
-                          }
-                      }
-
-                      // Set ignored range
-                      ignored_until = i + ignore_range;
                   }
               }
+
+              // Replace the existing peak if a higher peak is found within the ignore range
+              if (replace_index >= 0) {
+                  peaks[replace_index] = s;
+                  peak_positions[replace_index] = i;
+              }
+              // Add the peak if no peaks are found within the ignore range
+              else if (replace_index == -1) {
+                  // Find the index of the lowest peak
+                  int lowest_peak_index = 0;
+                  for (int j = 1; j < num_peaks; j++) {
+                      if (peaks[j] < peaks[lowest_peak_index]) {
+                          lowest_peak_index = j;
+                      }
+                  }
+
+                  // Replace the lowest peak if the current peak is higher
+                  if (s > peaks[lowest_peak_index]) {
+                      peaks[lowest_peak_index] = s;
+                      peak_positions[lowest_peak_index] = i;
+                  }
+              }
+          }
+      }
+  }
+
+  // Sort peaks in descending order
+  for (int i = 0; i < num_peaks - 1; i++) {
+      for (int j = i + 1; j < num_peaks; j++) {
+          if (peaks[i] < peaks[j]) {
+              double temp_peak = peaks[i];
+              peaks[i] = peaks[j];
+              peaks[j] = temp_peak;
+
+              int temp_pos = peak_positions[i];
+              peak_positions[i] = peak_positions[j];
+              peak_positions[j] = temp_pos;
           }
       }
   }
