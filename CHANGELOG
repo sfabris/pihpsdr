@@ -1,11 +1,12 @@
 LIST OF RECENT PIHPSDR CHANGES
 ==============================
 
-February 2025:
-- New 2.4 Release created (the branch is Rel-2.4)
 
 January 2025:
 -------------
+
+- New 2.4 Release created (the branch is Rel-2.4) and
+  master branch advanced to 2.5
 
 - "Feature Freeze" for the up-coming 2.4 release.
 
