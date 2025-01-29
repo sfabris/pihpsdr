@@ -19,7 +19,6 @@ SATURN=ON
 USBOZY=OFF
 SOAPYSDR=OFF
 STEMLAB=OFF
-EXTENDED_NR=
 SERVER=OFF
 AUDIO=PULSE
 
@@ -34,7 +33,6 @@ AUDIO=PULSE
 # USBOZY       | If ON, piHPSDR can talk to legacy USB OZY radios (needs  libusb-1.0)
 # SOAPYSDR     | If ON, piHPSDR can talk to radios via SoapySDR library
 # STEMLAB      | If ON, piHPSDR can start SDR app on RedPitay via Web interface (needs libcurl)
-# EXTENDED_NR  | If ON, piHPSDR can use extended noise reduction (VU3RDD WDSP version)
 # SERVER       | If ON, include client/server code (still far from being complete)
 # AUDIO        | If AUDIO=ALSA, use ALSA rather than PulseAudio on Linux
 #
@@ -93,6 +91,8 @@ WDSP_LIBS=wdsp/libwdsp.a `$(PKG_CONFIG) --libs fftw3`
 # Add support for extended noise reduction, if requested
 # This implies that one compiles against a wdsp.h e.g. in /usr/local/include,
 # and links with a WDSP shared lib e.g. in /usr/local/lib
+#
+# THIS IS GOING TO BE REMOVED! Reason: vu3rdd wdsp library still version 1.23
 #
 ##############################################################################
 

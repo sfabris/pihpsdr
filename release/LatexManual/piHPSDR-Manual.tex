@@ -200,7 +200,7 @@ the network connection, you then see a screen with a discovery menu (Fig. \ref{f
 It is possible that the \rett{Start} button is deactivated and shows another text. \rett{In Use} at
 this point means that the radio is already in use (connected by another SDR application), while
 \rett{Incompatible} denotes that the radio is not compatible with this version of \pH. This
-is only the case if piHPDSR runs on the compute module inside the new Anan Saturn/G2
+is only the case if \pH runs on the compute module inside the new Anan Saturn/G2
 radios and the FPGA firmware is known to be too old (or too new)
 for direct (XDMA) data transfer between the compute
 module and the FPGA. Updating both \pH and the FPGA firmware to the latest version
@@ -356,7 +356,7 @@ is completely black in the above picture since there was no RF signal.
 
  Many conventional rigs with two independent receivers discriminate
  between the \textit{main} and the \textit{sub} receiver. It is important that
- this is \textbf{not} the case for \pH. In piHPDSR, both  receivers are
+ this is \textbf{not} the case for \pH. In \pH, both  receivers are
  largely equivalent. For example, if you start transmitting in
  normal (non-split) mode, the TX frequency matches the frequency
  of the active receiver, no matter whether this is RX1 or RX2.
@@ -914,10 +914,10 @@ is described in the \bltt{Meter} menu.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{piHPSDR menus: introduction}
+\chapter{\pH menus: introduction}
 
-\section{piHPSDR menus}
-Now we have a series of chapters that discuss all the piHPDSR menus. Many menus can be
+\section{\pH menus}
+Now we have a series of chapters that discuss all the \pH menus. Many menus can be
 opened by a button click (or a push-button on an external controller), e.g. hitting the
  \rett{MODE}, \rett{FILT}, or \rett{NOISE} button on the
 toolbar you have seen in the last picture. You already know that the VFO and Meter
@@ -947,7 +947,7 @@ recommended.
 \section{Using menus \textit{and} controllers/panels}
 
 Menus in piHPSR are windows that pop up if a menu is opened. These windows by default are positioned such
-that they cover a relevant part of the piHPSDR window. If you have a large display, you can move the menu
+that they cover a relevant part of the \pH window. If you have a large display, you can move the menu
 window such that it no longer covers the panadapter(s), if you want.
 
 If a menu window pops open, its controls reflect the status of \pH when the menu opens. One can then operate
@@ -969,7 +969,7 @@ is open is not supported. In most cases, \pH will behave as expected, but
 if you change a \pH setting with a controller or a panel while a menu is open that lets you change just
 that setting, the behavious may be unexpected or even undetermined.
 
-\section{The main piHPSDR menu}
+\section{The main \pH menu}
 \begin{figure}[ht]
 \center
 \includegraphics[width=10cm]{MainMenu.png}
@@ -997,7 +997,7 @@ breaking the connection to the radio, do some work with the operating system, an
 get the \pH window back. Note in earlier versions of \pH this function was
 associated with the "Hide" button in the top right corner of the main window.
 Then, there are two menus (\bltt{Exit} and \bltt{About}) which are described in due course and which
-one can open by clicking either \rett{Exit piHPDSR} or \rett{About} in the main menu.
+one can open by clicking either \rett{Exit \pH} or \rett{About} in the main menu.
 
 The other buttons, between the two horizontal separator lines, give access to \pH
 control and fine tuning. They are organised in six columns, namely radio related
@@ -1724,7 +1724,7 @@ frequency until the display reads 10489.500 MHz. Now swap VFO-A and VFO-B (\bltt
 and enter 2400 MHz into VFO-A using the \bltt{VFO} menu (Chapter \ref{sec:vfomenu}). and
 swap the VFOs again. SAT mode will now ensure the 10.489 GHz Receive
  Frequencies and the 2.4GHz Transmit frequencies track correctly when changes are made
- to the Receive frequency. PiHPSDR will now remember these settings when you select
+ to the Receive frequency. \pH will now remember these settings when you select
  the bands. The complicated swapping was necessary since band stack entries will
  only be stored from VFO-A.
 
@@ -1795,7 +1795,7 @@ can also be entered by push-buttons from a GPIO or MIDI controller, see
 the NumPad commands in Appendix A.
 
 In addition to frequency entry, the VFO menu offers a convenient way of changing
-some piHPDSR settings, simply because the VFO menu can be opened by a simple
+some \pH settings, simply because the VFO menu can be opened by a simple
 mouse click into the VFO bar.
 
 \rett{Rit Step:} In this pop-down menu, the RIT step size can be chosen (1/10/100 Hz).
@@ -2376,7 +2376,7 @@ This means that from 300 to 3000 Hz (the usual range of audio frequencies in ama
 radio FM), there is a 6 dB per octave (20 dB per decade) that leads to a 20 dB damping
 of an input signal at 300 Hz (8 dB damping at 1200 Hz, and no damping ad 3000 Hz).
 This of course distorts the audio, but the reverse process is built into FM demodulators
-to correct for this. Because there is a lot of damping of the audio signal, piHPDSR
+to correct for this. Because there is a lot of damping of the audio signal, \pH
 applies a 15 dB boost to the TX audio input samples when the mode is FMN.
 
 This boost is nearly ineffective if the FM pre-emphasis takes place \textit{after}
@@ -4618,7 +4618,7 @@ enabled (disabled) if  the resulting value  is non-zero (zero).}
 enabled (disabled) if the resulting value  is non-zero (zero).}
 
 \phcommand{Swap RX}{SWAPRX}{B}{Make the inactive receiver the active one. This command is only effective if
-piHPDSR is running two receivers.}
+\pH is running two receivers.}
 
 \phcommand{ToolBar1}{TBAR1}{B}{Pressing/Releasing this button is equivalent to pressing the leftmost
 (first) of the eight toolbar buttons on the screen.}
@@ -4924,7 +4924,7 @@ TS-2000. Modern version of these programs are not restricted to serial lines and
 
 Many digi mode programs (and perhaps others as well) use the \texttt{hamlib} library for radio control. The digi mode
 program communicates with \texttt{hamlib} using an abstract interface, and \texttt{hamlib} then communicates with the radio
-using CAT commands. piHPDSR is supported by \texttt{hamlib}, the radio model name is ,,\texttt{OPENHPSDR PiHPSDR}''.
+using CAT commands. \pH is supported by \texttt{hamlib}, the radio model name is ,,\texttt{OPENHPSDR PiHPSDR}''.
 
 In the SDR community, there exist a heavily extended TS-2000 CAT command set known as the ,,PowerSDR CAT
 command set''. In contrast to the two-letter commands characteristic for the original (TS-2000) CAT
@@ -6191,11 +6191,11 @@ The ALSA audio module for Linux, as well as the PortAudio audio  module for MacO
  take special provisions to keep this latency small. Still, ,,small'' might not
  be small enough for CW at higher speeds, so the present author normally uses
  external hardware to generate a nearly zero latency side tone that is then
- mixed with the audio from piHPDSR.
+ mixed with the audio from \pH.
 
 \textbf{MIDI.}
 If running \pH on non-RaspPi Linux or Macintosh computers, there are no GPIO
-lines. The same problem arises for piHPDSR running on a RaspPi and using a controller
+lines. The same problem arises for \pH running on a RaspPi and using a controller
 which does not leave enough spare GPIO lines. In these cases, the best
 choice to get "the key into the computer" is to use MIDI. There are low-cost
 micro controllers which can be programmed such that they act as MIDI input devices
@@ -6240,7 +6240,7 @@ via MIDI over the USB cable.
 \begin{small}
 \begin{verbatim}
 /*
- * Small Arduino sketch to demonstrate MIDI connection to piHPDSR
+ * Small Arduino sketch to demonstrate MIDI connection to piHPSDR
  * ===============================================================
  */
 
@@ -6417,7 +6417,7 @@ shown here.
 
 In this section, we will cover four different scenarios, namely
 \begin{itemize}
-\item{piHPDSR and digi mode program running on different computers.}
+\item{\pH and digi mode program running on different computers.}
 \item{\pH and digi mode program running on the same LINUX computer
 (including RaspPi) using ALSA.}
 \item{\pH and digi mode program running on the same LINUX computer
@@ -6852,11 +6852,11 @@ library which may or may not be available on the computer intended  to run \pH.
 In contrast to earlier version of \pH which required editing the \texttt{Makefile},
 compile-time options different from the default ones can be enforced by
 creating a text file
-file within the \pH directory which has the name \grtt{make.config.pihpdsr}.
+file within the \pH directory which has the name \grtt{make.config.pihpsdr}.
 
 If this file does not exist, compilation proceeds with the default options defined
 in the \texttt{Makefile}.  The file
-\grtt{make.config.pihpdsr} should contain lines of the form
+\grtt{make.config.pihpsdr} should contain lines of the form
 
 \texttt{OPTION=VALUE}
 
@@ -6864,12 +6864,12 @@ which then assigns a value to the option. The value may be empty, in this case n
 to the option. In most cases, the value is either \texttt{ON} or \texttt{OFF} depending on whether
 the compile-time option shall be activated or not.
 The exception is the \texttt{AUDIO} option, which may take various values
-(see below). For example, for compilation without GPIO support the file \grtt{make.config.pihpdsr}
+(see below). For example, for compilation without GPIO support the file \grtt{make.config.pihpsdr}
 contains the line
 
 \texttt{GPIO=OFF}
 
-After modifying the file \grtt{make.config.pihpdsr}, you have to recompile the
+After modifying the file \grtt{make.config.pihpsdr}, you have to recompile the
 whole program using the commands
 
 
@@ -6947,30 +6947,30 @@ PulseAudio is used. On MacOS, the \texttt{AUDIO} choice has no effect since the 
 module is used no matter what the \texttt{AUDIO} setting is.
 }
 
-\item[\rett{EXTENDED\_NR}] {(\textbf{Deprecated}, default: \texttt{OFF})
-There is a special version of the WDSP library that contains additional noise
-reduction facilities which are based on  \texttt{rnnnoise} and \texttt{libspecbleach}, see
- \texttt{https://github.com/vu3rdd/wdsp}. If you have such a version of WDSP installed, these
- extended noise reduction facilities can be used with \pH if this option is \texttt{ON}.
- Note that activating this option implies that the modified WDSP version is installed such
- that the WDSP include file can be found by the compiler, and that the WDSP (shared)
- library can be linked with the ,,\texttt{-lwdsp}'' linker option. This normally means
- that the WDSP shared library is installed in /usr/local/lib, while the WDSP header file
- is installed in /usr/local/include. The \texttt{wdsp} directory which is part of
- the \pH repository is not used if \texttt{EXTENDED\_NR} is activated.
-
-{\bf Note:} When I  checked the repository mentioned above in November 2024, it seems that the
-WDSP version is outdated (version 1.23) so it cannot be used with \pH. Ask the maintainer
-of that repository to update their code if you want to use it. Note that since version 1.25, WDSP
-contains a new and highly effective ,,trained'' NR2 noise reduction which was very well
-received by the community. Having said this, I consider EXTENDED\_NR as deprecated and may
-remove it from \pH in the future.
-}
+%\item[\rett{EXTENDED\_NR}] {(\textbf{Deprecated}, default: \texttt{OFF})
+%There is a special version of the WDSP library that contains additional noise
+%reduction facilities which are based on  \texttt{rnnnoise} and \texttt{libspecbleach}, see
+% \texttt{https://github.com/vu3rdd/wdsp}. If you have such a version of WDSP installed, these
+% extended noise reduction facilities can be used with \pH if this option is \texttt{ON}.
+% Note that activating this option implies that the modified WDSP version is installed such
+% that the WDSP include file can be found by the compiler, and that the WDSP (shared)
+% library can be linked with the ,,\texttt{-lwdsp}'' linker option. This normally means
+% that the WDSP shared library is installed in /usr/local/lib, while the WDSP header file
+% is installed in /usr/local/include. The \texttt{wdsp} directory which is part of
+% the \pH repository is not used if \texttt{EXTENDED\_NR} is activated.
+%
+%{\bf Note:} When I  checked the repository mentioned above in November 2024, it seems that the
+%WDSP version is outdated (version 1.23) so it cannot be used with \pH. Ask the maintainer
+%of that repository to update their code if you want to use it. Note that since version 1.25, WDSP
+%contains a new and highly effective ,,trained'' NR2 noise reduction which was very well
+%received by the community. Having said this, I consider EXTENDED\_NR as deprecated and may
+%remove it from \pH in the future.
+%}
 
 \item[\rett{SERVER}] {(\textbf{Unfinished/Experimental}, default: \texttt{OFF})
  This is not yet completed but is mentioned here anyway. There are plans to have
  a client/server model in \pH such that you can have a ,,distant'' radio with a computer
- running piHPDSR connected to that radio, and a ,,local'' computer running \pH, and an
+ running \pH connected to that radio, and a ,,local'' computer running \pH, and an
  internet connection between the two computers. All the time-critical data exchange happens
  between the ,,distant'' radio and the ,,distant'' computer using a straight internet
  cable connection, while the user interface data is exchanged between the two copies of
@@ -7153,7 +7153,7 @@ using the screen and keyboard and mouse from that other computer to control the 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter[Linux: piHPDSR install from sources]{Installation of \pH from the sources (Linux, RaspPi)}
+\chapter[Linux: \pH install from sources]{Installation of \pH from the sources (Linux, RaspPi)}
 \label{sec:installsources}
 \textit{This procedure has been tested on a Pi 4B, with a fresh and plain vanilla operating
 system (32-bit ,,BullsEye'', released May 3rd 2023, Kernel version 6.1) obtained from} \\
@@ -7245,10 +7245,10 @@ To get the release version, you must, after typing in the the command \texttt{cd
 insert the command
 
 \vskip0.2cm
-\grtt{git checkout Rel-2.3}
+\grtt{git checkout Rel-2.4}
 
 \vskip0.2cm
-and this will then switch your local repository to the release version 2.3. No more details on how
+and this will then switch your local repository to the release version 2.4. No more details on how
 to switch between version with the \texttt{git} command can be given in this manual.
 }
 }
@@ -7266,7 +7266,7 @@ libraries such as libgpiod that are missing in the repository, which you can ign
 
 \textbf{\color{red}SoapySDR Note.} The SoapySDR library, and all SoapySDR modules, must be compiled from the sources
 (and the libinstall.sh script does so). The reason is, that SoapySDR in the standard repository
-is quite outdated (version 0.7) while piHPDSR requires a more recent version (0.8) because the
+is quite outdated (version 0.7) while \pH requires a more recent version (0.8) because the
 SoapySDR API has changed from 0.7 to 0.8. The necessity to compile SoapySDR from the sources
 may be dropped in the future, if the libraries in the standard repositiories are all updated
 to the 0.8 API. Use the \grtt{SoapySDRUtil -info} command (see below for a sample output) to
@@ -7314,7 +7314,7 @@ directory at that point).
 But if you make changes (e.g. changing the compile time options as described in
 Appendix \ref{sec:compiletime}, or apply some code modifications)
 and want to re-compile later, this sequence is the safest way to create a new binary,
-namely go to the pihpsdr
+namely go to the \texttt{pihpsdr}
 directory and recompile by executing ``make''.
 
 \begin{figure}[ht]
@@ -7424,13 +7424,13 @@ Found device 0
 
 and this shows that the SoapySDR library has recognised the Pluto. Note then name \texttt{pluto.local}
 is hard-wired into \pH, so if the Pluto shows up with some other name, it is possible that
-\pH must be updated accordingly. There is no way for piHPDSR to connect
+\pH must be updated accordingly. There is no way for \pH to connect
 to a SoapySDR device that has not been recognised by the SoapySDR library. If such a problem arises, this
 stems from missing, corrupt, or outdated SoapySDR libraries which are not part of \pH.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter[MacOS: piHPDSR install from sources]{Installation of \pH from the sources (MacOS)}
+\chapter[MacOS: \pH install from sources]{Installation of \pH from the sources (MacOS)}
 \label{sec:installmacosx}
 
 \textit{This procedure has been tested on several Macintosh models, including a MacBook Air with an
@@ -7440,7 +7440,7 @@ have been used. Very old MacOS systems (e.g. Catalina) are no longer supported b
 \pH on these is still possible but requires (really) advanced skills, so take care to use a Mac with an operating
 system still supported by HomeBrew.}
 
-If you want to run piHPDSR on an Apple Macintosh computer (iMac, Mac Mini, iBook Air, PowerBook), then
+If you want to run \pH on an Apple Macintosh computer (iMac, Mac Mini, iBook Air, PowerBook), then
 you \textit{have to} compile \pH from the sources. Producing a precompiled binary that can be
 distributed and run simply by double-clicking is overly complicated for applications using the GTK
 graphical user interface (as piHSPDR does). But fear not, the procedure is actually very simple because
@@ -7523,14 +7523,14 @@ There is also a ,,release'' version which is the previous version. The ,,release
 behind the current development since new features are not included there. This means that any
 ,,release'' version is stable at least from the end user's view point (bug fixes are still
 occasionally made).
-To get the release version, you must, after typing in the the command \texttt{cd pihpsdr},
+To get the release version, you must, after typing in the the command \grtt{cd pihpsdr},
 insert the command
 
 \vskip0.2cm
-\grtt{git checkout Rel-2.3}
+\grtt{git checkout Rel-2.4}
 
 \vskip0.2cm
-and this will then switch your local repository to the release version 2.3. No more details on how
+and this will then switch your local repository to the release version 2.4. No more details on how
 to switch between version with the \texttt{git} command can be given in this manual.
 }
 }
@@ -7577,7 +7577,7 @@ Compiling \pH then only requires two commands
 \grtt{make app}
 
 and that's it! The first command is even not necessary at this point,
-since you are already in the pihpsdr  directory.
+since you are already in the \texttt{pihpsdr}  directory.
 But if you make changes in the future (e.g. changing the compile time options as described in
 Appendix \ref{sec:compiletime}, or apply some code modifications)
 and want to re-compile later, this sequence of commands is the safest way to create a new binary.
@@ -7700,7 +7700,7 @@ Found device 0
 \end{small}
 
 and this shows that the SoapySDR library has recognised the Pluto.
-There is no way for piHPDSR to connect
+There is no way for \pH to connect
 to a SoapySDR device that has not been recognised by the SoapySDR library. If such a problem arises, this
 stems from missing, corrupt, or outdated SoapySDR libraries which are not part of \pH.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
