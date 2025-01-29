@@ -28,9 +28,22 @@
 #include "new_menu.h"
 #include "radio.h"
 
+enum _containers {
+  GENERAL_CONTAINER = 1,
+  PEAKS_CONTAINER
+};
+
+static int which_container = GENERAL_CONTAINER;
+
+
+static GtkWidget *general_container;
+static GtkWidget *peaks_container;
+
 static GtkWidget *dialog = NULL;
 static GtkWidget *waterfall_high_r = NULL;
 static GtkWidget *waterfall_low_r = NULL;
+static GtkWidget *general_container;
+static GtkWidget *peaks_container;
 
 static void cleanup() {
   if (dialog != NULL) {
@@ -46,6 +59,36 @@ static void cleanup() {
 static gboolean close_cb () {
   cleanup();
   return TRUE;
+}
+
+static void sel_cb(GtkWidget *widget, gpointer data) {
+  //
+  // Handle radio button in the top row, this selects
+  // which sub-menu is active
+  //
+  int c = GPOINTER_TO_INT(data);
+  GtkWidget *my_container;
+
+  switch (c) {
+    case GENERAL_CONTAINER:
+      my_container = general_container;
+      which_container = GENERAL_CONTAINER;
+      break;
+    case PEAKS_CONTAINER:
+      my_container = peaks_container;
+      which_container = PEAKS_CONTAINER;
+      break;
+    default:
+      // We should never come here
+      my_container = NULL;
+      break;
+  }
+
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) {
+    gtk_widget_show(my_container);
+  } else {
+    gtk_widget_hide(my_container);
+  }
 }
 
 static void detector_cb(GtkToggleButton *widget, gpointer data) {
@@ -172,6 +215,12 @@ static void display_panadapter_cb(GtkWidget *widget, gpointer data) {
   radio_reconfigure();
 }
 
+
+//
+// Some symbolic constants used in callbacks
+//
+
+
 void display_menu(GtkWidget *parent) {
   GtkWidget *label;
   dialog = gtk_dialog_new();
@@ -184,18 +233,54 @@ void display_menu(GtkWidget *parent) {
   g_signal_connect (dialog, "destroy", G_CALLBACK (close_cb), NULL);
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
-  // Create a notebook with two tabs
-  GtkWidget *notebook = gtk_notebook_new();
-  gtk_container_add(GTK_CONTAINER(content), notebook);
+  GtkWidget *grid = gtk_grid_new();
+  gtk_grid_set_column_spacing(GTK_GRID(grid), 10);
+  //gtk_grid_set_row_homogeneous(GTK_GRID(grid), TRUE);
+  gtk_container_add(GTK_CONTAINER(content), grid);
 
-  // Create the "General" tab
+  int row = 0;
+  int col = 0;
+
+  GtkWidget *btn;
+  GtkWidget *mbtn; // main button for radio buttons
+
+  btn = gtk_button_new_with_label("Close");
+  gtk_widget_set_name(btn, "close_button");
+  g_signal_connect(btn, "button-press-event", G_CALLBACK(close_cb), NULL);
+  gtk_grid_attach(GTK_GRID(grid), btn, col, row, 1, 1);
+
+  //
+  // Must init the containers here since setting the buttons emits
+  // a signal leading to show/hide commands
+  //
+  general_container = gtk_fixed_new();
+  peaks_container = gtk_fixed_new();
+
+  col++;
+  mbtn = gtk_radio_button_new_with_label_from_widget(NULL, "General Settings");
+  gtk_widget_set_name(mbtn, "boldlabel");
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(mbtn), (which_container == GENERAL_CONTAINER));
+  gtk_grid_attach(GTK_GRID(grid), mbtn, col, row, 1, 1);
+  g_signal_connect(mbtn, "toggled", G_CALLBACK(sel_cb), GINT_TO_POINTER(GENERAL_CONTAINER));
+
+  col++;
+  btn = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(mbtn), "Peaks Settings");
+  gtk_widget_set_name(btn, "boldlabel");
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn), (which_container == PEAKS_CONTAINER));
+  gtk_grid_attach(GTK_GRID(grid), btn, col, row, 1, 1);
+  g_signal_connect(btn, "toggled", G_CALLBACK(sel_cb), GINT_TO_POINTER(PEAKS_CONTAINER));
+
+  //
+  // General container and controls therein
+  //
+  gtk_grid_attach(GTK_GRID(grid), general_container, 0, 1, 4, 1);
   GtkWidget *general_grid = gtk_grid_new();
   gtk_grid_set_column_spacing(GTK_GRID(general_grid), 10);
   gtk_grid_set_row_homogeneous(GTK_GRID(general_grid), TRUE);
-  gtk_notebook_append_page(GTK_NOTEBOOK(notebook), general_grid, gtk_label_new("General"));
+  gtk_container_add(GTK_CONTAINER(general_container), general_grid);
 
-  int col = 0;
-  int row = 0;
+  col = 0;
+  row = 0;
   GtkWidget *close_b = gtk_button_new_with_label("Close");
   gtk_widget_set_name(close_b, "close_button");
   g_signal_connect (close_b, "button-press-event", G_CALLBACK(close_cb), NULL);
@@ -379,11 +464,16 @@ void display_menu(GtkWidget *parent) {
   g_signal_connect(b_display_panadapter, "toggled", G_CALLBACK(display_panadapter_cb), NULL);
   GtkWidget *b_display_waterfall = gtk_check_button_new_with_label("Display Waterfall"); gtk_widget_set_name (b_display_waterfall, "boldlabel"); gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (b_display_waterfall), active_receiver->display_waterfall); gtk_widget_show(b_display_waterfall); gtk_grid_attach(GTK_GRID(general_grid), b_display_waterfall, col, ++row, 1, 1); g_signal_connect(b_display_waterfall, "toggled", G_CALLBACK(display_waterfall_cb), NULL);
 
-  // Create the "Peaks" tab
+
+  //
+  // Peaks container and controls therein
+  //
+  gtk_grid_attach(GTK_GRID(grid), peaks_container, 0, 1, 4, 1);
   GtkWidget *peaks_grid = gtk_grid_new();
   gtk_grid_set_column_spacing(GTK_GRID(peaks_grid), 10);
   gtk_grid_set_row_homogeneous(GTK_GRID(peaks_grid), TRUE);
-  gtk_notebook_append_page(GTK_NOTEBOOK(notebook), peaks_grid, gtk_label_new("Peaks"));
+  gtk_container_add(GTK_CONTAINER(peaks_container), peaks_grid);
+
   col = 0;
   row = 0;
   GtkWidget *b_pan_peaks_in_passband = gtk_check_button_new_with_label("Show Peaks in Passband Only");
@@ -438,13 +528,30 @@ void display_menu(GtkWidget *parent) {
   g_signal_connect(panadapter_ignore_noise_percentile_r, "value_changed", G_CALLBACK(panadapter_ignore_noise_percentile_value_changed_cb), NULL);
   row++;
 
+
+
   sub_menu = dialog;
 
-  if (active_receiver->waterfall_automatic)
-  {
+  if (active_receiver->waterfall_automatic) {
     gtk_widget_set_sensitive(waterfall_high_r, FALSE);
     gtk_widget_set_sensitive(waterfall_low_r, FALSE);
   }
 
   gtk_widget_show_all(dialog);
+
+    // Only show one of the General, Peaks containers
+  // This is the General container upon first invocation of the Display menu,
+  // but subsequent Display menu openings will show the container that
+  // was active when leaving this menu before.
+  //
+  switch (which_container) {
+    case GENERAL_CONTAINER:
+      gtk_widget_hide(peaks_container);
+      break;
+    case PEAKS_CONTAINER:
+      gtk_widget_hide(general_container);
+      break;
+  }
+
 }
+
