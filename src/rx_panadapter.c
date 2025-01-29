@@ -504,14 +504,26 @@ void rx_panadapter_update(RECEIVER *rx) {
     }
   #endif
   */
-    int num_peaks = 2;
-  gboolean peaks_in_passband = TRUE; // Detect peaks in filter passband
-  gboolean hide_noise = TRUE;        // Ignore peaks below noise level
-  double noise_percentile = 50.0;    // Percentile for noise level
-  int ignore_range_divider = 16; // Divider to calculate the ignore range
+  int num_peaks = rx->panadapter_num_peaks;
+  gboolean peaks_in_passband = TRUE;
+  if(rx->panadapter_peaks_in_passband_filled != 1) {
+    peaks_in_passband = FALSE;
+  }
+  gboolean hide_noise = TRUE;
+  if(rx->panadapter_hide_noise_filled != 1) {
+    hide_noise = FALSE;
+  }
+  double noise_percentile = (double)rx->panadapter_ignore_noise_percentile;
+  int ignore_range_divider = rx->panadapter_ignore_range_divider;
   int ignore_range = (mywidth + ignore_range_divider - 1) / ignore_range_divider; // Round up
-  double peaks[2] = {-200.0, -200.0};
-  int peak_positions[2] = {0, 0};
+
+  double peaks[num_peaks]; // = {-200.0, -200.0};
+  int peak_positions[num_peaks];
+  for(int a=0;a<num_peaks;a++){
+    peaks[a] = -200;
+    peak_positions[a] = 0;
+  }
+
 
   // Dynamically allocate a copy of samples for sorting
   double *sorted_samples = malloc(mywidth * sizeof(double));
@@ -596,7 +608,7 @@ void rx_panadapter_update(RECEIVER *rx) {
   //    if (peak_positions[j] > 0) {
   //        printf("Peak %d: Level = %.2f dBm, Position = %d\n", j + 1, peaks[j], peak_positions[j]);
   //    }
- //}
+// }
 
 
 
@@ -606,14 +618,20 @@ void rx_panadapter_update(RECEIVER *rx) {
   cairo_select_font_face(cr, DISPLAY_FONT_FACE, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
   cairo_set_font_size(cr, DISPLAY_FONT_SIZE2);
 
-    for (int j = 0; j < num_peaks; j++) {
+  double previous_text_positions[num_peaks][2]; // Store previous text positions (x, y)
+  for (int j = 0; j < num_peaks; j++) {
+      previous_text_positions[j][0] = -1; // Initialize x positions
+      previous_text_positions[j][1] = -1; // Initialize y positions
+  }
+
+  for (int j = 0; j < num_peaks; j++) {
       if (peak_positions[j] > 0) {
           char peak_label[32];
           snprintf(peak_label, sizeof(peak_label), "%.1f dBm", peaks[j]);
           cairo_text_extents_t extents;
           cairo_text_extents(cr, peak_label, &extents);
 
-          // Calculate text position: slightly above the peak
+          // Calculate initial text position: slightly above the peak
           double text_x = peak_positions[j];
           double text_y = floor((rx->panadapter_high - peaks[j]) 
                                 * (double)myheight 
@@ -624,9 +642,40 @@ void rx_panadapter_update(RECEIVER *rx) {
               text_y = extents.height; // Push text down to fit inside the top boundary
           }
 
+          // Adjust position to avoid overlap with previous labels
+          for (int k = 0; k < j; k++) {
+              double prev_x = previous_text_positions[k][0];
+              double prev_y = previous_text_positions[k][1];
+
+              if (prev_x >= 0 && prev_y >= 0) {
+                  double distance_x = fabs(text_x - prev_x);
+                  double distance_y = fabs(text_y - prev_y);
+
+                  if (distance_y < extents.height && distance_x < extents.width) {
+                      // Try moving vertically first
+                      if (text_y + extents.height < myheight) {
+                          text_y += extents.height + 5; // Move below
+                      } else if (text_y - extents.height > 0) {
+                          text_y -= extents.height + 5; // Move above
+                      } else {
+                          // Move horizontally if no vertical space is available
+                          if (text_x + extents.width < mywidth) {
+                              text_x += extents.width + 5; // Move right
+                          } else if (text_x - extents.width > 0) {
+                              text_x -= extents.width + 5; // Move left
+                          }
+                      }
+                  }
+              }
+          }
+
           // Draw text
           cairo_move_to(cr, text_x - (extents.width / 2.0), text_y);
           cairo_show_text(cr, peak_label);
+
+          // Store current text position for overlap checks
+          previous_text_positions[j][0] = text_x;
+          previous_text_positions[j][1] = text_y;
       }
   }
 

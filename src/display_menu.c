@@ -105,6 +105,14 @@ static void filled_cb(GtkWidget *widget, gpointer data) {
   active_receiver->display_filled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 }
 
+static void panadapter_hide_noise_filled_cb(GtkWidget *widget, gpointer data) {
+  active_receiver->panadapter_hide_noise_filled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+}
+
+static void panadapter_peaks_in_passband_filled_cb(GtkWidget *widget, gpointer data) {
+  active_receiver->panadapter_peaks_in_passband_filled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+}
+
 static void gradient_cb(GtkWidget *widget, gpointer data) {
   active_receiver->display_gradient = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 }
@@ -124,6 +132,19 @@ static void panadapter_low_value_changed_cb(GtkWidget *widget, gpointer data) {
 
 static void panadapter_step_value_changed_cb(GtkWidget *widget, gpointer data) {
   active_receiver->panadapter_step = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+}
+
+static void panadapter_num_peaks_value_changed_cb(GtkWidget *widget, gpointer data) {
+  active_receiver->panadapter_num_peaks = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+  printf("New peaks no %d",active_receiver->panadapter_num_peaks);
+}
+
+static void panadapter_ignore_range_divider_value_changed_cb(GtkWidget *widget, gpointer data) {
+  active_receiver->panadapter_ignore_range_divider = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+}
+
+static void panadapter_ignore_noise_percentile_value_changed_cb(GtkWidget *widget, gpointer data) {
+  active_receiver->panadapter_ignore_noise_percentile = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
 }
 
 static void waterfall_high_value_changed_cb(GtkWidget *widget, gpointer data) {
@@ -346,14 +367,78 @@ void display_menu(GtkWidget *parent) {
   gtk_widget_set_name (b_display_panadapter, "boldlabel");
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (b_display_panadapter), active_receiver->display_panadapter);
   gtk_widget_show(b_display_panadapter);
+  //gtk_grid_attach(GTK_GRID(grid), b_display_panadapter, col, row, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), b_display_panadapter, col, row, 1, 1);
   g_signal_connect(b_display_panadapter, "toggled", G_CALLBACK(display_panadapter_cb), NULL);
   GtkWidget *b_display_waterfall = gtk_check_button_new_with_label("Display Waterfall");
   gtk_widget_set_name (b_display_waterfall, "boldlabel");
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (b_display_waterfall), active_receiver->display_waterfall);
   gtk_widget_show(b_display_waterfall);
-  gtk_grid_attach(GTK_GRID(grid), b_display_waterfall, col + 1, row, 1, 1);
+  //gtk_grid_attach(GTK_GRID(grid), b_display_waterfall, col + 1, row, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), b_display_waterfall, col, ++row, 1, 1);
+  //gtk_grid_attach(GTK_GRID(grid), b_display_waterfall, col + 1, row + 1, 1, 1);
   g_signal_connect(b_display_waterfall, "toggled", G_CALLBACK(display_waterfall_cb), NULL);
+
+  GtkWidget *b_pan_peaks_in_passband = gtk_check_button_new_with_label("Show Peaks in Passband Only");
+  gtk_widget_set_name (b_pan_peaks_in_passband, "boldlabel");
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (b_pan_peaks_in_passband), active_receiver->panadapter_peaks_in_passband_filled);
+  gtk_widget_show(b_pan_peaks_in_passband);
+  //gtk_grid_attach(GTK_GRID(grid), b_pan_peaks_in_passband, col + 3, row, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), b_pan_peaks_in_passband, col, ++row, 1, 1);
+  //gtk_grid_attach(GTK_GRID(grid), b_pan_peaks_in_passband, col + 2, row, 1, 1);
+  g_signal_connect(b_pan_peaks_in_passband, "toggled", G_CALLBACK(panadapter_peaks_in_passband_filled_cb), NULL);
+
+  GtkWidget *b_pan_hide_noise = gtk_check_button_new_with_label("Hide Peaks Below Noise Floor");
+  gtk_widget_set_name (b_pan_hide_noise, "boldlabel");
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (b_pan_hide_noise), active_receiver->panadapter_hide_noise_filled);
+  gtk_widget_show(b_pan_hide_noise);
+  //gtk_grid_attach(GTK_GRID(grid), b_pan_hide_noise, col + 3, row, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), b_pan_hide_noise, col, ++row, 1, 1);
+  //gtk_grid_attach(GTK_GRID(grid), b_pan_hide_noise, col + 2, row + 1, 1, 1);
+  g_signal_connect(b_pan_hide_noise, "toggled", G_CALLBACK(panadapter_hide_noise_filled_cb), NULL);
+
+  col = 2;
+  label = gtk_label_new("Panadapter Peaks:");
+  gtk_widget_set_name (label, "boldlabel");
+  gtk_widget_set_halign(label, GTK_ALIGN_END);
+  gtk_grid_attach(GTK_GRID(grid), label, col, ++row, 1, 1);
+  col++;
+  GtkWidget *panadapter_num_peaks_r = gtk_spin_button_new_with_range(1.0, 10.0, 1.0);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(panadapter_num_peaks_r), (double)active_receiver->panadapter_num_peaks);
+  gtk_widget_show(panadapter_num_peaks_r);
+  //gtk_grid_attach(GTK_GRID(grid), panadapter_num_peaks_r, col, row, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), panadapter_num_peaks_r, col, row, 1, 1);
+  //gtk_grid_attach(GTK_GRID(grid), panadapter_num_peaks_r, col + 3, row, 1, 1);
+  g_signal_connect(panadapter_num_peaks_r, "value_changed", G_CALLBACK(panadapter_num_peaks_value_changed_cb), NULL);
+  row++;
+
+  col = 2;
+  label = gtk_label_new("Panadapter Ignore Adjacent Peaks:");
+  gtk_widget_set_name (label, "boldlabel");
+  gtk_widget_set_halign(label, GTK_ALIGN_END);
+  gtk_grid_attach(GTK_GRID(grid), label, col, row, 1, 1);
+  col++;
+  GtkWidget *panadapter_ignore_range_divider_r = gtk_spin_button_new_with_range(1.0, 150.0, 1.0);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(panadapter_ignore_range_divider_r), (double)active_receiver->panadapter_ignore_range_divider);
+  gtk_widget_show(panadapter_ignore_range_divider_r);
+  gtk_grid_attach(GTK_GRID(grid), panadapter_ignore_range_divider_r, col, row, 1, 1);
+  //gtk_grid_attach(GTK_GRID(grid), panadapter_ignore_range_divider_r, col + 3, row + 1, 1, 1);
+  g_signal_connect(panadapter_ignore_range_divider_r, "value_changed", G_CALLBACK(panadapter_ignore_range_divider_value_changed_cb), NULL);
+  row++;
+
+  col = 2;
+  label = gtk_label_new("Panadapter Noise Floor Percentile:");
+  gtk_widget_set_name (label, "boldlabel");
+  gtk_widget_set_halign(label, GTK_ALIGN_END);
+  gtk_grid_attach(GTK_GRID(grid), label, col, row, 1, 1);
+  col++;
+  GtkWidget *panadapter_ignore_noise_percentile_r = gtk_spin_button_new_with_range(1.0, 100.0, 1.0);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(panadapter_ignore_noise_percentile_r), (double)active_receiver->panadapter_ignore_noise_percentile);
+  gtk_widget_show(panadapter_ignore_noise_percentile_r);
+  gtk_grid_attach(GTK_GRID(grid), panadapter_ignore_noise_percentile_r, col, row, 1, 1);
+  g_signal_connect(panadapter_ignore_noise_percentile_r, "value_changed", G_CALLBACK(panadapter_ignore_noise_percentile_value_changed_cb), NULL);
+  row++;
+
   gtk_container_add(GTK_CONTAINER(content), grid);
   sub_menu = dialog;
 
