@@ -78,7 +78,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////////////
 
-char *cssfont[] = {"FreeSans","Roboto Mono", "Open Sans", "Piboto" };
+char *cssfont[] = {"FreeSans", "Roboto Mono", "Open Sans", "Piboto" };
 
 const int num_css_fonts = sizeof(cssfont) / sizeof(char *);
 int which_css_font = 0;
@@ -191,16 +191,16 @@ void load_font(int font) {
   int rc;
 
   if (font < 0) { font = 0; }
-  if (font >= num_css_fonts) { font = num_css_fonts -1; }
-  which_css_font = font;
 
+  if (font >= num_css_fonts) { font = num_css_fonts - 1; }
+
+  which_css_font = font;
   provider = gtk_css_provider_new ();
   display = gdk_display_get_default ();
   screen = gdk_display_get_default_screen (display);
   gtk_style_context_add_provider_for_screen (screen,
       GTK_STYLE_PROVIDER(provider),
       GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-
   error = NULL;
   snprintf(str, sizeof(str), "  * { font-family: %s; }\n", cssfont[which_css_font]);
   rc = gtk_css_provider_load_from_data(provider, str, -1, &error);
@@ -227,7 +227,6 @@ void load_css() {
   GdkScreen *screen;
   GError *error;
   int rc;
-
   provider = gtk_css_provider_new ();
   display = gdk_display_get_default ();
   screen = gdk_display_get_default_screen (display);

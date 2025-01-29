@@ -333,6 +333,7 @@ void rx_menu(GtkWidget *parent) {
     gtk_grid_attach(GTK_GRID(grid), mute_radio_b, 2, row, 1, 1);
     g_signal_connect(mute_radio_b, "toggled", G_CALLBACK(mute_radio_cb), NULL);
   }
+
   row++;
 
   if (filter_board == ALEX) {

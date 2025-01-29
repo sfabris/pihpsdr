@@ -336,7 +336,6 @@ static void activate_pihpsdr(GtkApplication *app, gpointer data) {
   // becomes active if the radio is started
   //
   load_font(0);
-
   GdkDisplay *display = gdk_display_get_default();
 
   if (display == NULL) {
@@ -499,18 +498,20 @@ int main(int argc, char **argv) {
   GtkApplication *pihpsdr;
   int rc;
   char name[1024];
+
   //
   // If invoked with -V, print version and FPGA firmware compatibility information
   //
-  if (argc >= 2 && !strcmp("-V",argv[1])) {
-    fprintf(stderr,"piHPSDR version and commit: %s, %s; built %s\n", build_version,build_commit,build_date);
-    fprintf(stderr,"Compile-time options      : %sAudioModule=%s\n", build_options,build_audio);
+  if (argc >= 2 && !strcmp("-V", argv[1])) {
+    fprintf(stderr, "piHPSDR version and commit: %s, %s; built %s\n", build_version, build_commit, build_date);
+    fprintf(stderr, "Compile-time options      : %sAudioModule=%s\n", build_options, build_audio);
 #ifdef SATURN
-    fprintf(stderr,"SATURN min:max minor FPGA : %d:%d\n", saturn_minor_version_min(),saturn_minor_version_max());
-    fprintf(stderr,"SATURN min:max major FPGA : %d:%d\n", saturn_major_version_min(),saturn_major_version_max());
+    fprintf(stderr, "SATURN min:max minor FPGA : %d:%d\n", saturn_minor_version_min(), saturn_minor_version_max());
+    fprintf(stderr, "SATURN min:max major FPGA : %d:%d\n", saturn_major_version_min(), saturn_major_version_max());
 #endif
     exit(0);
   }
+
   //
   // The following call will most likely fail (until this program
   // has the privileges to reduce the nice value). But if the

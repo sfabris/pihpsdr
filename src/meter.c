@@ -446,6 +446,7 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
       snprintf(sf, 32, "SWR %1.1f:1", swr);
       cairo_move_to(cr, cx - 40, cx - radius + 28);
       cairo_show_text(cr, sf);
+
       if (!cwmode) {
         cairo_set_source_rgba(cr, COLOUR_METER);
         snprintf(sf, 32, "ALC %2.1f dB", max_alc);
@@ -564,7 +565,7 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
         cairo_set_line_width(cr, PAN_LINE_THICK);
         cairo_set_source_rgba(cr, COLOUR_METER);
 
-        for (i = 0; i < 54; i+=6) {
+        for (i = 0; i < 54; i += 6) {
           cairo_move_to(cr, 5 + i, Y4 - 10);
 
           if (i % 18 == 0) {
@@ -691,6 +692,7 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
         snprintf(sf, 32, "SWR %1.1f:1", swr);
         cairo_move_to(cr, METER_WIDTH / 2, Y2);
         cairo_show_text(cr, sf);
+
         if (!cwmode) {
           cairo_select_font_face(cr, DISPLAY_FONT_FACE, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
           cairo_set_font_size(cr, DISPLAY_FONT_SIZE2);

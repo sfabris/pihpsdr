@@ -32,7 +32,7 @@
 #include "rigctl_menu.h"
 #include "rigctl.h"
 #ifdef TCI
-#include "tci.h"
+  #include "tci.h"
 #endif
 #include "vfo.h"
 
@@ -75,6 +75,7 @@ static void rigctl_debug_cb(GtkWidget *widget, gpointer data) {
 #ifdef TCI
 static void tci_enable_cb(GtkWidget *widget, gpointer data) {
   tci_enable = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+
   if (tci_enable) {
     launch_tci();
   } else {
@@ -88,12 +89,12 @@ static void tci_port_changed_cb(GtkWidget *widget, gpointer data) {
   tci_port = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
 
   if (tci_enable) { launch_tci(); }
-
 }
 
 static void tci_txonly_changed_cb(GtkWidget *widget, gpointer data) {
   tci_txonly = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 }
+
 #endif
 
 static void rigctl_tcp_enable_cb(GtkWidget *widget, gpointer data) {
@@ -113,6 +114,7 @@ static void rigctl_tcp_enable_cb(GtkWidget *widget, gpointer data) {
 static void serial_port_cb(GtkWidget *widget, gpointer data) {
   int id = GPOINTER_TO_INT(data);
   const char *cp = gtk_entry_get_text(GTK_ENTRY(widget));
+
   //
   // If the serial port is already running, do not allow changes.
   //
@@ -120,7 +122,7 @@ static void serial_port_cb(GtkWidget *widget, gpointer data) {
   // and if the same port name is used, do not allow changes
   //
   if (SerialPorts[id].enable ||
-     (SerialPorts[MAX_SERIAL-1].g2 && !strcmp(SerialPorts[MAX_SERIAL-1].port, cp))) {
+      (SerialPorts[MAX_SERIAL - 1].g2 && !strcmp(SerialPorts[MAX_SERIAL - 1].port, cp))) {
     gtk_entry_set_text(GTK_ENTRY(widget), SerialPorts[id].port);
   } else {
     snprintf(SerialPorts[id].port, sizeof(SerialPorts[id].port), "%s", cp);
@@ -249,7 +251,6 @@ void rigctl_menu(GtkWidget *parent) {
   gtk_widget_set_name(w, "close_button");
   g_signal_connect (w, "button-press-event", G_CALLBACK(close_cb), NULL);
   gtk_grid_attach(GTK_GRID(grid), w, 0, row, 2, 1);
-
 #ifdef TCI
   w = gtk_check_button_new_with_label("Enable CAT/TCI Debug Logging");
 #else
@@ -259,12 +260,10 @@ void rigctl_menu(GtkWidget *parent) {
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (w), rigctl_debug);
   gtk_grid_attach(GTK_GRID(grid), w, 4, row, 4, 1);
   g_signal_connect(w, "toggled", G_CALLBACK(rigctl_debug_cb), NULL);
-
   row++;
   w = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
   gtk_widget_set_size_request(w, -1, 3);
   gtk_grid_attach(GTK_GRID(grid), w, 0, row, 7, 1);
-
   row++;
   w = gtk_label_new("TCP");
   gtk_widget_set_name(w, "boldlabel");
@@ -295,7 +294,6 @@ void rigctl_menu(GtkWidget *parent) {
   for (int i = 0; i < MAX_SERIAL; i++) {
     char str[64];
     row++;
-
     //
     // If this serial port is used internally in a G2 simply state port name
     //
@@ -304,6 +302,7 @@ void rigctl_menu(GtkWidget *parent) {
     gtk_widget_set_name(w, "boldlabel");
     gtk_widget_set_halign(w, GTK_ALIGN_END);
     gtk_grid_attach(GTK_GRID(grid), w, 0, row, 1, 1);
+
     //
     // If this serial port is used internally in a G2 simply state port name
     //
@@ -360,7 +359,7 @@ void rigctl_menu(GtkWidget *parent) {
       // If it is not enabled, this means the initial launch_serial() failed.
       //
       snprintf (str, 64, "%s %s for G2-internal communication", SerialPorts[i].port,
-                 SerialPorts[i].enable ? "used" : "failed");
+                SerialPorts[i].enable ? "used" : "failed");
       w = gtk_label_new(str);
       gtk_widget_set_name(w, "boldlabel");
       gtk_widget_set_halign(w, GTK_ALIGN_START);
@@ -395,7 +394,6 @@ void rigctl_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(grid), w, 5, row, 3, 1);
   g_signal_connect(w, "toggled", G_CALLBACK(tci_txonly_changed_cb), NULL);
 #endif
-
   gtk_container_add(GTK_CONTAINER(content), grid);
   sub_menu = dialog;
   gtk_widget_show_all(dialog);

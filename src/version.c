@@ -31,7 +31,7 @@ char build_options[] =
   "SATURN "
 #endif
 #ifdef TCI
- "TCI "
+  "TCI "
 #endif
 #ifdef USBOZY
   "USBOZY "

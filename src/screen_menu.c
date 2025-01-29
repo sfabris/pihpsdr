@@ -200,9 +200,11 @@ void screen_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(grid), label, col, row, 1, 1);
   col++;
   button = gtk_combo_box_text_new();
+
   for (int i = 0; i < num_css_fonts; i++) {
     gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(button), NULL, cssfont[i]);
   }
+
   gtk_combo_box_set_active(GTK_COMBO_BOX(button), which_css_font);
   my_combo_attach(GTK_GRID(grid), button, col, row, 2, 1);
   g_signal_connect(button, "changed", G_CALLBACK(font_cb), NULL);

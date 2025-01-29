@@ -1043,7 +1043,7 @@ static long long channel_freq(int chan) {
   // Radios (especially with small FPGAs) may use RX1/RX2 for feedback while transmitting,
   //
   if (radio_is_transmitting() && transmitter->puresignal && (chan == rx_feedback_channel()
-  || chan == tx_feedback_channel())) {
+      || chan == tx_feedback_channel())) {
     vfonum = -1;
   }
 
@@ -1173,23 +1173,24 @@ static void process_control_bytes() {
   previous_ptt = radio_ptt;
   radio_ptt  = (control_in[0]     ) & 0x01;
 
-  if (previous_ptt != radio_ptt) { 
+  if (previous_ptt != radio_ptt) {
     int m = vfo_get_tx_mode();
+
     if (radio_ptt || m == modeCWU || m == modeCWL) {
-      // 
+      //
       // If "PTT on" comes from the radio, or we are doing CW: go TX without delay
       // We need a timeout_add here because sometimes there is a "spike" on the
       // PTT line and we have to guarantee that the mox_update that is scheduled
       // first will be executed first.
       //
-      g_timeout_add(5,ext_mox_update, GINT_TO_POINTER(radio_ptt));
+      g_timeout_add(5, ext_mox_update, GINT_TO_POINTER(radio_ptt));
     } else {
       //
-      // If "PTT off" comes from the radio and no CW: 
+      // If "PTT off" comes from the radio and no CW:
       // delay the TX/RX transistion a little bit to avoid
       // clipping the last bits of the TX signal
       //
-      g_timeout_add(50,ext_mox_update, GINT_TO_POINTER(radio_ptt));
+      g_timeout_add(50, ext_mox_update, GINT_TO_POINTER(radio_ptt));
     }
   }
 
@@ -1208,10 +1209,10 @@ static void process_control_bytes() {
     // to the IOB query.
     //
     if (addr == 0x3D && control_in[1] == 0xF1
-    && control_in[2] == 0xF1
-    && control_in[3] == 0xF1
-    && control_in[4] == 0xF1
-                                         && !hl2_iob_present) {
+        && control_in[2] == 0xF1
+        && control_in[3] == 0xF1
+        && control_in[4] == 0xF1
+        && !hl2_iob_present) {
       t_print("HL2IOB: board detected\n");
       hl2_iob_present = 1;
     }

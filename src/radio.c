@@ -336,12 +336,12 @@ typedef struct {
 } SaturnSerialPort;
 
 static SaturnSerialPort SaturnSerialPortsList[] = {
-   {"/dev/serial/by-id/g2-front-9600", B9600, 9600},
-   {"/dev/serial/by-id/g2-front-115200", B115200, 115200},
-   {"/dev/ttyAMA1", B9600, 9600},
-   {"/dev/ttyS3", B9600, 9600},
-   {"/dev/ttyS7", B115200, 115200},
-   {NULL, 0, 0}
+  {"/dev/serial/by-id/g2-front-9600", B9600, 9600},
+  {"/dev/serial/by-id/g2-front-115200", B115200, 115200},
+  {"/dev/ttyAMA1", B9600, 9600},
+  {"/dev/ttyS3", B9600, 9600},
+  {"/dev/ttyS7", B115200, 115200},
+  {NULL, 0, 0}
 };
 
 static void radio_restore_state();
@@ -859,9 +859,9 @@ static void radio_create_visual() {
       if (protocol == NEW_PROTOCOL || protocol == ORIGINAL_PROTOCOL) {
         tx_ps_set_sample_rate(transmitter, protocol == NEW_PROTOCOL ? 192000 : active_receiver->sample_rate);
         receiver[PS_TX_FEEDBACK] = rx_create_pure_signal_receiver(PS_TX_FEEDBACK,
-        protocol == ORIGINAL_PROTOCOL ? active_receiver->sample_rate : 192000, my_width, transmitter->fps);
+                                   protocol == ORIGINAL_PROTOCOL ? active_receiver->sample_rate : 192000, my_width, transmitter->fps);
         receiver[PS_RX_FEEDBACK] = rx_create_pure_signal_receiver(PS_RX_FEEDBACK,
-        protocol == ORIGINAL_PROTOCOL ? active_receiver->sample_rate : 192000, my_width, transmitter->fps);
+                                   protocol == ORIGINAL_PROTOCOL ? active_receiver->sample_rate : 192000, my_width, transmitter->fps);
 
         //
         // If the pk value is slightly too large, this does no harm, but
@@ -1045,6 +1045,7 @@ void radio_start_radio() {
   if (have_saturn_xdma) {
     for (SaturnSerialPort *ChkSerial = SaturnSerialPortsList; ChkSerial->port != NULL; ChkSerial++) {
       char *cp = realpath(ChkSerial->port, NULL);
+
       if (cp != NULL) {
         SerialPorts[MAX_SERIAL - 1].enable = 1;
         SerialPorts[MAX_SERIAL - 1].andromeda = 1;
@@ -1503,11 +1504,12 @@ void radio_start_radio() {
   radio_change_region(region);
   radio_create_visual();
   radio_reconfigure_screen();
-
 #ifdef TCI
+
   if (tci_enable) {
     launch_tci();
   }
+
 #endif
 
   if (rigctl_tcp_enable) {
@@ -1549,6 +1551,7 @@ void radio_start_radio() {
     soapy_protocol_set_rx_antenna(rx, adc[0].antenna);
     soapy_protocol_set_rx_frequency(rx, VFO_A);
     soapy_protocol_set_automatic_gain(rx, adc[0].agc);
+
     if (!adc[0].agc) { soapy_protocol_set_gain(rx); }
 
     if (vfo[0].ctun) {
@@ -1816,7 +1819,7 @@ static void rxtx(int state) {
       int do_silence = 0;
 
       if (device == DEVICE_HERMES_LITE2 || device == DEVICE_HERMES_LITE ||
-      device == DEVICE_HERMES || device == DEVICE_STEMLAB || device == DEVICE_STEMLAB_Z20) {
+          device == DEVICE_HERMES || device == DEVICE_STEMLAB || device == DEVICE_STEMLAB_Z20) {
         //
         // These systems get a significant "tail" of the RX feedback signal into the RX after TX/RX,
         // leading to AGC pumping. The problem is most severe if there is a carrier until the end of
@@ -2125,8 +2128,8 @@ void radio_set_tune(int state) {
         //
         tx_ps_resume(transmitter);
       }
-      tx_set_compressor(transmitter);
 
+      tx_set_compressor(transmitter);
       tune = state;
       radio_calc_drive_level();
     }

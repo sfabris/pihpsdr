@@ -183,7 +183,6 @@ void shutdown_tcp_rigctl() {
     tcp_client[id].running = 0;
 
     if (tcp_client[id].fd != -1) {
-
       if (setsockopt(tcp_client[id].fd, SOL_SOCKET, SO_LINGER, (const char *)&linger, sizeof(linger)) == -1) {
         t_perror("setsockopt(...,SO_LINGER,...) failed for client:");
       }
@@ -203,7 +202,6 @@ void shutdown_tcp_rigctl() {
   // Close server socket
   //
   if (server_socket >= 0) {
-
     if (setsockopt(server_socket, SOL_SOCKET, SO_LINGER, (const char *)&linger, sizeof(linger)) == -1) {
       t_perror("setsockopt(...,SO_LINGER,...) failed for server:");
     }
@@ -212,6 +210,7 @@ void shutdown_tcp_rigctl() {
     close(server_socket);
     server_socket = -1;
   }
+
   // TODO: join with the server thread, but this requires to make the accept() there
   //       non-blocking (use select())
 }
@@ -1001,6 +1000,7 @@ static gboolean andromeda_handler(gpointer data) {
         break;
 
       case 4:
+
         // According to the ANAN document this is LED #5
         if (can_transmit) {
           new = transmitter->puresignal;
@@ -1106,7 +1106,6 @@ static gboolean andromeda_oneshot_handler(gpointer data) {
   // "immediate" LED update is desired.
   //
   (void) andromeda_handler(data);
-
   return G_SOURCE_REMOVE;
 }
 
@@ -3401,7 +3400,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //NOTE      y=0-9 is the number of ticks
       //NOTE
       //ENDDEF
-
       if (command[7] == ';') {
         int v, p;
         p = 10 * (command[4] - '0') + (command[5] - '0');
@@ -3460,7 +3458,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //NOTE      pressed(y=1) or pressed for a longer time (y=2).
       //ENDDEF
       if (command[7] == ';') {
-        int p = 10*(command[4] - '0') + (command[5] - '0');
+        int p = 10 * (command[4] - '0') + (command[5] - '0');
         int v = (command[6] - '0');
 
         //
@@ -3489,21 +3487,21 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         if (client->andromeda_type == 1) {
           client->shift = andromeda_execute_button(v, p);
         } else {
-
           //
           // "generic" ANDROMDA push-button section
           //
-
           int tr01, tr10, tr12, tr20;
-
           tr01 = 0;  // indicates a v=0 --> v=1 transision
           tr12 = 0;  // indicates a v=1 --> v=2 transision
           tr10 = 0;  // indicates a v=1 --> v=0 transision
           tr20 = 0;  // indicates a v=2 --> v=0 transision
 
           if (client->last_v == 0 && v == 1) { tr01 = 1; }
+
           if (client->last_v == 1 && v == 2) { tr12 = 1; }
+
           if (client->last_v == 1 && v == 0) { tr10 = 1; }
+
           if (client->last_v == 2 && v == 0) { tr20 = 1; }
 
           client->last_v = v;
@@ -3520,6 +3518,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
             g2panel_execute_button(client->andromeda_type, client->buttonvec, p, tr01, tr10, tr12, tr20);
           }
         }
+
         //
         // Schedule LED update, in case the state has changed
         //
@@ -3558,10 +3557,13 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
           // Initialize commands.
           //
           if (client->buttonvec) { g_free(client->buttonvec); }
+
           if (client->encodervec) { g_free(client->encodervec); }
+
           client->buttonvec  = g2panel_default_buttons(client->andromeda_type);
           client->encodervec = g2panel_default_encoders(client->andromeda_type);
           g2panelRestoreState(client->andromeda_type, client->buttonvec, client->encodervec);
+
           //
           // This takes care the G2panel menu is shown in the main menu
           //
@@ -4878,7 +4880,7 @@ int parse_cmd(void *data) {
       //ENDDEF
       if (command[2] == ';') {
         snprintf(reply, 256, "SA%d%d%d%d%d%d%dSAT     ;", (sat_mode == SAT_MODE) || (sat_mode == RSAT_MODE), 0, 0, 0,
-        sat_mode == SAT_MODE, sat_mode == RSAT_MODE, 0);
+                 sat_mode == SAT_MODE, sat_mode == RSAT_MODE, 0);
         send_resp(client->fd, reply);
       } else if (command[9] == ';') {
         if (command[2] == '0') {
@@ -5729,8 +5731,8 @@ int launch_serial_rigctl (int id) {
   if (SerialPorts[id].andromeda && !SerialPorts[id].g2) {
     speed = B9600;
   }
-  t_print("%s: Speed (baud rate code)=%d\n", __FUNCTION__, (int) speed);
 
+  t_print("%s: Speed (baud rate code)=%d\n", __FUNCTION__, (int) speed);
   serial_client[id].fifo = 0;
 
   if (set_interface_attribs (fd, speed, 0) == 0) {
@@ -5762,7 +5764,6 @@ int launch_serial_rigctl (int id) {
   serial_client[id].shift              = 0;
   serial_client[id].buttonvec          = NULL;
   serial_client[id].encodervec         = NULL;
-
 
   for (int i = 0; i < MAX_ANDROMEDA_LEDS; i++) {
     serial_client[id].last_led[i] = -1;
@@ -5847,6 +5848,7 @@ void launch_tcp_rigctl () {
   //
   rigctl_server_thread_id = g_thread_new( "rigctl server", rigctl_server, GINT_TO_POINTER(rigctl_tcp_port));
 }
+
 void rigctlRestoreState() {
   GetPropI0("rigctl_tcp_enable",                             rigctl_tcp_enable);
   GetPropI0("rigctl_tcp_andromeda",                          rigctl_tcp_andromeda);
@@ -5854,7 +5856,6 @@ void rigctlRestoreState() {
   GetPropI0("rigctl_port_base",                              rigctl_tcp_port);
 
   for (int id = 0; id < MAX_SERIAL; id++) {
-
     //
     // Do not overwrite a "detected" port
     //
@@ -5896,11 +5897,11 @@ void rigctlSaveState() {
   // a) serial clients from the last to the first
   // b) tcp clients from the first to the last
   //
-  for (int id = MAX_SERIAL-1; id >= 0; id--) {
+  for (int id = MAX_SERIAL - 1; id >= 0; id--) {
     if (serial_client[id].running &&
-            (serial_client[id].andromeda_type == 4 || serial_client[id].andromeda_type == 5) &&
-            serial_client[id].buttonvec != NULL &&
-            serial_client[id].encodervec != NULL) {
+        (serial_client[id].andromeda_type == 4 || serial_client[id].andromeda_type == 5) &&
+        serial_client[id].buttonvec != NULL &&
+        serial_client[id].encodervec != NULL) {
       g2panelSaveState(serial_client[id].andromeda_type,
                        serial_client[id].buttonvec,
                        serial_client[id].encodervec);
@@ -5910,9 +5911,9 @@ void rigctlSaveState() {
 
   for (int id = 0; id < MAX_TCP_CLIENTS; id++) {
     if (tcp_client[id].running &&
-            (tcp_client[id].andromeda_type == 4 || tcp_client[id].andromeda_type == 5) &&
-            tcp_client[id].buttonvec != NULL &&
-            tcp_client[id].encodervec != NULL) {
+        (tcp_client[id].andromeda_type == 4 || tcp_client[id].andromeda_type == 5) &&
+        tcp_client[id].buttonvec != NULL &&
+        tcp_client[id].encodervec != NULL) {
       g2panelSaveState(tcp_client[id].andromeda_type,
                        tcp_client[id].buttonvec,
                        tcp_client[id].encodervec);

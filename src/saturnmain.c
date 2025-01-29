@@ -396,7 +396,7 @@ void saturn_discovery() {
               FIRMWARE_MAX_MAJOR,
               FIRMWARE_MIN_MINOR,
               FIRMWARE_MAX_MINOR
-              );
+             );
       discovered[devices].status = STATE_INCOMPATIBLE;
     }
 
@@ -407,7 +407,6 @@ void saturn_discovery() {
     STRLCPY(discovered[devices].name, "saturn",  sizeof(discovered[devices].name));
     discovered[devices].frequency_min = 0.0;
     discovered[devices].frequency_max = 61440000.0;
-
     //
     // Try to obtain the hardware MAC address of the local eth0.
     // This is for diagnostic purposes only, so if it fails,
@@ -1702,6 +1701,9 @@ void saturn_handle_duc_specific(bool FromNetwork, unsigned char *UDPInBuffer) {
 // Some functions calls to get the "allowed" SATURN FPGA version numbers
 //
 int saturn_minor_version_min() { return FIRMWARE_MIN_MINOR; }
+
 int saturn_minor_version_max() { return FIRMWARE_MAX_MINOR; }
+
 int saturn_major_version_min() { return FIRMWARE_MIN_MAJOR; }
+
 int saturn_major_version_max() { return FIRMWARE_MAX_MAJOR; }

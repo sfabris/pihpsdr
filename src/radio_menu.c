@@ -66,7 +66,6 @@ static gboolean close_cb () {
 
 #ifdef SOAPYSDR
 static void rx_gain_element_changed_cb(GtkWidget *widget, gpointer data) {
-
   if (device == SOAPYSDR_USB_DEVICE) {
     double gain = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
     adc[active_receiver->adc].gain = gain;
@@ -83,11 +82,11 @@ static void tx_gain_element_changed_cb(GtkWidget *widget, gpointer data) {
 }
 
 static void agc_changed_cb(GtkWidget *widget, gpointer data) {
-
   if (device == SOAPYSDR_USB_DEVICE) {
     int agc = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
     adc[active_receiver->adc].agc = agc;
     soapy_protocol_set_automatic_gain(active_receiver, agc);
+
     if (!agc) { soapy_protocol_set_gain(active_receiver); }
   }
 }
@@ -679,7 +678,7 @@ void radio_menu(GtkWidget *parent) {
   }
 
   if (device == NEW_DEVICE_ORION || device == NEW_DEVICE_ORION2 || device == NEW_DEVICE_SATURN ||
-  device == DEVICE_ORION || device == DEVICE_ORION2) {
+      device == DEVICE_ORION || device == DEVICE_ORION2) {
     row = 1;
     label = gtk_label_new("ORION/SATURN Mic jack:");
     gtk_widget_set_name(label, "boldlabel");

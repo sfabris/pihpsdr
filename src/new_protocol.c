@@ -344,7 +344,7 @@ void update_action_table() {
   int flag = 0;
   int xmit = radio_is_transmitting(); // store such that it cannot change while building the flag
   int newdev = (device == NEW_DEVICE_ANGELIA  || device == NEW_DEVICE_ORION ||
-  device == NEW_DEVICE_ORION2 || device == NEW_DEVICE_SATURN);
+                device == NEW_DEVICE_ORION2 || device == NEW_DEVICE_SATURN);
 
   if (duplex && xmit) { flag += 10000; }
 
@@ -790,7 +790,7 @@ static void new_protocol_high_priority() {
     int ddc = 0;
 
     if (device == NEW_DEVICE_ANGELIA  || device == NEW_DEVICE_ORION ||
-    device == NEW_DEVICE_ORION2 || device == NEW_DEVICE_SATURN) { ddc = 2; }
+        device == NEW_DEVICE_ORION2 || device == NEW_DEVICE_SATURN) { ddc = 2; }
 
     phase = (unsigned long)(((double)DDCfrequency[0]) * 34.952533333333333333333333333333);
     high_priority_buffer_to_radio[ 9 + (ddc * 4)] = (phase >> 24) & 0xFF;
@@ -1541,7 +1541,7 @@ static void new_protocol_receive_specific() {
     int ddc = i;
 
     if (device == NEW_DEVICE_ANGELIA  || device == NEW_DEVICE_ORION ||
-    device == NEW_DEVICE_ORION2 || device == NEW_DEVICE_SATURN) { ddc = 2 + i; }
+        device == NEW_DEVICE_ORION2 || device == NEW_DEVICE_SATURN) { ddc = 2 + i; }
 
     //
     // If there is at least one RX which has the dither or random bit set,
@@ -2541,6 +2541,7 @@ static void process_high_priority() {
 
   if (previous_ptt != radio_ptt) {
     int m = vfo_get_tx_mode();
+
     if (radio_ptt || m == modeCWU || m == modeCWL) {
       //
       // If "PTT on" comes from the radio, or we are doing CW: go TX without delay
@@ -2548,14 +2549,14 @@ static void process_high_priority() {
       // PTT line and we have to guarantee that the mox_update that is scheduled
       // first will be executed first.
       //
-      g_timeout_add(5,ext_mox_update, GINT_TO_POINTER(radio_ptt));
+      g_timeout_add(5, ext_mox_update, GINT_TO_POINTER(radio_ptt));
     } else {
       //
       // If "PTT off" comes from the radio and no CW:
       // delay the TX/RX transistion a little bit to avoid
       // clipping the last bits of the TX signal
       //
-      g_timeout_add(50,ext_mox_update, GINT_TO_POINTER(radio_ptt));
+      g_timeout_add(50, ext_mox_update, GINT_TO_POINTER(radio_ptt));
     }
   }
 

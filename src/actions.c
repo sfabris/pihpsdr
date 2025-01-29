@@ -1525,6 +1525,7 @@ int process_action(void *data) {
     break;
 
   case RITXIT:
+
     //
     // a RITXIT encoder automatically switches between RIT or XIT. It does XIT
     // if (and only if) RIT is disabled and XIT is enabled, otherwise it does RIT
@@ -1534,9 +1535,11 @@ int process_action(void *data) {
     } else {
       vfo_rit_incr(active_receiver->id, rit_increment * a->val);
     }
+
     break;
 
   case RITSELECT:
+
     //
     // An action which cycles between RIT on, XIT on, and both off.
     // This is intended to be used together with the RITXIT encoder
@@ -1598,12 +1601,13 @@ int process_action(void *data) {
     if (a->mode == PRESSED) {
       stop_program();
 #ifdef __APPLE__
-      (void) system("shutdown -h now"); 
+      (void) system("shutdown -h now");
 #else
       (void) system("sudo shutdown -h -P now");
 #endif
       _exit(0);
     }
+
     break;
 
   case SNB:
@@ -1675,36 +1679,36 @@ int process_action(void *data) {
   // with the n-th toolbar button
   //
   case TOOLBAR1:
-     schedule_action(toolbar_switches[0].switch_function, a->mode, a->val);
-     break;
+    schedule_action(toolbar_switches[0].switch_function, a->mode, a->val);
+    break;
 
   case TOOLBAR2:
-     schedule_action(toolbar_switches[1].switch_function, a->mode, a->val);
-     break;
+    schedule_action(toolbar_switches[1].switch_function, a->mode, a->val);
+    break;
 
   case TOOLBAR3:
-     schedule_action(toolbar_switches[2].switch_function, a->mode, a->val);
-     break;
+    schedule_action(toolbar_switches[2].switch_function, a->mode, a->val);
+    break;
 
   case TOOLBAR4:
-     schedule_action(toolbar_switches[3].switch_function, a->mode, a->val);
-     break;
+    schedule_action(toolbar_switches[3].switch_function, a->mode, a->val);
+    break;
 
   case TOOLBAR5:
-     schedule_action(toolbar_switches[4].switch_function, a->mode, a->val);
-     break;
+    schedule_action(toolbar_switches[4].switch_function, a->mode, a->val);
+    break;
 
   case TOOLBAR6:
-     schedule_action(toolbar_switches[5].switch_function, a->mode, a->val);
-     break;
+    schedule_action(toolbar_switches[5].switch_function, a->mode, a->val);
+    break;
 
   case TOOLBAR7:
-     schedule_action(toolbar_switches[6].switch_function, a->mode, a->val);
-     break;
+    schedule_action(toolbar_switches[6].switch_function, a->mode, a->val);
+    break;
 
   case TOOLBAR8:
-     schedule_action(toolbar_switches[7].switch_function, a->mode, a->val);
-     break;
+    schedule_action(toolbar_switches[7].switch_function, a->mode, a->val);
+    break;
 
   case TUNE:
     if (a->mode == PRESSED) {

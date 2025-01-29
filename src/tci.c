@@ -116,10 +116,9 @@ static void force_close(CLIENT *client) {
   struct linger linger = { 0 };
   linger.l_onoff = 1;
   linger.l_linger = 0;
-
   client->running = 0;
-  if (client->fd  != -1) {
 
+  if (client->fd  != -1) {
     // No error checking since the socket may have been close in a race condition
     // in the listener
     setsockopt(client->fd, SOL_SOCKET, SO_LINGER, (const char *)&linger, sizeof(linger));
@@ -153,8 +152,8 @@ void shutdown_tci() {
       //g_thread_join(tci_client[id].thread_id);
       tci_client[id].thread_id = NULL;
     }
-
   }
+
   usleep(100000);  // Let the TCI thread terminate, if it can
 
   //
@@ -164,7 +163,6 @@ void shutdown_tci() {
     struct linger linger = { 0 };
     linger.l_onoff = 1;
     linger.l_linger = 0;
-
     // No error checking since the socket may be closed
     // in a race condition by the server thread
     setsockopt(server_socket, SOL_SOCKET, SO_LINGER, (const char *)&linger, sizeof(linger));
@@ -186,7 +184,6 @@ static int tci_send_frame(void *data) {
   CLIENT *client = response->client;
   int type = response->type;
   const char *msg = response->msg;
-
   unsigned char frame[1024];
   unsigned char *p;
   int start;
@@ -246,6 +243,7 @@ static int tci_send_frame(void *data) {
     length -= rc;
     p += rc;
   }
+
   g_free(data);
   return G_SOURCE_REMOVE;
 }
@@ -254,8 +252,10 @@ static void tci_send_text(CLIENT *client, char *msg) {
   if (!client->running) {
     return;
   }
+
   if (rigctl_debug) { t_print("TCI%d response: %s\n", client->seq, msg); }
-  RESPONSE *resp=g_new(RESPONSE, 1);
+
+  RESPONSE *resp = g_new(RESPONSE, 1);
   resp->client = client;
   strcpy(resp->msg, msg);
   resp->type = opTEXT;
@@ -269,7 +269,9 @@ static void tci_send_text(CLIENT *client, char *msg) {
 static void tci_send_dds(CLIENT *client, int v) {
   long long f;
   char msg[MAXMSGSIZE];
+
   if (v < 0 || v > 1) { return; }
+
   f = vfo[v].ctun ? vfo[v].ctun_frequency : vfo[v].frequency;
   snprintf(msg, MAXMSGSIZE, "dds:%d,%lld;", v, f);
   tci_send_text(client, msg);
@@ -277,10 +279,10 @@ static void tci_send_dds(CLIENT *client, int v) {
 
 static void tci_send_mox(CLIENT *client) {
   if (radio_is_transmitting()) {
-    tci_send_text(client,"trx:0,true;");
+    tci_send_text(client, "trx:0,true;");
     client->last_mox = 1;
   } else {
-    tci_send_text(client,"trx:0,false;");
+    tci_send_text(client, "trx:0,false;");
     client->last_mox = 0;
   }
 }
@@ -295,8 +297,11 @@ static void tci_send_mox(CLIENT *client) {
 static void tci_send_vfo(CLIENT *client, int v, int c) {
   long long f;
   char msg[MAXMSGSIZE];
+
   if (v < 0 || v > 1) { return; }
+
   if (c < 0 || c > 1) { return; }
+
   if (v  == VFO_A && c == 0) {
     f = vfo[VFO_A].ctun ? vfo[VFO_A].ctun_frequency : vfo[VFO_A].frequency;
     client->last_fa = f;
@@ -304,6 +309,7 @@ static void tci_send_vfo(CLIENT *client, int v, int c) {
     f = vfo[VFO_B].ctun ? vfo[VFO_B].ctun_frequency : vfo[VFO_B].frequency;
     client->last_fb = f;
   }
+
   snprintf(msg, MAXMSGSIZE, "vfo:%d,%d,%lld;", v, c, f);
   tci_send_text(client, msg);
 }
@@ -333,44 +339,57 @@ static void tci_send_mode(CLIENT *client, int v) {
   int m;
   const char *mode;
   char msg[MAXMSGSIZE];
+
   if (v < 0 || v > 1) { return; }
 
   m = vfo[v].mode;
+
   switch (m) {
   case modeLSB:
     mode = "LSB";
     break;
+
   case modeUSB:
     mode = "USB";
     break;
+
   case modeDSB:
     mode = "DSB";
     break;
+
   case modeCWL:
   case modeCWU:
     mode = "CW";
     break;
+
   case modeFMN:
     mode = "FM";
     break;
+
   case modeAM:
     mode = "AM";
     break;
+
   case modeDIGU:
     mode = "DIGU";
     break;
+
   case modeSPEC:
     mode = "SPEC";
     break;
+
   case modeDIGL:
     mode = "DIGL";
     break;
+
   case modeSAM:
     mode = "SAM";
     break;
+
   case modeDRM:
     mode = "DRM";
     break;
+
   default:   // should not happen
     mode = "USB";
     break;
@@ -384,7 +403,6 @@ static void tci_send_mode(CLIENT *client, int v) {
   } else {
     client->last_mb = m;
   }
-
 }
 
 static void tci_send_trx_count(CLIENT *client) {
@@ -393,7 +411,7 @@ static void tci_send_trx_count(CLIENT *client) {
 
 static void tci_send_cwspeed(CLIENT *client) {
   char msg[MAXMSGSIZE];
-  snprintf(msg, MAXMSGSIZE, "cw_macros_speed:%d;",cw_keyer_speed);
+  snprintf(msg, MAXMSGSIZE, "cw_macros_speed:%d;", cw_keyer_speed);
   tci_send_text(client, msg);
 }
 
@@ -408,11 +426,13 @@ static void tci_send_smeter(CLIENT *client, int v) {
   int lvl;
 
   if (v < 0 || v > 1) { return; }
+
   if (v == 1 && receivers == 1) { return; }
+
   lvl = (int) (receiver[v]->meter - 0.5);
-  snprintf(msg, MAXMSGSIZE, "rx_smeter:%d,0,%d.0;",v,lvl);
+  snprintf(msg, MAXMSGSIZE, "rx_smeter:%d,0,%d.0;", v, lvl);
   tci_send_text(client, msg);
-  snprintf(msg, MAXMSGSIZE, "rx_smeter:%d,1,%d.0;",v,lvl);
+  snprintf(msg, MAXMSGSIZE, "rx_smeter:%d,1,%d.0;", v, lvl);
   tci_send_text(client, msg);
 }
 
@@ -427,17 +447,21 @@ static void tci_send_rx(CLIENT *client, int v) {
   int lvl;
 
   if (v < 0 || v > 1) { return; }
+
   if (v == 1 && receivers == 1) { return; }
+
   lvl = (int) (receiver[v]->meter - 0.5);
-  snprintf(msg, MAXMSGSIZE, "rx_channel_sensors:%d,0,%d.0;",v,lvl);
+  snprintf(msg, MAXMSGSIZE, "rx_channel_sensors:%d,0,%d.0;", v, lvl);
   tci_send_text(client, msg);
-  snprintf(msg, MAXMSGSIZE, "rx_channel_sensors:%d,1,%d.0;",v,lvl);
+  snprintf(msg, MAXMSGSIZE, "rx_channel_sensors:%d,1,%d.0;", v, lvl);
   tci_send_text(client, msg);
 }
 
 static void tci_send_close(CLIENT *client) {
   RESPONSE *resp = g_new(RESPONSE, 1);
-  if (rigctl_debug) { t_print("TCI%d CLOSE\n",client->seq); }
+
+  if (rigctl_debug) { t_print("TCI%d CLOSE\n", client->seq); }
+
   resp->client = client;
   resp->type   = opCLOSE;
   resp->msg[0] = 0;
@@ -446,7 +470,9 @@ static void tci_send_close(CLIENT *client) {
 
 static void tci_send_ping(CLIENT *client) {
   RESPONSE *resp = g_new(RESPONSE, 1);
-  if (rigctl_debug) { t_print("TCI%d PING\n",client->seq); }
+
+  if (rigctl_debug) { t_print("TCI%d PING\n", client->seq); }
+
   resp->client = client;
   resp->type   = opPING;
   resp->msg[0] = 0;
@@ -455,7 +481,9 @@ static void tci_send_ping(CLIENT *client) {
 
 static void tci_send_pong(CLIENT *client) {
   RESPONSE *resp = g_new(RESPONSE, 1);
-  if (rigctl_debug) { t_print("TCI%d PONG\n",client->seq); }
+
+  if (rigctl_debug) { t_print("TCI%d PONG\n", client->seq); }
+
   resp->client = client;
   resp->type   = opPONG;
   resp->msg[0] = 0;
@@ -494,6 +522,7 @@ static gboolean tci_reporter(gpointer data) {
       tci_send_rx(client, 0);
       tci_send_rx(client, 1);
     }
+
     //
     // Determine VFO-A/B frequency/mode, report if changed
     //
@@ -507,20 +536,25 @@ static gboolean tci_reporter(gpointer data) {
     if (fa != client->last_fa) {
       tci_send_vfo(client, 0, 0);
     }
+
     if (fb != client->last_fb) {
       tci_send_vfo(client, 0, 1);
       tci_send_vfo(client, 1, 0);
       tci_send_vfo(client, 1, 1);
     }
+
     if (ma  != client->last_ma) {
       tci_send_mode(client, 0);
     }
+
     if (mb  != client->last_mb) {
       tci_send_mode(client, 1);
     }
+
     if (sp != client->last_split) {
       tci_send_split(client);
     }
+
     if (mx != client->last_mox) {
       tci_send_mox(client);
     }
@@ -536,7 +570,6 @@ static gpointer tci_server(gpointer data) {
   int port = GPOINTER_TO_INT(data);
   int on = 1;
   struct timeval tv;
-
   tv.tv_sec = 0;
   tv.tv_usec = 100000;
   t_print("%s: starting TCI server on port %d\n", __FUNCTION__, port);
@@ -584,8 +617,8 @@ static gpointer tci_server(gpointer data) {
 
   while (tci_running) {
     int spare;
-    char buf[MAXDATASIZE+1];
-    char key[MAXDATASIZE+1];
+    char buf[MAXDATASIZE + 1];
+    char key[MAXDATASIZE + 1];
     unsigned char sha[SHA_DIGEST_LENGTH];
     ssize_t nbytes;
     int  fd;
@@ -614,7 +647,7 @@ static gpointer tci_server(gpointer data) {
     // (this initializes fd, address, address_length)
     //
     fd = accept(server_socket, (struct sockaddr*)&tci_client[spare].address,
-                                  &tci_client[spare].address_length);
+                &tci_client[spare].address_length);
 
     if (fd < 0) {
       // Since we have a 0.1 sec time-out, this is normal
@@ -626,6 +659,7 @@ static gpointer tci_server(gpointer data) {
     if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO,  &tv, sizeof(tv)) < 0) {
       t_perror("TCIClntSetTimeOut");
     }
+
     //
     // Setting TCP_NODELAY may (or may not) improve responsiveness
     // by *disabling* Nagle's algorithm for clustering small packets
@@ -645,6 +679,7 @@ static gpointer tci_server(gpointer data) {
     //
     nbytes = read(fd, buf, sizeof(buf));
     buf[nbytes] = 0;
+
     //
     // Try to establish websocket connection. If this fails, close
     // and mark the client as "free":
@@ -658,33 +693,35 @@ static gpointer tci_server(gpointer data) {
     //    and append the TCI magic string (key -> buf)
     //
     p = strstr(buf, "Sec-WebSocket-Key: ");
+
     if (p == NULL) { close(fd); continue; }
 
     p +=  19;
     q = key;
+
     while (*p != '\n' && *p != '\r' && p != 0) {
       *q++ = *p++;
     }
+
     *q = 0;
     snprintf(buf, MAXDATASIZE, "%s%s", key, "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
-    nbytes=strlen(buf);
-
+    nbytes = strlen(buf);
     //
     // 3. Get SHA1 hash from the result (buf -> sha)
     //    and convert to base64 (sha -> key)
     //
     SHA1((unsigned char *) buf, nbytes, sha);
     EVP_EncodeBlock((unsigned char *) key, sha, SHA_DIGEST_LENGTH);
-
     //
     // 4. Send answer back, containing the magic string in key
     //
     snprintf(buf, 1024,
-         "HTTP/1.1 101 Switching Protocols\r\n"
-         "Connection: Upgrade\r\n"
-         "Upgrade: websocket\r\n"
-         "Sec-WebSocket-Accept: %s\r\n\r\n", key);
-    nbytes=strlen(buf);
+             "HTTP/1.1 101 Switching Protocols\r\n"
+             "Connection: Upgrade\r\n"
+             "Upgrade: websocket\r\n"
+             "Sec-WebSocket-Accept: %s\r\n\r\n", key);
+    nbytes = strlen(buf);
+
     if (write (fd, buf, nbytes) < nbytes) {
       close(fd);
       continue;
@@ -708,7 +745,6 @@ static gpointer tci_server(gpointer data) {
     tci_client[spare].rxsensor        =  0;
     tci_client[spare].thread_id       = g_thread_new("TCI listener", tci_listener, (gpointer)&tci_client[spare]);
     tci_client[spare].tci_timer       = g_timeout_add(500, tci_reporter, &tci_client[spare]);
-
   }
 
   close(server_socket);
@@ -754,15 +790,15 @@ static int digest_frame(const unsigned char *buff, char *msg,  int offset, int *
   //
   *type = buff[0] & 0x0F;
 
-  for (int i=0; i < len;  i++) {
+  for (int i = 0; i < len;  i++) {
     if (mask) {
-      msg[i]=buff[head+i] ^ buff[mstrt+(i & 3)];
+      msg[i] = buff[head + i] ^ buff[mstrt + (i & 3)];
     } else {
-      msg[i]=buff[head+i];
+      msg[i] = buff[head + i];
     }
   }
-  msg[len] = 0;   // form null-terminated  string
 
+  msg[len] = 0;   // form null-terminated  string
   //
   // Return the number of bytes *digested*, not the number of  bytes produced.
   //
@@ -780,7 +816,7 @@ static gpointer tci_listener(gpointer data) {
   int offset = 0;
   unsigned char buff [MAXDATASIZE];
   char msg [MAXDATASIZE];
-  const int ARGLEN=16;
+  const int ARGLEN = 16;
   int argc;
   char *arg[ARGLEN];
   //
@@ -829,6 +865,7 @@ static gpointer tci_listener(gpointer data) {
   while (client->running) {
     int numbytes;
     int type;
+
     //
     // This can happen when a very long command has arrived...
     // ...just give up
@@ -837,24 +874,30 @@ static gpointer tci_listener(gpointer data) {
       client->running = 0;
       break;
     }
-    numbytes = recv(client->fd, buff+offset, MAXDATASIZE-offset, 0);
+
+    numbytes = recv(client->fd, buff + offset, MAXDATASIZE - offset, 0);
+
     if (numbytes <= 0) {
       usleep(100000);
       continue;
     }
+
     offset += numbytes;
+
     //
     // The chunk just read may contain more than one frame
     //
     while ((numbytes =  digest_frame(buff, msg, offset, &type)) > 0) {
-      switch(type) {
+      switch (type) {
       case opTEXT:
-        for (size_t i=0; i< strlen(msg); i++) {
+        for (size_t i = 0; i < strlen(msg); i++) {
           msg[i] = tolower(msg[i]);
         }
+
         if (rigctl_debug) {
           t_print("TCI%d command rcvd=%s\n", client->seq, msg);
         }
+
         //
         // Separate into commands and arguments, and then process the incoming
         // commands according to the following list
@@ -873,22 +916,26 @@ static gpointer tci_listener(gpointer data) {
         // accepted but not processed. Since we only report data but do not perform any
         // "actions", this need not be done in the GTK queue.
         //
-        argc=1;
+        argc = 1;
         arg[0] = msg;
+
         for (char *cp = msg; *cp != 0; cp++) {
           if (*cp == ':' || *cp == ',') {
-            arg[argc] = cp+1;
+            arg[argc] = cp + 1;
             argc++;
             *cp = 0;
           }
+
           if (*cp == ';') {
             *cp = 0;
             break;
           }
+
           if (argc >= ARGLEN) {
             break;
           }
         }
+
         //
         // Note that for i>=argc, arg[i] is not defined.
         // So verify argc > i before using arg[i].
@@ -898,36 +945,43 @@ static gpointer tci_listener(gpointer data) {
           tci_send_trx_count(client);
         } else if (!strcmp(arg[0], "trx")) {
           tci_send_mox(client);
-        } else if (!strcmp(arg[0],"rx_sensors_enable") && argc > 1) {
+        } else if (!strcmp(arg[0], "rx_sensors_enable") && argc > 1) {
           // MLDX originally sent '1/0' instead of 'true/false'
-          client->rxsensor = (*arg[1] == '1' || !strcmp(arg[1],"true"));
-        } else if (!strcmp(arg[0],"modulation") && argc > 1) {
+          client->rxsensor = (*arg[1] == '1' || !strcmp(arg[1], "true"));
+        } else if (!strcmp(arg[0], "modulation") && argc > 1) {
           tci_send_mode(client, (*arg[1] == '1') ? 1 : 0);
-        } else if (!strcmp(arg[0],"vfo") && argc > 2) {
+        } else if (!strcmp(arg[0], "vfo") && argc > 2) {
           tci_send_vfo(client, (*arg[1] == '1') ? 1 : 0, (*arg[2] == '1' ? 1 : 0));
-        } else if (!strcmp(arg[0],"rx_smeter") && argc > 1) {
+        } else if (!strcmp(arg[0], "rx_smeter") && argc > 1) {
           tci_send_smeter(client, (*arg[1] == '1') ? 1 : 0);
-        } else if (!strcmp(arg[0],"cw_macros_speed")) {
+        } else if (!strcmp(arg[0], "cw_macros_speed")) {
           tci_send_cwspeed(client);
         }
+
         break;
+
       case opPING:
         if (rigctl_debug) { t_print("TCI%d PING rcvd\n", client->seq); }
+
         tci_send_pong(client);
         break;
+
       case opCLOSE:
         if (rigctl_debug) { t_print("TCI%d CLOSE rcvd\n", client->seq); }
+
         client->running = 0;
         break;
       }
+
       //
       // Remove the just-processed frame from the input buffer
       // In normal operation, offset will be set to zero here.
       //
       offset  -= numbytes;
+
       if (offset > 0) {
-        for (int i=0; i<offset; i++) {
-          buff[i]=buff[i+numbytes];
+        for (int i = 0; i < offset; i++) {
+          buff[i] = buff[i + numbytes];
         }
       }
     }

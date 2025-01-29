@@ -42,7 +42,6 @@ int andromeda_execute_button(int v, int p) {
   // derived from Rick's original ANDROMEDA console ZZZP code
   // the return value is the new shift state
   //
-
   if (!numpad_active) switch (p) {
     case 21: // Function Switches
     case 22:
@@ -129,7 +128,6 @@ int andromeda_execute_button(int v, int p) {
       locked = 0;
     }
     } else if (!locked) switch (p) {
-
     case 1: // Rx1 AF Mute
       if (v == 0) { receiver[0]->mute_radio ^= 1; }
 
@@ -308,6 +306,7 @@ int andromeda_execute_button(int v, int p) {
       }
     }
   }
+
   return shift;
 }
 

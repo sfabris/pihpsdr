@@ -161,7 +161,6 @@ static gboolean filter_select_cb (GtkWidget *widget, gpointer data) {
   //
   current = choice;
   vfo_filter_changed(current->info);
-
   return FALSE;
 }
 

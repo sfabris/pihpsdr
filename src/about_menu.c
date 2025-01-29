@@ -76,15 +76,15 @@ void about_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(grid), close_b, 0, row, 1, 1);
   row++;
   snprintf(text, 1024, "piHPSDR by John Melton G0ORX/N6LYT\n\n"
-           "    With help from:\n"
-           "    Steve Wilson, KA6S: RIGCTL (CAT over TCP)\n"
-           "    Laurence Barker, G8NJJ: USB OZY Support\n"
+                       "    With help from:\n"
+                       "    Steve Wilson, KA6S: RIGCTL (CAT over TCP)\n"
+                       "    Laurence Barker, G8NJJ: USB OZY Support\n"
            //"    Johan Maas, PA3GSB: RadioBerry support\n"
-           "    Ken Hopper, N9VV: Testing and Documentation\n"
-           "    Christoph van Wüllen, DL1YCF: CW, PureSignal, Diversity, MIDI \n\n"
-           "Build date: %s (commit %s)\n"
-           "Build version: %s\n"
-           "WDSP version: %d.%02d\n\n",
+                       "    Ken Hopper, N9VV: Testing and Documentation\n"
+                       "    Christoph van Wüllen, DL1YCF: CW, PureSignal, Diversity, MIDI \n\n"
+                       "Build date: %s (commit %s)\n"
+                       "Build version: %s\n"
+                       "WDSP version: %d.%02d\n\n",
            build_date, build_commit, build_version, GetWDSPVersion() / 100, GetWDSPVersion() % 100);
 
   switch (radio->protocol) {
@@ -106,8 +106,8 @@ void about_menu(GtkWidget *parent) {
                  radio->software_version / 10, radio->software_version % 10);
       } else {
         snprintf(line, 512, "Device: %s, Protocol %s, v%d.%d\n"
-                 "    Mac Address: %02X:%02X:%02X:%02X:%02X:%02X\n"
-                 "    IP Address: %s on %s (%s)",
+                            "    Mac Address: %02X:%02X:%02X:%02X:%02X:%02X\n"
+                            "    IP Address: %s on %s (%s)",
                  radio->name, radio->protocol == ORIGINAL_PROTOCOL ? "1" : "2",
                  radio->software_version / 10, radio->software_version % 10,
                  radio->info.network.mac_address[0],
@@ -129,7 +129,7 @@ void about_menu(GtkWidget *parent) {
 
   case SOAPYSDR_PROTOCOL:
     snprintf(line, 512, "Device: %s (via SoapySDR)\n"
-             "    %s (%s)",
+                        "    %s (%s)",
              radio->name, radio->info.soapy.hardware_key, radio->info.soapy.driver_key);
     STRLCAT(text, line, 1024);
     break;
