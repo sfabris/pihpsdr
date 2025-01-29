@@ -728,11 +728,11 @@ RECEIVER *rx_create_receiver(int id, int pixels, int width, int height) {
   rx->panadapter_low = -140;
   rx->panadapter_step = 20;
 
-  rx->panadapter_num_peaks = 2;
-  rx->panadapter_ignore_range_divider = 16;
-  rx->panadapter_ignore_noise_percentile = 50;
+  rx->panadapter_num_peaks = 3;
+  rx->panadapter_ignore_range_divider = 20;
+  rx->panadapter_ignore_noise_percentile = 80;
   rx->panadapter_hide_noise_filled = 1;
-  rx->panadapter_peaks_in_passband_filled = 1;
+  rx->panadapter_peaks_in_passband_filled = 0;
 
   rx->waterfall_high = -40;
   rx->waterfall_low = -140;

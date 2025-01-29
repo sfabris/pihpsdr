@@ -181,7 +181,7 @@ static void sel_cb(GtkWidget *widget, gpointer data) {
 }
 
 static void spinbtn_cb(GtkWidget *widget, gpointer data) {
-  //
+  //radio_
   // Handle ALL spin-buttons in this menu
   //
   int mode = vfo_get_tx_mode();

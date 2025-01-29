@@ -877,11 +877,11 @@ TRANSMITTER *tx_create_transmitter(int id, int width, int height) {
   tx->panadapter_low = -70;
   tx->panadapter_step = 10;
 
-  tx->panadapter_num_peaks = 2;
-  tx->panadapter_ignore_range_divider = 16;
+  tx->panadapter_num_peaks = 3;
+  tx->panadapter_ignore_range_divider = 24;
   tx->panadapter_ignore_noise_percentile = 50;
   tx->panadapter_hide_noise_filled = 1;
-  tx->panadapter_peaks_in_passband_filled = 1;
+  tx->panadapter_peaks_in_passband_filled = 0;
 
   tx->displaying = 0;
   tx->alex_antenna = 0; // default: ANT1

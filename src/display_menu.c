@@ -72,11 +72,11 @@ static void sel_cb(GtkWidget *widget, gpointer data) {
   switch (c) {
     case GENERAL_CONTAINER:
       my_container = general_container;
-      which_container = GENERAL_CONTAINER;
+      //which_container = GENERAL_CONTAINER;
       break;
     case PEAKS_CONTAINER:
       my_container = peaks_container;
-      which_container = PEAKS_CONTAINER;
+      //which_container = PEAKS_CONTAINER;
       break;
     default:
       // We should never come here
@@ -86,6 +86,7 @@ static void sel_cb(GtkWidget *widget, gpointer data) {
 
   if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget))) {
     gtk_widget_show(my_container);
+    which_container = c;
   } else {
     gtk_widget_hide(my_container);
   }
@@ -179,7 +180,6 @@ static void panadapter_step_value_changed_cb(GtkWidget *widget, gpointer data) {
 
 static void panadapter_num_peaks_value_changed_cb(GtkWidget *widget, gpointer data) {
   active_receiver->panadapter_num_peaks = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
-  printf("New peaks no %d",active_receiver->panadapter_num_peaks);
 }
 
 static void panadapter_ignore_range_divider_value_changed_cb(GtkWidget *widget, gpointer data) {
@@ -235,7 +235,6 @@ void display_menu(GtkWidget *parent) {
 
   GtkWidget *grid = gtk_grid_new();
   gtk_grid_set_column_spacing(GTK_GRID(grid), 10);
-  //gtk_grid_set_row_homogeneous(GTK_GRID(grid), TRUE);
   gtk_container_add(GTK_CONTAINER(content), grid);
 
   int row = 0;
@@ -279,13 +278,7 @@ void display_menu(GtkWidget *parent) {
   gtk_grid_set_row_homogeneous(GTK_GRID(general_grid), TRUE);
   gtk_container_add(GTK_CONTAINER(general_container), general_grid);
 
-  col = 0;
   row = 0;
-  GtkWidget *close_b = gtk_button_new_with_label("Close");
-  gtk_widget_set_name(close_b, "close_button");
-  g_signal_connect (close_b, "button-press-event", G_CALLBACK(close_cb), NULL);
-  gtk_grid_attach(GTK_GRID(general_grid), close_b, col, row, 1, 1);
-  row++;
   col = 0;
   label = gtk_label_new("Frames Per Second:");
   gtk_widget_set_name (label, "boldlabel");
