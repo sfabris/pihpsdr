@@ -524,7 +524,6 @@ void rx_panadapter_update(RECEIVER *rx) {
     peak_positions[a] = 0;
   }
 
-
   // Dynamically allocate a copy of samples for sorting
   double *sorted_samples = malloc(mywidth * sizeof(double));
   if (sorted_samples == NULL) {
@@ -535,72 +534,70 @@ void rx_panadapter_update(RECEIVER *rx) {
       sorted_samples[i] = (double)samples[i + rx->pan] + soffset;
   }
 
-  // Sort the samples to calculate the noise level
+  // Calculate the noise level if needed
+  double noise_level = 0.0;
   if (hide_noise) {
       qsort(sorted_samples, mywidth, sizeof(double), compare_doubles);
       int index = (int)((noise_percentile / 100.0) * mywidth);
-      double noise_level = sorted_samples[index];
-      free(sorted_samples); // Free memory after use
+      noise_level = sorted_samples[index];
+  }
+  free(sorted_samples); // Free memory after use
 
-      // Detect peaks
-      double filter_left_bound = peaks_in_passband ? filter_left : 0;
-      double filter_right_bound = peaks_in_passband ? filter_right : mywidth;
-      int ignored_until = -1; // Tracks the position up to which peaks are ignored
+  // Detect peaks
+  double filter_left_bound = peaks_in_passband ? filter_left : 0;
+  double filter_right_bound = peaks_in_passband ? filter_right : mywidth;
+  int ignored_until = -1; // Tracks the position up to which peaks are ignored
 
-      for (int i = 1; i < mywidth - 1; i++) {
-          if (i >= filter_left_bound && i <= filter_right_bound) {
-              double s = (double)samples[i + rx->pan] + soffset;
+  for (int i = 1; i < mywidth - 1; i++) {
+      if (i >= filter_left_bound && i <= filter_right_bound) {
+          double s = (double)samples[i + rx->pan] + soffset;
 
-              // Check if the point is a peak
-              if (s >= noise_level && s > samples[i - 1 + rx->pan] && s > samples[i + 1 + rx->pan]) {
-                  // If inside the ignored range, replace the previous peak if this one is higher
-                  if (i <= ignored_until) {
-                      if (s > peaks[num_peaks - 1]) {
-                          peaks[num_peaks - 1] = s;
-                          peak_positions[num_peaks - 1] = i;
+          // Check if the point is a peak
+          if ((!hide_noise || s >= noise_level) && s > samples[i - 1 + rx->pan] && s > samples[i + 1 + rx->pan]) {
+              // If inside the ignored range, replace the previous peak if this one is higher
+              if (i <= ignored_until) {
+                  if (s > peaks[num_peaks - 1]) {
+                      peaks[num_peaks - 1] = s;
+                      peak_positions[num_peaks - 1] = i;
 
-                          // Sort peaks to maintain descending order
-                          for (int j = num_peaks - 1; j > 0; j--) {
-                              if (peaks[j] > peaks[j - 1]) {
-                                  double temp_peak = peaks[j];
-                                  peaks[j] = peaks[j - 1];
-                                  peaks[j - 1] = temp_peak;
+                      // Sort peaks to maintain descending order
+                      for (int j = num_peaks - 1; j > 0; j--) {
+                          if (peaks[j] > peaks[j - 1]) {
+                              double temp_peak = peaks[j];
+                              peaks[j] = peaks[j - 1];
+                              peaks[j - 1] = temp_peak;
 
-                                  int temp_pos = peak_positions[j];
-                                  peak_positions[j] = peak_positions[j - 1];
-                                  peak_positions[j - 1] = temp_pos;
-                              }
+                              int temp_pos = peak_positions[j];
+                              peak_positions[j] = peak_positions[j - 1];
+                              peak_positions[j - 1] = temp_pos;
                           }
                       }
-                  } else {
-                      // Add this peak if it’s higher than the lowest tracked peak
-                      if (s > peaks[num_peaks - 1]) {
-                          peaks[num_peaks - 1] = s;
-                          peak_positions[num_peaks - 1] = i;
+                  }
+              } else {
+                  // Add this peak if it's higher than the lowest tracked peak
+                  if (s > peaks[num_peaks - 1]) {
+                      peaks[num_peaks - 1] = s;
+                      peak_positions[num_peaks - 1] = i;
 
-                          // Sort peaks to maintain descending order
-                          for (int j = num_peaks - 1; j > 0; j--) {
-                              if (peaks[j] > peaks[j - 1]) {
-                                  double temp_peak = peaks[j];
-                                  peaks[j] = peaks[j - 1];
-                                  peaks[j - 1] = temp_peak;
+                      // Sort peaks to maintain descending order
+                      for (int j = num_peaks - 1; j > 0; j--) {
+                          if (peaks[j] > peaks[j - 1]) {
+                              double temp_peak = peaks[j];
+                              peaks[j] = peaks[j - 1];
+                              peaks[j - 1] = temp_peak;
 
-                                  int temp_pos = peak_positions[j];
-                                  peak_positions[j] = peak_positions[j - 1];
-                                  peak_positions[j - 1] = temp_pos;
-                              }
+                              int temp_pos = peak_positions[j];
+                              peak_positions[j] = peak_positions[j - 1];
+                              peak_positions[j - 1] = temp_pos;
                           }
-
-                          // Set ignored range
-                          ignored_until = i + ignore_range;
                       }
+
+                      // Set ignored range
+                      ignored_until = i + ignore_range;
                   }
               }
           }
       }
-
-  } else {
-      free(sorted_samples); // Free memory if noise filtering is disabled
   }
 
   // Debug prints for detected peaks
