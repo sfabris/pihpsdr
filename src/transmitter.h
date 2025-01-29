@@ -68,6 +68,12 @@ typedef struct _transmitter {
   int panadapter_high;
   int panadapter_step;
 
+  int panadapter_num_peaks;
+  int panadapter_ignore_range_divider;
+  int panadapter_ignore_noise_percentile;
+  int panadapter_hide_noise_filled;
+  int panadapter_peaks_in_passband_filled;
+
   cairo_surface_t *panadapter_surface;
 
   int local_microphone;
