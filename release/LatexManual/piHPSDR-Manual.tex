@@ -59,7 +59,7 @@ where the \LaTeX\   ,,source code'' of this manual, together with all figures in
 in the \texttt{release/LatexManual} directory. At this moment this code has numerous additions/corrections
  compared
 to the \pH code in John Melton's master repository, but there is still hope that both versions can
-be merged in  the  future.
+be merged in  the  future. A version history can be found in Chapter \ref{sec:versionhistory}.
 
 If you think you can improve the manual, you are welcome.
 Simply fork the above repository and make a pull request, or (this is the recommended way) write an
@@ -68,6 +68,7 @@ email to the author: \texttt{dl1ycf@darc.de}
 \mainmatter
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Introduction}
+\section{What is \pH?}
 \pH is a program that can operate with software defined radios (SDRs). As a graphical user interface,
 it uses the GTK-3 toolkit, while the actual signal processing is done by Warren Pratt's WDSP library. Thus,
 \pH organises the transfer of digitised radio ,,intermediate frequency'' (IF)
@@ -145,6 +146,46 @@ description, depending on whether the text refers to the command in an abstract 
 can be found on the screen. This may be confusing upon first reading, but I shall try to follow the colouring
  convention as laid out here.
 
+\section{Version history}
+\label{sec:versionhistory}
+Here we list the main new featured introduced in each version.
+
+\medskip
+\textbf{\pH Version 2.4, released January 2024}
+\begin{itemize}
+\item{Dynamically change the font \pH is using (\bltt{Screen} menu)}
+\item{Dynamically assign functions to G2 Ultra panel knobs/buttons (\bltt{G2panel} menu)}
+\item{Stripped-down TCI server for use with logbook programs and linear amplifiers (\bltt{CAT/TCI} menu)}
+\end{itemize}
+
+\medskip
+\textbf{\pH Version 2.3, released October 2024}
+\begin{itemize}
+\item{Preliminary ``accessibility'' support for the blind (see Appendix \ref{sec:accessibility})}
+\item{Added the ``trained'' NR2 noise reduction method introduced with WDSP 1.25 (\bltt{Noise} menu)}
+\item{Extended the RX and TX equalizers to 10 bands (\bltt{Equalizer} menu)}
+\item{Support for HermesLite-II I/O board}
+\item{Added audio capture and replay (see Chapter \ref{sec:capture})}
+\item{Added a multi-function encoder (Appendix \ref{sec:multiencoder})}
+\end{itemize}
+
+\medskip
+\textbf{\pH Version 2.2, released October 2023}
+\begin{itemize}
+\item{Support for ANAN-G2 radios}
+\item{Added a CW audio peak filter (\bltt{Filter} menu)}
+\item{A new double-buffering scheme that ``survives'' short-time CPU stalling in the DSP functions}
+\item{Support for ANDROMEDA controllers}
+\item{Added an in-depth manual (this document)}
+\item{\pH now works both with light and dark GTK themes}
+\item{Option for ``touch screen friendly'' combo-boxes}
+\item{Dynamically change the size  of the \pH window (\bltt{Screen} menu)}
+\item{Unified layout for nearly all menus}
+\end{itemize}
+
+\medskip
+\textbf{\pH Version 2.0.8}\\
+The last synchronisation with John Melton's (G0ORX) \pH version 2.0.8 took place in January 2022.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Starting \pH for the first time}
 Let us assume you have an SDR (say, an Anan-7000 or a HermesLite-II) powered up and connected to an antenna,
@@ -4822,7 +4863,7 @@ slider, you can use the up-arrow and down-arrow keys to fine adjust the value. I
 section we will only list the keyboard binding that are captured and processed by \pH.
 
 \section{Accessibility for the Blind}
-
+\label{sec:accessibility}
 \pH has built-in support for making operating easier for those with very limited
 eye-sight. The idea is that pressing one of the function keys generates a message that
 is read aloud and that informs about frequency, mode, etc.
