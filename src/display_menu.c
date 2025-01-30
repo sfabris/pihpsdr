@@ -496,7 +496,7 @@ void display_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(peaks_grid), b_pan_hide_noise, col, ++row, 1, 1);
   g_signal_connect(b_pan_hide_noise, "toggled", G_CALLBACK(panadapter_hide_noise_filled_cb), NULL);
 
-  label = gtk_label_new("Panadapter Peaks:");
+  label = gtk_label_new("Peaks to Show:");
   gtk_widget_set_name(label, "boldlabel");
   gtk_widget_set_halign(label, GTK_ALIGN_END);
   gtk_grid_attach(GTK_GRID(peaks_grid), label, col, ++row, 1, 1);
