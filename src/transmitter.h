@@ -67,7 +67,7 @@ typedef struct _transmitter {
   int panadapter_low;
   int panadapter_high;
   int panadapter_step;
-
+  int panadapter_peaks_on;
   int panadapter_num_peaks;
   int panadapter_ignore_range_divider;
   int panadapter_ignore_noise_percentile;

@@ -128,6 +128,10 @@ static void tx_panadapter_hide_noise_filled_cb(GtkWidget *widget, gpointer data)
   transmitter->panadapter_hide_noise_filled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 }
 
+static void tx_panadapter_peaks_on_cb(GtkWidget *widget, gpointer data) {
+  transmitter->panadapter_peaks_on = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+}
+
 static void tx_panadapter_num_peaks_value_changed_cb(GtkWidget *widget, gpointer data) {
   transmitter->panadapter_num_peaks = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
   printf("New peaks no %d", transmitter->panadapter_num_peaks);
@@ -1011,8 +1015,16 @@ void tx_menu(GtkWidget *parent) {
   gtk_grid_set_row_spacing (GTK_GRID(peaks_grid), 5);
   gtk_container_add(GTK_CONTAINER(peaks_container), peaks_grid);
 
-  row = 0;
   col = 0;
+  row = 0;
+  GtkWidget *b_panadapter_peaks_on = gtk_check_button_new_with_label("Show Peak Numbers on Panadapter");
+  gtk_widget_set_name(b_panadapter_peaks_on, "boldlabel");
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(b_panadapter_peaks_on), transmitter->panadapter_peaks_on);
+  gtk_widget_show(b_panadapter_peaks_on);
+  gtk_grid_attach(GTK_GRID(peaks_grid), b_panadapter_peaks_on, col, row, 1, 1);
+  g_signal_connect(b_panadapter_peaks_on, "toggled", G_CALLBACK(tx_panadapter_peaks_on_cb), NULL);
+  row++;
+
   GtkWidget *b_pan_peaks_in_passband = gtk_check_button_new_with_label("Show Peaks in Passband Only");
   gtk_widget_set_name(b_pan_peaks_in_passband, "boldlabel");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(b_pan_peaks_in_passband), transmitter->panadapter_peaks_in_passband_filled);
