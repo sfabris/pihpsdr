@@ -1019,7 +1019,7 @@ void tx_menu(GtkWidget *parent) {
 
   col = 0;
   row = 0;
-  GtkWidget *b_panadapter_peaks_on = gtk_check_button_new_with_label("Show Peak Numbers on Panadapter");
+  GtkWidget *b_panadapter_peaks_on = gtk_check_button_new_with_label("Label Strongest Peaks");
   gtk_widget_set_name(b_panadapter_peaks_on, "boldlabel");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(b_panadapter_peaks_on), transmitter->panadapter_peaks_on);
   gtk_widget_show(b_panadapter_peaks_on);
@@ -1027,21 +1027,21 @@ void tx_menu(GtkWidget *parent) {
   g_signal_connect(b_panadapter_peaks_on, "toggled", G_CALLBACK(tx_panadapter_peaks_on_cb), NULL);
   row++;
 
-  GtkWidget *b_pan_peaks_in_passband = gtk_check_button_new_with_label("Show Peaks in Passband Only");
+  GtkWidget *b_pan_peaks_in_passband = gtk_check_button_new_with_label("Label in Passband Only");
   gtk_widget_set_name(b_pan_peaks_in_passband, "boldlabel");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(b_pan_peaks_in_passband), transmitter->panadapter_peaks_in_passband_filled);
   gtk_widget_show(b_pan_peaks_in_passband);
   gtk_grid_attach(GTK_GRID(peaks_grid), b_pan_peaks_in_passband, col, row, 1, 1);
   g_signal_connect(b_pan_peaks_in_passband, "toggled", G_CALLBACK(tx_panadapter_peaks_in_passband_filled_cb), NULL);
 
-  GtkWidget *b_pan_hide_noise = gtk_check_button_new_with_label("Hide Peaks Below Noise Floor");
+  GtkWidget *b_pan_hide_noise = gtk_check_button_new_with_label("No Labels Below Noise Floor");
   gtk_widget_set_name(b_pan_hide_noise, "boldlabel");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(b_pan_hide_noise), transmitter->panadapter_hide_noise_filled);
   gtk_widget_show(b_pan_hide_noise);
   gtk_grid_attach(GTK_GRID(peaks_grid), b_pan_hide_noise, col, ++row, 1, 1);
   g_signal_connect(b_pan_hide_noise, "toggled", G_CALLBACK(tx_panadapter_hide_noise_filled_cb), NULL);
 
-  label = gtk_label_new("Number of Peaks to label:");
+  label = gtk_label_new("Number of Peaks to Label:");
   gtk_widget_set_name(label, "boldlabel");
   gtk_widget_set_halign(label, GTK_ALIGN_END);
   gtk_grid_attach(GTK_GRID(peaks_grid), label, col, ++row, 1, 1);
@@ -1054,7 +1054,7 @@ void tx_menu(GtkWidget *parent) {
   row++;
 
   col = 0;
-  label = gtk_label_new("Panadapter Ignore Adjacent Peaks:");
+  label = gtk_label_new("Ignore Adjacent Peaks:");
   gtk_widget_set_name(label, "boldlabel");
   gtk_widget_set_halign(label, GTK_ALIGN_END);
   gtk_grid_attach(GTK_GRID(peaks_grid), label, col, row, 1, 1);
@@ -1067,7 +1067,7 @@ void tx_menu(GtkWidget *parent) {
   row++;
 
   col = 0;
-  label = gtk_label_new("Panadapter Noise Floor Percentile:");
+  label = gtk_label_new("Noise Floor Percentile:");
   gtk_widget_set_name(label, "boldlabel");
   gtk_widget_set_halign(label, GTK_ALIGN_END);
   gtk_grid_attach(GTK_GRID(peaks_grid), label, col, row, 1, 1);
