@@ -210,12 +210,13 @@ gboolean rx_motion_notify_event(GtkWidget *widget, GdkEventMotion *event, gpoint
 
 // cppcheck-suppress constParameterPointer
 gboolean rx_scroll_event(GtkWidget *widget, const GdkEventScroll *event, gpointer data) {
-  if (event->direction == GDK_SCROLL_UP) {
-    vfo_step(1);
-  } else {
-    vfo_step(-1);
-  }
+  int step = 1;
 
+  if (event->direction == GDK_SCROLL_DOWN) { step = -step; }
+
+  if (event->state & GDK_SHIFT_MASK) { step = 10*step; }
+
+  vfo_step(step);
   return TRUE;
 }
 
