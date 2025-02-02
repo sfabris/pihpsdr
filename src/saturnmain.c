@@ -1221,7 +1221,7 @@ static gpointer saturn_rx_thread(gpointer arg) {
 
       while (DecodeByteCount >= 16) {                     // minimum size to try!
         if (*(DMAReadPtr + 7) != 0x80) {
-          t_print("%s: header not found for rate word at addr %hhn\n", __FUNCTION__, DMAReadPtr);
+          t_print("%s: header not found for rate word at addr %p\n", __FUNCTION__, DMAReadPtr);
           exit(1);
         } else {                                                                          // analyse word, then process
           // cppcheck-suppress constVariablePointer
@@ -1358,6 +1358,8 @@ void saturn_handle_high_priority(bool FromNetwork, unsigned char *UDPInBuffer) {
     } else {
       SDRActive = false;
       SetTXEnable(false);
+      IsTXMode = false;
+      SetMOX(false);
       EnableCW(false, false);
     }
 
@@ -1380,6 +1382,7 @@ void saturn_handle_high_priority(bool FromNetwork, unsigned char *UDPInBuffer) {
   //t_print("CAT over TCP port = %x\n", Word);
   //
   // transverter, speaker mute, open collector, user outputs
+  // open collector data is in bits 7:1; move to 6:0
   //
   Byte = (uint8_t)(UDPInBuffer[1400]);
   SetXvtrEnable((bool)(Byte & 1));
