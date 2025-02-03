@@ -210,11 +210,13 @@ gboolean rx_motion_notify_event(GtkWidget *widget, GdkEventMotion *event, gpoint
 
 // cppcheck-suppress constParameterPointer
 gboolean rx_scroll_event(GtkWidget *widget, const GdkEventScroll *event, gpointer data) {
-  int step = 1;
+  int step = (event->state & GDK_SHIFT_MASK) ? 10 : 1;
 
-  if (event->direction == GDK_SCROLL_DOWN) { step = -step; }
-
-  if (event->state & GDK_SHIFT_MASK) { step = 10*step; }
+  //
+  // On one of my Macs, the shift key modifies scroll up/down to scroll left/right,
+  // therefore treat BOTH down and right as "right"
+  //
+  if (event->direction == GDK_SCROLL_DOWN || event->direction == GDK_SCROLL_RIGHT) { step = -step; }
 
   vfo_step(step);
   return TRUE;
