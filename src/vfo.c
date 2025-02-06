@@ -515,6 +515,7 @@ static inline void vfo_id_adjust_band(int v, long long f) {
 }
 
 void vfo_xvtr_changed() {
+  CLIENT_MISSING;
   //
   // It may happen that the XVTR band is messed up in the sense
   // that the resulting radio frequency exceeds the limits.
@@ -641,7 +642,9 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
   //
   // defer update_eq() until here since it also applies TX EQ settings
   //
-  rx_set_agc(rx);
+  if (!radio_is_remote) {
+    rx_set_agc(rx);
+  }
   update_noise();
   update_eq();
   g_idle_add(ext_vfo_update, NULL);
@@ -831,7 +834,7 @@ void vfo_filter_changed(int f) {
 void vfo_id_filter_changed(int id, int f) {
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
-    send_filter(client_socket, id, f);
+    send_filter_sel(client_socket, id, f);
 #endif
     return;
   }
@@ -2314,7 +2317,7 @@ void vfo_id_rit_incr(int id, int incr) {
 void vfo_id_set_frequency(int v, long long f) {
   CLIENT_MISSING;
   //
-  // Here we used to have call vfo_band_changed() for
+  // Here we used to have call vfo_id_band_changed() for
   // frequency jumps from one band to another.
   // However, this involved saving/restoring
   // bandstacks, including setting the new mode

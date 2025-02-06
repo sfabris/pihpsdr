@@ -383,6 +383,9 @@ void rx_panadapter_update(RECEIVER *rx) {
   int pan = rx->pan;
 
   if (radio_is_remote) {
+    //
+    // A client will only hold as many samples as there are pixels
+    //
     pan = 0;
   }
 

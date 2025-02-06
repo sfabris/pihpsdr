@@ -231,17 +231,21 @@ static void var_spin_low_cb (GtkWidget *widget, gpointer data) {
     break;
   }
 
-  //t_print("%s: new values=(%d:%d)\n", __FUNCTION__, filter->low, filter->high);
-  //
-  // Change all receivers that use *this* variable filter
-  //
-  for (int i = 0; i < receivers; i++) {
-    if (vfo[i].filter == f) {
-      rx_filter_changed(receiver[i]);
-    }
+  if (radio_is_remote) {
+#ifdef CLIENT_SERVER
+    send_filter_var(client_socket, m, f);
+#endif
   }
 
-  g_idle_add(ext_vfo_update, NULL);
+  //
+  // Perform a "filter changed" operation on all receivers which
+  // use THIS filter.
+  //
+  for (int v = 0; v < receivers; v++) {
+    if ((vfo[v].mode == m) && (vfo[v].filter == f)) {
+      vfo_id_filter_changed(v, f);
+    }
+  }
 }
 
 //
@@ -295,17 +299,21 @@ static void var_spin_high_cb (GtkWidget *widget, gpointer data) {
     break;
   }
 
-  //t_print("%s: new values=(%d:%d)\n", __FUNCTION__, filter->low, filter->high);
-  //
-  // Change all receivers that use *this* variable filter
-  //
-  for (int i = 0; i < receivers; i++) {
-    if (vfo[i].filter == f) {
-      rx_filter_changed(receiver[i]);
-    }
+  if (radio_is_remote) {
+#ifdef CLIENT_SERVER
+    send_filter_var(client_socket, m, f);
+#endif
   }
 
-  g_idle_add(ext_vfo_update, NULL);
+  //
+  // Perform a "filter changed" operation on all receivers which
+  // use THIS filter.
+  //
+  for (int v = 0; v < receivers; v++) {
+    if ((vfo[v].mode == m) && (vfo[v].filter == f)) {
+      vfo_id_filter_changed(v, f);
+    }
+  }
 }
 
 void filter_menu(GtkWidget *parent) {

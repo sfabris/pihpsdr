@@ -1625,6 +1625,13 @@ void radio_change_receivers(int r) {
     rx_set_displaying(receiver[1]);
     gtk_container_remove(GTK_CONTAINER(fixed), receiver[1]->panel);
     receivers = 1;
+
+    if (radio_is_remote) {
+#ifdef CLIENT_SERVER
+      send_startstop_spectrum(client_socket, 1, 0);
+#endif
+    }
+
     break;
 
   case 2:
@@ -1632,6 +1639,12 @@ void radio_change_receivers(int r) {
     receiver[1]->displaying = 1;
     rx_set_displaying(receiver[1]);
     receivers = 2;
+
+    if (radio_is_remote) {
+#ifdef CLIENT_SERVER
+      send_startstop_spectrum(client_socket, 1, 1);
+#endif
+    }
 
     //
     // Make sure RX2 shares the sample rate  with RX1 when running P1.
@@ -2822,7 +2835,8 @@ int radio_remote_start(void *data) {
   gdk_window_set_cursor(gtk_widget_get_window(top_window), gdk_cursor_new(GDK_ARROW));
 
   for (int i = 0; i < receivers; i++) {
-    (void) gdk_threads_add_timeout_full(G_PRIORITY_DEFAULT_IDLE, 100, start_spectrum, receiver[i], NULL);
+    //(void) gdk_threads_add_timeout_full(G_PRIORITY_DEFAULT_IDLE, 100, start_spectrum, receiver[i], NULL);
+    send_startstop_spectrum(client_socket, i, 1);
   }
 
   start_vfo_timer();

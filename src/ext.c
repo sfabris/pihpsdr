@@ -160,4 +160,10 @@ int ext_set_title(void *data) {
   return G_SOURCE_REMOVE;
 }
 
+int ext_radio_change_receivers(void *data) {
+  int r = GPOINTER_TO_INT(data);
+  radio_change_receivers(r);
+  return G_SOURCE_REMOVE;
+}
+
 #endif

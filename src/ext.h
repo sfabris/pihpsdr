@@ -23,6 +23,7 @@
   extern int ext_set_title(void *data);
   extern int ext_remote_set_zoom(void *data);
   extern int ext_remote_set_pan(void *data);
+  extern int ext_radio_change_receivers(void *data);
 #endif
 
 //

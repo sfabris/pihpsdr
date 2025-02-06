@@ -24,6 +24,9 @@
 
 #include "audio.h"
 #include "band.h"
+#ifdef CLIENT_SERVER
+#include "client_server.h"
+#endif
 #include "discovered.h"
 #include "filter.h"
 #include "message.h"
@@ -86,7 +89,13 @@ static void sample_rate_cb(GtkToggleButton *widget, gpointer data) {
   //
   if (sscanf(p, "%d", &samplerate) != 1) { return; }
 
-  rx_change_sample_rate(active_receiver, samplerate);
+  if (radio_is_remote) {
+#ifdef CLIENT_SERVER
+    send_sample_rate(client_socket, active_receiver->id, samplerate);
+#endif
+  } else {
+    rx_change_sample_rate(active_receiver, samplerate);
+  }
 }
 
 static void adc_cb(GtkToggleButton *widget, gpointer data) {

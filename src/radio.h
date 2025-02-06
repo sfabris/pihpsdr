@@ -343,9 +343,38 @@ extern int optimize_for_touchscreen;
 extern void my_combo_attach(GtkGrid *grid, GtkWidget *combo, int row, int col, int spanrow, int spancol);
 
 //
-// Macro to flag an unimplemented client/server feature
+// Macro to flag an unimplemented client/server feature,
+// or a client trying to do things only a server should do.
 //
-#define CLIENT_MISSING if (radio_is_remote) { t_print("%s: TODO: CLIENT/SERVER\n", __FUNCTION__); return; }
+// This results in a fatal error with a dialog box
+//
+#ifdef CLIENT_SERVER
+#define CLIENT_MISSING                                                        \
+    if (radio_is_remote) {                                                    \
+      char *msg = g_new(char, 512);                                           \
+      snprintf(msg, 512, "%s: Client/Server Not Implemented!", __FUNCTION__); \
+      g_idle_add(fatal_error, msg);                                           \
+      return;                                                                 \
+   }
+#define CLIENT_WDSP                                                           \
+    if (radio_is_remote) {                                                    \
+      char *msg = g_new(char, 512);                                           \
+      snprintf(msg, 512, "%s: Client/Server Should Not Call!", __FUNCTION__); \
+      g_idle_add(fatal_error, msg);                                           \
+      return;                                                                 \
+   }
+#define CLIENT_WDSP_RET(x)                                                    \
+    if (radio_is_remote) {                                                    \
+      char *msg = g_new(char, 512);                                           \
+      snprintf(msg, 512, "%s: Client/Server Should Not Call!", __FUNCTION__); \
+      g_idle_add(fatal_error, msg);                                           \
+      return x;                                                               \
+   }
+#else
+#define CLIENT_MISSING
+#define CLIENT_WDSP
+#define CLIENT_WDSP_RET(x)
+#endif
 
 //
 // Macro for a memory barrier, preventing changing the execution order

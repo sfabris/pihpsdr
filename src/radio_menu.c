@@ -296,7 +296,7 @@ static void sample_rate_cb(GtkToggleButton *widget, gpointer data) {
 
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
-    send_sample_rate(client_socket, -1, samplerate);
+    send_sample_rate(client_socket, 0, samplerate);
 #endif
   } else {
     radio_change_sample_rate(samplerate);

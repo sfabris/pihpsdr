@@ -23,6 +23,7 @@
 #include <stdint.h>
 #include <netinet/in.h>
 
+#include "mode.h"
 #include "receiver.h"
 
 #ifndef __APPLE__
@@ -52,46 +53,51 @@ enum _header_type_enum {
   INFO_VFO,
   INFO_SPECTRUM,
   INFO_AUDIO,
-  CMD_RESP_SPECTRUM,
-  CMD_RESP_AUDIO,
-  CMD_RESP_SAMPLE_RATE,
-  CMD_RESP_LOCK,
-  CMD_RESP_CTUN,
-  CMD_RESP_SPLIT,
-  CMD_RESP_SAT,
-  CMD_RESP_DUP,
-  CMD_RESP_STEP,
-  CMD_RESP_RECEIVERS,
-  CMD_RESP_RX_FREQ,
-  CMD_RESP_RX_STEP,
-  CMD_RESP_RX_MOVE,
-  CMD_RESP_RX_MOVETO,
-  CMD_RESP_RX_BAND,
-  CMD_RESP_RX_MODE,
-  CMD_RESP_RX_FILTER,
-  CMD_RESP_RX_AGC,
-  CMD_RESP_RX_NOISE,
-  CMD_RESP_RX_ZOOM,
-  CMD_RESP_RX_PAN,
-  CMD_RESP_RX_VOLUME,
-  CMD_RESP_RX_AGC_GAIN,
-  CMD_RESP_RX_ATTENUATION,
-  CMD_RESP_RX_GAIN,
-  CMD_RESP_RX_SQUELCH,
-  CMD_RESP_RX_FPS,
-  CMD_RESP_RX_SELECT,
-  CMD_RESP_VFO,
-  CMD_RESP_RIT_TOGGLE,
-  CMD_RESP_RIT_CLEAR,
-  CMD_RESP_RIT,
-  CMD_RESP_XIT_TOGGLE,
-  CMD_RESP_XIT_CLEAR,
-  CMD_RESP_XIT,
-  CMD_RESP_RIT_INCREMENT,
-  CMD_RESP_FILTER_BOARD,
-  CMD_RESP_SWAP_IQ,
-  CMD_RESP_REGION,
-  CMD_RESP_MUTE_RX,
+  CMD_SPECTRUM,
+  CMD_AUDIO,
+  CMD_SAMPLE_RATE,
+  CMD_LOCK,
+  CMD_CTUN,
+  CMD_SPLIT,
+  CMD_SAT,
+  CMD_DUP,
+  CMD_STEP,
+  CMD_RECEIVERS,
+  CMD_RX_FREQ,
+  CMD_RX_STEP,
+  CMD_RX_MOVE,
+  CMD_RX_MOVETO,
+  CMD_RX_BAND,               // short command: id = info1, band = info2
+  CMD_RX_MODE,               // short command: id = info1, mode = info2
+  CMD_RX_FILTER_SEL,
+  CMD_RX_FILTER_VAR,
+  CMD_RX_FILTER_CUT,
+  CMD_RX_AGC,
+  CMD_RX_NOISE,
+  CMD_RX_ZOOM,
+  CMD_RX_PAN,
+  CMD_RX_VOLUME,
+  CMD_RX_AGC_GAIN,
+  CMD_RX_ATTENUATION,
+  CMD_RX_GAIN,
+  CMD_RX_SQUELCH,
+  CMD_RX_FPS,
+  CMD_RX_SELECT,             // short command: rx = info1
+  CMD_VFO_A_TO_B,            // short command: no parameters
+  CMD_VFO_B_TO_A,            // short command: no parameters
+  CMD_VFO_SWAP,              // short command: no parameters
+  CMD_RIT_TOGGLE,
+  CMD_RIT_CLEAR,
+  CMD_RIT,
+  CMD_XIT_TOGGLE,
+  CMD_XIT_CLEAR,
+  CMD_XIT,
+  CMD_RIT_INCREMENT,
+  CMD_FILTER_BOARD,
+  CMD_SWAP_IQ,
+  CMD_REGION,
+  CMD_MUTE_RX,
+  CLIENT_SERVER_COMMANDS,
 };
 
 enum _vfo_action_enum {
@@ -100,9 +106,9 @@ enum _vfo_action_enum {
   VFO_A_SWAP_B,
 };
 
-#define CLIENT_SERVER_VERSION 0LL
+#define CLIENT_SERVER_VERSION 0xFFFF     // This indicates a test version
 
-#define SPECTRUM_DATA_SIZE 1024
+#define SPECTRUM_DATA_SIZE 4096          // Maximum width of a panadapter
 #define AUDIO_DATA_SIZE 1024
 
 #define REMOTE_SYNC (uint16_t)0xFAFA
@@ -135,9 +141,12 @@ typedef struct _remote_client {
 typedef struct __attribute__((__packed__)) _header {
   uint16_t sync;
   uint16_t data_type;
-  uint64_t version;
+  uint16_t version;
+  uint8_t info1;
+  uint8_t info2;
+  uint16_t info3;
   union {
-    uint64_t i;
+    uint64_t i_do_not_know_what_to_do_with_this_data;
     REMOTE_CLIENT *client;
   } context;
 } HEADER;
@@ -264,7 +273,7 @@ typedef struct __attribute__((__packed__)) _spectrum_data {
   uint64_t vfo_a_offset;
   uint64_t vfo_b_offset;
   mydouble meter;
-  uint16_t samples;
+  uint16_t width;
   uint16_t sample[SPECTRUM_DATA_SIZE];
 } SPECTRUM_DATA;
 
@@ -335,22 +344,22 @@ typedef struct __attribute__((__packed__)) _volume_command {
   mydouble volume;
 } VOLUME_COMMAND;
 
-typedef struct __attribute__((__packed__)) _band_command {
-  HEADER header;
-  uint8_t id;
-  uint16_t band;
-} BAND_COMMAND;
+//typedef struct __attribute__((__packed__)) _band_command {
+//  HEADER header;
+//  uint8_t id;
+//  uint16_t band;
+//} BAND_COMMAND;
 
-typedef struct __attribute__((__packed__)) _mode_command {
-  HEADER header;
-  uint8_t id;
-  uint16_t mode;
-} MODE_COMMAND;
+//typedef struct __attribute__((__packed__)) _mode_command {
+//  HEADER header;
+//  uint8_t id;
+//  uint16_t mode;
+//} MODE_COMMAND;
 
 typedef struct __attribute__((__packed__)) _filter_command {
   HEADER header;
   uint8_t id;
-  uint16_t filter;
+  uint8_t filter;
   uint16_t filter_low;
   uint16_t filter_high;
 } FILTER_COMMAND;
@@ -440,15 +449,15 @@ typedef struct __attribute__((__packed__)) _ctun_command {
   uint8_t ctun;
 } CTUN_COMMAND;
 
-typedef struct __attribute__((__packed__)) _rx_select_command {
-  HEADER header;
-  uint8_t id;
-} RX_SELECT_COMMAND;
+//typedef struct __attribute__((__packed__)) _rx_select_command {
+//  HEADER header;
+//  uint8_t id;
+//} RX_SELECT_COMMAND;
 
-typedef struct __attribute__((__packed__)) _vfo_command {
-  HEADER header;
-  uint8_t id;
-} VFO_COMMAND;
+//typedef struct __attribute__((__packed__)) _vfo_command {
+//  HEADER header;
+//  uint8_t id;
+//} VFO_COMMAND;
 
 typedef struct __attribute__((__packed__)) _lock_command {
   HEADER header;
@@ -525,12 +534,12 @@ extern int destroy_hpsdr_server(void);
 
 extern int radio_connect_remote(char *host, int port);
 
-extern void send_radio_data(const REMOTE_CLIENT *client);
-extern void send_adc_data(const REMOTE_CLIENT *client, int i);
-extern void send_receiver_data(const REMOTE_CLIENT *client, int rx);
-extern void send_vfo_data(const REMOTE_CLIENT *client, int v);
+extern void send_radio_data(int sock);
+extern void send_adc_data(int sock, int i);
+extern void send_receiver_data(int sock, int rx);
+extern void send_vfo_data(int sock, int v);
 
-extern void send_start_spectrum(int s, int rx);
+extern void send_startstop_spectrum(int s, int rx, int state);
 extern void send_vfo_frequency(int s, int rx, long long hz);
 extern void send_vfo_move_to(int s, int rx, long long hz);
 extern void send_vfo_move(int s, int rx, long long hz, int round);
@@ -548,14 +557,15 @@ extern void send_squelch(int s, int rx, int enable, int squelch);
 extern void send_noise(int s, const RECEIVER *rx);
 extern void send_band(int s, int rx, int band);
 extern void send_mode(int s, int rx, int mode);
-extern void send_filter(int s, int rx, int filter);
+extern void send_filter_sel(int s, int vfo, int filter);
+extern void send_filter_var(int s, int mode, int filter);
+extern void send_filter_cut(int s, int rx);
 extern void send_split(int s, int split);
 extern void send_sat(int s, int sat);
 extern void send_dup(int s, int dup);
 extern void send_ctun(int s, int vfo, int ctun);
 extern void send_fps(int s, int rx, int fps);
 extern void send_rx_select(int s, int rx);
-extern void send_vfo(int s, int action);
 extern void send_lock(int s, int lock);
 extern void send_rit_toggle(int s, int rx);
 extern void send_rit_clear(int s, int rx);
@@ -570,6 +580,7 @@ extern void send_filter_board(int s, int filter_board);
 extern void send_swap_iq(int s, int swap_iq);
 extern void send_region(int s, int region);
 extern void send_mute_rx(int s, int mute);
+extern void send_varfilter_data(int s);
 
 extern void remote_audio(const RECEIVER *rx, short left_sample, short right_sample);
 
