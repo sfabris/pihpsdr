@@ -121,7 +121,7 @@ static void rit_cb(GtkComboBox *widget, gpointer data) {
 }
 
 static void vfo_cb(GtkComboBox *widget, gpointer data) {
-  vfo_set_step_from_index(myvfo, gtk_combo_box_get_active(widget));
+  vfo_id_set_step_from_index(myvfo, gtk_combo_box_get_active(widget));
   g_idle_add(ext_vfo_update, NULL);
 }
 
@@ -140,7 +140,7 @@ static void duplex_cb(GtkWidget *widget, gpointer data) {
 
 static void ctun_cb(GtkWidget *widget, gpointer data) {
   int state = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
-  vfo_ctun_update(myvfo, state);
+  vfo_id_ctun_update(myvfo, state);
   g_idle_add(ext_vfo_update, NULL);
 }
 
@@ -238,7 +238,7 @@ void vfo_menu(GtkWidget *parent, int id) {
   gtk_widget_set_halign(vfo_label, GTK_ALIGN_END);
   gtk_grid_attach(GTK_GRID(grid), vfo_label, 3, 3, 1, 1);
   GtkWidget *vfo_b = gtk_combo_box_text_new();
-  int ind = vfo_get_stepindex(myvfo);
+  int ind = vfo_id_get_stepindex(myvfo);
 
   for (i = 0; i < STEPS; i++) {
     gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(vfo_b), NULL, step_labels[i]);
@@ -347,7 +347,7 @@ void vfo_num_pad(int action, int id) {
         send_vfo_frequency(client_socket, id, fl);
 #endif
       } else {
-        vfo_set_frequency(id, fl);
+        vfo_id_set_frequency(id, fl);
       }
     }
 

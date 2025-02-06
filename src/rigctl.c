@@ -1355,12 +1355,12 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //ENDDEF
       if (command[4] == ';') {
         // read the step size
-        snprintf(reply, 256, "ZZAC%02d;", vfo_get_stepindex(VFO_A));
+        snprintf(reply, 256, "ZZAC%02d;", vfo_id_get_stepindex(VFO_A));
         send_resp(client->fd, reply) ;
       } else if (command[6] == ';') {
         // set the step size
         int i = atoi(&command[4]) ;
-        vfo_set_step_from_index(VFO_A, i);
+        vfo_id_set_step_from_index(VFO_A, i);
         g_idle_add(ext_vfo_update, NULL);
       } else {
       }
@@ -1798,7 +1798,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
           break;
         }
 
-        vfo_band_changed(v, band);
+        vfo_id_band_changed(v, band);
       }
     }
     break;
@@ -1843,7 +1843,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         send_resp(client->fd, reply) ;
       } else if (command[5] == ';') {
         int state = atoi(&command[4]);
-        vfo_ctun_update(VFO_A, state);
+        vfo_id_ctun_update(VFO_A, state);
         g_idle_add(ext_vfo_update, NULL);
       }
 
@@ -1864,7 +1864,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         send_resp(client->fd, reply) ;
       } else if (command[5] == ';') {
         int state = atoi(&command[4]);
-        vfo_ctun_update(VFO_B, state);
+        vfo_id_ctun_update(VFO_B, state);
         g_idle_add(ext_vfo_update, NULL);
       }
 
@@ -2062,7 +2062,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         send_resp(client->fd, reply) ;
       } else if (command[15] == ';') {
         long long f = atoll(&command[4]);
-        vfo_set_frequency(VFO_A, f);
+        vfo_id_set_frequency(VFO_A, f);
         g_idle_add(ext_vfo_update, NULL);
       }
 
@@ -2087,7 +2087,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         send_resp(client->fd, reply) ;
       } else if (command[15] == ';') {
         long long f = atoll(&command[4]);
-        vfo_set_frequency(VFO_B, f);
+        vfo_id_set_frequency(VFO_B, f);
         g_idle_add(ext_vfo_update, NULL);
       }
 
@@ -2844,10 +2844,10 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
       //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
-        vfo_rit_incr(VFO_A, -vfo[VFO_A].rit_step);
+        vfo_id_rit_incr(VFO_A, -vfo[VFO_A].rit_step);
       } else if (command[9] == ';') {
         // set RIT frequency
-        vfo_rit_value(VFO_A, atoi(&command[4]));
+        vfo_id_rit_value(VFO_A, atoi(&command[4]));
       }
 
       break;
@@ -2859,7 +2859,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         snprintf(reply, 256, "ZZRF%+5lld;", vfo[VFO_A].rit);
         send_resp(client->fd, reply);
       } else if (command[9] == ';') {
-        vfo_rit_value(VFO_A, atoi(&command[4]));
+        vfo_id_rit_value(VFO_A, atoi(&command[4]));
         g_idle_add(ext_vfo_update, NULL);
       }
 
@@ -2900,7 +2900,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         snprintf(reply, 256, "ZZRT%d;", vfo[VFO_A].rit_enabled);
         send_resp(client->fd, reply);
       } else if (command[5] == ';') {
-        vfo_rit_onoff(VFO_A, SET(atoi(&command[4])));
+        vfo_id_rit_onoff(VFO_A, SET(atoi(&command[4])));
       }
 
       break;
@@ -2909,9 +2909,9 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
       //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
-        vfo_rit_incr(VFO_A, vfo[VFO_A].rit_step);
+        vfo_id_rit_incr(VFO_A, vfo[VFO_A].rit_step);
       } else if (command[9] == ';') {
-        vfo_rit_value(VFO_A,  atoi(&command[4]));
+        vfo_id_rit_value(VFO_A,  atoi(&command[4]));
       }
 
       break;
@@ -3903,7 +3903,7 @@ int parse_cmd(void *data) {
         send_resp(client->fd, reply) ;
       } else if (command[13] == ';') {
         long long f = atoll(&command[2]);
-        vfo_set_frequency(VFO_A, f);
+        vfo_id_set_frequency(VFO_A, f);
         g_idle_add(ext_vfo_update, NULL);
       }
 
@@ -3928,7 +3928,7 @@ int parse_cmd(void *data) {
         send_resp(client->fd, reply) ;
       } else if (command[13] == ';') {
         long long f = atoll(&command[2]);
-        vfo_set_frequency(VFO_B, f);
+        vfo_id_set_frequency(VFO_B, f);
         g_idle_add(ext_vfo_update, NULL);
       }
 

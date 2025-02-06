@@ -513,154 +513,154 @@ int process_action(void *data) {
 
   case BAND_10:
     if (a->mode == PRESSED) {
-      vfo_band_changed(active_receiver->id, band10);
+      vfo_id_band_changed(active_receiver->id, band10);
     }
 
     break;
 
   case BAND_12:
     if (a->mode == PRESSED) {
-      vfo_band_changed(active_receiver->id, band12);
+      vfo_id_band_changed(active_receiver->id, band12);
     }
 
     break;
 
   case BAND_1240:
     if (a->mode == PRESSED) {
-      vfo_band_changed(active_receiver->id, band1240);
+      vfo_id_band_changed(active_receiver->id, band1240);
     }
 
     break;
 
   case BAND_144:
     if (a->mode == PRESSED) {
-      vfo_band_changed(active_receiver->id, band144);
+      vfo_id_band_changed(active_receiver->id, band144);
     }
 
     break;
 
   case BAND_15:
     if (a->mode == PRESSED) {
-      vfo_band_changed(active_receiver->id, band15);
+      vfo_id_band_changed(active_receiver->id, band15);
     }
 
     break;
 
   case BAND_160:
     if (a->mode == PRESSED) {
-      vfo_band_changed(active_receiver->id, band160);
+      vfo_id_band_changed(active_receiver->id, band160);
     }
 
     break;
 
   case BAND_17:
     if (a->mode == PRESSED) {
-      vfo_band_changed(active_receiver->id, band17);
+      vfo_id_band_changed(active_receiver->id, band17);
     }
 
     break;
 
   case BAND_20:
     if (a->mode == PRESSED) {
-      vfo_band_changed(active_receiver->id, band20);
+      vfo_id_band_changed(active_receiver->id, band20);
     }
 
     break;
 
   case BAND_220:
     if (a->mode == PRESSED) {
-      vfo_band_changed(active_receiver->id, band220);
+      vfo_id_band_changed(active_receiver->id, band220);
     }
 
     break;
 
   case BAND_2300:
     if (a->mode == PRESSED) {
-      vfo_band_changed(active_receiver->id, band2300);
+      vfo_id_band_changed(active_receiver->id, band2300);
     }
 
     break;
 
   case BAND_30:
     if (a->mode == PRESSED) {
-      vfo_band_changed(active_receiver->id, band30);
+      vfo_id_band_changed(active_receiver->id, band30);
     }
 
     break;
 
   case BAND_3400:
     if (a->mode == PRESSED) {
-      vfo_band_changed(active_receiver->id, band3400);
+      vfo_id_band_changed(active_receiver->id, band3400);
     }
 
     break;
 
   case BAND_40:
     if (a->mode == PRESSED) {
-      vfo_band_changed(active_receiver->id, band40);
+      vfo_id_band_changed(active_receiver->id, band40);
     }
 
     break;
 
   case BAND_430:
     if (a->mode == PRESSED) {
-      vfo_band_changed(active_receiver->id, band430);
+      vfo_id_band_changed(active_receiver->id, band430);
     }
 
     break;
 
   case BAND_6:
     if (a->mode == PRESSED) {
-      vfo_band_changed(active_receiver->id, band6);
+      vfo_id_band_changed(active_receiver->id, band6);
     }
 
     break;
 
   case BAND_60:
     if (a->mode == PRESSED) {
-      vfo_band_changed(active_receiver->id, band60);
+      vfo_id_band_changed(active_receiver->id, band60);
     }
 
     break;
 
   case BAND_70:
     if (a->mode == PRESSED) {
-      vfo_band_changed(active_receiver->id, band70);
+      vfo_id_band_changed(active_receiver->id, band70);
     }
 
     break;
 
   case BAND_80:
     if (a->mode == PRESSED) {
-      vfo_band_changed(active_receiver->id, band80);
+      vfo_id_band_changed(active_receiver->id, band80);
     }
 
     break;
 
   case BAND_902:
     if (a->mode == PRESSED) {
-      vfo_band_changed(active_receiver->id, band902);
+      vfo_id_band_changed(active_receiver->id, band902);
     }
 
     break;
 
   case BAND_AIR:
     if (a->mode == PRESSED) {
-      vfo_band_changed(active_receiver->id, bandAIR);
+      vfo_id_band_changed(active_receiver->id, bandAIR);
     }
 
     break;
 
   case BAND_GEN:
     if (a->mode == PRESSED) {
-      vfo_band_changed(active_receiver->id, bandGen);
+      vfo_id_band_changed(active_receiver->id, bandGen);
     }
 
     break;
 
   case BAND_136:
     if (a->mode == PRESSED) {
-      vfo_band_changed(active_receiver->id, band136);
+      vfo_id_band_changed(active_receiver->id, band136);
     }
 
     break;
@@ -681,7 +681,7 @@ int process_action(void *data) {
 
   case BAND_WWV:
     if (a->mode == PRESSED) {
-      vfo_band_changed(active_receiver->id, bandWWV);
+      vfo_id_band_changed(active_receiver->id, bandWWV);
     }
 
     break;
@@ -814,7 +814,7 @@ int process_action(void *data) {
 
   case CTUN:
     if (a->mode == PRESSED) {
-      vfo_ctun_update(active_receiver->id, NOT(vfo[active_receiver->id].ctun));
+      vfo_id_ctun_update(active_receiver->id, NOT(vfo[active_receiver->id].ctun));
       g_idle_add(ext_vfo_update, NULL);
     }
 
@@ -1461,20 +1461,20 @@ int process_action(void *data) {
   case RIT:
     if (a->mode == RELATIVE) {
       int id = active_receiver->id;
-      vfo_rit_incr(id, vfo[id].rit_step * a->val);
+      vfo_id_rit_incr(id, vfo[id].rit_step * a->val);
     }
     break;
 
   case RIT_CLEAR:
     if (a->mode == PRESSED) {
-      vfo_rit_value(active_receiver->id, 0);
+      vfo_id_rit_value(active_receiver->id, 0);
     }
 
     break;
 
   case RIT_ENABLE:
     if (a->mode == PRESSED) {
-      vfo_rit_toggle(active_receiver->id);
+      vfo_id_rit_toggle(active_receiver->id);
     }
 
     break;
@@ -1482,7 +1482,7 @@ int process_action(void *data) {
   case RIT_MINUS:
     if (a->mode == PRESSED) {
       int id = active_receiver->id;
-      vfo_rit_incr(id, -vfo[id].rit_step);
+      vfo_id_rit_incr(id, -vfo[id].rit_step);
 
       if (repeat_timer == 0) {
         repeat_action = *a;
@@ -1498,7 +1498,7 @@ int process_action(void *data) {
   case RIT_PLUS:
     if (a->mode == PRESSED) {
       int id = active_receiver->id;
-      vfo_rit_incr(id, vfo[id].rit_step);
+      vfo_id_rit_incr(id, vfo[id].rit_step);
 
       if (repeat_timer == 0) {
         repeat_action = *a;
@@ -1512,17 +1512,17 @@ int process_action(void *data) {
     break;
 
   case RIT_RX1:
-    vfo_rit_incr(0, vfo[0].rit_step * a->val);
+    vfo_id_rit_incr(0, vfo[0].rit_step * a->val);
     break;
 
   case RIT_RX2:
-    vfo_rit_incr(1, vfo[1].rit_step * a->val);
+    vfo_id_rit_incr(1, vfo[1].rit_step * a->val);
     break;
 
   case RIT_STEP:
     if (a->mode == PRESSED) {
-      int incr = 10*vfo[active_receiver->id].rit_step;
-     
+      int incr = 10 * vfo[active_receiver->id].rit_step;
+
       if (incr > 100) { incr = 100; }
 
       vfo_set_rit_step(incr);
@@ -1541,7 +1541,7 @@ int process_action(void *data) {
       if ((vfo[id].rit_enabled == 0) && (vfo[vfo_get_tx_vfo()].xit_enabled == 1)) {
         vfo_xit_incr(vfo[id].rit_step * a->val);
       } else {
-        vfo_rit_incr(id, vfo[id].rit_step * a->val);
+        vfo_id_rit_incr(id, vfo[id].rit_step * a->val);
       }
     }
 
@@ -1555,13 +1555,13 @@ int process_action(void *data) {
     //
     if (a->mode == PRESSED) {
       if ((vfo[active_receiver->id].rit_enabled == 0) && (vfo[vfo_get_tx_vfo()].xit_enabled == 0)) {
-        vfo_rit_onoff(active_receiver->id, 1);
+        vfo_id_rit_onoff(active_receiver->id, 1);
         vfo_xit_onoff(0);
       } else if ((vfo[active_receiver->id].rit_enabled == 1) && (vfo[vfo_get_tx_vfo()].xit_enabled == 0)) {
-        vfo_rit_onoff(active_receiver->id, 0);
+        vfo_id_rit_onoff(active_receiver->id, 0);
         vfo_xit_onoff(1);
       } else {
-        vfo_rit_onoff(active_receiver->id, 0);
+        vfo_id_rit_onoff(active_receiver->id, 0);
         vfo_xit_onoff(0);
       }
     }
@@ -1570,7 +1570,7 @@ int process_action(void *data) {
 
   case RITXIT_CLEAR:
     if (a->mode == PRESSED) {
-      vfo_rit_value(active_receiver->id, 0);
+      vfo_id_rit_value(active_receiver->id, 0);
       vfo_xit_value(0);
     }
 
@@ -1782,8 +1782,8 @@ int process_action(void *data) {
 
   case VFO_STEP_MINUS:
     if (a->mode == PRESSED) {
-      i = vfo_get_stepindex(active_receiver->id);
-      vfo_set_step_from_index(active_receiver->id, --i);
+      i = vfo_id_get_stepindex(active_receiver->id);
+      vfo_id_set_step_from_index(active_receiver->id, --i);
       g_idle_add(ext_vfo_update, NULL);
     }
 
@@ -1791,8 +1791,8 @@ int process_action(void *data) {
 
   case VFO_STEP_PLUS:
     if (a->mode == PRESSED) {
-      i = vfo_get_stepindex(active_receiver->id);
-      vfo_set_step_from_index(active_receiver->id, ++i);
+      i = vfo_id_get_stepindex(active_receiver->id);
+      vfo_id_set_step_from_index(active_receiver->id, ++i);
       g_idle_add(ext_vfo_update, NULL);
     }
 

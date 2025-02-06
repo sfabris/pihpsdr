@@ -88,7 +88,7 @@ gboolean band_select_cb (GtkWidget *widget, gpointer data) {
     // We have to assume that the band change succeeded, we just cannot know.
     newband = choice->info;
   } else {
-    vfo_band_changed(id, choice->info);
+    vfo_id_band_changed(id, choice->info);
     newband = vfo[id].band;
   }
 
