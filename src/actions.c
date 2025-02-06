@@ -1459,7 +1459,10 @@ int process_action(void *data) {
     break;
 
   case RIT:
-    vfo_rit_incr(active_receiver->id, rit_increment * a->val);
+    if (a->mode == RELATIVE) {
+      int id = active_receiver->id;
+      vfo_rit_incr(id, vfo[id].rit_step * a->val);
+    }
     break;
 
   case RIT_CLEAR:
@@ -1478,7 +1481,8 @@ int process_action(void *data) {
 
   case RIT_MINUS:
     if (a->mode == PRESSED) {
-      vfo_rit_incr(active_receiver->id, -rit_increment);
+      int id = active_receiver->id;
+      vfo_rit_incr(id, -vfo[id].rit_step);
 
       if (repeat_timer == 0) {
         repeat_action = *a;
@@ -1493,7 +1497,8 @@ int process_action(void *data) {
 
   case RIT_PLUS:
     if (a->mode == PRESSED) {
-      vfo_rit_incr(active_receiver->id, rit_increment);
+      int id = active_receiver->id;
+      vfo_rit_incr(id, vfo[id].rit_step);
 
       if (repeat_timer == 0) {
         repeat_action = *a;
@@ -1507,21 +1512,22 @@ int process_action(void *data) {
     break;
 
   case RIT_RX1:
-    vfo_rit_incr(0, rit_increment * a->val);
+    vfo_rit_incr(0, vfo[0].rit_step * a->val);
     break;
 
   case RIT_RX2:
-    vfo_rit_incr(1, rit_increment * a->val);
+    vfo_rit_incr(1, vfo[1].rit_step * a->val);
     break;
 
   case RIT_STEP:
     if (a->mode == PRESSED) {
-      rit_increment = 10 * rit_increment;
+      int incr = 10*vfo[active_receiver->id].rit_step;
+     
+      if (incr > 100) { incr = 100; }
 
-      if (rit_increment > 100) { rit_increment = 1; }
+      vfo_set_rit_step(incr);
     }
 
-    g_idle_add(ext_vfo_update, NULL);
     break;
 
   case RITXIT:
@@ -1530,10 +1536,13 @@ int process_action(void *data) {
     // a RITXIT encoder automatically switches between RIT or XIT. It does XIT
     // if (and only if) RIT is disabled and XIT is enabled, otherwise it does RIT
     //
-    if ((vfo[active_receiver->id].rit_enabled == 0) && (vfo[vfo_get_tx_vfo()].xit_enabled == 1)) {
-      vfo_xit_incr(rit_increment * a->val);
-    } else {
-      vfo_rit_incr(active_receiver->id, rit_increment * a->val);
+    if (a->mode == RELATIVE) {
+      int id = active_receiver->id;
+      if ((vfo[id].rit_enabled == 0) && (vfo[vfo_get_tx_vfo()].xit_enabled == 1)) {
+        vfo_xit_incr(vfo[id].rit_step * a->val);
+      } else {
+        vfo_rit_incr(id, vfo[id].rit_step * a->val);
+      }
     }
 
     break;
@@ -1840,7 +1849,7 @@ int process_action(void *data) {
     break;
 
   case XIT:
-    vfo_xit_incr(rit_increment * a->val);
+    vfo_xit_incr(vfo[vfo_get_tx_vfo()].rit_step * a->val);
     break;
 
   case XIT_CLEAR:
@@ -1859,7 +1868,7 @@ int process_action(void *data) {
 
   case XIT_MINUS:
     if (a->mode == PRESSED) {
-      vfo_xit_incr(-10 * rit_increment);
+      vfo_xit_incr(-10 * vfo[vfo_get_tx_vfo()].rit_step);
 
       if (repeat_timer == 0) {
         repeat_action = *a;
@@ -1874,7 +1883,7 @@ int process_action(void *data) {
 
   case XIT_PLUS:
     if (a->mode == PRESSED) {
-      vfo_xit_incr(10 * rit_increment);
+      vfo_xit_incr(10 * vfo[vfo_get_tx_vfo()].rit_step);
 
       if (repeat_timer == 0) {
         repeat_action = *a;

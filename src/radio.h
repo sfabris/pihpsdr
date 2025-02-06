@@ -171,8 +171,6 @@ extern DAC dac[2];
 
 extern int locked;
 
-extern int rit_increment;
-
 extern gboolean duplex;
 extern gboolean mute_rx_while_transmitting;
 extern int rx_height;

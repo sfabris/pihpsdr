@@ -2844,11 +2844,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
       //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
-        if (vfo[VFO_A].mode == modeCWL || vfo[VFO_A].mode == modeCWU) {
-          vfo_rit_incr(VFO_A, -10);
-        } else {
-          vfo_rit_incr(VFO_A, -rit_increment);
-        }
+        vfo_rit_incr(VFO_A, -vfo[VFO_A].rit_step);
       } else if (command[9] == ';') {
         // set RIT frequency
         vfo_rit_value(VFO_A, atoi(&command[4]));
@@ -2913,11 +2909,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
       //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
-        if (vfo[VFO_A].mode == modeCWL || vfo[VFO_A].mode == modeCWU) {
-          vfo_rit_incr(VFO_A, 10);
-        } else {
-          vfo_rit_incr(VFO_A, rit_increment);
-        }
+        vfo_rit_incr(VFO_A, vfo[VFO_A].rit_step);
       } else if (command[9] == ';') {
         vfo_rit_value(VFO_A,  atoi(&command[4]));
       }
