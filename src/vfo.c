@@ -454,7 +454,7 @@ void vfo_restore_state() {
     GetPropI1("vfo.%d.cw_apf", i,           vfo[i].cwAudioPeakFilter);
     GetPropI1("vfo.%d.deviation", i,        vfo[i].deviation);
     GetPropI1("vfo.%d.step", i,             vfo[i].step);
-    SetPropI1("vfo.%d.rit_step", i,         vfo[i].rit_step);
+    GetPropI1("vfo.%d.rit_step", i,         vfo[i].rit_step);
 
     // Sanity check: if !ctun, offset must be zero
     if (!vfo[i].ctun) {
