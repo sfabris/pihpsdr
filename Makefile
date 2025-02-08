@@ -19,7 +19,6 @@ SATURN=ON
 USBOZY=OFF
 SOAPYSDR=OFF
 STEMLAB=OFF
-SERVER=OFF
 AUDIO=PULSE
 
 #######################################################################################
@@ -33,7 +32,6 @@ AUDIO=PULSE
 # USBOZY       | If ON, piHPSDR can talk to legacy USB OZY radios (needs  libusb-1.0)
 # SOAPYSDR     | If ON, piHPSDR can talk to radios via SoapySDR library
 # STEMLAB      | If ON, piHPSDR can start SDR app on RedPitay via Web interface (needs libcurl)
-# SERVER       | If ON, include client/server code (still far from being complete)
 # AUDIO        | If AUDIO=ALSA, use ALSA rather than PulseAudio on Linux
 #
 # If you want to use a non-default compile time option, write them

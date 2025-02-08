@@ -1157,10 +1157,13 @@ of receivers that are running (well, you can choose between 1 and 2). When the n
 the radio communication will shortly be stopped and then resumed, so do not be surprised if the spectrum
 scope freezes for a second or so.
 
-\rett{RIT/XIT step:} In the pop-down menu you can choose among three (1 Hz, 10 Hz, 100 Hz) step sizes
-for RIT. For example, if the RIT step is 10 Hz, then you can change the RIT offset in steps of
-10 Hz with the RIT+ or RIT- buttons in the toolbar or on the GPIO/MIDI controller. Note that for the
-\bltt{XIT+} and \bltt{XIT-} buttons, the XIT offset changes by 10 times the RIT step size.
+\rett{RIT/XIT step:} In the pop-down menu you can choose among three (1 Hz, 10 Hz, 100 Hz) RIT step sizes
+for the VFO of the active receiver. For example, if the RIT step is 10 Hz, then you can change the RIT offset
+in steps of 10 Hz with the RIT+ or RIT- buttons in the toolbar or a push-button, or with
+an encoder assigned to the \bltt{RIT} command. Note that for the
+\bltt{XIT+} and \bltt{XIT-} buttons, the XIT offset changes by 10 times the RIT step size. The RIT/XIT step
+size is part of the RX/TX profile (see chapter \ref{sec:rxtxprofiles}) and therefore it is automatically updated
+if you change the mode.
 
 \rett{Region:} Although not obvious, this selects settings for the 60m band. Possible choices are "Other",
  "UK" and "WRC15". The \texttt{Other} and \texttt{UK} choices implement the channel structure of the 60m
@@ -3967,11 +3970,11 @@ settings, equaliser settings, and TX compressor settings
  one normally does not want neither noise reduction or equaliser being active on the RX
  side, nor a speech processor for transmitting.
 
- On the other side, one often wants the same modes for USB and LSB, or for DIGU and DIGL.
+ On the other side, one often wants the same settings for USB and LSB, or for DIGU and DIGL.
  Therefore mode groups have been defined that encompass USB/LSB/DSB, or CWU/CWL, or
  DIGU/DIGL. AM and FM, on the other hand, ,,mode groups'' with only one member.
 
- Each mode now has an associated RX/TX profile containing lots of settings (see below).
+ Each mode  has an associated RX/TX profile containing lots of settings (see below).
  When switching a mode (either by an explicit request, or implicitly by a VFO swap/copy
  operation, a band or band stack change, or by recalling a memory slot), the profile of
  that mode overwrites the current settings.
@@ -3995,6 +3998,7 @@ settings, equaliser settings, and TX compressor settings
 $\bullet$ Filter type \cr
 $\bullet$ CW peak filter (on/off) \cr
 $\bullet$ VFO step size  \cr
+$\bullet$ VFO RIT step size \cr
 $\bullet$ RX Noise reduction (all settings) \cr
 $\bullet$ RX Noise blanker (all settings) \cr
 $\bullet$ RX Automatic notch filter (on/off) \cr
@@ -4004,7 +4008,7 @@ $\bullet$ RX equaliser (all settings) \cr
 $\bullet$ TX equaliser (all settings) \cr
 $\bullet$ TX speech processor (on/off, compression level) \cr
 $\bullet$ TX continuous frequency compressor (CFC, all settings) \cr
-$\bullet$ TX downward expander (DEXP, on/off) \cr
+$\bullet$ TX downward expander (DEXP, all settings) \cr
 $\bullet$ TX mic gain slider position \cr
 \bottomrule
 \end{tabular}
@@ -7100,15 +7104,15 @@ module is used no matter what the \texttt{AUDIO} setting is.
 %remove it from \pH in the future.
 %}
 
-\item[\rett{SERVER}] {(\textbf{Unfinished/Experimental}, default: \texttt{OFF})
- This is not yet completed but is mentioned here anyway. There are plans to have
- a client/server model in \pH such that you can have a ,,distant'' radio with a computer
- running \pH connected to that radio, and a ,,local'' computer running \pH, and an
- internet connection between the two computers. All the time-critical data exchange happens
- between the ,,distant'' radio and the ,,distant'' computer using a straight internet
- cable connection, while the user interface data is exchanged between the two copies of
- \pH running on the two computers.
-}
+%\item[\rett{SERVER}] {(\textbf{Unfinished/Experimental}, default: \texttt{OFF})
+% This is not yet completed but is mentioned here anyway. There are plans to have
+% a client/server model in \pH such that you can have a ,,distant'' radio with a computer
+% running \pH connected to that radio, and a ,,local'' computer running \pH, and an
+% internet connection between the two computers. All the time-critical data exchange happens
+% between the ,,distant'' radio and the ,,distant'' computer using a straight internet
+% cable connection, while the user interface data is exchanged between the two copies of
+% \pH running on the two computers.
+%}
 
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -7402,7 +7406,11 @@ libraries such as libgpiod that are missing in the repository, which you can ign
 is quite outdated (version 0.7) while \pH requires a more recent version (0.8) because the
 SoapySDR API has changed from 0.7 to 0.8. The necessity to compile SoapySDR from the sources
 may be dropped in the future, if the libraries in the standard repositiories are all updated
-to the 0.8 API. Use the \grtt{SoapySDRUtil -info} command (see below for a sample output) to
+to the 0.8 API. Use the command
+
+\grtt{SoapySDRUtil -info}
+
+(see below for a sample output) to
 verify that the SoapySDR core has correctly been installed.
 
 \textbf{\color{red}Support for specific SoapySDR radios.} The script \texttt{libinstall.sh} only compiles
@@ -7413,10 +7421,14 @@ At the moment, there is support for the Adalm Pluto, for RTL sticks, for AirSpy 
 for the SDRplay. I have put together and tested scripts for the Pluto and for RTL sticks,
 since I have the hardware and can test it. The other scripts that install support modules
 for SoapySDR radios have been contributed by \pH users who have those radios and managed
-to compose an automatic install script for the required SoapySDR modules. Use the
-\grtt{SoapySDRUtil -find} command (see below for a sample output) to verify that SoapySDR
-``finds'' your radio. If SoapySDR does not find it, \pH cannot connect. To install the (radio specific)
-SoapySDR module for an Adalm Pluto (to give an example), you can type in at this place
+to compose an automatic install script for the required SoapySDR modules. Use the command
+
+\grtt{SoapySDRUtil -find}
+
+(see below for a sample output) to verify that SoapySDR
+``finds'' your radio. If SoapySDR does not find it, then \pH also cannot detect it.
+To install the (radio specific) SoapySDR module for an Adalm Pluto (to give an example),
+ you can type in at this place
 
 \grtt{cd \$HOME/pihpsdr}
 \grtt{LINUX/soapy.pluto.sh}
@@ -7427,7 +7439,7 @@ SoapySDR module for an Adalm Pluto (to give an example), you can type in at this
 the GPIO I/O lines for some other purpose, you must de-activate the GPIO compile time option
 first, as described in Appendix \ref{sec:compiletime}.
 
-\textbf{\color{red}Anan G2-Ultra note:}For the Anan G2-Ultra radios (those with a dozen (or so) LEDs on
+\textbf{\color{red}Anan G2-Ultra note:} For the Anan G2-Ultra radios (those with a dozen (or so) LEDs on
 the front panel and a 8-inch screen), as well as for original G2 radios (without LEDs and with a 7-inch screen)
 where the CPU board has been upgraded to a Radxa CM5 module, \pH should also be compiled \textit{without} (!) the
 GPIO compile time option.
@@ -7450,9 +7462,9 @@ and want to re-compile later, this sequence is the safest way to create a new bi
 namely go to the \texttt{pihpsdr}
 directory and recompile by executing ``make''.
 
-\begin{figure}[ht]
+\begin{figure}[h!]
 \center
-\includegraphics[scale=0.45]{piDontAsk.png}
+\includegraphics[scale=0.4]{piDontAsk.png}
 \caption{Suppress being asked options when clicking the \pH desktop icon.}
 \label{fig:piDontAsk}
 \end{figure}
@@ -7478,7 +7490,7 @@ Appendix \ref{sec:compiletime}.
 \bigskip
 
 \textbf{\color{red}Checking the SoapySDR installation.}
-If you do not plan to use SoapySDR devices, you need not compile with \texttt{SOAPYSDR}
+If you do not plan to use radios connected via the SoapySDR library, you need not compile with \texttt{SOAPYSDR}
 enabled and can skip the rest of this section.
 
 To check the SoapySDR installation, open a new terminal
@@ -7519,16 +7531,16 @@ Available converters...
 \end{tiny}
 
 (Sorry for the tiny font, I did not want to wrap output lines.)
-Note the Library/API/ABI version (0.8). If you see version 0.7 here
+Note the Lib/API/ABI version (0.8). If you see version 0.7 here
 then you probably have installed SoapySDR on your computer
-from
-the standard repositories, and this is not going to work. The \texttt{libinstall.sh} command  has been
-designed
+from the standard repositories, and this is not going to work.
+The \texttt{libinstall.sh} command  has been designed
 to work (and has been tested on) a plain vanilla operating system, not on a ``spoiled'' one
 where the user has manually installed additional software packages that may induce incompatibilities.
 The best way out of such a problem is to re-install Linux (on a RaspPi, simply use a new SD card to do so).
 
-I think in the near future, the standard repositories will also advance to SoaySDR version 0.8, and then
+I expect that in the near not-too-distant future, the standard LINUX
+repositories will also advance to SoaySDR version 0.8, and then
 the installation procedure no longer needs to download and compile SoapySDR and all
 its modules, they can simply be taken from the ``official'' distribution.
 
@@ -7568,7 +7580,7 @@ stems from missing, corrupt, or outdated SoapySDR libraries which are not part o
 
 \textit{This procedure has been tested on several Macintosh models, including a MacBook Air with an
 M1 Apple Silicon CPU, a MacMini with an M2 pro CPU, and a somewhat older MacMini with an Intel CPU.
-In the last years, MacOS operating systems from version 10.15 (,,Catalina'') through 15.2 (,,Sequoia'')
+In the last years, MacOS operating systems from version 10.15 (,,Catalina'') through 15.3 (,,Sequoia'')
 have been used. Very old MacOS systems (e.g. Catalina) are no longer supported by HomeBrew. Installing
 \pH on these is still possible but requires (really) advanced skills, so take care to use a Mac with an operating
 system still supported by HomeBrew.}
@@ -7610,7 +7622,7 @@ in the Applications folder. It is suggested to drag this application into the ,,
 access.
 
 On a plain vanilla MacOS, even the most basic commands for doing programming are not installed
-by default. For example, the \grtt{git} command used below as the first step  to download /pH is
+by default. For example, the \grtt{git} command used below as the first step  to download \pH is
 not present by default. But this is easily cured. Simply open a terminal window and type in the command
 
 \grtt{xcode-select --install}
