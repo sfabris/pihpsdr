@@ -54,8 +54,6 @@ extern gboolean radio_is_remote;
 
 extern GtkWidget *fixed;
 
-extern long long frequency_calibration;
-
 enum _filter_board_enum {
   NO_FILTER_BOARD = 0,
   ALEX,
@@ -102,6 +100,7 @@ enum _display_enum {
   AVG_TIMEWINDOW
 };
 
+extern long long frequency_calibration;
 extern int region;
 
 extern int RECEIVERS;
@@ -132,17 +131,14 @@ enum _sat_mode_enum {
 
 extern int sat_mode;
 
-extern int radio_sample_rate;
-extern gboolean iqswap;
+extern int soapy_radio_sample_rate;
+extern gboolean soapy_iqswap;
 
 extern int atlas_penelope;
 extern int atlas_clock_source_10mhz;
 extern int atlas_clock_source_128mhz;
-extern int atlas_config;
 extern int atlas_mic_source;
 extern int atlas_janus;
-
-extern int classE;
 
 extern int tx_out_of_band_allowed;
 
@@ -232,9 +228,6 @@ extern long long tune_timeout;
 
 extern int analog_meter;
 
-extern int eer_pwm_min;
-extern int eer_pwm_max;
-
 extern int tx_filter_low;
 extern int tx_filter_high;
 
@@ -289,7 +282,6 @@ extern const int MIN_METER_WIDTH;
 extern int METER_WIDTH;
 extern int METER_HEIGHT;
 extern int MENU_WIDTH;
-extern int rx_stack_horizontal;
 
 extern int suppress_popup_sliders;
 extern const int tx_dialog_width;
@@ -306,6 +298,7 @@ extern void   radio_reconfigure(void);
 extern void   radio_reconfigure_screen(void);
 extern void   radio_start_radio(void);
 extern void   radio_change_receivers(int r);
+extern void   radio_remote_change_receivers(int r);
 extern void   radio_change_sample_rate(int rate);
 extern void   radio_set_alex_antennas(void);
 extern void   radio_tx_vfo_changed(void);
@@ -334,6 +327,7 @@ extern void   radio_protocol_run(void);
 extern void   radio_protocol_stop(void);
 extern void   radio_protocol_restart(void);
 extern void   radio_start_auto_tune(void);
+extern void   radio_set_anan10E(int new);
 
 extern int compare_doubles(const void *a, const void *b);
 
@@ -351,31 +345,15 @@ extern void my_combo_attach(GtkGrid *grid, GtkWidget *combo, int row, int col, i
 // This results in a fatal error with a dialog box
 //
 #ifdef CLIENT_SERVER
-#define CLIENT_MISSING                                                        \
+#define ASSERT_SERVER(ret)                                                    \
     if (radio_is_remote) {                                                    \
       char *msg = g_new(char, 512);                                           \
       snprintf(msg, 512, "%s: Client/Server Not Implemented!", __FUNCTION__); \
       g_idle_add(fatal_error, msg);                                           \
-      return;                                                                 \
-   }
-#define CLIENT_WDSP                                                           \
-    if (radio_is_remote) {                                                    \
-      char *msg = g_new(char, 512);                                           \
-      snprintf(msg, 512, "%s: Client/Server Should Not Call!", __FUNCTION__); \
-      g_idle_add(fatal_error, msg);                                           \
-      return;                                                                 \
-   }
-#define CLIENT_WDSP_RET(x)                                                    \
-    if (radio_is_remote) {                                                    \
-      char *msg = g_new(char, 512);                                           \
-      snprintf(msg, 512, "%s: Client/Server Should Not Call!", __FUNCTION__); \
-      g_idle_add(fatal_error, msg);                                           \
-      return x;                                                               \
+      return ret;                                                             \
    }
 #else
-#define CLIENT_MISSING
-#define CLIENT_WDSP
-#define CLIENT_WDSP_RET(x)
+#define ASSERT_SERVER(ret)
 #endif
 
 //

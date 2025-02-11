@@ -177,6 +177,7 @@ static void init_audio_ramp(double *ramp, int width) {
 }
 
 static void init_dl1ycf_ramp(double *ramp, int width) {
+  ASSERT_SERVER();
   //
   // ========================================================================
   //
@@ -227,6 +228,7 @@ static void init_dl1ycf_ramp(double *ramp, int width) {
 
 #if 0
 static void init_ve3nea_ramp(double *ramp, int width) {
+  ASSERT_SERVER();
   //
   // Calculate a "VE3NEA" ramp (integrated Blackman-Harris-Window)
   // Output: ramp[0] ... ramp[width] contain numbers
@@ -265,16 +267,19 @@ void tx_set_ramps(TRANSMITTER *tx) {
   tx->cw_ramp_audio = g_new(double, tx->cw_ramp_audio_len + 1);
   init_audio_ramp(tx->cw_ramp_audio, tx->cw_ramp_audio_len);
 
-  //
-  // For the RF pulse envelope, use a BlackmanHarris ramp with a
-  // user-specified width
-  //
-  if (tx->cw_ramp_rf) { g_free(tx->cw_ramp_rf); }
+  if (!radio_is_remote) {
+    //
+    // For the RF pulse envelope, use a BlackmanHarris ramp with a
+    // user-specified width
+    //
+    if (tx->cw_ramp_rf) { g_free(tx->cw_ramp_rf); }
 
-  tx->cw_ramp_rf_ptr = 0;
-  tx->cw_ramp_rf_len = 48 * tx->ratio * cw_ramp_width;
-  tx->cw_ramp_rf = g_new(double, tx->cw_ramp_rf_len + 1);
-  init_dl1ycf_ramp(tx->cw_ramp_rf, tx->cw_ramp_rf_len);
+    tx->cw_ramp_rf_ptr = 0;
+    tx->cw_ramp_rf_len = 48 * tx->ratio * cw_ramp_width;
+    tx->cw_ramp_rf = g_new(double, tx->cw_ramp_rf_len + 1);
+    init_dl1ycf_ramp(tx->cw_ramp_rf, tx->cw_ramp_rf_len);
+  }
+
   g_mutex_unlock(&tx->cw_ramp_mutex);
 }
 
@@ -284,28 +289,29 @@ void tx_reconfigure(TRANSMITTER *tx, int pixels, int width, int height) {
     t_print("%s: width=%d height=%d\n", __FUNCTION__, width, height);
     tx->width = width;
     tx->height = height;
-    gtk_widget_set_size_request(tx->panel, width, height);
     //
     // In duplex mode, pixels = 4*width, else pixels equals width
     //
     tx->pixels = pixels;
     g_free(tx->pixel_samples);
     tx->pixel_samples = g_new(float, tx->pixels);
-    tx_set_analyzer(tx);
     g_mutex_unlock(&tx->display_mutex);
 
-    if (protocol == ORIGINAL_PROTOCOL || protocol == NEW_PROTOCOL) {
-      RECEIVER *rx = receiver[PS_RX_FEEDBACK];
-      g_mutex_lock(&rx->mutex);
-      rx->pixels = pixels;
-      g_free(rx->pixel_samples);
-      rx->pixel_samples = g_new(float, rx->pixels);
-      rx_set_analyzer(rx);
-      g_mutex_unlock(&rx->mutex);
+    if (!radio_is_remote) {
+      tx_set_analyzer(tx);
+
+      if (protocol == ORIGINAL_PROTOCOL || protocol == NEW_PROTOCOL) {
+        RECEIVER *rx = receiver[PS_RX_FEEDBACK];
+        g_mutex_lock(&rx->mutex);
+        rx->pixels = pixels;
+        g_free(rx->pixel_samples);
+        rx->pixel_samples = g_new(float, rx->pixels);
+        rx_set_analyzer(rx);
+        g_mutex_unlock(&rx->mutex);
+      }
     }
-
   }
-
+  gtk_widget_set_size_request(tx->panel, width, height);
   gtk_widget_set_size_request(tx->panadapter, width, height);
 }
 
@@ -474,6 +480,7 @@ static void tx_restore_state(TRANSMITTER *tx) {
 }
 
 static double compute_power(double p) {
+  ASSERT_SERVER(0.0);
   double interval = 0.1 * pa_power_list[pa_power];
   int i = 0;
 
@@ -492,6 +499,7 @@ static double compute_power(double p) {
 }
 
 static gboolean tx_update_display(gpointer data) {
+  ASSERT_SERVER(FALSE);
   TRANSMITTER *tx = (TRANSMITTER *)data;
   int rc;
 
@@ -827,6 +835,7 @@ static void tx_create_visual(TRANSMITTER *tx) {
 }
 
 TRANSMITTER *tx_create_transmitter(int id, int pixels, int width, int height) {
+  ASSERT_SERVER(NULL);
   TRANSMITTER *tx = g_new(TRANSMITTER, 1);
   //
   // This is to guard against programming errors
@@ -863,8 +872,8 @@ TRANSMITTER *tx_create_transmitter(int id, int pixels, int width, int height) {
   case SOAPYSDR_PROTOCOL:
     tx->mic_sample_rate = 48000;
     tx->mic_dsp_rate = 96000;
-    tx->iq_output_rate = radio_sample_rate;  // MUST be a multiple of 48k
-    tx->ratio = radio_sample_rate / 48000;
+    tx->iq_output_rate = soapy_radio_sample_rate;  // MUST be a multiple of 48k
+    tx->ratio = soapy_radio_sample_rate / 48000;
     break;
   }
 
@@ -1148,6 +1157,7 @@ TRANSMITTER *tx_create_transmitter(int id, int pixels, int width, int height) {
 //////////////////////////////////////////////////////////////////////////
 
 static void tx_full_buffer(TRANSMITTER *tx) {
+  ASSERT_SERVER();
   long isample;
   long qsample;
   double gain;
@@ -1407,6 +1417,7 @@ static void tx_full_buffer(TRANSMITTER *tx) {
 }
 
 void tx_add_mic_sample(TRANSMITTER *tx, float mic_sample) {
+  ASSERT_SERVER();
   int txmode = vfo_get_tx_mode();
   double mic_sample_double;
   int i, j;
@@ -1612,6 +1623,7 @@ void tx_add_mic_sample(TRANSMITTER *tx, float mic_sample) {
 
 void tx_add_ps_iq_samples(const TRANSMITTER *tx, double i_sample_tx, double q_sample_tx, double i_sample_rx,
                           double q_sample_rx) {
+  ASSERT_SERVER();
   RECEIVER *tx_feedback = receiver[PS_TX_FEEDBACK];
   RECEIVER *rx_feedback = receiver[PS_RX_FEEDBACK];
 
@@ -1672,6 +1684,7 @@ void tx_add_ps_iq_samples(const TRANSMITTER *tx, double i_sample_tx, double q_sa
 }
 
 void tx_set_displaying(TRANSMITTER *tx) {
+  ASSERT_SERVER();
   if (tx->displaying) {
     if (tx->update_timer_id > 0) {
       g_source_remove(tx->update_timer_id);
@@ -1688,6 +1701,7 @@ void tx_set_displaying(TRANSMITTER *tx) {
 }
 
 void tx_set_filter(TRANSMITTER *tx) {
+  ASSERT_SERVER();
   int txmode = vfo_get_tx_mode();
   // load default values
   int low  = tx_filter_low;
@@ -1784,6 +1798,7 @@ void tx_set_filter(TRANSMITTER *tx) {
 }
 
 void tx_set_framerate(TRANSMITTER *tx) {
+  ASSERT_SERVER();
   //
   // When changing the TX display frame rate, the TX display update timer
   // has to be restarted, as well as the initializer
@@ -1812,6 +1827,7 @@ void tx_set_framerate(TRANSMITTER *tx) {
 //#define WDSPTXDEBUG
 
 void tx_close(const TRANSMITTER *tx) {
+  ASSERT_SERVER();
   CloseChannel(tx->id);
 #ifdef WDSPTXDEBUG
   t_print("TX CloseChannel id=%d\n", tx->id);
@@ -1819,6 +1835,7 @@ void tx_close(const TRANSMITTER *tx) {
 }
 
 void tx_create_analyzer(const TRANSMITTER *tx) {
+  ASSERT_SERVER();
   int rc;
 #ifdef WDSPTXDEBUG
   t_print("TX CreateAnalyzer id=%d\n", tx->id);
@@ -1833,6 +1850,7 @@ void tx_create_analyzer(const TRANSMITTER *tx) {
 }
 
 double tx_get_alc(const TRANSMITTER *tx) {
+  ASSERT_SERVER(0.0);
   double alc;
 
   switch (tx->alcmode) {
@@ -1854,12 +1872,14 @@ double tx_get_alc(const TRANSMITTER *tx) {
 }
 
 int tx_get_pixels(TRANSMITTER *tx) {
+  ASSERT_SERVER(0);
   int rc;
   GetPixels(tx->id, 0, tx->pixel_samples, &rc);
   return rc;
 }
 
 void tx_set_analyzer(const TRANSMITTER *tx) {
+  ASSERT_SERVER();
   int flp[] = {0};
   const double keep_time = 0.1;
   const int n_pixout = 1;
@@ -1910,6 +1930,7 @@ void tx_set_analyzer(const TRANSMITTER *tx) {
 }
 
 void tx_off(const TRANSMITTER *tx) {
+  ASSERT_SERVER();
   // switch TX OFF, wait until slew-down completed
   SetChannelState(tx->id, 0, 1);
 #ifdef WDSPTXDEBUG
@@ -1918,6 +1939,7 @@ void tx_off(const TRANSMITTER *tx) {
 }
 
 void tx_on(const TRANSMITTER *tx) {
+  ASSERT_SERVER();
   // switch TX ON
   SetChannelState(tx->id, 1, 0);
 #ifdef WDSPTXDEBUG
@@ -1926,22 +1948,26 @@ void tx_on(const TRANSMITTER *tx) {
 }
 
 void tx_ps_getinfo(const TRANSMITTER *tx, int *info) {
+  ASSERT_SERVER();
   GetPSInfo(tx->id, info);
 }
 
 double tx_ps_getmx(const TRANSMITTER *tx) {
+  ASSERT_SERVER(0.0);
   double mx;
   GetPSMaxTX(tx->id, &mx);
   return mx;
 }
 
 double tx_ps_getpk(const TRANSMITTER *tx) {
+  ASSERT_SERVER(0.0);
   double pk;
   GetPSHWPeak(tx->id, &pk);
   return pk;
 }
 
 void tx_ps_mox(const TRANSMITTER *tx, int state) {
+  ASSERT_SERVER();
   SetPSMox(tx->id, state);
 #ifdef WDSPTXDEBUG
   t_print("TX id=%d PS mox=%d\n", tx->id, state);
@@ -1949,6 +1975,7 @@ void tx_ps_mox(const TRANSMITTER *tx, int state) {
 }
 
 void tx_ps_onoff(TRANSMITTER *tx, int state) {
+  ASSERT_SERVER();
   //
   // Switch PureSignal on (state !=0) or off (state==0)
   //
@@ -2038,6 +2065,7 @@ void tx_ps_onoff(TRANSMITTER *tx, int state) {
 }
 
 void tx_ps_reset(const TRANSMITTER *tx) {
+  ASSERT_SERVER();
 #ifdef WDSPTXDEBUG
   t_print("TX id=%d PS Reset\n", tx->id);
 #endif
@@ -2045,6 +2073,7 @@ void tx_ps_reset(const TRANSMITTER *tx) {
 }
 
 void tx_ps_resume(const TRANSMITTER *tx) {
+  ASSERT_SERVER();
 #ifdef WDSPTXDEBUG
   t_print("TX id=%d PS Resume OneShot=%d\n", tx->id, tx->ps_oneshot);
 #endif
@@ -2057,6 +2086,7 @@ void tx_ps_resume(const TRANSMITTER *tx) {
 }
 
 void tx_ps_set_sample_rate(const TRANSMITTER *tx, int rate) {
+  ASSERT_SERVER();
 #ifdef WDSPTXDEBUG
   t_print("TX id=%d PS SampleRate=%d\n", tx->id, rate);
 #endif
@@ -2064,6 +2094,7 @@ void tx_ps_set_sample_rate(const TRANSMITTER *tx, int rate) {
 }
 
 void tx_ps_setparams(const TRANSMITTER *tx) {
+  ASSERT_SERVER();
   SetPSMapMode(tx->id, tx->ps_map);
   SetPSPtol(tx->id, tx->ps_ptol ? 0.4 : 0.8);
   SetPSIntsAndSpi(tx->id, tx->ps_ints, tx->ps_spi);
@@ -2081,6 +2112,7 @@ void tx_ps_setparams(const TRANSMITTER *tx) {
 }
 
 void tx_ps_setpk(const TRANSMITTER *tx, double peak) {
+  ASSERT_SERVER();
   SetPSHWPeak(tx->id, peak);
 #ifdef WDSPTXDEBUG
   t_print("TX id=%d PS HWpeak=%g\n", tx->id, peak);
@@ -2088,6 +2120,7 @@ void tx_ps_setpk(const TRANSMITTER *tx, double peak) {
 }
 
 void tx_set_am_carrier_level(const TRANSMITTER *tx) {
+  ASSERT_SERVER();
   SetTXAAMCarrierLevel(tx->id, tx->am_carrier_level);
 #ifdef WDSPTXDEBUG
   t_print("TX id=%d AM carrier level=%g\n", tx->id, tx->am_carrier_level);
@@ -2095,6 +2128,7 @@ void tx_set_am_carrier_level(const TRANSMITTER *tx) {
 }
 
 void tx_set_average(const TRANSMITTER *tx) {
+  ASSERT_SERVER();
   //
   // avgmode refers to the _display_enum, while
   // wdspmode reflects the internal encoding in WDSP
@@ -2140,6 +2174,7 @@ void tx_set_average(const TRANSMITTER *tx) {
 }
 
 void tx_set_bandpass(const TRANSMITTER *tx) {
+  ASSERT_SERVER();
   SetTXABandpassFreqs(tx->id, (double) tx->filter_low, (double) tx->filter_high);
 #ifdef WDSPTXDEBUG
   t_print("TX id=%d BandPass low=%d high=%d\n", tx->id, tx->filter_low, tx->filter_high);
@@ -2147,6 +2182,7 @@ void tx_set_bandpass(const TRANSMITTER *tx) {
 }
 
 void tx_set_compressor(TRANSMITTER *tx) {
+  ASSERT_SERVER();
   //
   // - Although I see not much juice therein, the
   //   usage of CFC alongside with the speech processor
@@ -2187,6 +2223,7 @@ void tx_set_compressor(TRANSMITTER *tx) {
 }
 
 void tx_set_ctcss(const TRANSMITTER *tx) {
+  ASSERT_SERVER();
   //
   // Apply CTCSS settings stored in tx
   //
@@ -2198,6 +2235,7 @@ void tx_set_ctcss(const TRANSMITTER *tx) {
 }
 
 void tx_set_detector(const TRANSMITTER *tx) {
+  ASSERT_SERVER();
   //
   // Apply display detector mode stored in tx
   //
@@ -2229,6 +2267,7 @@ void tx_set_detector(const TRANSMITTER *tx) {
 }
 
 void tx_set_deviation(const TRANSMITTER *tx) {
+  ASSERT_SERVER();
   SetTXAFMDeviation(tx->id, (double)tx->deviation);
 #ifdef WDSPTXDEBUG
   t_print("TX id=%d FM Max Deviation=%d\n", tx->id, tx->deviation);
@@ -2236,6 +2275,7 @@ void tx_set_deviation(const TRANSMITTER *tx) {
 }
 
 void tx_set_dexp(const TRANSMITTER *tx) {
+  ASSERT_SERVER();
   //
   // Set all the parameters of the Downward Expander
   // Note the DEXP number must be between 0 and 3, so
@@ -2262,6 +2302,7 @@ void tx_set_dexp(const TRANSMITTER *tx) {
 }
 
 void tx_set_equalizer(TRANSMITTER *tx) {
+  ASSERT_SERVER();
   SetTXAEQProfile(tx->id, 10, tx->eq_freq, tx->eq_gain);
   SetTXAEQRun(tx->id, tx->eq_enable);
 #ifdef WDSPTXDEBUG
@@ -2275,6 +2316,7 @@ void tx_set_equalizer(TRANSMITTER *tx) {
 }
 
 void tx_set_fft_size(const TRANSMITTER *tx) {
+  ASSERT_SERVER();
   TXASetNC(tx->id, tx->fft_size);
 #ifdef WDSPTXDEBUG
   t_print("TX id=%d FFT size=%d\n", tx->id, tx->fft_size);
@@ -2282,6 +2324,7 @@ void tx_set_fft_size(const TRANSMITTER *tx) {
 }
 
 void tx_set_mic_gain(const TRANSMITTER *tx) {
+  ASSERT_SERVER();
   SetTXAPanelGain1(tx->id, pow(10.0, tx->mic_gain * 0.05));
 #ifdef WDSPTXDEBUG
   t_print("TX id=%d MicGain(dB)=%g\n", tx->id, tx->mic_gain);
@@ -2289,6 +2332,7 @@ void tx_set_mic_gain(const TRANSMITTER *tx) {
 }
 
 void tx_set_mode(TRANSMITTER* tx, int mode) {
+  ASSERT_SERVER();
   if (tx != NULL) {
     if (mode == modeDIGU || mode == modeDIGL) {
       if (tx->drive > drive_digi_max + 0.5) {
@@ -2305,6 +2349,7 @@ void tx_set_mode(TRANSMITTER* tx, int mode) {
 }
 
 void tx_set_pre_emphasize(const TRANSMITTER *tx) {
+  ASSERT_SERVER();
   SetTXAFMEmphPosition(tx->id, tx->pre_emphasize);
 #ifdef WDSPTXDEBUG
   t_print("TX id=%d FM PreEmph=%d\n", tx->id, tx->pre_emphasize);
@@ -2312,6 +2357,7 @@ void tx_set_pre_emphasize(const TRANSMITTER *tx) {
 }
 
 void tx_set_singletone(const TRANSMITTER *tx, int state, double freq) {
+  ASSERT_SERVER();
   //
   // Produce the TX signal for TUNEing
   //
@@ -2344,6 +2390,7 @@ void tx_set_singletone(const TRANSMITTER *tx, int state, double freq) {
 }
 
 void tx_set_twotone(TRANSMITTER *tx, int state) {
+  ASSERT_SERVER();
   //
   // During a two-tone experiment, call a function periodically
   // (every 100 msec) that calibrates the TX attenuation value

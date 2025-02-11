@@ -677,25 +677,6 @@ void rx_panadapter_update(RECEIVER *rx) {
     display_panadapter_messages(cr, mywidth, rx->fps);
   }
 
-  //
-  // For horizontal stacking, draw a vertical separator,
-  // at the right edge of RX1, and at the left
-  // edge of RX2.
-  //
-  if (rx_stack_horizontal && receivers > 1) {
-    if (rx->id == 0) {
-      cairo_move_to(cr, mywidth - 1, 0);
-      cairo_line_to(cr, mywidth - 1, myheight);
-    } else {
-      cairo_move_to(cr, 0, 0);
-      cairo_line_to(cr, 0, myheight);
-    }
-
-    cairo_set_source_rgba(cr, COLOUR_PAN_LINE);
-    cairo_set_line_width(cr, 1);
-    cairo_stroke(cr);
-  }
-
   cairo_destroy (cr);
   gtk_widget_queue_draw (rx->panadapter);
 }

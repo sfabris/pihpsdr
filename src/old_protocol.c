@@ -1889,10 +1889,6 @@ void ozy_send_buffer() {
 #endif
     output_buffer[C2] = 0x00;
 
-    if (classE) {
-      output_buffer[C2] |= 0x01;
-    }
-
     if (radio_is_transmitting()) {
       output_buffer[C2] |= txband->OCtx << 1;
 
@@ -2426,10 +2422,11 @@ void ozy_send_buffer() {
 
     case 9:
       output_buffer[C0] = 0x22;
-      output_buffer[C1] = (eer_pwm_min >> 2) & 0xFF;
-      output_buffer[C2] = eer_pwm_min & 0x03;
-      output_buffer[C3] = (eer_pwm_max >> 3) & 0xFF;
-      output_buffer[C4] = eer_pwm_max & 0x03;
+      // Some "harmless" PWM min/max values
+      output_buffer[C1] = 25;
+      output_buffer[C2] = 0;
+      output_buffer[C3] = 100;
+      output_buffer[C4] = 0;
       command = 10;
       break;
 

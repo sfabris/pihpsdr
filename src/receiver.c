@@ -491,6 +491,7 @@ void rx_reconfigure(RECEIVER *rx, int height) {
 }
 
 static int rx_update_display(gpointer data) {
+  ASSERT_SERVER(0);
   RECEIVER *rx = (RECEIVER *)data;
 
   if (rx->displaying) {
@@ -569,9 +570,7 @@ void rx_remote_update_display(RECEIVER *rx) {
 #endif
 
 void rx_set_displaying(RECEIVER *rx) {
-  if (radio_is_remote) {
-    return;
-  }
+  ASSERT_SERVER();
 
   if (rx->displaying) {
     if (rx->update_timer_id > 0) {
@@ -618,7 +617,7 @@ static void rx_create_visual(RECEIVER *rx) {
 }
 
 RECEIVER *rx_create_pure_signal_receiver(int id, int sample_rate, int width, int fps) {
-  CLIENT_WDSP_RET(NULL);
+  ASSERT_SERVER(NULL);
   //
   // For a PureSignal receiver, most parameters are not needed
   // so we fill the entire data with zeroes
@@ -665,8 +664,8 @@ RECEIVER *rx_create_pure_signal_receiver(int id, int sample_rate, int width, int
 }
 
 RECEIVER *rx_create_receiver(int id, int pixels, int width, int height) {
+  ASSERT_SERVER(NULL);
   t_print("%s: RXid=%d pixels=%d width=%d height=%d\n", __FUNCTION__, id, pixels, width, height);
-  CLIENT_WDSP_RET(NULL);
   RECEIVER *rx = malloc(sizeof(RECEIVER));
   //
   // This is to guard against programming errors
@@ -929,13 +928,13 @@ RECEIVER *rx_create_receiver(int id, int pixels, int width, int height) {
 }
 
 void rx_change_adc(const RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
   schedule_high_priority();
   schedule_receive_specific();
 }
 
 void rx_set_frequency(RECEIVER *rx, long long f) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
   int id = rx->id;
 
   //
@@ -951,7 +950,7 @@ void rx_set_frequency(RECEIVER *rx, long long f) {
 }
 
 void rx_frequency_changed(RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
   int id = rx->id;
 
   if (vfo[id].ctun) {
@@ -1040,7 +1039,7 @@ void rx_frequency_changed(RECEIVER *rx) {
 }
 
 void rx_filter_changed(RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
   rx_set_filter(rx);
 
   if (can_transmit) {
@@ -1055,13 +1054,13 @@ void rx_filter_changed(RECEIVER *rx) {
 }
 
 void rx_mode_changed(RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
   rx_set_mode(rx);
   rx_filter_changed(rx);
 }
 
 void rx_vfo_changed(RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
   //
   // Called when the VFO controlling rx has changed,
   // e.g. after a "swap VFO" action
@@ -1078,7 +1077,7 @@ void rx_vfo_changed(RECEIVER *rx) {
 //////////////////////////////////////////////////////////////////////////////////////
 
 static void rx_process_buffer(RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
   double left_sample, right_sample;
   short left_audio_sample, right_audio_sample;
   int i;
@@ -1097,25 +1096,24 @@ static void rx_process_buffer(RECEIVER *rx) {
       right_audio_sample = (short)(right_sample * 32767.0);
     }
 
+    if (rx->mute_radio || (rx != active_receiver && rx->mute_when_not_active)) {
+      left_sample = 0;
+      right_sample = 0;
+    }
+
     if (rx->local_audio) {
-      if (rx != active_receiver && rx->mute_when_not_active) {
-        left_sample = 0.0;
+      switch (rx->audio_channel) {
+      case STEREO:
+        break;
+
+      case LEFT:
         right_sample = 0.0;
-      } else {
-        switch (rx->audio_channel) {
-        case STEREO:
-          break;
+        break;
 
-        case LEFT:
-          right_sample = 0.0;
-          break;
-
-        case RIGHT:
-          left_sample = 0.0;
-          break;
-        }
+      case RIGHT:
+        left_sample = 0.0;
+        break;
       }
-
       audio_write(rx, (float)left_sample, (float)right_sample);
     }
 
@@ -1151,21 +1149,11 @@ static void rx_process_buffer(RECEIVER *rx) {
       //
       switch (protocol) {
       case ORIGINAL_PROTOCOL:
-        if (rx->mute_radio) {
-          old_protocol_audio_samples((short)0, (short)0);
-        } else {
-          old_protocol_audio_samples(left_audio_sample, right_audio_sample);
-        }
-
+        old_protocol_audio_samples(left_audio_sample, right_audio_sample);
         break;
 
       case NEW_PROTOCOL:
-        if (rx->mute_radio) {
-          new_protocol_audio_samples((short)0, (short)0);
-        } else {
-          new_protocol_audio_samples(left_audio_sample, right_audio_sample);
-        }
-
+        new_protocol_audio_samples(left_audio_sample, right_audio_sample);
         break;
 
       case SOAPYSDR_PROTOCOL:
@@ -1176,7 +1164,7 @@ static void rx_process_buffer(RECEIVER *rx) {
 }
 
 void rx_full_buffer(RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
   int error;
 
   //t_print("%s: rx=%p\n",__FUNCTION__,rx);
@@ -1220,7 +1208,7 @@ void rx_full_buffer(RECEIVER *rx) {
 }
 
 void rx_add_iq_samples(RECEIVER *rx, double i_sample, double q_sample) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
   //
   // At the end of a TX/RX transition, txrxcount is set to zero,
   // and txrxmax to some suitable value.
@@ -1249,7 +1237,7 @@ void rx_add_iq_samples(RECEIVER *rx, double i_sample, double q_sample) {
 }
 
 void rx_add_div_iq_samples(RECEIVER *rx, double i0, double q0, double i1, double q1) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
   //
   // Note that we sum the second channel onto the first one
   // and then simply pass to add_iq_samples
@@ -1293,7 +1281,7 @@ void rx_update_zoom(RECEIVER *rx) {
 }
 
 void rx_set_filter(RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
   //
   // - set filter edges and deviation in rx
   // - determine on the use of the CW peak filter
@@ -1351,7 +1339,7 @@ void rx_set_filter(RECEIVER *rx) {
 }
 
 void rx_set_framerate(RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
   //
   // When changing the frame rate, the RX display update timer needs
   // be restarted, the averaging re-calculated, and the analyzer
@@ -1467,21 +1455,21 @@ void rx_change_sample_rate(RECEIVER *rx, int sample_rate) {
 }
 
 void rx_close(const RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
 #ifdef WDSPRXDEBUG
 #endif
   CloseChannel(rx->id);
 }
 
 int rx_get_pixels(RECEIVER *rx) {
-  CLIENT_WDSP_RET(0);
+  ASSERT_SERVER(0);
   int rc;
   GetPixels(rx->id, 0, rx->pixel_samples, &rc);
   return rc;
 }
 
 double rx_get_smeter(const RECEIVER *rx) {
-  CLIENT_WDSP_RET(0.0);
+  ASSERT_SERVER(0.0);
   double level;
 
   switch (rx->smetermode) {
@@ -1499,7 +1487,7 @@ double rx_get_smeter(const RECEIVER *rx) {
 }
 
 void rx_create_analyzer(const RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
 #ifdef WDSPRXDEBUG
 #endif
   //
@@ -1517,7 +1505,7 @@ void rx_create_analyzer(const RECEIVER *rx) {
 }
 
 void rx_set_analyzer(const RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
 #ifdef WDSPRXDEBUG
 #endif
   //
@@ -1583,7 +1571,7 @@ void rx_set_analyzer(const RECEIVER *rx) {
 }
 
 void rx_off(const RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
 #ifdef WDSPRXDEBUG
 #endif
   // switch receiver OFF, wait until slew-down completet
@@ -1591,7 +1579,7 @@ void rx_off(const RECEIVER *rx) {
 }
 
 void rx_on(const RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
 #ifdef WDSPRXDEBUG
 #endif
   // switch receiver ON
@@ -1599,14 +1587,14 @@ void rx_on(const RECEIVER *rx) {
 }
 
 void rx_set_af_binaural(const RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
 #ifdef WDSPRXDEBUG
 #endif
   SetRXAPanelBinaural(rx->id, rx->binaural);
 }
 
 void rx_set_af_gain(const RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
 #ifdef WDSPRXDEBUG
 #endif
   //
@@ -1631,7 +1619,7 @@ void rx_set_af_gain(const RECEIVER *rx) {
 }
 
 void rx_set_agc(RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
 #ifdef WDSPRXDEBUG
 #endif
   //
@@ -1694,7 +1682,7 @@ void rx_set_agc(RECEIVER *rx) {
 }
 
 void rx_set_average(const RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
   //
   // avgmode refers to the _display_enum, while
   // wdspmode reflects the internal encoding in WDSP
@@ -1738,14 +1726,14 @@ void rx_set_average(const RECEIVER *rx) {
 }
 
 void rx_set_bandpass(const RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
   RXASetPassband(rx->id, (double)rx->filter_low, (double)rx->filter_high);
 #ifdef WDSPRXDEBUG
 #endif
 }
 
 void rx_set_cw_peak(const RECEIVER *rx, int state, double freq) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
 #ifdef WDSPRXDEBUG
 #endif
 
@@ -1765,7 +1753,7 @@ void rx_set_cw_peak(const RECEIVER *rx, int state, double freq) {
 }
 
 void rx_set_detector(const RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
   //
   // Apply display detector mode stored in rx
   //
@@ -1796,14 +1784,14 @@ void rx_set_detector(const RECEIVER *rx) {
 }
 
 void rx_set_deviation(const RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
   SetRXAFMDeviation(rx->id, (double)rx->deviation);
 #ifdef WDSPRXDEBUG
 #endif
 }
 
 void rx_set_equalizer(RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
   //
   // Apply the equalizer parameters stored in rx
   //
@@ -1820,21 +1808,21 @@ void rx_set_equalizer(RECEIVER *rx) {
 }
 
 void rx_set_fft_latency(const RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
   RXASetMP(rx->id, rx->low_latency);
 #ifdef WDSPRXDEBUG
 #endif
 }
 
 void rx_set_fft_size(const RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
   RXASetNC(rx->id, rx->fft_size);
 #ifdef WDSPRXDEBUG
 #endif
 }
 
 void rx_set_mode(const RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
   //
   // Change the  mode of a running receiver according to what it stored
   // in its controlling VFO.
@@ -1846,7 +1834,7 @@ void rx_set_mode(const RECEIVER *rx) {
 }
 
 void rx_set_noise(const RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
   //
   // Set/Update all parameters stored  in rx
   // that areassociated with the "QRM fighters"
@@ -1914,7 +1902,7 @@ void rx_set_noise(const RECEIVER *rx) {
 }
 
 void rx_set_offset(const RECEIVER *rx, long long offset) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
   if (offset == 0) {
     SetRXAShiftFreq(rx->id, (double)offset);
     RXANBPSetShiftFrequency(rx->id, (double)offset);
@@ -1930,7 +1918,7 @@ void rx_set_offset(const RECEIVER *rx, long long offset) {
 }
 
 void rx_set_squelch(const RECEIVER *rx) {
-  CLIENT_WDSP;
+  ASSERT_SERVER();
   //
   // This applies the squelch mode stored in rx
   //

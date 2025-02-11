@@ -100,8 +100,6 @@ int ZOOMPAN_HEIGHT = 50;
 int SLIDERS_HEIGHT = 100;
 int TOOLBAR_HEIGHT = 30;
 
-int rx_stack_horizontal = 0;
-
 int suppress_popup_sliders = 0;
 
 int controller = NO_CONTROLLER;
@@ -122,8 +120,8 @@ int sat_mode;
 
 int region = REGION_OTHER;
 
-int radio_sample_rate;   // alias for radio->info.soapy.sample_rate
-gboolean iqswap;
+int soapy_radio_sample_rate;   // alias for radio->info.soapy.sample_rate
+gboolean soapy_iqswap;
 
 DISCOVERED *radio = NULL;
 gboolean radio_is_remote = FALSE;     // only used with CLIENT_SERVER
@@ -142,7 +140,6 @@ int PS_RX_FEEDBACK;
 int atlas_penelope = 0; // 0: no TX, 1: Penelope TX, 2: PennyLane TX
 int atlas_clock_source_10mhz = 0;
 int atlas_clock_source_128mhz = 0;
-int atlas_config = 0;
 int atlas_mic_source = 0;
 int atlas_janus = 0;
 
@@ -166,8 +163,6 @@ int anan10E = 0;
 int adc0_filter_bypass = 0; // Bypass ADC0 filters on receive
 int adc1_filter_bypass = 0; // Bypass ADC1 filters on receiver  (ANAN-7000/8000/G2)
 int mute_spkr_amp = 0;      // Mute audio amplifier in radio    (ANAN-7000, G2)
-
-int classE = 0;
 
 int tx_out_of_band_allowed = 0;
 
@@ -275,9 +270,6 @@ long long tune_timeout;
 
 int analog_meter = 0;
 
-int eer_pwm_min = 100;
-int eer_pwm_max = 800;
-
 int tx_filter_low = 150;
 int tx_filter_high = 2850;
 
@@ -348,6 +340,7 @@ static SaturnSerialPort SaturnSerialPortsList[] = {
 static void radio_restore_state();
 
 void radio_stop() {
+  ASSERT_SERVER();
   if (can_transmit) {
     t_print("radio_stop: TX: stop display update\n");
     transmitter->displaying = 0;
@@ -600,41 +593,19 @@ void radio_reconfigure() {
 
   y = VFO_HEIGHT;
 
-  // if there is only one receiver, both cases here do the same.
-  if (rx_stack_horizontal) {
-    int x = 0;
+  for (i = 0; i < receivers; i++) {
+    RECEIVER *rx = receiver[i];
+    rx->width = my_width;
+    rx_update_zoom(rx);
+    rx_reconfigure(rx, rx_height / receivers);
 
-    for (i = 0; i < receivers; i++) {
-      RECEIVER *rx = receiver[i];
-      rx->width = my_width / receivers;
-      rx_update_zoom(rx);
-      rx_reconfigure(rx, rx_height);
-
-      if (!radio_is_transmitting() || duplex) {
-        gtk_fixed_move(GTK_FIXED(fixed), rx->panel, x, y);
-      }
-
-      rx->x = x;
-      rx->y = y;
-      x = x + my_width / receivers;
+    if (!radio_is_transmitting() || duplex) {
+      gtk_fixed_move(GTK_FIXED(fixed), rx->panel, 0, y);
     }
 
-    y += rx_height;
-  } else {
-    for (i = 0; i < receivers; i++) {
-      RECEIVER *rx = receiver[i];
-      rx->width = my_width;
-      rx_update_zoom(rx);
-      rx_reconfigure(rx, rx_height / receivers);
-
-      if (!radio_is_transmitting() || duplex) {
-        gtk_fixed_move(GTK_FIXED(fixed), rx->panel, 0, y);
-      }
-
-      rx->x = 0;
-      rx->y = y;
-      y += rx_height / receivers;
-    }
+    rx->x = 0;
+    rx->y = y;
+    y += rx_height / receivers;
   }
 
   if (display_zoompan) {
@@ -968,7 +939,13 @@ static void radio_create_visual() {
     int r = receivers;
     receivers = RECEIVERS;
     t_print("radio_create_visual: calling radio_change_receivers: receivers=%d r=%d\n", receivers, r);
-    radio_change_receivers(r);
+    if (radio_is_remote) {
+#ifdef CLIENT_SERVER
+      radio_remote_change_receivers(r);
+#endif
+    } else {
+      radio_change_receivers(r);
+    }
   }
 
   gtk_widget_show_all (top_window);  // ... this shows both the HPSDR and C25 preamp/att sliders
@@ -1370,7 +1347,7 @@ void radio_start_radio() {
     break;
   }
 
-  iqswap = 0;
+  soapy_iqswap = 0;
 
   //
   // In most cases, ALEX is the best default choice for the filter board.
@@ -1379,7 +1356,7 @@ void radio_start_radio() {
   // with data from the props file.
   //
   if (device == SOAPYSDR_USB_DEVICE) {
-    iqswap = 1;
+    soapy_iqswap = 1;
     receivers = 1;
     filter_board = NO_FILTER_BOARD;
   }
@@ -1461,7 +1438,7 @@ void radio_start_radio() {
       adc[1].gain = adc[1].min_gain;
     }
 
-    radio_sample_rate = radio->info.soapy.sample_rate;
+    soapy_radio_sample_rate = radio->info.soapy.sample_rate;
   }
 
 #endif
@@ -1605,7 +1582,33 @@ void radio_start_radio() {
 #endif
 }
 
+#ifdef CLIENT_SERVER
+void radio_remote_change_receivers(int r) {
+  t_print("radio_remote_change_receivers: from %d to %d\n", receivers, r);
+
+  if (receivers == r) { return; }
+
+  switch (r) {
+  case 1:
+    gtk_container_remove(GTK_CONTAINER(fixed), receiver[1]->panel);
+    receivers = 1;
+    send_startstop_spectrum(client_socket, 1, 0);
+    break;
+
+  case 2:
+    gtk_fixed_put(GTK_FIXED(fixed), receiver[1]->panel, 0, 0);
+    receivers = 2;
+    send_startstop_spectrum(client_socket, 1, 1);
+    break;
+  }
+
+  radio_reconfigure_screen();
+  rx_set_active(receiver[0]);
+}
+#endif
+
 void radio_change_receivers(int r) {
+  ASSERT_SERVER();
   t_print("radio_change_receivers: from %d to %d\n", receivers, r);
 
   // The button in the radio menu will call this function even if the
@@ -2405,11 +2408,21 @@ void radio_set_alex_attenuation(int v) {
   schedule_high_priority();
 }
 
+void radio_set_anan10E(int new) {
+  ASSERT_SERVER();
+  radio_protocol_stop();
+  usleep(200000);
+  anan10E = new;
+  radio_protocol_run();
+}
+
 void radio_split_toggle() {
+  ASSERT_SERVER();
   radio_set_split(!split);
 }
 
 void radio_set_split(int val) {
+  ASSERT_SERVER();
   //
   // "split" *must only* be set through this interface,
   // since it may change the TX band and thus requires
@@ -2439,7 +2452,6 @@ static void radio_restore_state() {
   GetPropI0("display_width",                                 display_width);
   GetPropI0("display_height",                                display_height);
   GetPropI0("full_screen",                                   full_screen);
-  GetPropI0("rx_stack_horizontal",                           rx_stack_horizontal);
   GetPropI0("vfo_layout",                                    vfo_layout);
   GetPropI0("optimize_touchscreen",                          optimize_for_touchscreen);
   GetPropI0("which_css_font",                                which_css_font);
@@ -2478,7 +2490,7 @@ static void radio_restore_state() {
 
   GetPropI0("enable_auto_tune",                              enable_auto_tune);
   GetPropI0("enable_tx_inhibit",                             enable_tx_inhibit);
-  GetPropI0("radio_sample_rate",                             radio_sample_rate);
+  GetPropI0("radio_sample_rate",                             soapy_radio_sample_rate);
   GetPropI0("diversity_enabled",                             diversity_enabled);
   GetPropF0("diversity_gain",                                div_gain);
   GetPropF0("diversity_phase",                               div_phase);
@@ -2528,7 +2540,7 @@ static void radio_restore_state() {
   GetPropF0("vox_hang",                                      vox_hang);
   GetPropI0("calibration",                                   frequency_calibration);
   GetPropI0("receivers",                                     receivers);
-  GetPropI0("iqswap",                                        iqswap);
+  GetPropI0("iqswap",                                        soapy_iqswap);
   GetPropI0("rx_gain_calibration",                           rx_gain_calibration);
   GetPropF0("drive_digi_max",                                drive_digi_max);
   GetPropI0("split",                                         split);
@@ -2648,7 +2660,6 @@ void radio_save_state() {
   SetPropI0("display_width",                                 display_width);
   SetPropI0("display_height",                                display_height);
   SetPropI0("full_screen",                                   full_screen);
-  SetPropI0("rx_stack_horizontal",                           rx_stack_horizontal);
   SetPropI0("vfo_layout",                                    vfo_layout);
   SetPropI0("optimize_touchscreen",                          optimize_for_touchscreen);
   SetPropI0("which_css_font",                                which_css_font);
@@ -2669,7 +2680,7 @@ void radio_save_state() {
 
   SetPropI0("enable_auto_tune",                              enable_auto_tune);
   SetPropI0("enable_tx_inhibit",                             enable_tx_inhibit);
-  SetPropI0("radio_sample_rate",                             radio_sample_rate);
+  SetPropI0("radio_sample_rate",                             soapy_radio_sample_rate);
   SetPropI0("diversity_enabled",                             diversity_enabled);
   SetPropF0("diversity_gain",                                div_gain);
   SetPropF0("diversity_phase",                               div_phase);
@@ -2719,7 +2730,7 @@ void radio_save_state() {
   SetPropF0("vox_hang",                                      vox_hang);
   SetPropI0("calibration",                                   frequency_calibration);
   SetPropI0("receivers",                                     receivers);
-  SetPropI0("iqswap",                                        iqswap);
+  SetPropI0("iqswap",                                        soapy_iqswap);
   SetPropI0("rx_gain_calibration",                           rx_gain_calibration);
   SetPropF0("drive_digi_max",                                drive_digi_max);
   SetPropI0("split",                                         split);

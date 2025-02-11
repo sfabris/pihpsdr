@@ -515,7 +515,7 @@ static inline void vfo_id_adjust_band(int v, long long f) {
 }
 
 void vfo_xvtr_changed() {
-  CLIENT_MISSING;
+  ASSERT_SERVER();
   //
   // It may happen that the XVTR band is messed up in the sense
   // that the resulting radio frequency exceeds the limits.
@@ -739,7 +739,7 @@ void vfo_id_band_changed(int id, int b) {
 }
 
 void vfo_bandstack_changed(int b) {
-  CLIENT_MISSING;
+  ASSERT_SERVER();
   int id = active_receiver->id;
   int oldmode = vfo[id].mode;
   BANDSTACK *bandstack = bandstack_get_bandstack(vfo[id].band);
@@ -888,7 +888,7 @@ void vfo_vfos_changed() {
 }
 
 void vfo_a_to_b() {
-  CLIENT_MISSING;
+  ASSERT_SERVER();
   int oldmode = vfo[VFO_B].mode;
   vfo[VFO_B] = vfo[VFO_A];
 
@@ -900,7 +900,7 @@ void vfo_a_to_b() {
 }
 
 void vfo_b_to_a() {
-  CLIENT_MISSING;
+  ASSERT_SERVER();
   int oldmode = vfo[VFO_A].mode;
   vfo[VFO_A] = vfo[VFO_B];
 
@@ -912,7 +912,7 @@ void vfo_b_to_a() {
 }
 
 void vfo_a_swap_b() {
-  CLIENT_MISSING;
+  ASSERT_SERVER();
   struct  _vfo temp = vfo[VFO_A];
   vfo[VFO_A]        = vfo[VFO_B];
   vfo[VFO_B]        = temp;
@@ -967,7 +967,7 @@ int vfo_id_get_stepindex(int id) {
 }
 
 void vfo_id_set_step_from_index(int id, int index) {
-  CLIENT_MISSING;
+  ASSERT_SERVER();
 
   //
   // Set VFO step size to steps[index], with range checking
@@ -2210,7 +2210,7 @@ long long vfo_get_tx_freq() {
 }
 
 void vfo_xit_value(long long value ) {
-  CLIENT_MISSING;
+  ASSERT_SERVER();
   int id = vfo_get_tx_vfo();
   vfo[id].xit = value;
   vfo[id].xit_enabled = value ? 1 : 0;
@@ -2219,7 +2219,7 @@ void vfo_xit_value(long long value ) {
 }
 
 void vfo_xit_toggle() {
-  CLIENT_MISSING;
+  ASSERT_SERVER();
   int id = vfo_get_tx_vfo();
   TOGGLE(vfo[id].xit_enabled);
   schedule_high_priority();
@@ -2227,7 +2227,7 @@ void vfo_xit_toggle() {
 }
 
 void vfo_id_rit_toggle(int id) {
-  CLIENT_MISSING;
+  ASSERT_SERVER();
   TOGGLE(vfo[id].rit_enabled);
 
   if (id < receivers) {
@@ -2238,7 +2238,7 @@ void vfo_id_rit_toggle(int id) {
 }
 
 void vfo_id_rit_value(int id, long long value) {
-  CLIENT_MISSING;
+  ASSERT_SERVER();
   vfo[id].rit = value;
   vfo[id].rit_enabled = value ? 1 : 0;
 
@@ -2250,7 +2250,7 @@ void vfo_id_rit_value(int id, long long value) {
 }
 
 void vfo_id_rit_onoff(int id, int enable) {
-  CLIENT_MISSING;
+  ASSERT_SERVER();
   vfo[id].rit_enabled = SET(enable);
 
   if (id < receivers) {
@@ -2261,7 +2261,7 @@ void vfo_id_rit_onoff(int id, int enable) {
 }
 
 void vfo_xit_onoff(int enable) {
-  CLIENT_MISSING;
+  ASSERT_SERVER();
   int id = vfo_get_tx_vfo();
   vfo[id].xit_enabled = SET(enable);
   schedule_high_priority();
@@ -2269,7 +2269,7 @@ void vfo_xit_onoff(int enable) {
 }
 
 void vfo_xit_incr(int incr) {
-  CLIENT_MISSING;
+  ASSERT_SERVER();
   int id = vfo_get_tx_vfo();
   long long value = vfo[id].xit + incr;
 
@@ -2286,7 +2286,7 @@ void vfo_xit_incr(int incr) {
 }
 
 void vfo_id_rit_incr(int id, int incr) {
-  CLIENT_MISSING;
+  ASSERT_SERVER();
   long long value = vfo[id].rit + incr;
 
   if (value < -9999) {
@@ -2315,7 +2315,7 @@ void vfo_id_rit_incr(int id, int incr) {
 // - CAT "set frequency" command
 //
 void vfo_id_set_frequency(int v, long long f) {
-  CLIENT_MISSING;
+  ASSERT_SERVER();
   //
   // Here we used to have call vfo_id_band_changed() for
   // frequency jumps from one band to another.
@@ -2360,7 +2360,7 @@ void vfo_id_set_frequency(int v, long long f) {
 // Set CTUN state of a VFO
 //
 void vfo_id_ctun_update(int id, int state) {
-  CLIENT_MISSING;
+  ASSERT_SERVER();
 
   //
   // Note: if this VFO does not control a (running) receiver,
