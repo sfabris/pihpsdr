@@ -242,7 +242,7 @@ void screen_menu(GtkWidget *parent) {
     full_b = gtk_check_button_new_with_label("Full Screen Mode");
     gtk_widget_set_name(full_b, "boldlabel");
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(full_b), my_full_screen);
-    gtk_grid_attach(GTK_GRID(grid), full_b, 1, row, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), full_b, 0, row, 1, 1);
     g_signal_connect(full_b, "toggled", G_CALLBACK(full_cb), NULL);
   }
   row++;
