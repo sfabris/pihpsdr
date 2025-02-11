@@ -289,6 +289,7 @@ void tx_reconfigure(TRANSMITTER *tx, int pixels, int width, int height) {
     t_print("%s: width=%d height=%d\n", __FUNCTION__, width, height);
     tx->width = width;
     tx->height = height;
+    gtk_widget_set_size_request(tx->panel, width, height);
     //
     // In duplex mode, pixels = 4*width, else pixels equals width
     //
@@ -311,7 +312,7 @@ void tx_reconfigure(TRANSMITTER *tx, int pixels, int width, int height) {
       }
     }
   }
-  gtk_widget_set_size_request(tx->panel, width, height);
+
   gtk_widget_set_size_request(tx->panadapter, width, height);
 }
 

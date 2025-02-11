@@ -237,12 +237,14 @@ void screen_menu(GtkWidget *parent) {
   // This combo-box spans three columns so the text may be really long
   my_combo_attach(GTK_GRID(grid), vfo_b, col, row, 2, 1);
   vfo_signal_id = g_signal_connect(vfo_b, "changed", G_CALLBACK(vfo_cb), NULL);
-  row++;
-  full_b = gtk_check_button_new_with_label("Full Screen Mode");
-  gtk_widget_set_name(full_b, "boldlabel");
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(full_b), my_full_screen);
-  gtk_grid_attach(GTK_GRID(grid), full_b, 0, row, 2, 1);
-  g_signal_connect(full_b, "toggled", G_CALLBACK(full_cb), NULL);
+  if (!radio_is_remote) {
+    row++;
+    full_b = gtk_check_button_new_with_label("Full Screen Mode");
+    gtk_widget_set_name(full_b, "boldlabel");
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(full_b), my_full_screen);
+    gtk_grid_attach(GTK_GRID(grid), full_b, 1, row, 1, 1);
+    g_signal_connect(full_b, "toggled", G_CALLBACK(full_cb), NULL);
+  }
   row++;
   GtkWidget *b_display_zoompan = gtk_check_button_new_with_label("Display Zoom/Pan");
   gtk_widget_set_name (b_display_zoompan, "boldlabel");

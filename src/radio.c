@@ -2449,24 +2449,154 @@ static void radio_restore_state() {
   GetPropI0("display_zoompan",                               display_zoompan);
   GetPropI0("display_sliders",                               display_sliders);
   GetPropI0("display_toolbar",                               display_toolbar);
-  GetPropI0("display_width",                                 display_width);
   GetPropI0("display_height",                                display_height);
-  GetPropI0("full_screen",                                   full_screen);
   GetPropI0("vfo_layout",                                    vfo_layout);
   GetPropI0("optimize_touchscreen",                          optimize_for_touchscreen);
   GetPropI0("which_css_font",                                which_css_font);
+  GetPropI0("vfo_encoder_divisor",                           vfo_encoder_divisor);
+  GetPropI0("mute_rx_while_transmitting",                    mute_rx_while_transmitting);
+  GetPropI0("analog_meter",                                  analog_meter);
+
+#ifdef CLIENT_SERVER
+  GetPropI0("radio.hpsdr_server",                            hpsdr_server);
+  GetPropI0("radio.hpsdr_server.listen_port",                listen_port);
+#endif
+
+#ifdef TCI
+  GetPropI0("tci_enable",                                    tci_enable);
+  GetPropI0("tci_port",                                      tci_port);
+  GetPropI0("tci_txonly",                                    tci_txonly);
+#endif
+
+  if (!radio_is_remote) {
+    GetPropI0("full_screen",                                 full_screen);
+    GetPropI0("display_width",                               display_width);
+    GetPropI0("enable_auto_tune",                            enable_auto_tune);
+    GetPropI0("enable_tx_inhibit",                           enable_tx_inhibit);
+    GetPropI0("radio_sample_rate",                           soapy_radio_sample_rate);
+    GetPropI0("diversity_enabled",                           diversity_enabled);
+    GetPropF0("diversity_gain",                              div_gain);
+    GetPropF0("diversity_phase",                             div_phase);
+    GetPropF0("diversity_cos",                               div_cos);
+    GetPropF0("diversity_sin",                               div_sin);
+    GetPropI0("new_pa_board",                                new_pa_board);
+    GetPropI0("region",                                      region);
+    GetPropI0("atlas_penelope",                              atlas_penelope);
+    GetPropI0("atlas_clock_source_10mhz",                    atlas_clock_source_10mhz);
+    GetPropI0("atlas_clock_source_128mhz",                   atlas_clock_source_128mhz);
+    GetPropI0("atlas_mic_source",                            atlas_mic_source);
+    GetPropI0("atlas_janus",                                 atlas_janus);
+    GetPropI0("hl2_audio_codec",                             hl2_audio_codec);
+    GetPropI0("anan10E",                                     anan10E);
+    GetPropI0("tx_out_of_band",                              tx_out_of_band_allowed);
+    GetPropI0("filter_board",                                filter_board);
+    GetPropI0("pa_enabled",                                  pa_enabled);
+    GetPropI0("pa_power",                                    pa_power);
+    GetPropI0("mic_boost",                                   mic_boost);
+    GetPropI0("mic_linein",                                  mic_linein);
+    GetPropF0("linein_gain",                                 linein_gain);
+    GetPropI0("mic_ptt_enabled",                             mic_ptt_enabled);
+    GetPropI0("mic_bias_enabled",                            mic_bias_enabled);
+    GetPropI0("mic_ptt_tip_bias_ring",                       mic_ptt_tip_bias_ring);
+    GetPropI0("mic_input_xlr",                               mic_input_xlr);
+    GetPropI0("tx_filter_low",                               tx_filter_low);
+    GetPropI0("tx_filter_high",                              tx_filter_high);
+    GetPropI0("cw_keys_reversed",                            cw_keys_reversed);
+    GetPropI0("cw_keyer_speed",                              cw_keyer_speed);
+    GetPropI0("cw_keyer_mode",                               cw_keyer_mode);
+    GetPropI0("cw_keyer_weight",                             cw_keyer_weight);
+    GetPropI0("cw_keyer_spacing",                            cw_keyer_spacing);
+    GetPropI0("cw_keyer_internal",                           cw_keyer_internal);
+    GetPropI0("cw_keyer_sidetone_volume",                    cw_keyer_sidetone_volume);
+    GetPropI0("cw_keyer_ptt_delay",                          cw_keyer_ptt_delay);
+    GetPropI0("cw_keyer_hang_time",                          cw_keyer_hang_time);
+    GetPropI0("cw_keyer_sidetone_frequency",                 cw_keyer_sidetone_frequency);
+    GetPropI0("cw_breakin",                                  cw_breakin);
+    GetPropI0("OCtune",                                      OCtune);
+    GetPropI0("OCfull_tune_time",                            OCfull_tune_time);
+    GetPropI0("OCmemory_tune_time",                          OCmemory_tune_time);
+    GetPropI0("vox_enabled",                                 vox_enabled);
+    GetPropF0("vox_threshold",                               vox_threshold);
+    GetPropF0("vox_hang",                                    vox_hang);
+    GetPropI0("calibration",                                 frequency_calibration);
+    GetPropI0("receivers",                                   receivers);
+    GetPropI0("iqswap",                                      soapy_iqswap);
+    GetPropI0("rx_gain_calibration",                         rx_gain_calibration);
+    GetPropF0("drive_digi_max",                              drive_digi_max);
+    GetPropI0("split",                                       split);
+    GetPropI0("duplex",                                      duplex);
+    GetPropI0("sat_mode",                                    sat_mode);
+    GetPropI0("radio.display_warnings",                      display_warnings);
+    GetPropI0("radio.display_pacurr",                        display_pacurr);
+    GetPropI0("mute_spkr_amp",                               mute_spkr_amp);
+    GetPropI0("adc0_filter_bypass",                          adc0_filter_bypass);
+    GetPropI0("adc1_filter_bypass",                          adc1_filter_bypass);
+#ifdef SATURN
+    GetPropI0("client_enable_tx",                            client_enable_tx);
+    GetPropI0("saturn_server_en",                            saturn_server_en);
+#endif
+
+    for (int i = 0; i < 11; i++) {
+      GetPropF1("pa_trim[%d]", i,                            pa_trim[i]);
+    }
+
+    for (int i = 0; i < n_adc; i++) {
+      GetPropI1("radio.adc[%d].filters", i,                  adc[i].filters);
+      GetPropI1("radio.adc[%d].hpf", i,                      adc[i].hpf);
+      GetPropI1("radio.adc[%d].lpf", i,                      adc[i].lpf);
+      GetPropI1("radio.adc[%d].antenna", i,                  adc[i].antenna);
+      GetPropI1("radio.adc[%d].dither", i,                   adc[i].dither);
+      GetPropI1("radio.adc[%d].random", i,                   adc[i].random);
+      GetPropI1("radio.adc[%d].preamp", i,                   adc[i].preamp);
+      GetPropI1("radio.adc[%d].attenuation", i,              adc[i].attenuation);
+      GetPropI1("radio.adc[%d].enable_step_attenuation", i,  adc[i].enable_step_attenuation);
+      GetPropF1("radio.adc[%d].gain", i,                     adc[i].gain);
+      GetPropF1("radio.adc[%d].min_gain", i,                 adc[i].min_gain);
+      GetPropF1("radio.adc[%d].max_gain", i,                 adc[i].max_gain);
+      GetPropI1("radio.adc[%d].agc", i,                      adc[i].agc);
+      GetPropI1("radio.dac[%d].antenna", i,                  dac[i].antenna);
+      GetPropF1("radio.dac[%d].gain", i,                     dac[i].gain);
+    }
+
+    filterRestoreState();
+    bandRestoreState();
+    memRestoreState();
+    vfo_restore_state();
+  }
 
   //
-  // TODO: I think some further options related to the GUI
-  // have to be moved up here for Client-Server operation
-  //
-  // We want to do some internal consistency checking, most of which is done at
-  // the very end of this function. However, if the radio is remote we will return
-  // from this function in due course so have to check some things here.
-  //
-  if (display_width  > screen_width  ) { display_width  = screen_width; }
+  // GPIO, rigctl and MIDI should be
+  // read from the local file on the client side
+  ///
+  gpioRestoreActions();
+  rigctlRestoreState();
+#ifdef MIDI
+  midiRestoreState();
+#endif
+  t_print("%s: radio state (except receiver/transmitter) restored.\n", __FUNCTION__);
 
-  if (display_height > screen_height ) { display_height = screen_height; }
+  //
+  // Some post-restore operations and sanity checks.
+  // -----------------------------------------------
+  //
+  // Re-position top window to the position in the props file, provided
+  // there are at least 100 pixels left. This assumes the default setting
+  // (GDK_GRAVITY_NORTH_WEST) where the "position" refers to the top left corner
+  // of the window.
+  //
+  if ((window_x_pos < screen_width - 100) && (window_y_pos < screen_height - 100)) {
+    gtk_window_move(GTK_WINDOW(top_window), window_x_pos, window_y_pos);
+  }
+  //
+  if (!radio_is_remote) {
+    //
+    // Assert that the screen dimensions fit within the display
+    //
+    if (display_width  > screen_width  ) { display_width  = screen_width; }
+
+    if (display_height > screen_height ) { display_height = screen_height; }
+
+  }
 
   //
   // Re-position top window to the position in the props file, provided
@@ -2477,142 +2607,22 @@ static void radio_restore_state() {
   if ((window_x_pos < screen_width - 100) && (window_y_pos < screen_height - 100)) {
     gtk_window_move(GTK_WINDOW(top_window), window_x_pos, window_y_pos);
   }
-
-#ifdef CLIENT_SERVER
-  GetPropI0("radio.hpsdr_server",                            hpsdr_server);
-  GetPropI0("radio.hpsdr_server.listen_port",                listen_port);
-#endif
-
-  if (radio_is_remote) {
-    g_mutex_unlock(&property_mutex);
-    return;
-  }
-
-  GetPropI0("enable_auto_tune",                              enable_auto_tune);
-  GetPropI0("enable_tx_inhibit",                             enable_tx_inhibit);
-  GetPropI0("radio_sample_rate",                             soapy_radio_sample_rate);
-  GetPropI0("diversity_enabled",                             diversity_enabled);
-  GetPropF0("diversity_gain",                                div_gain);
-  GetPropF0("diversity_phase",                               div_phase);
-  GetPropF0("diversity_cos",                                 div_cos);
-  GetPropF0("diversity_sin",                                 div_sin);
-  GetPropI0("new_pa_board",                                  new_pa_board);
-  GetPropI0("region",                                        region);
-  GetPropI0("atlas_penelope",                                atlas_penelope);
-  GetPropI0("atlas_clock_source_10mhz",                      atlas_clock_source_10mhz);
-  GetPropI0("atlas_clock_source_128mhz",                     atlas_clock_source_128mhz);
-  GetPropI0("atlas_mic_source",                              atlas_mic_source);
-  GetPropI0("atlas_janus",                                   atlas_janus);
-  GetPropI0("hl2_audio_codec",                               hl2_audio_codec);
-  GetPropI0("anan10E",                                       anan10E);
-  GetPropI0("tx_out_of_band",                                tx_out_of_band_allowed);
-  GetPropI0("filter_board",                                  filter_board);
-  GetPropI0("pa_enabled",                                    pa_enabled);
-  GetPropI0("pa_power",                                      pa_power);
-  GetPropI0("mic_boost",                                     mic_boost);
-  GetPropI0("mic_linein",                                    mic_linein);
-  GetPropF0("linein_gain",                                   linein_gain);
-  GetPropI0("mic_ptt_enabled",                               mic_ptt_enabled);
-  GetPropI0("mic_bias_enabled",                              mic_bias_enabled);
-  GetPropI0("mic_ptt_tip_bias_ring",                         mic_ptt_tip_bias_ring);
-  GetPropI0("mic_input_xlr",                                 mic_input_xlr);
-  GetPropI0("tx_filter_low",                                 tx_filter_low);
-  GetPropI0("tx_filter_high",                                tx_filter_high);
-  GetPropI0("cw_keys_reversed",                              cw_keys_reversed);
-  GetPropI0("cw_keyer_speed",                                cw_keyer_speed);
-  GetPropI0("cw_keyer_mode",                                 cw_keyer_mode);
-  GetPropI0("cw_keyer_weight",                               cw_keyer_weight);
-  GetPropI0("cw_keyer_spacing",                              cw_keyer_spacing);
-  GetPropI0("cw_keyer_internal",                             cw_keyer_internal);
-  GetPropI0("cw_keyer_sidetone_volume",                      cw_keyer_sidetone_volume);
-  GetPropI0("cw_keyer_ptt_delay",                            cw_keyer_ptt_delay);
-  GetPropI0("cw_keyer_hang_time",                            cw_keyer_hang_time);
-  GetPropI0("cw_keyer_sidetone_frequency",                   cw_keyer_sidetone_frequency);
-  GetPropI0("cw_breakin",                                    cw_breakin);
-  //GetPropI0("cw_ramp_width",                                 cw_ramp_width);
-  GetPropI0("vfo_encoder_divisor",                           vfo_encoder_divisor);
-  GetPropI0("OCtune",                                        OCtune);
-  GetPropI0("OCfull_tune_time",                              OCfull_tune_time);
-  GetPropI0("OCmemory_tune_time",                            OCmemory_tune_time);
-  GetPropI0("analog_meter",                                  analog_meter);
-  GetPropI0("vox_enabled",                                   vox_enabled);
-  GetPropF0("vox_threshold",                                 vox_threshold);
-  GetPropF0("vox_hang",                                      vox_hang);
-  GetPropI0("calibration",                                   frequency_calibration);
-  GetPropI0("receivers",                                     receivers);
-  GetPropI0("iqswap",                                        soapy_iqswap);
-  GetPropI0("rx_gain_calibration",                           rx_gain_calibration);
-  GetPropF0("drive_digi_max",                                drive_digi_max);
-  GetPropI0("split",                                         split);
-  GetPropI0("duplex",                                        duplex);
-  GetPropI0("sat_mode",                                      sat_mode);
-  GetPropI0("mute_rx_while_transmitting",                    mute_rx_while_transmitting);
-  GetPropI0("radio.display_warnings",                        display_warnings);
-  GetPropI0("radio.display_pacurr",                          display_pacurr);
-#ifdef TCI
-  GetPropI0("tci_enable",                                    tci_enable);
-  GetPropI0("tci_port",                                      tci_port);
-  GetPropI0("tci_txonly",                                    tci_txonly);
-#endif
-  GetPropI0("mute_spkr_amp",                                 mute_spkr_amp);
-  GetPropI0("adc0_filter_bypass",                            adc0_filter_bypass);
-  GetPropI0("adc1_filter_bypass",                            adc1_filter_bypass);
-#ifdef SATURN
-  GetPropI0("client_enable_tx",                              client_enable_tx);
-  GetPropI0("saturn_server_en",                              saturn_server_en);
-#endif
-
-  for (int i = 0; i < 11; i++) {
-    GetPropF1("pa_trim[%d]", i,                              pa_trim[i]);
-  }
-
-  for (int i = 0; i < n_adc; i++) {
-    GetPropI1("radio.adc[%d].filters", i,                    adc[i].filters);
-    GetPropI1("radio.adc[%d].hpf", i,                        adc[i].hpf);
-    GetPropI1("radio.adc[%d].lpf", i,                        adc[i].lpf);
-    GetPropI1("radio.adc[%d].antenna", i,                    adc[i].antenna);
-    GetPropI1("radio.adc[%d].dither", i,                     adc[i].dither);
-    GetPropI1("radio.adc[%d].random", i,                     adc[i].random);
-    GetPropI1("radio.adc[%d].preamp", i,                     adc[i].preamp);
-    GetPropI1("radio.adc[%d].attenuation", i,                adc[i].attenuation);
-    GetPropI1("radio.adc[%d].enable_step_attenuation", i,    adc[i].enable_step_attenuation);
-    GetPropF1("radio.adc[%d].gain", i,                       adc[i].gain);
-    GetPropF1("radio.adc[%d].min_gain", i,                   adc[i].min_gain);
-    GetPropF1("radio.adc[%d].max_gain", i,                   adc[i].max_gain);
-    GetPropI1("radio.adc[%d].agc", i,                        adc[i].agc);
-    GetPropI1("radio.dac[%d].antenna", i,                    dac[i].antenna);
-    GetPropF1("radio.dac[%d].gain", i,                       dac[i].gain);
-  }
-
-  filterRestoreState();
-  bandRestoreState();
-  memRestoreState();
-  vfo_restore_state();
-  gpioRestoreActions();
-  rigctlRestoreState();
-#ifdef MIDI
-  midiRestoreState();
-#endif
-  t_print("%s: radio state (except receiver/transmitter) restored.\n", __FUNCTION__);
-
   //
-  // Sanity check part 2:
-  //
-  // 1.) If the radio does not have 2 ADCs, there is no DIVERSITY
+  // If the radio does not have 2 ADCs, there is no DIVERSITY
   //
   if (RECEIVERS < 2 || n_adc < 2) {
     diversity_enabled = 0;
   }
 
   //
-  // 2.) Selecting the N2ADR filter board overrides most OC settings
+  // If the N2ADR filter board is selected, this determines  most  OC settings
   //
-  if (filter_board == N2ADR) {
+  if (filter_board == N2ADR && !radio_is_remote) {
     n2adr_oc_settings(); // Apply default OC settings for N2ADR board
   }
 
   //
-  // 3.) select font
+  // Activate the font as read from the props file
   //
   load_font(which_css_font);
   g_mutex_unlock(&property_mutex);
@@ -2630,13 +2640,13 @@ void radio_save_state() {
     rx_save_state(receiver[i]);
   }
 
-  if (can_transmit) {
+  if (protocol == ORIGINAL_PROTOCOL || protcol == NEW_PROTOCOL) {
     // The only variables of interest in this receiver are
     // the alex_antenna an the adc
-    if (receiver[PS_RX_FEEDBACK]) {
-      rx_save_state(receiver[PS_RX_FEEDBACK]);
-    }
+    rx_save_state(receiver[PS_RX_FEEDBACK]);
+  }
 
+  if (can_transmit) {
     tx_save_state(transmitter);
   }
 
@@ -2644,140 +2654,126 @@ void radio_save_state() {
   // Obtain window position and save in props file
   //
   gtk_window_get_position(GTK_WINDOW(top_window), &window_x_pos, &window_y_pos);
+
   SetPropI0("WindowPositionX",                               window_x_pos);
   SetPropI0("WindowPositionY",                               window_y_pos);
-  //
-  // What comes now is essentially copied from radio_restore_state,
-  // with "GetProp" replaced by "SetProp".
-  //
-  //
-  // Use the "saved" Zoompan/Slider/Toolbar display status
-  // if they are currently hidden via the "Hide" button
-  //
   SetPropI0("display_zoompan",                               hide_status ? old_zoom : display_zoompan);
   SetPropI0("display_sliders",                               hide_status ? old_slid : display_sliders);
   SetPropI0("display_toolbar",                               hide_status ? old_tool : display_toolbar);
-  SetPropI0("display_width",                                 display_width);
   SetPropI0("display_height",                                display_height);
-  SetPropI0("full_screen",                                   full_screen);
   SetPropI0("vfo_layout",                                    vfo_layout);
   SetPropI0("optimize_touchscreen",                          optimize_for_touchscreen);
   SetPropI0("which_css_font",                                which_css_font);
-  //
-  // TODO: I think some further options related to the GUI
-  // have to be moved up here for Client-Server operation
-  //
+  SetPropI0("vfo_encoder_divisor",                           vfo_encoder_divisor);
+  SetPropI0("mute_rx_while_transmitting",                    mute_rx_while_transmitting);
+  SetPropI0("analog_meter",                                  analog_meter);
+
 #ifdef CLIENT_SERVER
   SetPropI0("radio.hpsdr_server",                            hpsdr_server);
   SetPropI0("radio.hpsdr_server.listen_port",                listen_port);
 #endif
 
-  if (radio_is_remote) {
-    saveProperties(property_path);
-    g_mutex_unlock(&property_mutex);
-    return;
-  }
-
-  SetPropI0("enable_auto_tune",                              enable_auto_tune);
-  SetPropI0("enable_tx_inhibit",                             enable_tx_inhibit);
-  SetPropI0("radio_sample_rate",                             soapy_radio_sample_rate);
-  SetPropI0("diversity_enabled",                             diversity_enabled);
-  SetPropF0("diversity_gain",                                div_gain);
-  SetPropF0("diversity_phase",                               div_phase);
-  SetPropF0("diversity_cos",                                 div_cos);
-  SetPropF0("diversity_sin",                                 div_sin);
-  SetPropI0("new_pa_board",                                  new_pa_board);
-  SetPropI0("region",                                        region);
-  SetPropI0("atlas_penelope",                                atlas_penelope);
-  SetPropI0("atlas_clock_source_10mhz",                      atlas_clock_source_10mhz);
-  SetPropI0("atlas_clock_source_128mhz",                     atlas_clock_source_128mhz);
-  SetPropI0("atlas_mic_source",                              atlas_mic_source);
-  SetPropI0("atlas_janus",                                   atlas_janus);
-  SetPropI0("hl2_audio_codec",                               hl2_audio_codec);
-  SetPropI0("anan10E",                                       anan10E);
-  SetPropI0("tx_out_of_band",                                tx_out_of_band_allowed);
-  SetPropI0("filter_board",                                  filter_board);
-  SetPropI0("pa_enabled",                                    pa_enabled);
-  SetPropI0("pa_power",                                      pa_power);
-  SetPropI0("mic_boost",                                     mic_boost);
-  SetPropI0("mic_linein",                                    mic_linein);
-  SetPropF0("linein_gain",                                   linein_gain);
-  SetPropI0("mic_ptt_enabled",                               mic_ptt_enabled);
-  SetPropI0("mic_bias_enabled",                              mic_bias_enabled);
-  SetPropI0("mic_ptt_tip_bias_ring",                         mic_ptt_tip_bias_ring);
-  SetPropI0("mic_input_xlr",                                 mic_input_xlr);
-  SetPropI0("tx_filter_low",                                 tx_filter_low);
-  SetPropI0("tx_filter_high",                                tx_filter_high);
-  SetPropI0("cw_keys_reversed",                              cw_keys_reversed);
-  SetPropI0("cw_keyer_speed",                                cw_keyer_speed);
-  SetPropI0("cw_keyer_mode",                                 cw_keyer_mode);
-  SetPropI0("cw_keyer_weight",                               cw_keyer_weight);
-  SetPropI0("cw_keyer_spacing",                              cw_keyer_spacing);
-  SetPropI0("cw_keyer_internal",                             cw_keyer_internal);
-  SetPropI0("cw_keyer_sidetone_volume",                      cw_keyer_sidetone_volume);
-  SetPropI0("cw_keyer_ptt_delay",                            cw_keyer_ptt_delay);
-  SetPropI0("cw_keyer_hang_time",                            cw_keyer_hang_time);
-  SetPropI0("cw_keyer_sidetone_frequency",                   cw_keyer_sidetone_frequency);
-  SetPropI0("cw_breakin",                                    cw_breakin);
-  //SetPropI0("cw_ramp_width",                                 cw_ramp_width);
-  SetPropI0("vfo_encoder_divisor",                           vfo_encoder_divisor);
-  SetPropI0("OCtune",                                        OCtune);
-  SetPropI0("OCfull_tune_time",                              OCfull_tune_time);
-  SetPropI0("OCmemory_tune_time",                            OCmemory_tune_time);
-  SetPropI0("analog_meter",                                  analog_meter);
-  SetPropI0("vox_enabled",                                   vox_enabled);
-  SetPropF0("vox_threshold",                                 vox_threshold);
-  SetPropF0("vox_hang",                                      vox_hang);
-  SetPropI0("calibration",                                   frequency_calibration);
-  SetPropI0("receivers",                                     receivers);
-  SetPropI0("iqswap",                                        soapy_iqswap);
-  SetPropI0("rx_gain_calibration",                           rx_gain_calibration);
-  SetPropF0("drive_digi_max",                                drive_digi_max);
-  SetPropI0("split",                                         split);
-  SetPropI0("duplex",                                        duplex);
-  SetPropI0("sat_mode",                                      sat_mode);
-  SetPropI0("mute_rx_while_transmitting",                    mute_rx_while_transmitting);
-  SetPropI0("radio.display_warnings",                        display_warnings);
-  SetPropI0("radio.display_pacurr",                          display_pacurr);
 #ifdef TCI
   SetPropI0("tci_enable",                                    tci_enable);
   SetPropI0("tci_port",                                      tci_port);
   SetPropI0("tci_txonly",                                    tci_txonly);
 #endif
-  SetPropI0("mute_spkr_amp",                                 mute_spkr_amp);
-  SetPropI0("adc0_filter_bypass",                            adc0_filter_bypass);
-  SetPropI0("adc1_filter_bypass",                            adc1_filter_bypass);
+
+  if (!radio_is_remote) {
+    SetPropI0("full_screen",                                 full_screen);
+    SetPropI0("display_width",                               display_width);
+    SetPropI0("enable_auto_tune",                            enable_auto_tune);
+    SetPropI0("enable_tx_inhibit",                           enable_tx_inhibit);
+    SetPropI0("radio_sample_rate",                           soapy_radio_sample_rate);
+    SetPropI0("diversity_enabled",                           diversity_enabled);
+    SetPropF0("diversity_gain",                              div_gain);
+    SetPropF0("diversity_phase",                             div_phase);
+    SetPropF0("diversity_cos",                               div_cos);
+    SetPropF0("diversity_sin",                               div_sin);
+    SetPropI0("new_pa_board",                                new_pa_board);
+    SetPropI0("region",                                      region);
+    SetPropI0("atlas_penelope",                              atlas_penelope);
+    SetPropI0("atlas_clock_source_10mhz",                    atlas_clock_source_10mhz);
+    SetPropI0("atlas_clock_source_128mhz",                   atlas_clock_source_128mhz);
+    SetPropI0("atlas_mic_source",                            atlas_mic_source);
+    SetPropI0("atlas_janus",                                 atlas_janus);
+    SetPropI0("hl2_audio_codec",                             hl2_audio_codec);
+    SetPropI0("anan10E",                                     anan10E);
+    SetPropI0("tx_out_of_band",                              tx_out_of_band_allowed);
+    SetPropI0("filter_board",                                filter_board);
+    SetPropI0("pa_enabled",                                  pa_enabled);
+    SetPropI0("pa_power",                                    pa_power);
+    SetPropI0("mic_boost",                                   mic_boost);
+    SetPropI0("mic_linein",                                  mic_linein);
+    SetPropF0("linein_gain",                                 linein_gain);
+    SetPropI0("mic_ptt_enabled",                             mic_ptt_enabled);
+    SetPropI0("mic_bias_enabled",                            mic_bias_enabled);
+    SetPropI0("mic_ptt_tip_bias_ring",                       mic_ptt_tip_bias_ring);
+    SetPropI0("mic_input_xlr",                               mic_input_xlr);
+    SetPropI0("tx_filter_low",                               tx_filter_low);
+    SetPropI0("tx_filter_high",                              tx_filter_high);
+    SetPropI0("cw_keys_reversed",                            cw_keys_reversed);
+    SetPropI0("cw_keyer_speed",                              cw_keyer_speed);
+    SetPropI0("cw_keyer_mode",                               cw_keyer_mode);
+    SetPropI0("cw_keyer_weight",                             cw_keyer_weight);
+    SetPropI0("cw_keyer_spacing",                            cw_keyer_spacing);
+    SetPropI0("cw_keyer_internal",                           cw_keyer_internal);
+    SetPropI0("cw_keyer_sidetone_volume",                    cw_keyer_sidetone_volume);
+    SetPropI0("cw_keyer_ptt_delay",                          cw_keyer_ptt_delay);
+    SetPropI0("cw_keyer_hang_time",                          cw_keyer_hang_time);
+    SetPropI0("cw_keyer_sidetone_frequency",                 cw_keyer_sidetone_frequency);
+    SetPropI0("cw_breakin",                                  cw_breakin);
+    SetPropI0("OCtune",                                      OCtune);
+    SetPropI0("OCfull_tune_time",                            OCfull_tune_time);
+    SetPropI0("OCmemory_tune_time",                          OCmemory_tune_time);
+    SetPropI0("vox_enabled",                                 vox_enabled);
+    SetPropF0("vox_threshold",                               vox_threshold);
+    SetPropF0("vox_hang",                                    vox_hang);
+    SetPropI0("calibration",                                 frequency_calibration);
+    SetPropI0("receivers",                                   receivers);
+    SetPropI0("iqswap",                                      soapy_iqswap);
+    SetPropI0("rx_gain_calibration",                         rx_gain_calibration);
+    SetPropF0("drive_digi_max",                              drive_digi_max);
+    SetPropI0("split",                                       split);
+    SetPropI0("duplex",                                      duplex);
+    SetPropI0("sat_mode",                                    sat_mode);
+    SetPropI0("radio.display_warnings",                      display_warnings);
+    SetPropI0("radio.display_pacurr",                        display_pacurr);
+    SetPropI0("mute_spkr_amp",                               mute_spkr_amp);
+    SetPropI0("adc0_filter_bypass",                          adc0_filter_bypass);
+    SetPropI0("adc1_filter_bypass",                          adc1_filter_bypass);
 #ifdef SATURN
-  SetPropI0("client_enable_tx",                              client_enable_tx);
-  SetPropI0("saturn_server_en",                              saturn_server_en);
+    SetPropI0("client_enable_tx",                            client_enable_tx);
+    SetPropI0("saturn_server_en",                            saturn_server_en);
 #endif
 
-  for (int i = 0; i < 11; i++) {
-    SetPropF1("pa_trim[%d]", i,                              pa_trim[i]);
-  }
+    for (int i = 0; i < 11; i++) {
+      SetPropF1("pa_trim[%d]", i,                            pa_trim[i]);
+    }
 
-  for (int i = 0; i < n_adc; i++) {
-    SetPropI1("radio.adc[%d].filters", i,                    adc[i].filters);
-    SetPropI1("radio.adc[%d].hpf", i,                        adc[i].hpf);
-    SetPropI1("radio.adc[%d].lpf", i,                        adc[i].lpf);
-    SetPropI1("radio.adc[%d].antenna", i,                    adc[i].antenna);
-    SetPropI1("radio.adc[%d].dither", i,                     adc[i].dither);
-    SetPropI1("radio.adc[%d].random", i,                     adc[i].random);
-    SetPropI1("radio.adc[%d].preamp", i,                     adc[i].preamp);
-    SetPropI1("radio.adc[%d].attenuation", i,                adc[i].attenuation);
-    SetPropI1("radio.adc[%d].enable_step_attenuation", i,    adc[i].enable_step_attenuation);
-    SetPropF1("radio.adc[%d].gain", i,                       adc[i].gain);
-    SetPropF1("radio.adc[%d].min_gain", i,                   adc[i].min_gain);
-    SetPropF1("radio.adc[%d].max_gain", i,                   adc[i].max_gain);
-    SetPropI1("radio.adc[%d].agc", i,                        adc[i].agc);
-    SetPropI1("radio.dac[%d].antenna", i,                    dac[i].antenna);
-    SetPropF1("radio.dac[%d].gain", i,                       dac[i].gain);
-  }
+    for (int i = 0; i < n_adc; i++) {
+      SetPropI1("radio.adc[%d].filters", i,                  adc[i].filters);
+      SetPropI1("radio.adc[%d].hpf", i,                      adc[i].hpf);
+      SetPropI1("radio.adc[%d].lpf", i,                      adc[i].lpf);
+      SetPropI1("radio.adc[%d].antenna", i,                  adc[i].antenna);
+      SetPropI1("radio.adc[%d].dither", i,                   adc[i].dither);
+      SetPropI1("radio.adc[%d].random", i,                   adc[i].random);
+      SetPropI1("radio.adc[%d].preamp", i,                   adc[i].preamp);
+      SetPropI1("radio.adc[%d].attenuation", i,              adc[i].attenuation);
+      SetPropI1("radio.adc[%d].enable_step_attenuation", i,  adc[i].enable_step_attenuation);
+      SetPropF1("radio.adc[%d].gain", i,                     adc[i].gain);
+      SetPropF1("radio.adc[%d].min_gain", i,                 adc[i].min_gain);
+      SetPropF1("radio.adc[%d].max_gain", i,                 adc[i].max_gain);
+      SetPropI1("radio.adc[%d].agc", i,                      adc[i].agc);
+      SetPropI1("radio.dac[%d].antenna", i,                  dac[i].antenna);
+      SetPropF1("radio.dac[%d].gain", i,                     dac[i].gain);
+    }
 
-  filterSaveState();
-  bandSaveState();
-  memSaveState();
-  vfo_save_state();
+    filterSaveState();
+    bandSaveState();
+    memSaveState();
+    vfo_save_state();
+  }
   gpioSaveActions();
   rigctlSaveState();
 #ifdef MIDI
@@ -2821,7 +2817,14 @@ int radio_remote_start(void *data) {
   RECEIVERS = 2;
   PS_RX_FEEDBACK = 2;
   PS_TX_FEEDBACK = 2;
+
+  //
+  // Read "local" data from the props file.
+  // For some cases this is only a small fraction, but
+  // for MIDI this  is the complete data set
+  //
   radio_restore_state();
+
   radio_create_visual();
   radio_reconfigure_screen();
 
