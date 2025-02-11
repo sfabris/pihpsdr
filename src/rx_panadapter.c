@@ -34,6 +34,7 @@
 #endif
 #include "discovered.h"
 #include "gpio.h"
+#include "message.h"
 #include "mode.h"
 #include "radio.h"
 #ifdef USBOZY
@@ -123,6 +124,7 @@ void rx_panadapter_update(RECEIVER *rx) {
   long long frequency = vfo[rx->id].frequency;
   int vfoband = vfo[rx->id].band;
   long long offset;
+
   //
   // soffset contains all corrections for attenuation and preamps
   // Perhaps some adjustment is necessary for those old radios which have
@@ -483,32 +485,6 @@ void rx_panadapter_update(RECEIVER *rx) {
     cairo_pattern_destroy(gradient);
   }
 
-  /*
-  #ifdef GPIO
-    if(rx->id==0 && controller==CONTROLLER1) {
-
-      cairo_set_source_rgba(cr,COLOUR_ATTN);
-      cairo_set_font_size(cr,DISPLAY_FONT_SIZE3);
-      if(ENABLE_E2_ENCODER) {
-        cairo_move_to(cr, mywidth-200,70);
-        snprintf(text,"%s (%s)",encoder_string[e2_encoder_action],sw_string[e2_sw_action]);
-        cairo_show_text(cr, text);
-      }
-
-      if(ENABLE_E3_ENCODER) {
-        cairo_move_to(cr, mywidth-200,90);
-        snprintf(text, 64, "%s (%s)",encoder_string[e3_encoder_action],sw_string[e3_sw_action]);
-        cairo_show_text(cr, text);
-      }
-
-      if(ENABLE_E4_ENCODER) {
-        cairo_move_to(cr, mywidth-200,110);
-        snprintf(text, 64, "%s (%s)",encoder_string[e4_encoder_action],sw_string[e4_sw_action]);
-        cairo_show_text(cr, text);
-      }
-    }
-  #endif
-  */
   if(rx->panadapter_peaks_on !=0) {
     int num_peaks = rx->panadapter_num_peaks;
     gboolean peaks_in_passband = SET(rx->panadapter_peaks_in_passband_filled);
@@ -531,7 +507,7 @@ void rx_panadapter_update(RECEIVER *rx) {
       double *sorted_samples = malloc(mywidth * sizeof(double));
       if (sorted_samples != NULL) {
         for (int i = 0; i < mywidth; i++) {
-          sorted_samples[i] = (double)samples[i + rx->pan] + soffset;
+          sorted_samples[i] = (double)samples[i + pan] + soffset;
         }
         qsort(sorted_samples, mywidth, sizeof(double), compare_doubles);
         int index = (int)((noise_percentile / 100.0) * mywidth);
@@ -546,10 +522,10 @@ void rx_panadapter_update(RECEIVER *rx) {
 
     for (int i = 1; i < mywidth - 1; i++) {
         if (i >= filter_left_bound && i <= filter_right_bound) {
-            double s = (double)samples[i + rx->pan] + soffset;
+            double s = (double)samples[i + pan] + soffset;
 
             // Check if the point is a peak
-            if ((!hide_noise || s >= noise_level) && s > samples[i - 1 + rx->pan] && s > samples[i + 1 + rx->pan]) {
+            if ((!hide_noise || s >= noise_level) && s > samples[i - 1 + pan] && s > samples[i + 1 + pan]) {
                 int replace_index = -1;
                 int start_range = i - ignore_range;
                 int end_range = i + ignore_range;
@@ -607,7 +583,7 @@ void rx_panadapter_update(RECEIVER *rx) {
         }
     }
 
-      // Draw peak values on the chart
+    // Draw peak values on the chart
     cairo_set_source_rgba(cr, COLOUR_PAN_TEXT); // Set text color
     cairo_select_font_face(cr, DISPLAY_FONT_FACE, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size(cr, DISPLAY_FONT_SIZE2);
@@ -621,7 +597,8 @@ void rx_panadapter_update(RECEIVER *rx) {
     for (int j = 0; j < num_peaks; j++) {
         if (peak_positions[j] > 0) {
             char peak_label[32];
-            snprintf(peak_label, sizeof(peak_label), "%.1f dBm", peaks[j]);
+            //snprintf(peak_label, sizeof(peak_label), "%.1f dBm", peaks[j]);
+            snprintf(peak_label, sizeof(peak_label), "%.1f", peaks[j]);
             cairo_text_extents_t extents;
             cairo_text_extents(cr, peak_label, &extents);
 

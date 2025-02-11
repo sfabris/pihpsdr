@@ -450,6 +450,12 @@ void send_radio_data_static(int sock) {
   radio_data.split = split;
   radio_data.sat_mode = sat_mode;
   radio_data.duplex = duplex;
+  radio_data.have_rx_gain = have_rx_gain;
+  radio_data.have_rx_att = have_rx_att;
+  radio_data.have_alex_att = have_alex_att;
+  radio_data.have_preamp = have_preamp;
+  radio_data.have_dither = have_dither;
+  radio_data.have_saturn_xdma = have_saturn_xdma;
 
   radio_data.pa_power = htons(pa_power);
   radio_data.OCfull_tune_time = htons(OCfull_tune_time);
@@ -1898,21 +1904,51 @@ static void *client_thread(void* arg) {
   char *server = (char *)arg;
   running = TRUE;
 
-  radio = g_new(DISCOVERED, 1);
   //
   // Allocate HERE so INFO packets can be sent multiple times
+  // Note RECEIVERS is (not yet) set, so create 2 RX
   //
   radio       = g_new(DISCOVERED, 1);
-  receiver[0] = g_new(RECEIVER, 1);
-  receiver[1] = g_new(RECEIVER, 1);
-  receiver[2] = g_new(RECEIVER, 1);
   transmitter = g_new(TRANSMITTER, 1);
 
   memset(radio,       0, sizeof(DISCOVERED));
-  memset(receiver[0], 0, sizeof(RECEIVER));
-  memset(receiver[1], 0, sizeof(RECEIVER));
-  memset(receiver[2], 0, sizeof(RECEIVER));
   memset(transmitter, 0, sizeof(TRANSMITTER));
+
+  for (int i = 0; i < 2; i++) {
+    receiver[i] = g_new(RECEIVER, 1);
+    RECEIVER *rx = receiver[i];
+    memset(rx, 0, sizeof(RECEIVER));
+    g_mutex_init(&rx->display_mutex);
+    g_mutex_init(&rx->mutex);
+    g_mutex_init(&rx->local_audio_mutex);
+    rx->pixel_samples= NULL;
+    rx->local_audio_buffer = NULL;
+    rx->display_panadapter = 1;
+    rx->display_waterfall = 1;
+    rx->panadapter_high = -40;
+    rx->panadapter_low = -140;
+    rx->panadapter_step = 20;
+
+    rx->panadapter_peaks_on = 0;
+    rx->panadapter_num_peaks = 3;
+    rx->panadapter_ignore_range_divider = 20;
+    rx->panadapter_ignore_noise_percentile = 80;
+    rx->panadapter_hide_noise_filled = 1;
+    rx->panadapter_peaks_in_passband_filled = 0;
+
+    rx->waterfall_high = -40;
+    rx->waterfall_low = -140;
+    rx->waterfall_automatic = 1;
+    rx->display_filled = 1;
+    rx->display_gradient = 1;
+    rx->local_audio_buffer = NULL;
+    rx->local_audio = 0;
+    STRLCPY(rx->audio_name, "NO AUDIO", sizeof(rx->audio_name));
+    rx->mute_when_not_active = 0;
+    rx->mute_radio = 0;
+    rx->audio_channel = STEREO;
+    rx->audio_device = -1;
+  }
 
   while (running) {
     bytes_read = recv_bytes(client_socket, (char *)&header, sizeof(header));
@@ -1978,7 +2014,7 @@ static void *client_thread(void* arg) {
         return NULL;
       }
       
-      t_print("INFO_BAND: %d\n", bytes_read);
+      t_print("INFO_BANDSTACK: %d\n", bytes_read);
     
       if (data.band > BANDS + XVTRS) {
         t_print("WARNING: band data received for b=%d, too large.\n", data.band);
@@ -2007,8 +2043,8 @@ static void *client_thread(void* arg) {
     break;
 
     case INFO_RADIO_STATIC: {
-      RADIO_STATIC_DATA radio_data;
-      bytes_read = recv_bytes(client_socket, (char *)&radio_data+sizeof(HEADER), sizeof(radio_data) - sizeof(HEADER));
+      RADIO_STATIC_DATA data;
+      bytes_read = recv_bytes(client_socket, (char *)&data+sizeof(HEADER), sizeof(data) - sizeof(HEADER));
 
       if (bytes_read <= 0) {
         t_print("client_thread: short read for INFO_RADIO_STATIC\n");
@@ -2018,62 +2054,68 @@ static void *client_thread(void* arg) {
       }
 
       t_print("INFO_RADIO_STATIC: %d\n", bytes_read);
-      STRLCPY(radio->name, radio_data.name, sizeof(radio->name));
-      locked= radio_data.locked;
+      STRLCPY(radio->name, data.name, sizeof(radio->name));
+      locked= data.locked;
       can_transmit = 0;  // TEMPORARY
-      have_rx_gain=radio_data.have_rx_gain;
-      protocol = radio->protocol = radio_data.protocol;
-      radio->supported_receivers = ntohs(radio_data.supported_receivers);
-      receivers=radio_data.receivers;
-      filter_board=radio_data.filter_board;
-      enable_auto_tune=radio_data.enable_auto_tune;
-      new_pa_board=radio_data.new_pa_board;
-      region=radio_data.region; radio_change_region(region);
-      atlas_penelope=radio_data.atlas_penelope;
-      atlas_clock_source_10mhz=radio_data.atlas_clock_source_10mhz;
-      atlas_clock_source_128mhz=radio_data.atlas_clock_source_128mhz;
-      atlas_mic_source=radio_data.atlas_mic_source;
-      atlas_janus=radio_data.atlas_janus;
-      hl2_audio_codec=radio_data.hl2_audio_codec;
-      anan10E=radio_data.anan10E;
-      tx_out_of_band_allowed=radio_data.tx_out_of_band_allowed;
-      pa_enabled=radio_data.pa_enabled;
-      mic_boost=radio_data.mic_boost;
-      mic_linein=radio_data.mic_linein;
-      mic_ptt_enabled=radio_data.mic_ptt_enabled;
-      mic_bias_enabled=radio_data.mic_bias_enabled;
-      mic_ptt_tip_bias_ring=radio_data.mic_ptt_tip_bias_ring;
-      cw_keyer_sidetone_volume=mic_input_xlr=radio_data.mic_input_xlr;
-      OCtune=radio_data.OCtune;
-      vox_enabled=radio_data.vox_enabled;
-      mute_rx_while_transmitting=radio_data.mute_rx_while_transmitting;
-      mute_spkr_amp=radio_data.mute_spkr_amp;
-      adc0_filter_bypass=radio_data.adc0_filter_bypass;
-      adc1_filter_bypass=radio_data.adc1_filter_bypass;
-      split=radio_data.split;
-      sat_mode=radio_data.sat_mode;
-      duplex=radio_data.duplex;
+      have_rx_gain=data.have_rx_gain;
+      protocol = radio->protocol = data.protocol;
+      radio->supported_receivers = ntohs(data.supported_receivers);
+      receivers=data.receivers;
+      filter_board=data.filter_board;
+      enable_auto_tune=data.enable_auto_tune;
+      new_pa_board=data.new_pa_board;
+      region=data.region; radio_change_region(region);
+      atlas_penelope=data.atlas_penelope;
+      atlas_clock_source_10mhz=data.atlas_clock_source_10mhz;
+      atlas_clock_source_128mhz=data.atlas_clock_source_128mhz;
+      atlas_mic_source=data.atlas_mic_source;
+      atlas_janus=data.atlas_janus;
+      hl2_audio_codec=data.hl2_audio_codec;
+      anan10E=data.anan10E;
+      tx_out_of_band_allowed=data.tx_out_of_band_allowed;
+      pa_enabled=data.pa_enabled;
+      mic_boost=data.mic_boost;
+      mic_linein=data.mic_linein;
+      mic_ptt_enabled=data.mic_ptt_enabled;
+      mic_bias_enabled=data.mic_bias_enabled;
+      mic_ptt_tip_bias_ring=data.mic_ptt_tip_bias_ring;
+      cw_keyer_sidetone_volume=mic_input_xlr=data.mic_input_xlr;
+      OCtune=data.OCtune;
+      vox_enabled=data.vox_enabled;
+      mute_rx_while_transmitting=data.mute_rx_while_transmitting;
+      mute_spkr_amp=data.mute_spkr_amp;
+      adc0_filter_bypass=data.adc0_filter_bypass;
+      adc1_filter_bypass=data.adc1_filter_bypass;
+      split=data.split;
+      sat_mode=data.sat_mode;
+      duplex=data.duplex;
+      have_rx_gain=data.have_rx_gain;
+      have_rx_att = data.have_rx_att;
+      have_alex_att = data.have_alex_att;
+      have_preamp = data.have_preamp;
+      have_dither = data.have_dither;
+      have_saturn_xdma = data.have_saturn_xdma;
 
-      pa_power = (short) ntohs(radio_data.pa_power);
-      OCfull_tune_time = (short) ntohs(radio_data.OCfull_tune_time);
-      OCmemory_tune_time = (short) ntohs(radio_data.OCmemory_tune_time);
-      cw_keyer_sidetone_frequency = (short) ntohs(radio_data.cw_keyer_sidetone_frequency);
-      rx_gain_calibration = (short) ntohs(radio_data.rx_gain_calibration);
-      device = radio->device = ntohs(radio_data.device);
-      tx_filter_low = (short) ntohs(radio_data.tx_filter_low);
-      tx_filter_high = (short) ntohs(radio_data.tx_filter_high);
-      vox_threshold = ntohd(radio_data.vox_threshold);
-      vox_hang = ntohd(radio_data.vox_hang);
-      drive_digi_max = ntohd(radio_data.drive_digi_max);
+      pa_power = (short) ntohs(data.pa_power);
+      OCfull_tune_time = (short) ntohs(data.OCfull_tune_time);
+      OCmemory_tune_time = (short) ntohs(data.OCmemory_tune_time);
+      cw_keyer_sidetone_frequency = (short) ntohs(data.cw_keyer_sidetone_frequency);
+      rx_gain_calibration = (short) ntohs(data.rx_gain_calibration);
+      device = radio->device = ntohs(data.device);
+      tx_filter_low = (short) ntohs(data.tx_filter_low);
+      tx_filter_high = (short) ntohs(data.tx_filter_high);
+      vox_threshold = ntohd(data.vox_threshold);
+      vox_hang = ntohd(data.vox_hang);
+      drive_digi_max = ntohd(data.drive_digi_max);
 
       for (int i = 0; i < 11; i++) {
-        pa_trim[i]= ntohd(radio_data.pa_trim[i]);
+        pa_trim[i]= ntohd(data.pa_trim[i]);
       }
 
-      frequency_calibration = ntohll(radio_data.frequency_calibration);
-      soapy_radio_sample_rate = ntohll(radio_data.soapy_radio_sample_rate);
-      radio->frequency_min = ntohll(radio_data.radio_frequency_min);
-      radio->frequency_max = ntohll(radio_data.radio_frequency_max);
+      frequency_calibration = ntohll(data.frequency_calibration);
+      soapy_radio_sample_rate = ntohll(data.soapy_radio_sample_rate);
+      radio->frequency_min = ntohll(data.radio_frequency_min);
+      radio->frequency_max = ntohll(data.radio_frequency_max);
 
       
 #ifdef SOAPYSDR
@@ -2145,49 +2187,42 @@ static void *client_thread(void* arg) {
       }
 
       t_print("INFO_RECEIVER: %d\n", bytes_read);
-      // cppcheck-suppress uninitStructMember
-      int rx = rx_data.rx;
-      receiver[rx]->id = rx;
-      receiver[rx]->adc = ntohs(rx_data.adc);;
-      long long rate = ntohll(rx_data.sample_rate);
-      receiver[rx]->sample_rate = (int)rate;
-      // cppcheck-suppress uninitvar
-      receiver[rx]->fps = ntohs(rx_data.fps);
-      receiver[rx]->agc = rx_data.agc;
-      receiver[rx]->agc_hang = ntohd(rx_data.agc_hang);
-      receiver[rx]->agc_thresh = ntohd(rx_data.agc_thresh);
-      receiver[rx]->agc_hang_threshold = ntohd(rx_data.agc_hang_thresh);
-      receiver[rx]->nb = rx_data.nb;
-      receiver[rx]->nr = rx_data.nr;
-      receiver[rx]->anf = rx_data.anf;
-      receiver[rx]->snb = rx_data.snb;
-      receiver[rx]->filter_low = (short) ntohs(rx_data.filter_low);
-      receiver[rx]->filter_high = (short) ntohs(rx_data.filter_high);
-      receiver[rx]->pixels = ntohs(rx_data.pixels);
-      receiver[rx]->zoom = rx_data.zoom;
-      receiver[rx]->pan = ntohs(rx_data.pan);
-      receiver[rx]->width = ntohs(rx_data.width);
-      receiver[rx]->height = ntohs(rx_data.height);
-      receiver[rx]->volume = ntohd(rx_data.volume);
-      receiver[rx]->agc_gain = ntohd(rx_data.agc_gain);
+      int id = rx_data.rx;
+      RECEIVER *rx = receiver[id];
+
+      t_print("id=%d rx=%p\n", id, rx);
+      rx->id = id;
+      rx->adc = ntohs(rx_data.adc);
+      rx->sample_rate = ntohll(rx_data.sample_rate);
+      rx->fps = ntohs(rx_data.fps);
+      rx->agc = rx_data.agc;
+      rx->agc_hang = ntohd(rx_data.agc_hang);
+      rx->agc_thresh = ntohd(rx_data.agc_thresh);
+      rx->agc_hang_threshold = ntohd(rx_data.agc_hang_thresh);
+      rx->nb = rx_data.nb;
+      rx->nr = rx_data.nr;
+      rx->anf = rx_data.anf;
+      rx->snb = rx_data.snb;
+      rx->filter_low = (short) ntohs(rx_data.filter_low);
+      rx->filter_high = (short) ntohs(rx_data.filter_high);
+      rx->pixels = ntohs(rx_data.pixels);
+      rx->zoom = rx_data.zoom;
+      rx->pan = ntohs(rx_data.pan);
+      rx->width = ntohs(rx_data.width);
+      rx->height = ntohs(rx_data.height);
+      rx->volume = ntohd(rx_data.volume);
+      rx->agc_gain = ntohd(rx_data.agc_gain);
       //
-      receiver[rx]->pixel_samples = NULL;
-      g_mutex_init(&receiver[rx]->display_mutex);
-      g_mutex_init(&receiver[rx]->mutex);
-      receiver[rx]->hz_per_pixel = (double)receiver[rx]->sample_rate / (double)receiver[rx]->pixels;
-      //receiver[rx]->playback_handle=NULL;
-      receiver[rx]->local_audio_buffer = NULL;
-      receiver[rx]->local_audio = 0;
-      g_mutex_init(&receiver[rx]->local_audio_mutex);
-      receiver[rx]->mute_when_not_active = 0;
-      receiver[rx]->audio_channel = STEREO;
-      receiver[rx]->audio_device = -1;
-      receiver[rx]->mute_radio = 0;
-      receiver[rx]->display_detector_mode = rx_data.display_detector_mode;
-      receiver[rx]->display_average_mode = rx_data.display_average_mode;
-      receiver[rx]->display_average_time =ntohd(rx_data.display_average_time);
-      t_print("rx=%d width=%d sample_rate=%d hz_per_pixel=%f pan=%d zoom=%d\n", rx, receiver[rx]->width,
-              receiver[rx]->sample_rate, receiver[rx]->hz_per_pixel, receiver[rx]->pan, receiver[rx]->zoom);
+      rx->display_detector_mode = rx_data.display_detector_mode;
+      rx->display_average_mode = rx_data.display_average_mode;
+      rx->display_average_time =ntohd(rx_data.display_average_time);
+
+      rx->hz_per_pixel = (double)rx->sample_rate / (double)rx->pixels;
+
+      if (protocol == ORIGINAL_PROTOCOL && id == 1) {
+        rx->sample_rate = receiver[0]->sample_rate;
+      }
+
     }
     break;
 
@@ -2224,6 +2259,8 @@ static void *client_thread(void* arg) {
       vfo[v].offset = ntohll(vfo_data.offset);
       vfo[v].step   = ntohll(vfo_data.step);
       vfo[v].rit_step  = ntohs(vfo_data.rit_step);
+
+      g_idle_add(ext_vfo_update, NULL);
     }
     break;
 

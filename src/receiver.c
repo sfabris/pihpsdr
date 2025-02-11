@@ -228,11 +228,8 @@ void rx_save_state(const RECEIVER *rx) {
   //
   // For a PS_RX_FEEDBACK, we only store/restore the alex antenna and ADC
   //
-  if (!radio_is_remote) {
-    SetPropI1("receiver.%d.alex_antenna", rx->id,               rx->alex_antenna);
-    SetPropI1("receiver.%d.adc", rx->id,                        rx->adc);
-  }
-
+  SetPropI1("receiver.%d.alex_antenna", rx->id,               rx->alex_antenna);
+  SetPropI1("receiver.%d.adc", rx->id,                        rx->adc);
   if (rx->id == PS_RX_FEEDBACK) { return; }
 
   //

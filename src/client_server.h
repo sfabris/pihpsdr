@@ -200,7 +200,6 @@ typedef struct __attribute__((__packed__)) _radio_static_data {
 //
   uint8_t  locked;
   uint8_t  can_transmit;
-  uint8_t  have_rx_gain;
   uint8_t  protocol;
   uint8_t  supported_receivers;
   uint8_t  receivers;
@@ -233,6 +232,12 @@ typedef struct __attribute__((__packed__)) _radio_static_data {
   uint8_t  split;
   uint8_t  sat_mode;
   uint8_t  duplex;
+  uint8_t  have_rx_gain;
+  uint8_t  have_rx_att;
+  uint8_t  have_alex_att;
+  uint8_t  have_preamp;
+  uint8_t  have_dither;
+  uint8_t  have_saturn_xdma;
 //
   uint16_t pa_power;
   uint16_t OCfull_tune_time;

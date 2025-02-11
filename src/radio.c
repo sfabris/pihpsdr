@@ -775,8 +775,8 @@ static void radio_create_visual() {
     receiver[i]->y = y;
     // Upon startup, if RIT or CTUN is active, tell WDSP.
 
+    receiver[i]->displaying = 1;
     if (!radio_is_remote) {
-      receiver[i]->displaying = 1;
       rx_set_displaying(receiver[i]);
       rx_set_offset(receiver[i], vfo[i].offset);
     }
@@ -1590,6 +1590,7 @@ void radio_remote_change_receivers(int r) {
 
   switch (r) {
   case 1:
+    receiver[1]->displaying = 0;
     gtk_container_remove(GTK_CONTAINER(fixed), receiver[1]->panel);
     receivers = 1;
     send_startstop_spectrum(client_socket, 1, 0);
@@ -1599,6 +1600,7 @@ void radio_remote_change_receivers(int r) {
     gtk_fixed_put(GTK_FIXED(fixed), receiver[1]->panel, 0, 0);
     receivers = 2;
     send_startstop_spectrum(client_socket, 1, 1);
+    receiver[1]->displaying = 1;
     break;
   }
 
@@ -1631,13 +1633,6 @@ void radio_change_receivers(int r) {
     rx_set_displaying(receiver[1]);
     gtk_container_remove(GTK_CONTAINER(fixed), receiver[1]->panel);
     receivers = 1;
-
-    if (radio_is_remote) {
-#ifdef CLIENT_SERVER
-      send_startstop_spectrum(client_socket, 1, 0);
-#endif
-    }
-
     break;
 
   case 2:
@@ -1645,13 +1640,6 @@ void radio_change_receivers(int r) {
     receiver[1]->displaying = 1;
     rx_set_displaying(receiver[1]);
     receivers = 2;
-
-    if (radio_is_remote) {
-#ifdef CLIENT_SERVER
-      send_startstop_spectrum(client_socket, 1, 1);
-#endif
-    }
-
     //
     // Make sure RX2 shares the sample rate  with RX1 when running P1.
     //
@@ -2640,7 +2628,7 @@ void radio_save_state() {
     rx_save_state(receiver[i]);
   }
 
-  if (protocol == ORIGINAL_PROTOCOL || protocol == NEW_PROTOCOL) {
+  if ((protocol == ORIGINAL_PROTOCOL || protocol == NEW_PROTOCOL) && !radio_is_remote) {
     // The only variables of interest in this receiver are
     // the alex_antenna an the adc
     rx_save_state(receiver[PS_RX_FEEDBACK]);
