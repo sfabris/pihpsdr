@@ -2640,7 +2640,7 @@ void radio_save_state() {
     rx_save_state(receiver[i]);
   }
 
-  if (protocol == ORIGINAL_PROTOCOL || protcol == NEW_PROTOCOL) {
+  if (protocol == ORIGINAL_PROTOCOL || protocol == NEW_PROTOCOL) {
     // The only variables of interest in this receiver are
     // the alex_antenna an the adc
     rx_save_state(receiver[PS_RX_FEEDBACK]);
