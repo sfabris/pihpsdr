@@ -26,10 +26,10 @@
 #include "mode.h"
 #include "receiver.h"
 
-//#ifndef __APPLE__
-//  #define htonll htobe64
-//  #define ntohll be64toh
-//#endif
+#ifndef __APPLE__
+  #define htonll htobe64
+  #define ntohll be64toh
+#endif
 
 //
 // Conversion of host(double) to/from network(uint64) with 1E-10 resolution
