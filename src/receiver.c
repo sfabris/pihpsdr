@@ -1082,13 +1082,9 @@ static void rx_process_buffer(RECEIVER *rx) {
     if (radio_is_transmitting() && (!duplex || mute_rx_while_transmitting)) {
       left_sample = 0.0;
       right_sample = 0.0;
-      left_audio_sample = 0;
-      right_audio_sample = 0;
     } else {
       left_sample = rx->audio_output_buffer[i * 2];
       right_sample = rx->audio_output_buffer[(i * 2) + 1];
-      left_audio_sample = (short)(left_sample * 32767.0);
-      right_audio_sample = (short)(right_sample * 32767.0);
     }
 
     if (rx->mute_radio || (rx != active_receiver && rx->mute_when_not_active)) {
@@ -1096,19 +1092,23 @@ static void rx_process_buffer(RECEIVER *rx) {
       right_sample = 0;
     }
 
+    switch (rx->audio_channel) {
+    case STEREO:
+      break;
+
+    case LEFT:
+      right_sample = 0.0;
+      break;
+
+    case RIGHT:
+      left_sample = 0.0;
+      break;
+    }
+
+    left_audio_sample = (short)(left_sample * 32767.0);
+    right_audio_sample = (short)(right_sample * 32767.0);
+
     if (rx->local_audio) {
-      switch (rx->audio_channel) {
-      case STEREO:
-        break;
-
-      case LEFT:
-        right_sample = 0.0;
-        break;
-
-      case RIGHT:
-        left_sample = 0.0;
-        break;
-      }
       audio_write(rx, (float)left_sample, (float)right_sample);
     }
 
