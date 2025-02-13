@@ -20,6 +20,7 @@ USBOZY=OFF
 SOAPYSDR=OFF
 STEMLAB=OFF
 AUDIO=PULSE
+EXTENDED_NR=OFF
 
 #######################################################################################
 #

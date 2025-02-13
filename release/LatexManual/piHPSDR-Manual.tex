@@ -391,7 +391,7 @@ the first time.
 \section{One or two receivers}
 At the end of the previous chapter (Fig. \ref{fig:FirstDisplay}),
  there were two receiver panels in the
-\pH window, stacked vertically, and both including a spectrum scope
+\pH window, and both including a spectrum scope
 (the green-coloured noise floor) and a waterfall. The waterfall area
 is completely black in the above picture since there was no RF signal.
 \pH can be switched between having one or two receivers in the
@@ -429,13 +429,6 @@ is completely black in the above picture since there was no RF signal.
  as most modern radios do. In this case, one usually
  assigns the first ADC (ADC0) to RX1 and the second ADC (ADC1) to
  RX2. This can be done in the \bltt{RX} menu.
-
- By default, if there are two receivers, they are vertically stacked,
- with RX1 in the upper part and RX2 in the lower part of the display.
- This can be changed in the \bltt{Screen} menu to horizontal stacking,
- where RX1 is  in the left half and RX2 in the right half of  the
- display. Changing the stacking trades vertical against horizontal
- resolution, of course.
 
 
 \begin{figure}[ht]
@@ -1496,9 +1489,6 @@ if \pH is run on a laptop in a small 640*400 window, then menus may be larger th
 that but still fit well on the screen (thus hiding, momentarily, the window of some
 other program) and are perfectly usable.
 
-\rett{Stack receivers horizontally}. If checked, this puts the panels
-of the two receivers (if two receivers are used) side-by-side instead of on top
-of each other.
 
 \rett{Full Screen Mode}. If you check this option, \pH goes to full screen mode.
 In this mode, the window width and height is ignore, instead, \pH occupies
@@ -2068,11 +2058,9 @@ for some legacy HPSDR boards which had a switch-able RX preamp.
 from this receiver is muted when
 it is not the active receiver.
 
-\rett{Mute Audio to Radio}. If checked, the audio in the HPSDR data stream from this receiver is muted.
-This has only an effect for Protocol-1 and Protocol-2 (not for SoapySDR), and only affects headphones/speakers
-connected to the radio. Local audio (to a sound card or a virtual audio cable)
-is not affected. The main use of this checkbox is
-to mute a radio-connected headphone while doing digi mode via local RX output.
+\rett{Mute Receiver}. If checked, the audio from this receiver is muted.
+This applies both to the audio data stream to the radio and local audio
+(sound cards or virtual  audio cables).
 
 \rett{Bypass ADC0 RX filters}. This box is only shown if the radio is an HPSDR radio
 and an ALEX filter board
@@ -2163,10 +2151,10 @@ But if filter edges of the active receiver haven been changed through
 controller or panel buttons, then clicking the filter seemingly already in use
 (and this includes the \texttt{Var1} and \texttt{Var2} filters!)
 will restore the nominal filter edges, which for the variable filters are those
-displayes here in the \bltt{Filter} menu. 
+displays here in the \bltt{Filter} menu. 
 Restoring nominal filter edges also happens on each filter change and thus
-also on each  mode, band, or bandstack change, and on recalling a memory
-location. This is so because a band/bandstack/memory change restores
+also on each  mode, band, or band stack change, and on recalling a memory
+location. This is so because a band/band stack/memory change restores
 the mode stored for that case, and each mode change also sets a new filter
 because it loads the RX/TR profile associated with that mode.
 
@@ -4441,7 +4429,7 @@ Note that for the single side band modes LSB, CWL, DIGL, the filter edge affecti
 \textit{audio} frequencies is changed.
 This command is meant for temporary QRM fighting, and
  the filter edges will be restored to their nominal values upon the next filter, mode, band, or
- bandstack change as well when recalling a memory slot. For creating a permanent filter with
+ band stack change as well when recalling a memory slot. For creating a permanent filter with
  user-defined filter edges, there are two filters (\texttt{Var1}, \texttt{Var2}) for each mode which can be
  changed permanently in the \bltt{Filter} menu.}
 
@@ -4534,26 +4522,20 @@ This function is used if one uses one encoder and one push-button to activate th
 encoder feature.}
 
 \phcommand{Mute}{MUTE}{B}{Toggles the ,,mute'' state of the active receiver. If a receiver is muted,
-zero-amplitude audio output is sent to the radio via the HPSDR protocol.
-This has only an effect for Protocol-1 and Protocol-2 (not for SoapySDR), and only affects headphones/speakers
-connected to the radio. Local audio (to a sound card or a virtual audio cable)
-is not affected. The main use of this command is
-to mute a radio-connected headphone while doing digi mode via local RX output.}
+its audio is replaced by  silence.
+This applies both to the audio data stream to the radio and local audio
+(if enabled).}
 
 \phcommand{Mute RX1}{MUTE1}{B}{Toggles the ,,mute'' state of  RX1. If a receiver is muted,
-zero-amplitude audio output is sent to the radio via the HPSDR protocol.
-This has only an effect for Protocol-1 and Protocol-2 (not for SoapySDR), and only affects headphones/speakers
-connected to the radio. Local audio (to a sound card or a virtual audio cable)
-is not affected. The main use of this command is
-to mute a radio-connected headphone while doing digi mode via local RX output..}
+its audio is replaced by  silence.
+This applies both to the audio data stream to the radio and local audio
+(if enabled).}
 
 \phcommand{Mute RX2}{MUTE2}{B}{Toggles the ,,mute'' state of  RX2. This operation is a no-op
 if only one receiver is running. If a receiver is muted,
-zero-amplitude audio output is sent to the radio via the HPSDR protocol.
-This has only an effect for Protocol-1 and Protocol-2 (not for SoapySDR), and only affects headphones/speakers
-connected to the radio. Local audio (to a sound card or a virtual audio cable)
-is not affected. The main use of this command is
-to mute a radio-connected headphone while doing digi mode via local RX output.}
+its audio is replaced by  silence.
+This applies both to the audio data stream to the radio and local audio
+(if enabled).}
 
 \phcommand{NB}{NB}{B}{Cycles through the noise blanker states (NB off/NB1/NB2).}
 
@@ -5997,7 +5979,7 @@ $\phantom{\Big|}$\textbf{\large ZZMA} & Mute/Unmute RX1 \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {ZZMAp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZMA;} \\\hline
 $\phantom{\Big|}${\large Response} & {ZZMAp$_1$;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: RX1 not muted, p$_1$=1: muted. This only affects the audio sent to the radio via the HPSDR protocol.} \\
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: RX1 not muted, p$_1$=1: muted.} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -6009,7 +5991,7 @@ $\phantom{\Big|}$\textbf{\large ZZMB} & Mute/Unmute RX2 \\\cline{1-2}
 $\phantom{\Big|}${\large Set} & {ZZMBp$_1$;} \\\hline
 $\phantom{\Big|}${\large Read} & {ZZMB;} \\\hline
 $\phantom{\Big|}${\large Response} & {ZZMBp$_1$;} \\\hline
-$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: RX2 not muted, p$_1$=1: muted. This only affects the audio sent to the radio via the HPSDR protocol.} \\
+$\phantom{\Big|}${\large Notes} & \multicolumn{1}{|p{11cm}|}{p$_1$=0: RX2 not muted, p$_1$=1: muted.} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -7084,25 +7066,20 @@ PulseAudio is used. On MacOS, the \texttt{AUDIO} choice has no effect since the 
 module is used no matter what the \texttt{AUDIO} setting is.
 }
 
-%\item[\rett{EXTENDED\_NR}] {(\textbf{Deprecated}, default: \texttt{OFF})
-%There is a special version of the WDSP library that contains additional noise
-%reduction facilities which are based on  \texttt{rnnnoise} and \texttt{libspecbleach}, see
-% \texttt{https://github.com/vu3rdd/wdsp}. If you have such a version of WDSP installed, these
-% extended noise reduction facilities can be used with \pH if this option is \texttt{ON}.
-% Note that activating this option implies that the modified WDSP version is installed such
-% that the WDSP include file can be found by the compiler, and that the WDSP (shared)
-% library can be linked with the ,,\texttt{-lwdsp}'' linker option. This normally means
-% that the WDSP shared library is installed in /usr/local/lib, while the WDSP header file
-% is installed in /usr/local/include. The \texttt{wdsp} directory which is part of
-% the \pH repository is not used if \texttt{EXTENDED\_NR} is activated.
-%
-%{\bf Note:} When I  checked the repository mentioned above in November 2024, it seems that the
-%WDSP version is outdated (version 1.23) so it cannot be used with \pH. Ask the maintainer
-%of that repository to update their code if you want to use it. Note that since version 1.25, WDSP
-%contains a new and highly effective ,,trained'' NR2 noise reduction which was very well
-%received by the community. Having said this, I consider EXTENDED\_NR as deprecated and may
-%remove it from \pH in the future.
-%}
+\item[\rett{EXTENDED\_NR}] {(default: \texttt{OFF})
+There is a special version of the WDSP library that contains additional noise
+reduction facilities which are based on  \texttt{rnnnoise} and \texttt{libspecbleach}, see
+ \texttt{https://github.com/vu3rdd/wdsp}. If you have such a version of WDSP installed, these
+ extended noise reduction facilities can be used with \pH if this option is activated 
+ at compile time.
+ Note that activating this option implies that the modified WDSP version is installed such
+ that the include file \texttt{wdsp.h} of \textit{that}
+ WDSP library, can be found by the compiler, and that \textit{that} WDSP (shared)
+ library can be linked with the ,,\texttt{-lwdsp}'' linker option. This normally means
+ that the WDSP shared library is installed in \texttt{/usr/local/lib} and the WDSP header file
+ in \texttt{/usr/local/include}. The \texttt{wdsp} directory that is part of
+ the \pH repository is not used if \texttt{EXTENDED\_NR} is activated.}
+
 
 %\item[\rett{SERVER}] {(\textbf{Unfinished/Experimental}, default: \texttt{OFF})
 % This is not yet completed but is mentioned here anyway. There are plans to have

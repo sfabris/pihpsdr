@@ -335,7 +335,7 @@ void rx_menu(GtkWidget *parent) {
   g_signal_connect(mute_audio_b, "toggled", G_CALLBACK(mute_audio_cb), NULL);
 
   if (protocol == ORIGINAL_PROTOCOL || protocol  == NEW_PROTOCOL) {
-    GtkWidget *mute_radio_b = gtk_check_button_new_with_label("Mute Audio to Radio");
+    GtkWidget *mute_radio_b = gtk_check_button_new_with_label("Mute Receiver");
     gtk_widget_set_name(mute_radio_b, "boldlabel");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (mute_radio_b), active_receiver->mute_radio);
     gtk_widget_show(mute_radio_b);

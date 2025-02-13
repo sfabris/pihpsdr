@@ -2372,7 +2372,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //READ      ZZMA;
       //RESP      ZZMAx;
       //NOTE      x=0: RX1 not muted, x=1: muted.
-      //CONT      This only affects the audio sent to the radio via the HPSDR protocol.
       //ENDDEF
       if (command[4] == ';') {
         snprintf(reply, 256, "ZZMA%d;", receiver[0]->mute_radio);
@@ -2391,7 +2390,6 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
       //READ      ZZMB;
       //RESP      ZZMBx;
       //NOTE      x=0: RX2 not muted, x=1: muted.
-      //CONT      This only affects the audio sent to the radio via the HPSDR protocol.
       //ENDDEF
       RXCHECK(1,
       if (command[4] == ';') {
