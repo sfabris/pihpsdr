@@ -491,7 +491,7 @@ void tx_panadapter_update(TRANSMITTER *tx) {
       for (int j = 0; j < num_peaks; j++) {
           if (peak_positions[j] > 0) {
               char peak_label[32];
-              snprintf(peak_label, sizeof(peak_label), "%.1f dBm", peaks[j]);
+              snprintf(peak_label, sizeof(peak_label), "%.1f", peaks[j]);
               cairo_text_extents_t extents;
               cairo_text_extents(cr, peak_label, &extents);
 

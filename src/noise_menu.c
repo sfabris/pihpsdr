@@ -90,7 +90,7 @@ void update_noise() {
     mode_settings[mode].nr4_smoothing_factor = active_receiver->nr4_smoothing_factor;
     mode_settings[mode].nr4_whitening_factor = active_receiver->nr4_whitening_factor;
     mode_settings[mode].nr4_noise_rescale = active_receiver->nr4_noise_rescale;
-    mode_settings[mode].nr4_post_filter_threshold = active_receiver->nr4_post_filter_threshold;
+    mode_settings[mode].nr4_post_threshold = active_receiver->nr4_post_threshold;
 #endif
     copy_mode_settings(mode);
   }
@@ -223,7 +223,7 @@ static void nr4_rescale_cb(GtkWidget *widget, gpointer data) {
 }
 
 static void nr4_threshold_cb(GtkWidget *widget, gpointer data) {
-  active_receiver->nr4_post_filter_threshold = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
+  active_receiver->nr4_post_threshold = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
   update_noise();
 }
 
@@ -524,7 +524,7 @@ void noise_menu(GtkWidget *parent) {
   gtk_widget_set_halign(nr4_threshold_title, GTK_ALIGN_END);
   gtk_grid_attach(GTK_GRID(nr4_grid), nr4_threshold_title, 1, 2, 2, 1);
   GtkWidget *nr4_threshold_b = gtk_spin_button_new_with_range(-10.0, 10.0, 0.1);
-  gtk_spin_button_set_value (GTK_SPIN_BUTTON(nr4_threshold_b), active_receiver->nr4_post_filter_threshold);
+  gtk_spin_button_set_value (GTK_SPIN_BUTTON(nr4_threshold_b), active_receiver->nr4_post_threshold);
   gtk_grid_attach(GTK_GRID(nr4_grid), nr4_threshold_b, 3, 2, 1, 1);
   g_signal_connect(G_OBJECT(nr4_threshold_b), "changed", G_CALLBACK(nr4_threshold_cb), NULL);
   //

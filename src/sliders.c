@@ -214,7 +214,7 @@ static void attenuation_value_changed_cb(GtkWidget *widget, gpointer data) {
 
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
-    send_attenuation(client_socket, active_receiver->id, (int)adc[active_receiver->adc].attenuation);
+    send_attenuation(client_socket, active_receiver->id, adc[active_receiver->adc].attenuation);
 #endif
   } else {
     schedule_high_priority();

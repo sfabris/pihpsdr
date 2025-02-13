@@ -104,7 +104,6 @@ static gboolean panadapter_scroll_event_cb(GtkWidget *widget, GdkEventScroll *ev
 }
 
 void rx_panadapter_update(RECEIVER *rx) {
-  int i;
   float *samples;
   cairo_text_extents_t extents;
   long long f;
@@ -181,7 +180,7 @@ void rx_panadapter_update(RECEIVER *rx) {
   long long max_display = min_display + (long long)((double)rx->width * HzPerPixel);
 
   if (vfoband == band60) {
-    for (i = 0; i < channel_entries; i++) {
+    for (int i = 0; i < channel_entries; i++) {
       long long low_freq = band_channels_60m[i].frequency - (band_channels_60m[i].width / (long long)2);
       long long hi_freq = band_channels_60m[i].frequency + (band_channels_60m[i].width / (long long)2);
       double x1 = (double) (low_freq - min_display) / HzPerPixel;
@@ -214,7 +213,7 @@ void rx_panadapter_update(RECEIVER *rx) {
   cairo_set_font_size(cr, DISPLAY_FONT_SIZE2);
   char v[32];
 
-  for (i = rx->panadapter_high; i >= rx->panadapter_low; i--) {
+  for (int i = rx->panadapter_high; i >= rx->panadapter_low; i--) {
     int mod = abs(i) % rx->panadapter_step;
 
     if (mod == 0) {
@@ -414,7 +413,7 @@ void rx_panadapter_update(RECEIVER *rx) {
              / (rx->panadapter_high - rx->panadapter_low));
   cairo_move_to(cr, 0.0, s1);
 
-  for (i = 1; i < mywidth; i++) {
+  for (int i = 1; i < mywidth; i++) {
     double s2;
     s2 = (double)samples[i + pan] + soffset;
     s2 = floor((rx->panadapter_high - s2)
@@ -599,7 +598,6 @@ void rx_panadapter_update(RECEIVER *rx) {
             char peak_label[32];
             //snprintf(peak_label, sizeof(peak_label), "%.1f dBm", peaks[j]);
             snprintf(peak_label, sizeof(peak_label), "%.1f", peaks[j]);
-            cairo_text_extents_t extents;
             cairo_text_extents(cr, peak_label, &extents);
 
             // Calculate initial text position: slightly above the peak

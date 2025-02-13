@@ -97,7 +97,7 @@ static void calibration_value_changed_cb(GtkWidget *widget, gpointer data) {
   frequency_calibration = (long long)gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
-    send_radio_data_static(client_socket);
+    send_radio_data(client_socket);
 #endif
   }
 }
@@ -107,7 +107,7 @@ static void rx_gain_calibration_value_changed_cb(GtkWidget *widget, gpointer dat
 
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
-    send_radio_data_static(client_socket);
+    send_radio_data(client_socket);
 #endif
   }
 }
@@ -123,7 +123,7 @@ static void ptt_ring_cb(GtkWidget *widget, gpointer data) {
 
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
-    send_radio_data_static(client_socket);
+    send_radio_data(client_socket);
 #endif
   } else {
     schedule_transmit_specific();
@@ -137,7 +137,7 @@ static void ptt_tip_cb(GtkWidget *widget, gpointer data) {
 
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
-    send_radio_data_static(client_socket);
+    send_radio_data(client_socket);
   } else {
 #endif
     schedule_transmit_specific();
@@ -150,7 +150,7 @@ static void toggle_cb(GtkWidget *widget, gpointer data) {
 
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
-    send_radio_data_static(client_socket);
+    send_radio_data(client_socket);
   } else {
 #endif
     schedule_general();
@@ -223,7 +223,7 @@ static void sat_cb(GtkWidget *widget, gpointer data) {
 
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
-    send_radio_data_static(client_socket);
+    send_radio_data(client_socket);
 #endif
   }
 
@@ -338,7 +338,7 @@ static void mic_input_cb(GtkWidget *widget, gpointer data) {
 
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
-    send_radio_data_static(client_socket);
+    send_radio_data(client_socket);
 #endif
   } else {
     schedule_transmit_specific();
@@ -420,7 +420,7 @@ static void ck10mhz_cb(GtkWidget *widget, gpointer data) {
 
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
-    send_radio_data_static(client_socket);
+    send_radio_data(client_socket);
 #endif
   }
 }
@@ -429,7 +429,7 @@ static void ck128mhz_cb(GtkWidget *widget, gpointer data) {
   atlas_clock_source_128mhz = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
-    send_radio_data_static(client_socket);
+    send_radio_data(client_socket);
 #endif
   }
 }
@@ -438,7 +438,7 @@ static void micsource_cb(GtkWidget *widget, gpointer data) {
   atlas_mic_source = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
-    send_radio_data_static(client_socket);
+    send_radio_data(client_socket);
 #endif
   }
 }
@@ -447,7 +447,7 @@ static void tx_cb(GtkWidget *widget, gpointer data) {
   atlas_penelope = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
-    send_radio_data_static(client_socket);
+    send_radio_data(client_socket);
 #endif
   }
 }

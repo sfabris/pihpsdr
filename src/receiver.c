@@ -302,7 +302,7 @@ void rx_save_state(const RECEIVER *rx) {
     SetPropF1("receiver.%d.nr4_smoothing_factor", rx->id,       rx->nr4_smoothing_factor);
     SetPropF1("receiver.%d.nr4_whitening_factor", rx->id,       rx->nr4_whitening_factor);
     SetPropF1("receiver.%d.nr4_noise_rescale", rx->id,          rx->nr4_noise_rescale);
-    SetPropF1("receiver.%d.nr4_post_filter_threshold", rx->id,  rx->nr4_post_filter_threshold);
+    SetPropF1("receiver.%d.nr4_post_threshold", rx->id,         rx->nr4_post_threshold);
 #endif
     SetPropI1("receiver.%d.deviation", rx->id,                  rx->deviation);
     SetPropI1("receiver.%d.squelch_enable", rx->id,             rx->squelch_enable);
@@ -410,7 +410,7 @@ void rx_restore_state(RECEIVER *rx) {
     GetPropF1("receiver.%d.nr4_smoothing_factor", rx->id,       rx->nr4_smoothing_factor);
     GetPropF1("receiver.%d.nr4_whitening_factor", rx->id,       rx->nr4_whitening_factor);
     GetPropF1("receiver.%d.nr4_noise_rescale", rx->id,          rx->nr4_noise_rescale);
-    GetPropF1("receiver.%d.nr4_post_filter_threshold", rx->id,  rx->nr4_post_filter_threshold);
+    GetPropF1("receiver.%d.nr4_post_threshold", rx->id,         rx->nr4_post_threshold);
 #endif
     GetPropI1("receiver.%d.deviation", rx->id,                  rx->deviation);
     GetPropI1("receiver.%d.squelch_enable", rx->id,             rx->squelch_enable);
@@ -780,7 +780,7 @@ RECEIVER *rx_create_receiver(int id, int pixels, int width, int height) {
   rx->nr4_smoothing_factor = 0.0;
   rx->nr4_whitening_factor = 0.0;
   rx->nr4_noise_rescale = 2.0;
-  rx->nr4_post_filter_threshold = -10.0;
+  rx->nr4_post_threshold = -10.0;
 #endif
   const BAND *b = band_get_band(vfo[rx->id].band);
   rx->alex_antenna = b->alexRxAntenna;
@@ -1889,7 +1889,7 @@ void rx_set_noise(const RECEIVER *rx) {
   SetRXASBNRsmoothingFactor(rx->id,     rx->nr4_smoothing_factor);
   SetRXASBNRwhiteningFactor(rx->id,     rx->nr4_whitening_factor);
   SetRXASBNRnoiseRescale(rx->id,        rx->nr4_noise_rescale);
-  SetRXASBNRpostFilterThreshold(rx->id, rx->nr4_post_filter_threshold);
+  SetRXASBNRpostFilterThreshold(rx->id, rx->nr4_post_threshold);
   SetRXASBNRRun(rx->id, (rx->nr == 4));
 #endif
 #ifdef WDSPRXDEBUG

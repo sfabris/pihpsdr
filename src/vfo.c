@@ -132,7 +132,7 @@ static void modesettingsSaveState() {
     SetPropF1("modeset.%d.nr4_smoothing_factor", i,  mode_settings[i].nr4_smoothing_factor);
     SetPropF1("modeset.%d.nr4_whitening_factor", i,  mode_settings[i].nr4_whitening_factor);
     SetPropF1("modeset.%d.nr4_noise_rescale", i,     mode_settings[i].nr4_noise_rescale);
-    SetPropF1("modeset.%d.nr4_post_filter_threshold", i, mode_settings[i].nr4_post_filter_threshold);
+    SetPropF1("modeset.%d.nr4_post_threshold", i,    mode_settings[i].nr4_post_threshold);
 #endif
     SetPropI1("modeset.%d.anf", i,                   mode_settings[i].anf);
     SetPropI1("modeset.%d.snb", i,                   mode_settings[i].snb);
@@ -234,7 +234,7 @@ static void modesettingsRestoreState() {
     mode_settings[i].nr4_smoothing_factor = 0.0;
     mode_settings[i].nr4_whitening_factor = 0.0;
     mode_settings[i].nr4_noise_rescale = 2.0;
-    mode_settings[i].nr4_post_filter_threshold = 2.0;
+    mode_settings[i].nr4_post_threshold = 2.0;
 #endif
     mode_settings[i].anf = 0;
     mode_settings[i].snb = 0;
@@ -319,7 +319,7 @@ static void modesettingsRestoreState() {
     GetPropF1("modeset.%d.nr4_smoothing_factor", i,  mode_settings[i].nr4_smoothing_factor);
     GetPropF1("modeset.%d.nr4_whitening_factor", i,  mode_settings[i].nr4_whitening_factor);
     GetPropF1("modeset.%d.nr4_noise_rescale", i,     mode_settings[i].nr4_noise_rescale);
-    GetPropF1("modeset.%d.nr4_post_filter_threshold", i, mode_settings[i].nr4_post_filter_threshold);
+    GetPropF1("modeset.%d.nr4_post_threshold", i,    mode_settings[i].nr4_post_threshold);
 #endif
     GetPropI1("modeset.%d.anf", i,                   mode_settings[i].anf);
     GetPropI1("modeset.%d.snb", i,                   mode_settings[i].snb);
@@ -598,7 +598,7 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
   rx->nr4_smoothing_factor      = mode_settings[m].nr4_smoothing_factor;
   rx->nr4_whitening_factor      = mode_settings[m].nr4_whitening_factor;
   rx->nr4_noise_rescale         = mode_settings[m].nr4_noise_rescale;
-  rx->nr4_post_filter_threshold = mode_settings[m].nr4_post_filter_threshold;
+  rx->nr4_post_threshold        = mode_settings[m].nr4_post_threshold;
 #endif
   rx->anf                       = mode_settings[m].anf;
   rx->snb                       = mode_settings[m].snb;

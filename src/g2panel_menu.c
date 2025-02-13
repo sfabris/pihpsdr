@@ -169,13 +169,13 @@ void g2panel_change_command(int andromeda_type, int type, int *buttonvec, int *e
   last_pos = pos;
   last_type = type; // CONTROLLER_SWITCH or CONTROLLER_ENCODER
 
-  if (pos < 0) { pos = 0; }
+  if (last_pos < 0) { last_pos = 0; }
 
   switch (type) {
   case CONTROLLER_SWITCH:
     snprintf(str, 128, "Button #%d", last_pos);
 
-    if (pos > 99) { pos = 0; }
+    if (last_pos > 99) { last_pos = 0; }
 
     gtk_button_set_label(GTK_BUTTON(newAction), ActionTable[buttonvec[last_pos]].str);
     break;
@@ -183,7 +183,7 @@ void g2panel_change_command(int andromeda_type, int type, int *buttonvec, int *e
   case CONTROLLER_ENCODER:
     snprintf(str, 128, "Encoder #%d", last_pos);
 
-    if (pos > 49) { pos = 0; }
+    if (last_pos > 49) { last_pos = 0; }
 
     gtk_button_set_label(GTK_BUTTON(newAction), ActionTable[encodervec[last_pos]].str);
     break;

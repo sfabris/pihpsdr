@@ -111,7 +111,7 @@ struct _mode_settings {
   double nr4_smoothing_factor;
   double nr4_whitening_factor;
   double nr4_noise_rescale;
-  double nr4_post_filter_threshold;
+  double nr4_post_threshold;
 #endif
   int anf;                          // Automatic notch filter
   int snb;                          // Spectral noise blanker
