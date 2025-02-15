@@ -42,6 +42,7 @@ static int my_display_width;
 static int my_display_height;
 static int my_full_screen;
 static int my_vfo_layout;
+static int my_rx_stack_horizontal;
 
 //
 // It has been reported (and I could reproduce)
@@ -56,6 +57,7 @@ static int apply(gpointer data) {
   display_height      = my_display_height;
   full_screen         = my_full_screen;
   vfo_layout          = my_vfo_layout;
+  rx_stack_horizontal = my_rx_stack_horizontal;
   radio_reconfigure_screen();
 
   //
@@ -129,6 +131,11 @@ static void height_cb(GtkWidget *widget, gpointer data) {
   schedule_apply();
 }
 
+static void horizontal_cb(GtkWidget *widget, gpointer data) {
+  my_rx_stack_horizontal = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  schedule_apply();
+}
+
 static void full_cb(GtkWidget *widget, gpointer data) {
   my_full_screen = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   schedule_apply();
@@ -164,6 +171,7 @@ void screen_menu(GtkWidget *parent) {
   my_display_height      = display_height;
   my_full_screen         = full_screen;
   my_vfo_layout          = vfo_layout;
+  my_rx_stack_horizontal = rx_stack_horizontal;
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(parent));
   GtkWidget *headerbar = gtk_header_bar_new();
@@ -237,12 +245,18 @@ void screen_menu(GtkWidget *parent) {
   // This combo-box spans three columns so the text may be really long
   my_combo_attach(GTK_GRID(grid), vfo_b, col, row, 2, 1);
   vfo_signal_id = g_signal_connect(vfo_b, "changed", G_CALLBACK(vfo_cb), NULL);
+  row++;
+  button = gtk_check_button_new_with_label("Stack receivers horizontally");
+  gtk_widget_set_name(button, "boldlabel");
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), my_rx_stack_horizontal);
+  gtk_grid_attach(GTK_GRID(grid), button, 0, row, 2, 1);
+  g_signal_connect(button, "toggled", G_CALLBACK(horizontal_cb), NULL);
+
   if (!radio_is_remote) {
-    row++;
     full_b = gtk_check_button_new_with_label("Full Screen Mode");
     gtk_widget_set_name(full_b, "boldlabel");
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(full_b), my_full_screen);
-    gtk_grid_attach(GTK_GRID(grid), full_b, 0, row, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), full_b, 2, row, 1, 1);
     g_signal_connect(full_b, "toggled", G_CALLBACK(full_cb), NULL);
   }
   row++;

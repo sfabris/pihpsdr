@@ -602,8 +602,8 @@ void rx_panadapter_update(RECEIVER *rx) {
 
             // Calculate initial text position: slightly above the peak
             double text_x = peak_positions[j];
-            double text_y = floor((rx->panadapter_high - peaks[j]) 
-                                  * (double)myheight 
+            double text_y = floor((rx->panadapter_high - peaks[j])
+                                  * (double)myheight
                                   / (rx->panadapter_high - rx->panadapter_low)) - 5;
 
             // Ensure text stays within the drawing area
@@ -652,6 +652,25 @@ void rx_panadapter_update(RECEIVER *rx) {
     display_panadapter_messages(cr, mywidth, rx->fps);
   }
 
+  //
+  // For horizontal stacking, draw a vertical separator,
+  // at the right edge of RX1, and at the left
+  // edge of RX2.
+  //
+  if (rx_stack_horizontal && receivers > 1) {
+    if (rx->id == 0) {
+      cairo_move_to(cr, mywidth - 1, 0);
+      cairo_line_to(cr, mywidth - 1, myheight);
+    } else {
+      cairo_move_to(cr, 0, 0);
+      cairo_line_to(cr, 0, myheight);
+    }
+
+    cairo_set_source_rgba(cr, COLOUR_PAN_LINE);
+    cairo_set_line_width(cr, 1);
+    cairo_stroke(cr);
+  }
+
   cairo_destroy (cr);
   gtk_widget_queue_draw (rx->panadapter);
 }
@@ -661,19 +680,16 @@ void rx_panadapter_init(RECEIVER *rx, int width, int height) {
   rx->panadapter = gtk_drawing_area_new ();
   gtk_widget_set_size_request (rx->panadapter, width, height);
   /* Signals used to handle the backing surface */
-  g_signal_connect (rx->panadapter, "draw",
-                    G_CALLBACK (panadapter_draw_cb), rx);
-  g_signal_connect (rx->panadapter, "configure-event",
-                    G_CALLBACK (panadapter_configure_event_cb), rx);
+  g_signal_connect (rx->panadapter, "draw", G_CALLBACK (panadapter_draw_cb), rx);
+  g_signal_connect (rx->panadapter, "configure-event", G_CALLBACK (panadapter_configure_event_cb), rx);
   /* Event signals */
-  g_signal_connect (rx->panadapter, "motion-notify-event",
-                    G_CALLBACK (panadapter_motion_notify_event_cb), rx);
-  g_signal_connect (rx->panadapter, "button-press-event",
-                    G_CALLBACK (panadapter_button_press_event_cb), rx);
-  g_signal_connect (rx->panadapter, "button-release-event",
-                    G_CALLBACK (panadapter_button_release_event_cb), rx);
-  g_signal_connect(rx->panadapter, "scroll_event",
-                   G_CALLBACK(panadapter_scroll_event_cb), rx);
+  g_signal_connect (rx->panadapter, "motion-notify-event", G_CALLBACK (panadapter_motion_notify_event_cb), rx);
+  g_signal_connect (rx->panadapter, "button-press-event", G_CALLBACK (panadapter_button_press_event_cb), rx);
+  g_signal_connect (rx->panadapter, "button-release-event", G_CALLBACK (panadapter_button_release_event_cb), rx);
+  //
+  // Note the scroll applies to both RX panels AND the vfo panel and will scroll the active receiver only
+ //
+  g_signal_connect(rx->panadapter, "scroll_event", G_CALLBACK(panadapter_scroll_event_cb), NULL);
   /* Ask to receive events the drawing area doesn't normally
    * subscribe to. In particular, we need to ask for the
    * button press and motion notify events that want to handle.

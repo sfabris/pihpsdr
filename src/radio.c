@@ -100,6 +100,7 @@ int ZOOMPAN_HEIGHT = 50;
 int SLIDERS_HEIGHT = 100;
 int TOOLBAR_HEIGHT = 30;
 
+int rx_stack_horizontal = 0;
 int suppress_popup_sliders = 0;
 
 int controller = NO_CONTROLLER;
@@ -593,21 +594,41 @@ void radio_reconfigure() {
 
   y = VFO_HEIGHT;
 
-  for (i = 0; i < receivers; i++) {
-    RECEIVER *rx = receiver[i];
-    rx->width = my_width;
-    rx_update_zoom(rx);
-    rx_reconfigure(rx, rx_height / receivers);
+  // if there is only one receiver, both cases here do the same.
+  if (rx_stack_horizontal) {
+    int x = 0;
 
-    if (!radio_is_transmitting() || duplex) {
-      gtk_fixed_move(GTK_FIXED(fixed), rx->panel, 0, y);
+    for (i = 0; i < receivers; i++) {
+      RECEIVER *rx = receiver[i];
+      rx->width = my_width / receivers;
+      rx_update_zoom(rx);
+      rx_reconfigure(rx, rx_height);
+
+      if (!radio_is_transmitting() || duplex) {
+        gtk_fixed_move(GTK_FIXED(fixed), rx->panel, x, y);
+      }
+
+      rx->x = x;
+      rx->y = y;
+      x = x + my_width / receivers;
     }
+    y = y + rx_height;
+  } else {
+    for (i = 0; i < receivers; i++) {
+      RECEIVER *rx = receiver[i];
+      rx->width = my_width;
+      rx_update_zoom(rx);
+      rx_reconfigure(rx, rx_height / receivers);
 
-    rx->x = 0;
-    rx->y = y;
-    y += rx_height / receivers;
+      if (!radio_is_transmitting() || duplex) {
+        gtk_fixed_move(GTK_FIXED(fixed), rx->panel, 0, y);
+      }
+
+      rx->x = 0;
+      rx->y = y;
+      y += rx_height / receivers;
+    }
   }
-
   if (display_zoompan) {
     if (zoompan == NULL) {
       zoompan = zoompan_init(my_width, ZOOMPAN_HEIGHT);
@@ -2458,6 +2479,7 @@ static void radio_restore_state() {
 
   if (!radio_is_remote) {
     GetPropI0("full_screen",                                 full_screen);
+    GetPropI0("rx_stack_horizontal",                         rx_stack_horizontal);
     GetPropI0("display_width",                               display_width);
     GetPropI0("enable_auto_tune",                            enable_auto_tune);
     GetPropI0("enable_tx_inhibit",                           enable_tx_inhibit);
@@ -2669,6 +2691,7 @@ void radio_save_state() {
 
   if (!radio_is_remote) {
     SetPropI0("full_screen",                                 full_screen);
+    SetPropI0("rx_stack_horizontal",                         rx_stack_horizontal);
     SetPropI0("display_width",                               display_width);
     SetPropI0("enable_auto_tune",                            enable_auto_tune);
     SetPropI0("enable_tx_inhibit",                           enable_tx_inhibit);
