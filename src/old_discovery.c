@@ -384,7 +384,7 @@ static gpointer discover_receive_thread(gpointer data) {
             // so the official version number e.g. 73.2 stems from buf9=73 and buf15=2
             //
             discovered[devices].software_version = 10*(buffer[9] & 0xFF) + (buffer[15] & 0xFF);
-            if (discovered[devices].software_version < 40) {
+            if (discovered[devices].software_version < 400) {
               STRLCPY(discovered[devices].name, "HermesLite V1", sizeof(discovered[devices].name));
             } else {
               STRLCPY(discovered[devices].name, "HermesLite V2", sizeof(discovered[devices].name));
