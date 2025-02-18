@@ -90,7 +90,6 @@ struct _vfo vfo[MAX_VFOS];
 struct _mode_settings mode_settings[MODES];
 
 static void vfo_save_bandstack() {
-  ASSERT_SERVER();
   BANDSTACK *bandstack = bandstack_get_bandstack(vfo[0].band);
   bandstack->current_entry = vfo[0].bandstack;
   BANDSTACK_ENTRY *entry = &bandstack->entry[vfo[0].bandstack];
@@ -745,14 +744,25 @@ void vfo_id_band_changed(int id, int b) {
 }
 
 void vfo_bandstack_changed(int b) {
-  ASSERT_SERVER();
   int id = active_receiver->id;
   int oldmode = vfo[id].mode;
   BANDSTACK *bandstack = bandstack_get_bandstack(vfo[id].band);
+#ifdef CLIENT_SERVER
+  int oldstack = bandstack->current_entry;
+#endif
 
   if (id == 0) {
+    // do this immediately so the bandstack menu can show the new
+    // data also if the radio is remote
     vfo_save_bandstack();
     bandstack->current_entry = b;
+  }
+
+  if (radio_is_remote) {
+#ifdef CLIENT_SERVER
+    send_bandstack(client_socket, oldstack, b);
+#endif
+    return;
   }
 
   vfo[id].bandstack = b;
@@ -987,8 +997,6 @@ int vfo_id_get_stepindex(int id) {
 }
 
 void vfo_id_set_step_from_index(int id, int index) {
-  ASSERT_SERVER();
-
   //
   // Set VFO step size to steps[index], with range checking
   //
@@ -999,10 +1007,16 @@ void vfo_id_set_step_from_index(int id, int index) {
   int step = steps[index];
   vfo[id].step = step;
 
-  if (id == 0) {
-    int mode = vfo[id].mode;
-    mode_settings[mode].step = step;
-    copy_mode_settings(mode);
+  if (radio_is_remote) {
+#ifdef CLIENT_SERVER
+    send_vfo_stepsize(client_socket, id, step);
+#endif
+  } else {
+    if (id == 0) {
+      int mode = vfo[id].mode;
+      mode_settings[mode].step = step;
+      copy_mode_settings(mode);
+    }
   }
 }
 
@@ -1155,14 +1169,14 @@ void vfo_id_set_rit_step(int id, int step) {
 void vfo_id_move(int id, long long hz, int round) {
   long long delta;
 
-  if (radio_is_remote) {
-#ifdef CLIENT_SERVER
-    update_vfo_move(id, hz, round);
-#endif
-    return;
-  }
-
   if (!locked) {
+    if (radio_is_remote) {
+#ifdef CLIENT_SERVER
+      update_vfo_move(id, hz, round);
+#endif
+      return;
+    }
+
     if (vfo[id].ctun) {
       // don't let ctun go beyond end of passband
       const RECEIVER *myrx;
@@ -2412,7 +2426,12 @@ void vfo_id_set_frequency(int v, long long f) {
 // Set CTUN state of a VFO
 //
 void vfo_id_ctun_update(int id, int state) {
-  ASSERT_SERVER();
+  if (radio_is_remote) {
+#ifdef CLIENT_SERVER
+    send_ctun(client_socket, id, state);
+#endif
+    return;
+  }
 
   //
   // Note: if this VFO does not control a (running) receiver,

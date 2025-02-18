@@ -38,8 +38,8 @@ static GtkWidget *grid = NULL;
 static GtkWidget *hf_container = NULL;
 static GtkWidget *xvtr_container = NULL;
 #ifdef SOAPYSDR
-  static GtkWidget *adc0_antenna_combo_box;
-  static GtkWidget *dac0_antenna_combo_box;
+  static GtkWidget *adc_antenna_combo_box;
+  static GtkWidget *dac_antenna_combo_box;
 #endif
 
 static void cleanup() {
@@ -75,23 +75,19 @@ static void tx_ant_cb(GtkToggleButton *widget, gpointer data) {
 }
 
 #ifdef SOAPYSDR
-static void adc0_antenna_cb(GtkComboBox *widget, gpointer data) {
-  ADC *myadc = (ADC *)data;
-  myadc->antenna = gtk_combo_box_get_active(widget);
-  schedule_high_priority();
+static void adc_antenna_cb(GtkComboBox *widget, gpointer data) {
+  adc[0].antenna = gtk_combo_box_get_active(widget);
 
   if (device == SOAPYSDR_USB_DEVICE) {
     soapy_protocol_set_rx_antenna(receiver[0], adc[0].antenna);
   }
 }
 
-static void dac0_antenna_cb(GtkComboBox *widget, gpointer data) {
-  DAC *mydac = (DAC *)data;
-  mydac->antenna = gtk_combo_box_get_active(widget);
-  schedule_high_priority();
+static void dac_antenna_cb(GtkComboBox *widget, gpointer data) {
+  dac.antenna = gtk_combo_box_get_active(widget);
 
   if (device == SOAPYSDR_USB_DEVICE && can_transmit) {
-    soapy_protocol_set_tx_antenna(transmitter, mydac->antenna);
+    soapy_protocol_set_tx_antenna(transmitter, dac.antenna);
   }
 }
 
@@ -337,15 +333,15 @@ void ant_menu(GtkWidget *parent) {
       GtkWidget *antenna_label = gtk_label_new("RX Antenna:");
       gtk_widget_set_name(antenna_label, "boldlabel");
       gtk_grid_attach(GTK_GRID(grid), antenna_label, 0, 1, 1, 1);
-      adc0_antenna_combo_box = gtk_combo_box_text_new();
+      adc_antenna_combo_box = gtk_combo_box_text_new();
 
       for (size_t i = 0; i < radio->info.soapy.rx_antennas; i++) {
-        gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(adc0_antenna_combo_box), NULL, radio->info.soapy.rx_antenna[i]);
+        gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(adc_antenna_combo_box), NULL, radio->info.soapy.rx_antenna[i]);
       }
 
-      gtk_combo_box_set_active(GTK_COMBO_BOX(adc0_antenna_combo_box), adc[0].antenna);
-      g_signal_connect(adc0_antenna_combo_box, "changed", G_CALLBACK(adc0_antenna_cb), &adc[0]);
-      my_combo_attach(GTK_GRID(grid), adc0_antenna_combo_box, 1, 1, 1, 1);
+      gtk_combo_box_set_active(GTK_COMBO_BOX(adc_antenna_combo_box), adc[0].antenna);
+      g_signal_connect(adc_antenna_combo_box, "changed", G_CALLBACK(adc_antenna_cb), NULL);
+      my_combo_attach(GTK_GRID(grid), adc_antenna_combo_box, 1, 1, 1, 1);
     }
 
     if (can_transmit) {
@@ -355,15 +351,15 @@ void ant_menu(GtkWidget *parent) {
         GtkWidget *antenna_label = gtk_label_new("TX Antenna:");
         gtk_widget_set_name(antenna_label, "boldlabel");
         gtk_grid_attach(GTK_GRID(grid), antenna_label, 0, 2, 1, 1);
-        dac0_antenna_combo_box = gtk_combo_box_text_new();
+        dac_antenna_combo_box = gtk_combo_box_text_new();
 
         for (size_t i = 0; i < radio->info.soapy.tx_antennas; i++) {
-          gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(dac0_antenna_combo_box), NULL, radio->info.soapy.tx_antenna[i]);
+          gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(dac_antenna_combo_box), NULL, radio->info.soapy.tx_antenna[i]);
         }
 
-        gtk_combo_box_set_active(GTK_COMBO_BOX(dac0_antenna_combo_box), dac[0].antenna);
-        g_signal_connect(dac0_antenna_combo_box, "changed", G_CALLBACK(dac0_antenna_cb), &dac[0]);
-        my_combo_attach(GTK_GRID(grid), dac0_antenna_combo_box, 1, 2, 1, 1);
+        gtk_combo_box_set_active(GTK_COMBO_BOX(dac_antenna_combo_box), dac.antenna);
+        g_signal_connect(dac_antenna_combo_box, "changed", G_CALLBACK(dac_antenna_cb), NULL);
+        my_combo_attach(GTK_GRID(grid), dac_antenna_combo_box, 1, 2, 1, 1);
       }
     }
   }

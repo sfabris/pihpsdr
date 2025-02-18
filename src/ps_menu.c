@@ -71,7 +71,7 @@ static void cleanup() {
     usleep(200000);
 
     if (transmitter->twotone) {
-      tx_set_twotone(transmitter, 0);
+      radio_set_twotone(transmitter, 0);
     }
 
     gtk_widget_destroy(tmp);
@@ -521,7 +521,7 @@ static void reset_cb(GtkWidget *widget, gpointer data) {
 
 static void twotone_cb(GtkWidget *widget, gpointer data) {
   int state = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-  tx_set_twotone(transmitter, state);
+  radio_set_twotone(transmitter, state);
 }
 
 void ps_menu(GtkWidget *parent) {

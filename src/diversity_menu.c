@@ -84,7 +84,7 @@ static void gain_coarse_changed_cb(GtkWidget *widget, gpointer data) {
   div_gain = gain_coarse + gain_fine;
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
-    //send_diversity(client_socket, diversity_enabled, div_gain, div_phase);
+    send_diversity(client_socket, diversity_enabled, div_gain, div_phase);
 #endif
   } else {
     set_gain_phase();
@@ -96,7 +96,7 @@ static void gain_fine_changed_cb(GtkWidget *widget, gpointer data) {
   div_gain = gain_coarse + gain_fine;
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
-    //send_diversity(client_socket, diversity_enabled, div_gain, div_phase);
+    send_diversity(client_socket, diversity_enabled, div_gain, div_phase);
 #endif
   } else {
     set_gain_phase();
@@ -108,7 +108,7 @@ static void phase_coarse_changed_cb(GtkWidget *widget, gpointer data) {
   div_phase = phase_coarse + phase_fine;
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
-    //send_diversity(client_socket, diversity_enabled, div_gain, div_phase);
+    send_diversity(client_socket, diversity_enabled, div_gain, div_phase);
 #endif
   } else {
     set_gain_phase();
@@ -120,7 +120,7 @@ static void phase_fine_changed_cb(GtkWidget *widget, gpointer data) {
   div_phase = phase_coarse + phase_fine;
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
-    //send_diversity(client_socket, diversity_enabled, div_gain, div_phase);
+    send_diversity(client_socket, diversity_enabled, div_gain, div_phase);
 #endif
   } else {
     set_gain_phase();
@@ -136,7 +136,7 @@ void set_diversity_gain(double val) {
 
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
-    //send_diversity(client_socket, diversity_enabled, div_gain, div_phase);
+    send_diversity(client_socket, diversity_enabled, div_gain, div_phase);
 #endif
     return;
   }
@@ -172,7 +172,7 @@ void set_diversity_phase(double value) {
 
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
-    //send_diversity(client_socket, diversity_enabled, div_gain, div_phase);
+    send_diversity(client_socket, diversity_enabled, div_gain, div_phase);
 #endif
     return;
   }
@@ -196,7 +196,7 @@ void set_diversity(int state) {
 
   if (radio_is_remote) {
 #ifdef CLIENT_SERVER
-    //send_diversity(client_socket, state, div_gain, div_phase);
+    send_diversity(client_socket, state, div_gain, div_phase);
 #endif
     return;
   }

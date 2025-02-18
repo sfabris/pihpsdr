@@ -3082,7 +3082,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
           snprintf(reply, 256, "ZZUT%d;", transmitter->twotone);
           send_resp(client->fd, reply) ;
         } else if (command[5] == ';') {
-          tx_set_twotone(transmitter, atoi(&command[4]));
+          radio_set_twotone(transmitter, atoi(&command[4]));
         }
       }
 

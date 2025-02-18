@@ -78,6 +78,12 @@ void memRestoreState() {
 }
 
 void recall_memory_slot(int index) {
+  if (radio_is_remote) {
+#ifdef CLIENT_SERVER
+    send_recall(client_socket, index);
+#endif
+    return;
+  }
   //
   // Recalling a memory slot is essentially the same as recalling a bandstack entry
   // so we just make use of code in vfo_bandstack_changed()
@@ -137,5 +143,18 @@ void store_memory_slot(int index) {
   if (can_transmit) {
     mem[index].ctcss_enabled = transmitter->ctcss_enabled;
     mem[index].ctcss = transmitter->ctcss;
+  }
+  if (radio_is_remote) {
+    //
+    // Do what has been done above even on the client, to ensure
+    // the memory slot label is updated in the memory menu
+    // immediately. When the server does the store, it sends back
+    // the updated memory slot but this arrives too late to get
+    // the menu button updated.
+    //
+#ifdef CLIENT_SERVER
+    send_store(client_socket, index);
+#endif
+    return;
   }
 }

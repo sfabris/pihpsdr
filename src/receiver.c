@@ -540,31 +540,6 @@ static int rx_update_display(gpointer data) {
   return FALSE;
 }
 
-#ifdef CLIENT_SERVER
-void rx_remote_update_display(RECEIVER *rx) {
-  if (rx->displaying) {
-    if (rx->pixels > 0) {
-      g_mutex_lock(&rx->display_mutex);
-
-      if (rx->display_panadapter) {
-        rx_panadapter_update(rx);
-      }
-
-      if (rx->display_waterfall) {
-        waterfall_update(rx);
-      }
-
-      if (active_receiver == rx) {
-        meter_update(rx, SMETER, rx->meter, 0.0, 0.0);
-      }
-
-      g_mutex_unlock(&rx->display_mutex);
-    }
-  }
-}
-
-#endif
-
 void rx_set_displaying(RECEIVER *rx) {
   ASSERT_SERVER();
 
@@ -658,6 +633,40 @@ RECEIVER *rx_create_pure_signal_receiver(int id, int sample_rate, int width, int
 
   return rx;
 }
+
+#ifdef CLIENT_SERVER
+void rx_remote_update_display(RECEIVER *rx) {
+  if (rx->displaying) {
+    if (rx->pixels > 0) {
+      g_mutex_lock(&rx->display_mutex);
+
+      if (rx->display_panadapter) {
+        rx_panadapter_update(rx);
+      }
+
+      if (rx->display_waterfall) {
+        waterfall_update(rx);
+      }
+
+      if (active_receiver == rx) {
+        meter_update(rx, SMETER, rx->meter, 0.0, 0.0);
+      }
+
+      g_mutex_unlock(&rx->display_mutex);
+    }
+  }
+}
+
+void rx_create_remote(RECEIVER *rx) {
+  //
+  // receiver structure already setup via INFO_RECEIVER packet.
+  // since everything is done on the "local" side, we only need
+  // to set-up the panadapter
+  //
+  rx_create_visual(rx);
+}
+
+#endif
 
 RECEIVER *rx_create_receiver(int id, int pixels, int width, int height) {
   ASSERT_SERVER(NULL);
@@ -1348,18 +1357,6 @@ void rx_set_framerate(RECEIVER *rx) {
   rx_set_average(rx);
   rx_set_analyzer(rx);
 }
-
-#ifdef CLIENT_SERVER
-void rx_create_remote(RECEIVER *rx) {
-  //
-  // receiver structure already setup via INFO_RECEIVER packet.
-  // since everything is done on the "local" side, we only need
-  // to set-up the panadapter
-  //
-  rx_create_visual(rx);
-}
-
-#endif
 
 ///////////////////////////////////////////////////////
 //

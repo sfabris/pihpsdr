@@ -485,9 +485,16 @@ void show_filter_shift(int rx, int shift) {
 }
 
 static void micgain_value_changed_cb(GtkWidget *widget, gpointer data) {
+  double gain = gtk_range_get_value(GTK_RANGE(widget));
+  if (radio_is_remote) {
+#ifdef CLIENT_SERVER
+    send_micgain(client_socket,gain);
+#endif
+    return;
+  }
   if (can_transmit) {
     int mode = vfo_get_tx_mode();
-    transmitter->mic_gain = gtk_range_get_value(GTK_RANGE(widget));
+    transmitter->mic_gain = gain;
     mode_settings[mode].mic_gain = transmitter->mic_gain;
     copy_mode_settings(mode);
     tx_set_mic_gain(transmitter);
@@ -501,24 +508,42 @@ void set_linein_gain(double value) {
 }
 
 void set_mic_gain(double value) {
-  //t_print("%s value=%f\n",__FUNCTION__, value);
+  if (display_sliders) {
+    gtk_range_set_value (GTK_RANGE(mic_gain_scale), value);
+  } else {
+    show_popup_slider(MIC_GAIN, 0, -12.0, 50.0, 1.0, value, "Mic Gain");
+  }
+
+  if (radio_is_remote) {
+#ifdef CLIENT_SERVER
+    send_micgain(client_socket, value);
+#endif
+    return;
+  }
+
   if (can_transmit) {
     int mode = vfo_get_tx_mode();
     transmitter->mic_gain = value;
     mode_settings[mode].mic_gain = transmitter->mic_gain;
     copy_mode_settings(mode);
     tx_set_mic_gain(transmitter);
-
-    if (display_sliders) {
-      gtk_range_set_value (GTK_RANGE(mic_gain_scale), value);
-    } else {
-      show_popup_slider(MIC_GAIN, 0, -12.0, 50.0, 1.0, value, "Mic Gain");
-    }
   }
 }
 
 void set_drive(double value) {
-  //t_print("%s value=%f\n",__FUNCTION__,value);
+  if (display_sliders) {
+    gtk_range_set_value (GTK_RANGE(drive_scale), value);
+  } else {
+    show_popup_slider(DRIVE, 0, 0.0, drive_max, 1.0, value, "TX Drive");
+  }
+
+  if (radio_is_remote) {
+#ifdef CLIENT_SERVER
+    send_drive(client_socket, value);
+#endif
+    return;
+  }
+
   int txmode = vfo_get_tx_mode();
 
   if (txmode == modeDIGU || txmode == modeDIGL) {
@@ -527,15 +552,18 @@ void set_drive(double value) {
 
   radio_set_drive(value);
 
-  if (display_sliders) {
-    gtk_range_set_value (GTK_RANGE(drive_scale), value);
-  } else {
-    show_popup_slider(DRIVE, 0, 0.0, drive_max, 1.0, value, "TX Drive");
-  }
 }
 
 static void drive_value_changed_cb(GtkWidget *widget, gpointer data) {
   double value = gtk_range_get_value(GTK_RANGE(drive_scale));
+
+  if (radio_is_remote) {
+#ifdef CLIENT_SERVER
+    send_drive(client_socket, value);
+#endif
+    return;
+  }
+
   //t_print("%s: value=%f\n", __FUNCTION__, value);
   int txmode = vfo_get_tx_mode();
 

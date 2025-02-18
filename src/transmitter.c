@@ -504,7 +504,12 @@ static gboolean tx_update_display(gpointer data) {
   TRANSMITTER *tx = (TRANSMITTER *)data;
   int rc;
 
-  //t_print("tx_update_display: tx id=%d\n",tx->id);
+  if (tx->puresignal) {
+    int info[16];
+    tx_ps_getinfo(tx, info);
+    tx->pscorr = info[14];
+  }
+
   if (tx->displaying) {
     // if "MON" button is active (tx->feedback is TRUE),
     // then obtain spectrum pixels from PS_RX_FEEDBACK,
@@ -1683,6 +1688,35 @@ void tx_add_ps_iq_samples(const TRANSMITTER *tx, double i_sample_tx, double q_sa
     tx_feedback->samples = 0;
   }
 }
+
+#ifdef CLIENT_SERVER
+void tx_remote_update_display(TRANSMITTER *tx) {
+  if (tx->displaying) {
+    if (tx->pixels > 0) {
+      g_mutex_lock(&tx->display_mutex);
+
+      if (tx->display_panadapter) {
+        tx_panadapter_update(tx);
+      }
+
+      g_mutex_unlock(&tx->display_mutex);
+
+      if (!duplex) {
+        meter_update(active_receiver, POWER, tx->fwd, tx->alc, tx->swr);
+      }
+    }
+  }
+}
+
+void tx_create_remote(TRANSMITTER *tx) {
+  //
+  // transmitter structure already setup via INFO_TRANSMITTER packet.
+  // since everything is done on the "local" side, we only need
+  // to set-up the panadapter
+  //
+  tx_create_visual(tx);
+}
+#endif
 
 void tx_set_displaying(TRANSMITTER *tx) {
   ASSERT_SERVER();

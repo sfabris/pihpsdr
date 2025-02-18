@@ -55,10 +55,17 @@ static int apply(gpointer data) {
   apply_timeout = 0;
   display_width       = my_display_width;
   display_height      = my_display_height;
-  full_screen         = my_full_screen;
+  if (!radio_is_remote) {
+    full_screen         = my_full_screen;
+  }
   vfo_layout          = my_vfo_layout;
   rx_stack_horizontal = my_rx_stack_horizontal;
   radio_reconfigure_screen();
+  if (radio_is_remote) {
+#ifdef CLIENT_SERVER
+    send_screen(client_socket, rx_stack_horizontal, display_width);
+#endif
+  }
 
   //
   // VFO layout may have been re-adjusted so update combo-box

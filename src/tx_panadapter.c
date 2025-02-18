@@ -256,7 +256,12 @@ void tx_panadapter_update(TRANSMITTER *tx) {
     cairo_stroke(cr);
     // signal
     double s1;
-    int offset = (tx->pixels / 2) - (mywidth / 2);
+    int offset;
+    if (radio_is_remote) {
+      offset = 0;
+    } else {
+      offset  = (tx->pixels / 2) - (mywidth / 2);
+    }
     samples[offset] = -200.0;
     samples[offset + mywidth - 1] = -200.0;
     s1 = (double)samples[offset];
@@ -285,37 +290,6 @@ void tx_panadapter_update(TRANSMITTER *tx) {
     }
 
     cairo_stroke(cr);
-    /*
-     * Controller1:
-     * Draw at the right edge of the TX panadapter the
-     * functions associated with the three encoders.
-     *
-    #ifdef GPIO
-      if(controller==CONTROLLER1 && tx->dialog == NULL) {
-        char text[64];
-
-        cairo_set_source_rgba(cr,COLOUR_ATTN);
-        cairo_set_font_size(cr,DISPLAY_FONT_SIZE3);
-        if(ENABLE_E2_ENCODER) {
-          cairo_move_to(cr, mywidth-200,70);
-          snprintf(text, 64, "%s (%s)",encoder_string[e2_encoder_action],sw_string[e2_sw_action]);
-          cairo_show_text(cr, text);
-        }
-
-        if(ENABLE_E3_ENCODER) {
-          cairo_move_to(cr, mywidth-200,90);
-          snprintf(text, 64, "%s (%s)",encoder_string[e3_encoder_action],sw_string[e3_sw_action]);
-          cairo_show_text(cr, text);
-        }
-
-        if(ENABLE_E4_ENCODER) {
-          cairo_move_to(cr, mywidth-200,110);
-          snprintf(text, 64, "%s (%s)",encoder_string[e4_encoder_action],sw_string[e4_sw_action]);
-          cairo_show_text(cr, text);
-        }
-      }
-    #endif
-    */
     //
     // When doing CW, the signal is produced outside WDSP, so
     // it makes no sense to display a PureSignal status. The
@@ -329,10 +303,8 @@ void tx_panadapter_update(TRANSMITTER *tx) {
       cairo_set_font_size(cr, DISPLAY_FONT_SIZE2);
       cairo_move_to(cr, mywidth / 2 + 10, myheight - 10);
       cairo_show_text(cr, "PureSignal");
-      int info[16];
-      tx_ps_getinfo(tx, info);
 
-      if (info[14] == 0) {
+      if (tx->pscorr == 0) {
         cairo_set_source_rgba(cr, COLOUR_ALARM);
       } else {
         cairo_set_source_rgba(cr, COLOUR_OK);

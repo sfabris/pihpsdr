@@ -1757,7 +1757,7 @@ int process_action(void *data) {
   case TWO_TONE:
     if (a->mode == PRESSED) {
       if (can_transmit) {
-        tx_set_twotone(transmitter, NOT(transmitter->twotone));
+        radio_set_twotone(transmitter, NOT(transmitter->twotone));
       }
     }
 

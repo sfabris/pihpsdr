@@ -20,10 +20,13 @@
   #include "client_server.h"
   extern int ext_remote_command(void *data);
   extern int ext_rx_remote_update_display(void *data);
+  extern int ext_tx_remote_update_display(void *data);
   extern int ext_set_title(void *data);
   extern int ext_remote_set_zoom(void *data);
   extern int ext_remote_set_pan(void *data);
   extern int ext_radio_remote_change_receivers(void *data);
+  extern int ext_radio_remote_set_mox(void *data);
+  extern int ext_radio_remote_set_tune(void *data);
 #endif
 
 //

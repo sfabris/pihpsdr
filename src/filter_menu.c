@@ -76,13 +76,19 @@ static void cw_peak_cb(GtkWidget *widget, gpointer data) {
   int id = active_receiver->id;
   vfo[id].cwAudioPeakFilter = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 
-  if (id == 0) {
-    int mode = vfo[id].mode;
-    mode_settings[mode].cwPeak = vfo[id].cwAudioPeakFilter;
-    copy_mode_settings(mode);
-  }
+  if (radio_is_remote) {
+#ifdef CLIENT_SERVER
+    send_cwpeak(client_socket, id, vfo[id].cwAudioPeakFilter);
+#endif
+  } else {
+    if (id == 0) {
+      int mode = vfo[id].mode;
+      mode_settings[mode].cwPeak = vfo[id].cwAudioPeakFilter;
+      copy_mode_settings(mode);
+    }
 
-  rx_filter_changed(active_receiver);
+    rx_filter_changed(active_receiver);
+  }
   g_idle_add(ext_vfo_update, NULL);
 }
 
