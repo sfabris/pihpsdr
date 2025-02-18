@@ -995,12 +995,6 @@ void gpio_set_defaults(int ctrlr) {
       CWOUT_LINE = -1;
     }
 
-    CWL_LINE = 5;
-    CWR_LINE = 6;
-    CWKEY_LINE = 12;
-    PTTIN_LINE = 16;
-    PTTOUT_LINE = 22;
-    CWOUT_LINE = 23;
     memcpy(my_encoders, encoders_no_controller, sizeof(my_encoders));
     memcpy(my_switches, switches_no_controller, sizeof(my_switches));
     encoders = my_encoders;
