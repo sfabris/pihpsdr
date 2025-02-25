@@ -1,6 +1,19 @@
 LIST OF RECENT PIHPSDR CHANGES
 ==============================
 
+February 2025:
+--------------
+
+- Massive work on the client-server version, and
+  integrated that version (without compile-time
+  option) into the master branch.
+
+- Holding the shift key while scrolling with
+  the mouse results in a ten-fold increase
+  of the VFO frequency change.
+
+- Improved TX panadapter for high sample rates
+  (e.g. AdalmPluto).
 
 January 2025:
 -------------
