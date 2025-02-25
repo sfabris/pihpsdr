@@ -23,9 +23,7 @@
 #include <string.h>
 
 #include "band.h"
-#ifdef CLIENT_SERVER
-  #include "client_server.h"
-#endif
+#include "client_server.h"
 #include "filter.h"
 #include "message.h"
 #include "mystring.h"
@@ -132,7 +130,6 @@ static void save_xvtr () {
   }
 
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     for (int b = BANDS; b < BANDS + XVTRS; b++) {
       send_band_data(client_socket, b);
       const BAND *band = band_get_band(b);
@@ -142,7 +139,6 @@ static void save_xvtr () {
       }
     }
     send_xvtr_changed(client_socket);
-#endif
   } else {
     vfo_xvtr_changed();
   }

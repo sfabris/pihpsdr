@@ -45,9 +45,6 @@ char build_options[] =
 #ifdef EXTNR
   "EXTNR "
 #endif
-#ifdef CLIENT_SERVER
-  "SERVER "
-#endif
   "";
 
 char build_audio[] =

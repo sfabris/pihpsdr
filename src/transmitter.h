@@ -86,8 +86,11 @@ typedef struct _transmitter {
   int puresignal;
   int feedback;
   int auto_on;
-  int pscorr; // PS info14 status
 
+  int psinfo[16];
+  double ps_getmx;
+  double ps_getpk;
+  double ps_setpk;
   // PS 2.0 parameters
   double ps_ampdelay;
   int    ps_ints;
@@ -186,16 +189,7 @@ extern TRANSMITTER *tx_create_transmitter(int id, int pixels, int width, int hei
 void tx_create_dialog(TRANSMITTER *tx);
 void tx_reconfigure(TRANSMITTER *tx, int pixels, int width, int height);
 
-//
-// CW pulse shaper variables
-//
-extern int cw_key_up;
-extern int cw_key_down;
-extern int cw_not_ready;
-
-extern void   cw_hold_key(int state);
-
-extern void   tx_add_mic_sample(TRANSMITTER *tx, float mic_sample);
+extern void   tx_add_mic_sample(TRANSMITTER *tx, short next_mic_sample);
 extern void   tx_add_ps_iq_samples(const TRANSMITTER *tx, double i_sample_0, double q_sample_0, double i_sample_1,
                                    double q_sample_1);
 
@@ -206,18 +200,18 @@ extern int    tx_get_pixels(TRANSMITTER *tx);
 extern void   tx_off(const TRANSMITTER *tx);
 extern void   tx_on(const TRANSMITTER *tx);
 
-extern void   tx_ps_getinfo(const TRANSMITTER *tx, int *info);
-extern double tx_ps_getmx(const TRANSMITTER *tx);
-extern double tx_ps_getpk(const TRANSMITTER *tx);
+extern void   tx_ps_getinfo(TRANSMITTER *tx);
+extern void   tx_ps_getmx(TRANSMITTER *tx);
+extern void   tx_ps_getpk(TRANSMITTER *tx);
 extern void   tx_ps_mox(const TRANSMITTER *tx, int state);
 extern void   tx_ps_onoff(TRANSMITTER *tx, int state);
 extern void   tx_ps_reset(const TRANSMITTER *tx);
 extern void   tx_ps_resume(const TRANSMITTER *tx);
 extern void   tx_ps_set_sample_rate(const TRANSMITTER *tx, int rate);
 extern void   tx_ps_setparams(const TRANSMITTER *tx);
-extern void   tx_ps_setpk(const TRANSMITTER *tx, double pk);
 
 extern void   tx_save_state(const TRANSMITTER *tx);
+extern void   tx_restore_state(TRANSMITTER *tx);
 
 extern void   tx_set_am_carrier_level(const TRANSMITTER *tx);
 extern void   tx_set_analyzer(const TRANSMITTER *tx);
@@ -240,12 +234,11 @@ extern void   tx_set_pre_emphasize(const TRANSMITTER *tx);
 extern void   tx_set_ramps(TRANSMITTER *tx);
 extern void   tx_set_singletone(const TRANSMITTER *tx, int state, double freq);
 extern void   tx_set_twotone(TRANSMITTER *tx, int state);
+extern void   tx_queue_cw_event(int state, int wait);
 
-#ifdef CLIENT_SERVER
-  extern void tx_create_remote(TRANSMITTER *rx);
-  extern void tx_remote_update_display(TRANSMITTER *rx);
-  extern void tx_remote_update_display(TRANSMITTER *tx);
-#endif
+extern void tx_create_remote(TRANSMITTER *rx);
+extern void tx_remote_update_display(TRANSMITTER *rx);
+extern void tx_remote_update_display(TRANSMITTER *tx);
 
 #endif
 

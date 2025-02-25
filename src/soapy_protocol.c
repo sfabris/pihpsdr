@@ -385,13 +385,12 @@ static void *receive_thread(void *arg) {
 
           if (mic_samples >= mic_sample_divisor) { // reduce to 48000
             if (transmitter != NULL) {
-              fsample = transmitter->local_microphone ? audio_get_next_mic_sample() : 0.0F;
-            } else {
-              fsample = 0.0F;
-            }
-
-            tx_add_mic_sample(transmitter, fsample);
-            mic_samples = 0;
+              //
+              // We have no mic samples, this call only
+              // sets the heart beat
+              //
+              tx_add_mic_sample(transmitter, 0);
+              mic_samples = 0;
           }
         }
       }

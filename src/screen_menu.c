@@ -62,9 +62,7 @@ static int apply(gpointer data) {
   rx_stack_horizontal = my_rx_stack_horizontal;
   radio_reconfigure_screen();
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_screen(client_socket, rx_stack_horizontal, display_width);
-#endif
   }
 
   //

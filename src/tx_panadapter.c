@@ -304,7 +304,7 @@ void tx_panadapter_update(TRANSMITTER *tx) {
       cairo_move_to(cr, mywidth / 2 + 10, myheight - 10);
       cairo_show_text(cr, "PureSignal");
 
-      if (tx->pscorr == 0) {
+      if (tx->psinfo[14] == 0) {
         cairo_set_source_rgba(cr, COLOUR_ALARM);
       } else {
         cairo_set_source_rgba(cr, COLOUR_OK);

@@ -24,9 +24,7 @@
 #include "band.h"
 #include "band_menu.h"
 #include "bandstack.h"
-#ifdef CLIENT_SERVER
-  #include "client_server.h"
-#endif
+#include "client_server.h"
 #include "discovery.h"
 #include "diversity_menu.h"
 #include "equalizer_menu.h"
@@ -375,25 +373,45 @@ void schedule_action(enum ACTION action, enum ACTION_MODE mode, int val) {
     keyer_event(action == CW_LEFT, mode == PRESSED);
     break;
 
-  case CW_KEYER_KEYDOWN:
+  case CW_KEYER_KEYDOWN: {
+    static double last = 0.0;
+    double now;
+    int wait;
+    struct timespec ts;
 
     //
     // hard "key-up/down" action WITHOUT break-in
     // intended for external keyers (MIDI or GPIO connected)
     // which take care of PTT themselves.
     //
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    now = ts.tv_sec + 1.0E-9 * ts.tv_nsec;
+    wait = (int) (48000.0 * (now -last) + 0.5);
+    last = now;
+
     if (mode == PRESSED && (!cw_keyer_internal || MIDI_cw_is_active)) {
       gpio_set_cw(1);
-      cw_key_down = 960000; // max. 20 sec to protect hardware
-      cw_key_up = 0;
+      if (wait > 48000) {
+        //
+        // first key-down after a pause: queue without delay if local,
+        // but if remote, queue a no-delay pause that is at least 100 msec
+        // to get some "buffering" on the other side
+        //
+        if (radio_is_remote) {
+          tx_queue_cw_event(0, 0);
+          wait = 4800;
+        } else {
+          wait = 0;
+        }
+      }
+      tx_queue_cw_event(1, wait);
       cw_key_hit = 1;
     } else {
       gpio_set_cw(0);
-      cw_key_down = 0;
-      cw_key_up = 0;
+      tx_queue_cw_event(0, wait);
     }
-
-    break;
+  }
+  break;
 
   default:
     //
@@ -1005,9 +1023,7 @@ int process_action(void *data) {
   case LOCK:
     if (a->mode == PRESSED) {
       if (radio_is_remote) {
-#ifdef CLIENT_SERVER
         send_lock(client_socket, NOT(locked));
-#endif
       } else {
         TOGGLE(locked);
         g_idle_add(ext_vfo_update, NULL);
@@ -1933,18 +1949,25 @@ int process_action(void *data) {
     case PRESSED:
       MIDI_cw_is_active = 1;         // disable "CW handled in radio"
       cw_key_hit = 1;                // this tells rigctl to abort CAT CW
-      schedule_transmit_specific();
-      radio_mox_update(1);
+      if (radio_is_remote) {
+        send_ptt(client_socket, 1);
+      } else {
+        schedule_transmit_specific();
+        radio_mox_update(1);
+      }
       break;
 
     case RELEASED:
       MIDI_cw_is_active = 0;         // enable "CW handled in radio", if it was selected
-      schedule_transmit_specific();
+      if (radio_is_remote) {
+        usleep(100000);              // since we delayed the start of the first CW, increase hang time
+        send_ptt(client_socket, 0);
+      } else {
+        schedule_transmit_specific();
 
-      if (!radio_ptt) {
-        radio_mox_update(0);
+        if (!radio_ptt) { radio_mox_update(0); }
+
       }
-
       break;
 
     default:

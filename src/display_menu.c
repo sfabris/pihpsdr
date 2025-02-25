@@ -23,9 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef CLIENT_SERVER
 #include "client_server.h"
-#endif
 #include "display_menu.h"
 #include "main.h"
 #include "new_menu.h"
@@ -117,9 +115,7 @@ static void detector_cb(GtkToggleButton *widget, gpointer data) {
   }
 
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_display(client_socket, active_receiver->id);
-#endif
   } else {
     rx_set_detector(active_receiver);
   }
@@ -147,9 +143,7 @@ static void average_cb(GtkToggleButton *widget, gpointer data) {
   }
 
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_display(client_socket, active_receiver->id);
-#endif
   } else {
     rx_set_average(active_receiver);
   }
@@ -162,9 +156,7 @@ static void panadapter_peaks_on_cb(GtkWidget *widget, gpointer data) {
 static void time_value_changed_cb(GtkWidget *widget, gpointer data) {
   active_receiver->display_average_time = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_display(client_socket, active_receiver->id);
-#endif
   } else {
     rx_set_average(active_receiver);
   }
@@ -189,9 +181,7 @@ static void gradient_cb(GtkWidget *widget, gpointer data) {
 static void frames_per_second_value_changed_cb(GtkWidget *widget, gpointer data) {
   active_receiver->fps = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_fps(client_socket, active_receiver->id, active_receiver->fps);
-#endif
   } else {
     rx_set_framerate(active_receiver);
   }

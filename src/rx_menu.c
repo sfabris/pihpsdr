@@ -24,9 +24,7 @@
 
 #include "audio.h"
 #include "band.h"
-#ifdef CLIENT_SERVER
 #include "client_server.h"
-#endif
 #include "discovered.h"
 #include "filter.h"
 #include "message.h"
@@ -61,9 +59,7 @@ static gboolean close_cb () {
 static void dither_cb(GtkWidget *widget, gpointer data) {
   active_receiver->dither = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_rxmenu(client_socket, active_receiver->id);
-#endif
     return;
   }
   schedule_receive_specific();
@@ -72,9 +68,7 @@ static void dither_cb(GtkWidget *widget, gpointer data) {
 static void random_cb(GtkWidget *widget, gpointer data) {
   active_receiver->random = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_rxmenu(client_socket, active_receiver->id);
-#endif
     return;
   }
   schedule_receive_specific();
@@ -83,9 +77,7 @@ static void random_cb(GtkWidget *widget, gpointer data) {
 static void preamp_cb(GtkWidget *widget, gpointer data) {
   active_receiver->preamp = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_rxmenu(client_socket, active_receiver->id);
-#endif
   }
   schedule_receive_specific();
 }
@@ -108,9 +100,7 @@ static void sample_rate_cb(GtkToggleButton *widget, gpointer data) {
   if (sscanf(p, "%d", &samplerate) != 1) { return; }
 
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_sample_rate(client_socket, active_receiver->id, samplerate);
-#endif
   } else {
     rx_change_sample_rate(active_receiver, samplerate);
   }
@@ -119,9 +109,7 @@ static void sample_rate_cb(GtkToggleButton *widget, gpointer data) {
 static void adc_cb(GtkToggleButton *widget, gpointer data) {
   active_receiver->adc = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_adc(client_socket, active_receiver->id, active_receiver->adc);
-#endif
     return;
   }
   rx_change_adc(active_receiver);
@@ -159,21 +147,19 @@ static void mute_radio_cb(GtkWidget *widget, gpointer data) {
 static void adc0_filter_bypass_cb(GtkWidget *widget, gpointer data) {
   adc0_filter_bypass = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_rxmenu(client_socket, active_receiver->id);
-#endif
+  } else {
+    schedule_high_priority();
   }
-  schedule_high_priority();
 }
 
 static void adc1_filter_bypass_cb(GtkWidget *widget, gpointer data) {
   adc1_filter_bypass = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_rxmenu(client_socket, active_receiver->id);
-#endif
+  } else {
+    schedule_high_priority();
   }
-  schedule_high_priority();
 }
 
 //

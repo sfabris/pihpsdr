@@ -51,9 +51,7 @@
 #include "toolbar.h"
 #include "new_menu.h"
 #include "rigctl.h"
-#ifdef CLIENT_SERVER
-  #include "client_server.h"
-#endif
+#include "client_server.h"
 #include "ext.h"
 #include "filter.h"
 #include "actions.h"
@@ -657,9 +655,7 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
 
 void vfo_id_band_changed(int id, int b) {
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_band(client_socket, id, b);
-#endif
     return;
   }
 
@@ -747,9 +743,7 @@ void vfo_bandstack_changed(int b) {
   int id = active_receiver->id;
   int oldmode = vfo[id].mode;
   BANDSTACK *bandstack = bandstack_get_bandstack(vfo[id].band);
-#ifdef CLIENT_SERVER
   int oldstack = bandstack->current_entry;
-#endif
 
   if (id == 0) {
     // do this immediately so the bandstack menu can show the new
@@ -759,9 +753,7 @@ void vfo_bandstack_changed(int b) {
   }
 
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_bandstack(client_socket, oldstack, b);
-#endif
     return;
   }
 
@@ -796,9 +788,7 @@ void vfo_bandstack_changed(int b) {
 void vfo_mode_changed(int m) {
   int id = active_receiver->id;
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_mode(client_socket, id, m);
-#endif
     return;
   }
   vfo_id_mode_changed(id, m);
@@ -806,9 +796,7 @@ void vfo_mode_changed(int m) {
 
 void vfo_id_mode_changed(int id, int m) {
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_mode(client_socket, id, m);
-#endif
     return;
   }
 
@@ -850,21 +838,13 @@ void vfo_id_deviation_changed(int id, int dev) {
 }
 
 void vfo_filter_changed(int f) {
-  int id = active_receiver->id;
-  if (radio_is_remote) {
-#ifdef CLIENT_SERVER
-    send_filter_sel(client_socket, id, f);
-#endif
-    return;
-  }
-  vfo_id_filter_changed(id, f);
+  vfo_id_filter_changed(active_receiver->id, f);
 }
 
 void vfo_id_filter_changed(int id, int f) {
+  vfo[id].filter = f;
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_filter_sel(client_socket, id, f);
-#endif
     return;
   }
 
@@ -875,7 +855,6 @@ void vfo_id_filter_changed(int id, int f) {
     copy_mode_settings(mode);
   }
 
-  vfo[id].filter = f;
 
   //
   // If f is either Var1 or Var2, then the changed filter edges
@@ -918,7 +897,10 @@ void vfo_vfos_changed() {
 }
 
 void vfo_a_to_b() {
-  ASSERT_SERVER();
+  if (radio_is_remote) {
+    send_vfo_atob(client_socket);
+    return;
+  }
   int oldmode = vfo[VFO_B].mode;
   vfo[VFO_B] = vfo[VFO_A];
 
@@ -930,7 +912,10 @@ void vfo_a_to_b() {
 }
 
 void vfo_b_to_a() {
-  ASSERT_SERVER();
+  if (radio_is_remote) {
+    send_vfo_btoa(client_socket);
+    return;
+  }
   int oldmode = vfo[VFO_A].mode;
   vfo[VFO_A] = vfo[VFO_B];
 
@@ -942,7 +927,10 @@ void vfo_b_to_a() {
 }
 
 void vfo_a_swap_b() {
-  ASSERT_SERVER();
+  if (radio_is_remote) {
+    send_vfo_swap(client_socket);
+    return;
+  }
   struct  _vfo temp = vfo[VFO_A];
   vfo[VFO_A]        = vfo[VFO_B];
   vfo[VFO_B]        = temp;
@@ -1008,9 +996,7 @@ void vfo_id_set_step_from_index(int id, int index) {
   vfo[id].step = step;
 
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_vfo_stepsize(client_socket, id, step);
-#endif
   } else {
     if (id == 0) {
       int mode = vfo[id].mode;
@@ -1023,9 +1009,7 @@ void vfo_id_set_step_from_index(int id, int index) {
 void vfo_step(int steps) {
   int id = active_receiver->id;
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     update_vfo_step(id, steps);
-#endif
     return;
   }
   vfo_id_step(id, steps);
@@ -1033,9 +1017,7 @@ void vfo_step(int steps) {
 
 void vfo_id_step(int id, int steps) {
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     update_vfo_step(id, steps);
-#endif
     return;
   }
 
@@ -1126,20 +1108,16 @@ void vfo_id_step(int id, int steps) {
 void vfo_set_rit_step(int step) {
   int id = active_receiver->id;
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_rit_step(client_socket, id, step);
     return;
-#endif
   }
   vfo_id_set_rit_step(id,step);
 }
 
 void vfo_id_set_rit_step(int id, int step) {
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_rit_step(client_socket, id, step);
     return;
-#endif
   }
   vfo[id].rit_step = step;
 
@@ -1171,9 +1149,7 @@ void vfo_id_move(int id, long long hz, int round) {
 
   if (!locked) {
     if (radio_is_remote) {
-#ifdef CLIENT_SERVER
       update_vfo_move(id, hz, round);
-#endif
       return;
     }
 
@@ -1280,9 +1256,7 @@ void vfo_move_to(long long hz) {
 
 void vfo_id_move_to(int id, long long hz) {
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_vfo_move_to(client_socket, id, hz);
-#endif
     return;
   }
 
@@ -2138,9 +2112,9 @@ void vfo_update() {
     }
 
     if (sat_mode == SAT_NONE || sat_mode == SAT_MODE) {
-      cairo_show_text(cr, "SAT");
+      cairo_show_text(cr, "Sat");
     } else {
-      cairo_show_text(cr, "RSAT");
+      cairo_show_text(cr, "RSat");
     }
   }
 
@@ -2156,7 +2130,7 @@ void vfo_update() {
       cairo_set_source_rgba(cr, COLOUR_SHADE);
     }
 
-    snprintf(temp_text, 32, "DUP");
+    snprintf(temp_text, 32, "Dup");
     cairo_move_to(cr, vfl->dup_x, vfl->dup_y);
     cairo_show_text(cr, temp_text);
   }
@@ -2216,13 +2190,12 @@ GtkWidget* vfo_init(int width, int height) {
   g_signal_connect (vfo_panel, "draw",
                     G_CALLBACK (vfo_draw_cb), NULL);
   /* Event signals */
-  g_signal_connect (vfo_panel, "button-press-event",
-                    G_CALLBACK (vfo_press_event_cb), NULL);
-  g_signal_connect(vfo_panel, "scroll_event",
-                   G_CALLBACK(vfo_scroll_event_cb), NULL);
-  gtk_widget_set_events (vfo_panel, gtk_widget_get_events (vfo_panel)
-                         | GDK_BUTTON_PRESS_MASK
-                         | GDK_SCROLL_MASK);
+  g_signal_connect (vfo_panel, "button-press-event", G_CALLBACK (vfo_press_event_cb), NULL);
+  //
+  // Note the scroll event is generated from  to both RX1/RX2 AND the vfo panel and will scroll the active receiver only
+  //
+  g_signal_connect(vfo_panel, "scroll_event", G_CALLBACK(vfo_scroll_event_cb), NULL);
+  gtk_widget_set_events (vfo_panel, gtk_widget_get_events (vfo_panel) | GDK_BUTTON_PRESS_MASK | GDK_SCROLL_MASK);
   return vfo_panel;
 }
 
@@ -2261,49 +2234,50 @@ long long vfo_get_tx_freq() {
 }
 
 void vfo_xit_value(long long value ) {
-  ASSERT_SERVER();
   int id = vfo_get_tx_vfo();
+  vfo_id_xit_value(id, value);
+}
+
+void vfo_id_xit_value(int id, long long value ) {
+  if (value > 9999.0) { value = 9999; }
+  if (value < -9999.0) { value = -9999; }
   vfo[id].xit = value;
   vfo[id].xit_enabled = value ? 1 : 0;
-  schedule_high_priority();
+
+  if (radio_is_remote) {
+    send_xit(client_socket, id);
+  } else {
+    schedule_high_priority();
+  }
+
   g_idle_add(ext_vfo_update, NULL);
 }
 
 void vfo_xit_toggle() {
-  ASSERT_SERVER();
   int id = vfo_get_tx_vfo();
-  TOGGLE(vfo[id].xit_enabled);
-  schedule_high_priority();
-  g_idle_add(ext_vfo_update, NULL);
+  vfo_id_xit_toggle(id);
+}
+
+void vfo_id_xit_toggle(int id) {
+  int val = NOT(vfo[id].xit_enabled);
+  vfo_id_xit_onoff(id, val);
 }
 
 void vfo_id_rit_toggle(int id) {
-  if (radio_is_remote) {
-#ifdef CLIENT_SERVER
-    send_rit_toggle(client_socket, id);
-#endif
-    return;
-  }
-  TOGGLE(vfo[id].rit_enabled);
-
-  if (id < receivers) {
-    rx_frequency_changed(receiver[id]);
-  }
-
-  g_idle_add(ext_vfo_update, NULL);
+  int val = NOT(vfo[id].rit_enabled);
+  vfo_id_rit_onoff(id, val);
 }
 
 void vfo_id_rit_value(int id, long long value) {
-  if (radio_is_remote) {
-#ifdef CLIENT_SERVER
-    send_rit_value(client_socket, id, value);
-#endif
-    return;
-  }
+  if (value > 9999) { value = 9999; }
+  if (value < -9999) { value = -9999; }
   vfo[id].rit = value;
   vfo[id].rit_enabled = value ? 1 : 0;
 
-  if (id < receivers) {
+  if (radio_is_remote) {
+    send_rit(client_socket, id);
+    return;
+  } else if (id < receivers) {
     rx_frequency_changed(receiver[id]);
   }
 
@@ -2311,10 +2285,10 @@ void vfo_id_rit_value(int id, long long value) {
 }
 
 void vfo_id_rit_onoff(int id, int enable) {
-  ASSERT_SERVER();
   vfo[id].rit_enabled = SET(enable);
-
-  if (id < receivers) {
+  if (radio_is_remote) {
+    send_rit(client_socket, id);
+  } else if (id < receivers) {
     rx_frequency_changed(receiver[id]);
   }
 
@@ -2322,53 +2296,33 @@ void vfo_id_rit_onoff(int id, int enable) {
 }
 
 void vfo_xit_onoff(int enable) {
-  ASSERT_SERVER();
   int id = vfo_get_tx_vfo();
+  vfo_id_xit_onoff(id, enable);
+}
+
+void vfo_id_xit_onoff(int id, int enable) {
   vfo[id].xit_enabled = SET(enable);
-  schedule_high_priority();
+  if (radio_is_remote) {
+    send_xit(client_socket, id);
+  } else {
+    schedule_high_priority();
+  }
   g_idle_add(ext_vfo_update, NULL);
 }
 
 void vfo_xit_incr(int incr) {
-  ASSERT_SERVER();
   int id = vfo_get_tx_vfo();
+  vfo_id_xit_incr(id, incr);
+}
+
+void vfo_id_xit_incr(int id, int incr) {
   long long value = vfo[id].xit + incr;
-
-  if (value < -9999) {
-    value = -9999;
-  } else if (value > 9999) {
-    value = 9999;
-  }
-
-  vfo[id].xit = value;
-  vfo[id].xit_enabled = (value != 0);
-  schedule_high_priority();
-  g_idle_add(ext_vfo_update, NULL);
+  vfo_id_xit_value(id, value);
 }
 
 void vfo_id_rit_incr(int id, int incr) {
-  if (radio_is_remote) {
-#ifdef CLIENT_SERVER
-    send_rit_incr(client_socket, id, incr);
-#endif
-    return;
-  }
   long long value = vfo[id].rit + incr;
-
-  if (value < -9999) {
-    value = -9999;
-  } else if (value > 9999) {
-    value = 9999;
-  }
-
-  vfo[id].rit = value;
-  vfo[id].rit_enabled = (value != 0);
-
-  if (id < receivers) {
-    rx_frequency_changed(receiver[id]);
-  }
-
-  g_idle_add(ext_vfo_update, NULL);
+  vfo_id_rit_value(id, value);
 }
 
 //
@@ -2381,7 +2335,10 @@ void vfo_id_rit_incr(int id, int incr) {
 // - CAT "set frequency" command
 //
 void vfo_id_set_frequency(int v, long long f) {
-  ASSERT_SERVER();
+  if (radio_is_remote) {
+     send_vfo_frequency(client_socket, v, f);
+     return;
+  }
   //
   // Here we used to have call vfo_id_band_changed() for
   // frequency jumps from one band to another.
@@ -2427,9 +2384,7 @@ void vfo_id_set_frequency(int v, long long f) {
 //
 void vfo_id_ctun_update(int id, int state) {
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_ctun(client_socket, id, state);
-#endif
     return;
   }
 

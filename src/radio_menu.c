@@ -26,9 +26,7 @@
 #include "actions.h"
 #include "adc.h"
 #include "band.h"
-#ifdef CLIENT_SERVER
-  #include "client_server.h"
-#endif
+#include "client_server.h"
 #include "discovered.h"
 #include "ext.h"
 #include "filter.h"
@@ -96,9 +94,7 @@ static void agc_changed_cb(GtkWidget *widget, gpointer data) {
 static void calibration_value_changed_cb(GtkWidget *widget, gpointer data) {
   frequency_calibration = (long long)gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_radiomenu(client_socket);
-#endif
   }
 }
 
@@ -106,9 +102,7 @@ static void rx_gain_calibration_value_changed_cb(GtkWidget *widget, gpointer dat
   rx_gain_calibration = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
 
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_radiomenu(client_socket);
-#endif
   }
 }
 
@@ -122,9 +116,7 @@ static void ptt_ring_cb(GtkWidget *widget, gpointer data) {
   }
 
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_radiomenu(client_socket);
-#endif
   } else {
     schedule_transmit_specific();
   }
@@ -136,10 +128,8 @@ static void ptt_tip_cb(GtkWidget *widget, gpointer data) {
   }
 
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_radiomenu(client_socket);
   } else {
-#endif
     schedule_transmit_specific();
   }
 }
@@ -149,10 +139,8 @@ static void toggle_cb(GtkWidget *widget, gpointer data) {
   *value = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_radiomenu(client_socket);
   } else {
-#endif
     schedule_general();
     schedule_transmit_specific();
     schedule_high_priority();
@@ -162,10 +150,7 @@ static void toggle_cb(GtkWidget *widget, gpointer data) {
 static void anan10e_cb(GtkWidget *widget, gpointer data) {
   int new = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_anan10E(client_socket, new);
-    return;
-#endif
   } else {
     radio_set_anan10E(new);
   }
@@ -174,9 +159,7 @@ static void anan10e_cb(GtkWidget *widget, gpointer data) {
 static void split_cb(GtkWidget *widget, gpointer data) {
   int new = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_split(client_socket, new);
-#endif
   } else {
     radio_set_split(new);
   }
@@ -189,9 +172,7 @@ void setDuplex() {
   if (!can_transmit) { return; }
 
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_duplex(client_socket, duplex);
-#endif
   }
 
   if (duplex) {
@@ -228,9 +209,7 @@ static void sat_cb(GtkWidget *widget, gpointer data) {
   sat_mode = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
 
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_radiomenu(client_socket);
-#endif
   }
 
   g_idle_add(ext_vfo_update, NULL);
@@ -268,9 +247,7 @@ void n2adr_oc_settings() {
 
 void load_filters() {
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_filter_board(client_socket, filter_board);
-#endif
     return;
   }
   switch (filter_board) {
@@ -343,9 +320,7 @@ static void mic_input_cb(GtkWidget *widget, gpointer data) {
   }
 
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_radiomenu(client_socket);
-#endif
   } else {
     schedule_transmit_specific();
   }
@@ -362,9 +337,7 @@ static void sample_rate_cb(GtkToggleButton *widget, gpointer data) {
   if (sscanf(p, "%d", &samplerate) != 1) { return; }
 
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_sample_rate(client_socket, 0, samplerate);
-#endif
   } else {
     radio_change_sample_rate(samplerate);
   }
@@ -383,9 +356,7 @@ static void receivers_cb(GtkToggleButton *widget, gpointer data) {
   }
 
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_receivers(client_socket, val);
-#endif
   } else {
     radio_change_receivers(val);
   }
@@ -394,9 +365,7 @@ static void receivers_cb(GtkToggleButton *widget, gpointer data) {
 static void region_cb(GtkWidget *widget, gpointer data) {
   int r = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_region(client_socket, r);
-#endif
   } else {
     radio_change_region(r);
   }
@@ -425,36 +394,28 @@ static void ck10mhz_cb(GtkWidget *widget, gpointer data) {
   atlas_clock_source_10mhz = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
 
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_radiomenu(client_socket);
-#endif
   }
 }
 
 static void ck128mhz_cb(GtkWidget *widget, gpointer data) {
   atlas_clock_source_128mhz = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_radiomenu(client_socket);
-#endif
   }
 }
 
 static void micsource_cb(GtkWidget *widget, gpointer data) {
   atlas_mic_source = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_radiomenu(client_socket);
-#endif
   }
 }
 
 static void tx_cb(GtkWidget *widget, gpointer data) {
   atlas_penelope = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_radiomenu(client_socket);
-#endif
   }
 }
 

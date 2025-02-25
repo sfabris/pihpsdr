@@ -59,19 +59,18 @@
 #define max(x,y) (x<y?y:x)
 
 //
-// CW pulses are timed by the heart-beat of the mic samples.
-// Other parts of the program may produce CW RF pulses by manipulating
-// these global variables:
+// CW events: There is a ring buffer of CW events that
+// contain the state (key-up or key-down) and the minimum
+// time (in units of 1/48 msec) that has to pass since
+// the previous event has been executed. CW is done
+// exclusively by queuing CW events
 //
-// cw_key_up/cw_key_down: set number of samples for next key-down/key-up sequence
-//                        Any of these variable will only be set from outside if
-//                        both have value 0.
-// cw_not_ready:          set to 0 if transmitting in CW mode. This is used to
-//                        abort pending CAT CW messages if MOX or MODE is switched
-//                        manually.
-int cw_key_up = 0;
-int cw_key_down = 0;
-int cw_not_ready = 1;
+#define CW_RING_SIZE 1024
+static uint8_t cw_ring_state[CW_RING_SIZE];
+static int     cw_ring_wait[CW_RING_SIZE];
+static volatile int cw_ring_inpt = 0;
+static volatile int cw_ring_outpt = 0;
+
 
 double ctcss_frequencies[CTCSS_FREQUENCIES] = {
   67.0,  71.9,  74.4,  77.0,  79.7,  82.5,  85.4,  88.5,  91.5,  94.8,
@@ -398,7 +397,7 @@ void tx_save_state(const TRANSMITTER *tx) {
   }
 }
 
-static void tx_restore_state(TRANSMITTER *tx) {
+void tx_restore_state(TRANSMITTER *tx) {
   //
   // Start with "local" data
   //
@@ -505,9 +504,7 @@ static gboolean tx_update_display(gpointer data) {
   int rc;
 
   if (tx->puresignal) {
-    int info[16];
-    tx_ps_getinfo(tx, info);
-    tx->pscorr = info[14];
+    tx_ps_getinfo(tx);
   }
 
   if (tx->displaying) {
@@ -1198,8 +1195,10 @@ static void tx_full_buffer(TRANSMITTER *tx) {
   if (cwmode) {
     //
     // clear VOX peak level in case is it non-zero.
+    // This prevents the "mic lvl" indicator in the VFO bar
+    // from freezing.
     //
-    clear_vox();
+    vox_clear();
     //
     // Note that WDSP is not needed, but we still call it (and discard the
     // results) since this  may help in correct slew-up and slew-down
@@ -1227,7 +1226,16 @@ static void tx_full_buffer(TRANSMITTER *tx) {
     // Old VOX code, to be applied BEFORE FM preemphasis
     // and the downward expander
     //
-    update_vox(tx);
+    double mypeak = 0.0;
+
+    for (int i = 0; i < tx->buffer_size; i++) {
+      double sample = tx->mic_input_buffer[2 * i];
+
+       if (sample > mypeak) { mypeak = sample; }
+
+       if (-sample > mypeak) { mypeak = sample; }
+    }
+    vox_update(mypeak);
 
     //
     // DL1YCF:
@@ -1248,7 +1256,7 @@ static void tx_full_buffer(TRANSMITTER *tx) {
     // compensated by ALC, so it is important to have FM pre-emphasis
     // before ALC (checkbox in tx_menu checked, that is, pre_emphasis==0).
     //
-    // Note that mic sample amplification has to be done after update_vox()
+    // Note that mic sample amplification has to be done after vox_update()
     //
     if (txmode == modeFMN && !tune) {
       for (int i = 0; i < 2 * tx->samples; i += 2) {
@@ -1422,14 +1430,69 @@ static void tx_full_buffer(TRANSMITTER *tx) {
   }
 }
 
-void tx_add_mic_sample(TRANSMITTER *tx, float mic_sample) {
+void tx_queue_cw_event(int down, int wait) {
+  if (radio_is_remote) {
+    send_cw(client_socket, down, wait);
+    return;
+  }
+  //
+  // Put a CW event into the ring buffer
+  // If buffer is nearly full, only queue key-up events
+  //
+  int num, newpt;
+
+  if ((num = cw_ring_inpt - cw_ring_outpt) < 0) num += CW_RING_SIZE;
+
+  //
+  // If buffer is nearly full, make all events key-up
+  //
+  if (num + 16 > CW_RING_SIZE) { down = 0; }
+
+  newpt = cw_ring_inpt + 1;
+
+  if (newpt == CW_RING_SIZE) { newpt = 1; }
+
+  if (newpt != cw_ring_outpt) {
+    cw_ring_state[cw_ring_inpt] = down;
+    cw_ring_wait[cw_ring_inpt] = wait;
+    MEMORY_BARRIER;
+    cw_ring_inpt = newpt;
+  } else {
+    t_print("WARNING: CW ring buffer full.\n");
+  }
+}
+
+void tx_add_mic_sample(TRANSMITTER *tx, short next_mic_sample) {
   ASSERT_SERVER();
   int txmode = vfo_get_tx_mode();
   double mic_sample_double;
+  static int keydown = 0;   // 1: key-down, 0: key-up
   int i, j;
-  mic_sample_double = (double)mic_sample;
+
+  mic_sample_double = (double)next_mic_sample * 0.0003051;  // divide by 32768
 
   //
+  // If we have local tx microphone, we normally *replace* the sample by data
+  // from the sound card. However, if PTT comes from  the radio, we  *add* both
+  // radio and sound card samples.
+  // This "trick" allows us to switch between SSB (with microphone attached to the
+  // radio) and DIGI (using a virtual audio cable) without going to the TX  menu.
+  //
+  if (tx->local_microphone) {
+    if (radio_ptt) {
+      mic_sample_double += audio_get_next_mic_sample();
+    } else {
+      mic_sample_double = audio_get_next_mic_sample();
+    }
+  }
+
+  //
+  // If we have a client, it overwrites 'local' microphone data.
+  //
+  if (remoteclient.running) {
+    mic_sample_double = remote_get_mic_sample() * 0.00003051;  // divide by 32768;
+  }
+
   // If there is captured data to re-play, replace incoming
   // mic samples by captured data.
   //
@@ -1454,15 +1517,24 @@ void tx_add_mic_sample(TRANSMITTER *tx, float mic_sample) {
   }
 
   //
+  //  CW events are obtained from a ring buffer. The variable
+  //  cw_delay_time measures the time since the last CW event
+  //  (key-up or key-down). For QRS, it is increased up to
+  //  a maximum value of It is increased up do a maximum value
+  //  of 99999 (21 seconds). To protect the hardware, a
+  //  key-down is canceled at 960000 (20 seconds) anyway.
+  //
+  static int cw_delay_time = 0;
+
+  if (cw_delay_time < 9999999) {
+    cw_delay_time++;
+  }
+
+  //
   // shape CW pulses when doing CW and transmitting, else nullify them
   //
   if ((txmode == modeCWL || txmode == modeCWU) && radio_is_transmitting()) {
-    int updown;
     float cwsample;
-    //
-    //  'piHPSDR' CW sets the variables cw_key_up and cw_key_down
-    //  to the number of samples for the next down/up sequence.
-    //  cw_key_down can be zero, for inserting some space
     //
     //  We HAVE TO shape the signal to avoid hard clicks to be
     //  heard way beside our frequency. The envelope (ramp function)
@@ -1481,17 +1553,24 @@ void tx_add_mic_sample(TRANSMITTER *tx, float mic_sample) {
     //  we have to produce tx->ratio RF samples and one sidetone
     //  sample.
     //
-    cw_not_ready = 0;
-
-    if (cw_key_down > 0 ) {
-      cw_key_down--;            // decrement key-up counter
-      updown = 1;
-    } else {
-      if (cw_key_up > 0) {
-        cw_key_up--;  // decrement key-down counter
+    if (keydown && cw_delay_time > 960000) {
+      keydown = 0;
+    }
+    if (cw_ring_inpt != cw_ring_outpt) {
+      //
+      // There is data in the ring buffer
+      //
+      if (cw_delay_time >= cw_ring_wait[cw_ring_outpt]) {
+        //
+        // Next event ready to be executed
+        //
+        cw_delay_time = 0;
+        keydown = cw_ring_state[cw_ring_outpt];
+        int newpt = cw_ring_outpt + 1;
+        if (newpt >= CW_RING_SIZE) { newpt -= CW_RING_SIZE; }
+        MEMORY_BARRIER;
+        cw_ring_outpt = newpt;
       }
-
-      updown = 0;
     }
 
     //
@@ -1502,7 +1581,7 @@ void tx_add_mic_sample(TRANSMITTER *tx, float mic_sample) {
     if (g_mutex_trylock(&tx->cw_ramp_mutex)) {
       double val;
 
-      if (updown) {
+      if (keydown) {
         if (tx->cw_ramp_audio_ptr < tx->cw_ramp_audio_len) {
           tx->cw_ramp_audio_ptr++;
         }
@@ -1600,12 +1679,9 @@ void tx_add_mic_sample(TRANSMITTER *tx, float mic_sample) {
     //
     //  If no longer transmitting, or no longer doing CW: reset pulse shaper.
     //  This will also swallow any pending CW and wipe out the buffers
-    //  In order to tell rigctl etc. that CW should be aborted, we also use the cw_not_ready flag.
     //
-    cw_not_ready = 1;
-    cw_key_up = 0;
-
-    if (cw_key_down > 0) { cw_key_down--; }  // in case it occured before the RX/TX transition
+    keydown = 0;
+    cw_ring_inpt = cw_ring_outpt = 0;
 
     tx->cw_ramp_audio_ptr = 0;
     tx->cw_ramp_rf_ptr = 0;
@@ -1689,7 +1765,6 @@ void tx_add_ps_iq_samples(const TRANSMITTER *tx, double i_sample_tx, double q_sa
   }
 }
 
-#ifdef CLIENT_SERVER
 void tx_remote_update_display(TRANSMITTER *tx) {
   if (tx->displaying) {
     if (tx->pixels > 0) {
@@ -1716,7 +1791,6 @@ void tx_create_remote(TRANSMITTER *tx) {
   //
   tx_create_visual(tx);
 }
-#endif
 
 void tx_set_displaying(TRANSMITTER *tx) {
   ASSERT_SERVER();
@@ -1982,23 +2056,19 @@ void tx_on(const TRANSMITTER *tx) {
 #endif
 }
 
-void tx_ps_getinfo(const TRANSMITTER *tx, int *info) {
+void tx_ps_getinfo(TRANSMITTER *tx) {
   ASSERT_SERVER();
-  GetPSInfo(tx->id, info);
+  GetPSInfo(tx->id, tx->psinfo);
 }
 
-double tx_ps_getmx(const TRANSMITTER *tx) {
-  ASSERT_SERVER(0.0);
-  double mx;
-  GetPSMaxTX(tx->id, &mx);
-  return mx;
+void tx_ps_getmx(TRANSMITTER *tx) {
+  ASSERT_SERVER();
+  GetPSMaxTX(tx->id, &transmitter->ps_getmx);
 }
 
-double tx_ps_getpk(const TRANSMITTER *tx) {
-  ASSERT_SERVER(0.0);
-  double pk;
-  GetPSHWPeak(tx->id, &pk);
-  return pk;
+void tx_ps_getpk(TRANSMITTER *tx) {
+  ASSERT_SERVER();
+  GetPSHWPeak(tx->id, &transmitter->ps_getpk);
 }
 
 void tx_ps_mox(const TRANSMITTER *tx, int state) {
@@ -2010,7 +2080,6 @@ void tx_ps_mox(const TRANSMITTER *tx, int state) {
 }
 
 void tx_ps_onoff(TRANSMITTER *tx, int state) {
-  ASSERT_SERVER();
   //
   // Switch PureSignal on (state !=0) or off (state==0)
   //
@@ -2041,6 +2110,12 @@ void tx_ps_onoff(TRANSMITTER *tx, int state) {
 #ifdef WDSPTXDEBUG
   t_print("TX id=%d PS OnOff=%d\n", tx->id, state);
 #endif
+  if (radio_is_remote) {
+    tx->puresignal = state;
+    send_psonoff(client_socket, state);
+    g_idle_add(ext_vfo_update, NULL);
+    return;
+  }
 
   if (!state) {
     // see above. Ensure some feedback samples still flow into
@@ -2100,23 +2175,33 @@ void tx_ps_onoff(TRANSMITTER *tx, int state) {
 }
 
 void tx_ps_reset(const TRANSMITTER *tx) {
-  ASSERT_SERVER();
+  if (tx->puresignal) {
+    if (radio_is_remote) {
+      send_psreset(client_socket);
+      return;
+    }
 #ifdef WDSPTXDEBUG
-  t_print("TX id=%d PS Reset\n", tx->id);
+    t_print("TX id=%d PS Reset\n", tx->id);
 #endif
-  SetPSControl(tx->id, 1, 0, 0, 0);
+    SetPSControl(tx->id, 1, 0, 0, 0);
+  }
 }
 
 void tx_ps_resume(const TRANSMITTER *tx) {
-  ASSERT_SERVER();
+  if (tx->puresignal) {
+    if (radio_is_remote) {
+      send_psresume(client_socket);
+      return;
+    }
 #ifdef WDSPTXDEBUG
-  t_print("TX id=%d PS Resume OneShot=%d\n", tx->id, tx->ps_oneshot);
+    t_print("TX id=%d PS Resume OneShot=%d\n", tx->id, tx->ps_oneshot);
 #endif
 
-  if (tx->ps_oneshot) {
-    SetPSControl(tx->id, 0, 1, 0, 0);
-  } else {
-    SetPSControl(tx->id, 0, 0, 1, 0);
+    if (tx->ps_oneshot) {
+      SetPSControl(tx->id, 0, 1, 0, 0);
+    } else {
+      SetPSControl(tx->id, 0, 0, 1, 0);
+    }
   }
 }
 
@@ -2129,7 +2214,11 @@ void tx_ps_set_sample_rate(const TRANSMITTER *tx, int rate) {
 }
 
 void tx_ps_setparams(const TRANSMITTER *tx) {
-  ASSERT_SERVER();
+  if (radio_is_remote) {
+    send_psparams(client_socket, tx);
+    return;
+  }
+  SetPSHWPeak(tx->id, tx->ps_setpk);
   SetPSMapMode(tx->id, tx->ps_map);
   SetPSPtol(tx->id, tx->ps_ptol ? 0.4 : 0.8);
   SetPSIntsAndSpi(tx->id, tx->ps_ints, tx->ps_spi);
@@ -2143,14 +2232,6 @@ void tx_ps_setparams(const TRANSMITTER *tx) {
   t_print("TX id=%d PS map=%d ptol=%d ints=%d spi=%d stbl=%d pin=%d moxdelay=%g ampdelay=%g loopdelay=%g\n",
           tx->id, tx->ps_map, tx->ps_ptol, tx->ps_ints, tx->ps_spi, tx->ps_stbl, tx->ps_pin, tx->ps_moxdelay,
           tx->ps_ampdelay, tx->ps_loopdelay);
-#endif
-}
-
-void tx_ps_setpk(const TRANSMITTER *tx, double peak) {
-  ASSERT_SERVER();
-  SetPSHWPeak(tx->id, peak);
-#ifdef WDSPTXDEBUG
-  t_print("TX id=%d PS HWpeak=%g\n", tx->id, peak);
 #endif
 }
 
@@ -2337,7 +2418,10 @@ void tx_set_dexp(const TRANSMITTER *tx) {
 }
 
 void tx_set_equalizer(TRANSMITTER *tx) {
-  ASSERT_SERVER();
+  if (radio_is_remote) {
+    send_eq(client_socket, tx->id);
+    return;
+  }
   SetTXAEQProfile(tx->id, 10, tx->eq_freq, tx->eq_gain);
   SetTXAEQRun(tx->id, tx->eq_enable);
 #ifdef WDSPTXDEBUG
@@ -2351,7 +2435,10 @@ void tx_set_equalizer(TRANSMITTER *tx) {
 }
 
 void tx_set_fft_size(const TRANSMITTER *tx) {
-  ASSERT_SERVER();
+  if (radio_is_remote) {
+    send_tx_fft(client_socket, tx);
+    return;
+  }
   TXASetNC(tx->id, tx->fft_size);
 #ifdef WDSPTXDEBUG
   t_print("TX id=%d FFT size=%d\n", tx->id, tx->fft_size);

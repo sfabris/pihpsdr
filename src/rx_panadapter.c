@@ -29,9 +29,7 @@
 #include "agc.h"
 #include "appearance.h"
 #include "band.h"
-#ifdef CLIENT_SERVER
-  #include "client_server.h"
-#endif
+#include "client_server.h"
 #include "discovered.h"
 #include "gpio.h"
 #include "message.h"
@@ -318,20 +316,16 @@ void rx_panadapter_update(RECEIVER *rx) {
     }
   }
 
-#ifdef CLIENT_SERVER
-
-  if (remoteclients != NULL) {
+  if (remoteclient.running) {
     char text[64];
     cairo_select_font_face(cr, DISPLAY_FONT_FACE, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
     cairo_set_source_rgba(cr, COLOUR_SHADE);
     cairo_set_font_size(cr, DISPLAY_FONT_SIZE4);
-    inet_ntop(AF_INET, &(((struct sockaddr_in *)&remoteclients->address)->sin_addr), text, 64);
+    inet_ntop(AF_INET, &(((struct sockaddr_in *)&remoteclient.address)->sin_addr), text, 64);
     cairo_text_extents(cr, text, &extents);
     cairo_move_to(cr, ((double)mywidth / 2.0) - (extents.width / 2.0), (double)myheight / 2.0);
     cairo_show_text(cr, text);
   }
-
-#endif
 
   // agc
   if (rx->agc != AGC_OFF) {
@@ -687,8 +681,8 @@ void rx_panadapter_init(RECEIVER *rx, int width, int height) {
   g_signal_connect (rx->panadapter, "button-press-event", G_CALLBACK (panadapter_button_press_event_cb), rx);
   g_signal_connect (rx->panadapter, "button-release-event", G_CALLBACK (panadapter_button_release_event_cb), rx);
   //
-  // Note the scroll applies to both RX panels AND the vfo panel and will scroll the active receiver only
- //
+  // Note the scroll event is generated from  to both RX1/RX2 AND the vfo panel and will scroll the active receiver only
+  //
   g_signal_connect(rx->panadapter, "scroll_event", G_CALLBACK(panadapter_scroll_event_cb), NULL);
   /* Ask to receive events the drawing area doesn't normally
    * subscribe to. In particular, we need to ask for the

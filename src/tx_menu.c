@@ -134,7 +134,6 @@ static void tx_panadapter_peaks_on_cb(GtkWidget *widget, gpointer data) {
 
 static void tx_panadapter_num_peaks_value_changed_cb(GtkWidget *widget, gpointer data) {
   transmitter->panadapter_num_peaks = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
-  printf("New peaks no %d", transmitter->panadapter_num_peaks);
 }
 
 static void tx_panadapter_ignore_range_divider_value_changed_cb(GtkWidget *widget, gpointer data) {
@@ -199,29 +198,50 @@ static void spinbtn_cb(GtkWidget *widget, gpointer data) {
     switch (c) {
     case TX_LINEIN:
       linein_gain = v;
+      if (radio_is_remote) {
+        send_txmenu(client_socket);
+      } else {
+        schedule_transmit_specific();
+      }
       break;
 
     case TX_FPS:
       transmitter->fps = vi;
-      tx_set_framerate(transmitter);
+      if (radio_is_remote) {
+        send_fps(client_socket, transmitter->id, transmitter->fps);
+      } else {
+        tx_set_framerate(transmitter);
+      }
       break;
 
     case TX_COMP:
       transmitter->compressor_level = vi;
-      mode_settings[mode].compressor_level = vi;
-      copy_mode_settings(mode);
-      tx_set_compressor(transmitter);
+      if (radio_is_remote) {
+        send_tx_compressor(client_socket);
+      } else {
+        mode_settings[mode].compressor_level = vi;
+        copy_mode_settings(mode);
+        tx_set_compressor(transmitter);
+      }
       g_idle_add(ext_vfo_update, NULL);
       break;
 
     case TX_FILTER_LOW:
       tx_filter_low = vi;
-      tx_set_filter(transmitter);
+      if (radio_is_remote) {
+        send_txfilter(client_socket);
+      } else {
+        tx_set_filter(transmitter);
+      }
       break;
 
     case TX_FILTER_HIGH:
       tx_filter_high = vi;
-      tx_set_filter(transmitter);
+      if (radio_is_remote) {
+        send_txfilter(client_socket);
+      } else {
+        tx_set_filter(transmitter);
+      }
       break;
 
     case TX_PAN_LOW:
@@ -238,17 +258,26 @@ static void spinbtn_cb(GtkWidget *widget, gpointer data) {
 
     case TX_AM_CARRIER:
       transmitter->am_carrier_level = v;
-      tx_set_am_carrier_level(transmitter);
+      if (radio_is_remote) {
+        send_am_carrier(client_socket);
+      } else {
+        tx_set_am_carrier_level(transmitter);
+      }
       break;
 
     case TX_TUNE_DRIVE:
       transmitter->tune_drive = vi;
+      if (radio_is_remote) {
+        send_txmenu(client_socket);
+      }
       break;
 
     case TX_DIGI_DRIVE:
       drive_digi_max = v;
 
-      if ((mode == modeDIGL || mode == modeDIGU) && transmitter->drive > v + 0.5) {
+      if (radio_is_remote) {
+        send_digidrivemax(client_socket);
+      } else if ((mode == modeDIGL || mode == modeDIGU) && transmitter->drive > v + 0.5) {
         set_drive(v);
       }
 
@@ -256,26 +285,41 @@ static void spinbtn_cb(GtkWidget *widget, gpointer data) {
 
     case TX_SWR_ALARM:
       transmitter->swr_alarm = v;
+      if (radio_is_remote) {
+        send_txmenu(client_socket);
+      }
       break;
     }
   } else if (d == CFCFREQ) {
     // The CFC frequency spin buttons
     transmitter->cfc_freq[e] = v;
-    mode_settings[mode].cfc_freq[e] = v;
-    copy_mode_settings(mode);
-    tx_set_compressor(transmitter);
+    if (radio_is_remote) {
+      send_tx_compressor(client_socket);
+    } else {
+      mode_settings[mode].cfc_freq[e] = v;
+      copy_mode_settings(mode);
+      tx_set_compressor(transmitter);
+    }
   } else if (d == CFCLVL) {
     // The CFC compression-level spin buttons
     transmitter->cfc_lvl[e] = v;
-    mode_settings[mode].cfc_lvl[e] = v;
-    copy_mode_settings(mode);
-    tx_set_compressor(transmitter);
+    if (radio_is_remote) {
+      send_tx_compressor(client_socket);
+    } else {
+      mode_settings[mode].cfc_lvl[e] = v;
+      copy_mode_settings(mode);
+      tx_set_compressor(transmitter);
+    }
   } else if (d == CFCPOST) {
     // The CFC Post-equalizer gain spin buttons
     transmitter->cfc_post[e] = v;
-    mode_settings[mode].cfc_post[e] = v;
-    copy_mode_settings(mode);
-    tx_set_compressor(transmitter);
+    if (radio_is_remote) {
+      send_tx_compressor(client_socket);
+    } else {
+      mode_settings[mode].cfc_post[e] = v;
+      copy_mode_settings(mode);
+      tx_set_compressor(transmitter);
+    }
   } else if (d == DEXP) {
     // The DEXP spin buttons. Note that the spin buttons for the
     // "time" values are in milli-seconds
@@ -283,60 +327,56 @@ static void spinbtn_cb(GtkWidget *widget, gpointer data) {
     case DEXP_TAU:
       transmitter->dexp_tau = 0.001 * v;
       mode_settings[mode].dexp_tau = 0.001 * v;
-      copy_mode_settings(mode);
       break;
 
     case DEXP_ATTACK:
       transmitter->dexp_attack = 0.001 * v;
       mode_settings[mode].dexp_attack = 0.001 * v;
-      copy_mode_settings(mode);
       break;
 
     case DEXP_RELEASE:
       transmitter->dexp_release = 0.001 * v;
       mode_settings[mode].dexp_release = 0.001 * v;
-      copy_mode_settings(mode);
       break;
 
     case DEXP_HOLD:
       transmitter->dexp_hold = 0.001 * v;
       mode_settings[mode].dexp_hold = 0.001 * v;
-      copy_mode_settings(mode);
       break;
 
     case DEXP_HYST:
       transmitter->dexp_hyst = v;
       mode_settings[mode].dexp_hyst = v;
-      copy_mode_settings(mode);
       break;
 
     case DEXP_TRIGGER:
       transmitter->dexp_trigger = vi;
       mode_settings[mode].dexp_trigger = vi;
-      copy_mode_settings(mode);
       break;
 
     case DEXP_FILTER_LOW:
       transmitter->dexp_filter_low = vi;
       mode_settings[mode].dexp_filter_low = vi;
-      copy_mode_settings(mode);
       break;
 
     case DEXP_FILTER_HIGH:
       transmitter->dexp_filter_high = vi;
       mode_settings[mode].dexp_filter_high = vi;
-      copy_mode_settings(mode);
       break;
 
     case DEXP_EXP:
       // Note this is in dB
       transmitter->dexp_exp = vi;
       mode_settings[mode].dexp_exp = vi;
-      copy_mode_settings(mode);
       break;
     }
 
-    tx_set_dexp(transmitter);
+    if (radio_is_remote) {
+      send_dexp(client_socket);
+    } else {
+      copy_mode_settings(mode);
+      tx_set_dexp(transmitter);
+    }
   }
 }
 
@@ -358,29 +398,47 @@ static void chkbtn_cb(GtkWidget *widget, gpointer data) {
 
     case TX_COMP_ENABLE:
       transmitter->compressor = v;
-      mode_settings[mode].compressor = transmitter->compressor;
-      copy_mode_settings(mode);
-      tx_set_compressor(transmitter);
+      if (radio_is_remote) {
+        send_tx_compressor(client_socket);
+      } else {
+        mode_settings[mode].compressor = transmitter->compressor;
+        copy_mode_settings(mode);
+        tx_set_compressor(transmitter);
+      }
       g_idle_add(ext_vfo_update, NULL);
       break;
 
     case TX_CTCSS_ENABLE:
       transmitter->ctcss_enabled = v;
-      tx_set_ctcss(transmitter);
+      if (radio_is_remote) {
+        send_ctcss(client_socket);
+      } else {
+        tx_set_ctcss(transmitter);
+      }
       g_idle_add(ext_vfo_update, NULL);
       break;
 
     case TX_TUNE_USE_DRIVE:
       transmitter->tune_use_drive = v;
+      if (radio_is_remote) {
+        send_txmenu(client_socket);
+      }
       break;
 
     case TX_SWR_PROTECTION:
       transmitter->swr_protection = v;
+      if (radio_is_remote) {
+        send_txmenu(client_socket);
+      }
       break;
 
     case TX_USE_RX_FILTER:
       transmitter->use_rx_filter = v;
-      tx_set_filter(transmitter);
+      if (radio_is_remote) {
+        send_txfilter(client_socket);
+      } else {
+        tx_set_filter(transmitter);
+      }
 
       if (v) {
         gtk_widget_set_sensitive (tx_spin_low, FALSE);
@@ -411,7 +469,11 @@ static void chkbtn_cb(GtkWidget *widget, gpointer data) {
 
     case TX_FM_EMP:
       transmitter->pre_emphasize = !v;
-      tx_set_pre_emphasize(transmitter);
+      if (radio_is_remote) {
+        send_preemp(client_socket);
+      } else {
+        tx_set_pre_emphasize(transmitter);
+      }
       break;
     }
   } else if (d == CFC) {
@@ -420,36 +482,43 @@ static void chkbtn_cb(GtkWidget *widget, gpointer data) {
     case CFC_ONOFF:
       transmitter->cfc = v;
       mode_settings[mode].cfc = v;
-      copy_mode_settings(mode);
-      g_idle_add(ext_vfo_update, NULL);
       break;
 
     case CFC_EQ:
       transmitter->cfc_eq = v;
       mode_settings[mode].cfc_eq = v;
-      copy_mode_settings(mode);
       break;
     }
 
-    tx_set_compressor(transmitter);
+    if (radio_is_remote) {
+      send_tx_compressor(client_socket);
+    } else {
+      copy_mode_settings(mode);
+      tx_set_compressor(transmitter);
+    }
+    g_idle_add(ext_vfo_update, NULL);
+
   } else if (d == DEXP) {
     // DEXP menu check buttons
     switch (c) {
     case DEXP_ONOFF:
       transmitter->dexp = v;
       mode_settings[mode].dexp = v;
-      copy_mode_settings(mode);
-      g_idle_add(ext_vfo_update, NULL);
       break;
 
     case DEXP_FILTER:
       transmitter->dexp_filter = v;
       mode_settings[mode].dexp_filter = v;
-      copy_mode_settings(mode);
       break;
     }
 
-    tx_set_dexp(transmitter);
+    if (radio_is_remote) {
+      send_dexp(client_socket);
+    } else {
+      copy_mode_settings(mode);
+      tx_set_dexp(transmitter);
+    }
+    g_idle_add(ext_vfo_update, NULL);
   }
 }
 
@@ -476,12 +545,20 @@ static void mic_in_cb(GtkWidget *widget, gpointer data) {
     break;
   }
 
-  schedule_transmit_specific();
+  if (radio_is_remote) {
+    send_txmenu(client_socket);
+  } else {
+    schedule_transmit_specific();
+  }
 }
 
 static void ctcss_frequency_cb(GtkWidget *widget, gpointer data) {
   transmitter->ctcss = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
-  tx_set_ctcss(transmitter);
+  if (radio_is_remote) {
+    send_ctcss(client_socket);
+  } else {
+    tx_set_ctcss(transmitter);
+  }
   g_idle_add(ext_vfo_update, NULL);
 }
 

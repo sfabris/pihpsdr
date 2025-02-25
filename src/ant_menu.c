@@ -25,6 +25,7 @@
 
 #include "ant_menu.h"
 #include "band.h"
+#include "client_server.h"
 #include "message.h"
 #include "new_menu.h"
 #include "new_protocol.h"
@@ -63,7 +64,11 @@ static void rx_ant_cb(GtkToggleButton *widget, gpointer data) {
   int ant = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
   BAND *band = band_get_band(b);
   band->alexRxAntenna = ant;
-  radio_set_alex_antennas();
+  if (radio_is_remote) {
+    send_band_data(client_socket, b);
+  } else {
+    radio_set_alex_antennas();
+  }
 }
 
 static void tx_ant_cb(GtkToggleButton *widget, gpointer data) {
@@ -71,14 +76,20 @@ static void tx_ant_cb(GtkToggleButton *widget, gpointer data) {
   int ant = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
   BAND *band = band_get_band(b);
   band->alexTxAntenna = ant;
-  radio_set_alex_antennas();
+  if (radio_is_remote) {
+    send_band_data(client_socket, b);
+  } else {
+    radio_set_alex_antennas();
+  }
 }
 
 #ifdef SOAPYSDR
 static void adc_antenna_cb(GtkComboBox *widget, gpointer data) {
   adc[0].antenna = gtk_combo_box_get_active(widget);
 
-  if (device == SOAPYSDR_USB_DEVICE) {
+  if (radio_is_remote) {
+    send_adc_data(client_socket, 0);
+  } else if (device == SOAPYSDR_USB_DEVICE) {
     soapy_protocol_set_rx_antenna(receiver[0], adc[0].antenna);
   }
 }
@@ -86,7 +97,9 @@ static void adc_antenna_cb(GtkComboBox *widget, gpointer data) {
 static void dac_antenna_cb(GtkComboBox *widget, gpointer data) {
   dac.antenna = gtk_combo_box_get_active(widget);
 
-  if (device == SOAPYSDR_USB_DEVICE && can_transmit) {
+  if (radio_is_remote) {
+    send_dac_data(client_socket);
+  } else if (device == SOAPYSDR_USB_DEVICE && can_transmit) {
     soapy_protocol_set_tx_antenna(transmitter, dac.antenna);
   }
 }
@@ -273,7 +286,11 @@ static void newpa_cb(GtkWidget *widget, gpointer data) {
     new_pa_board = 0;
   }
 
-  schedule_high_priority();
+  if (radio_is_remote) {
+    send_radiomenu(client_socket);
+  } else {
+    schedule_high_priority();
+  }
 }
 
 void ant_menu(GtkWidget *parent) {

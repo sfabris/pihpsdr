@@ -103,9 +103,7 @@ void memRestoreState() {
 
 void recall_memory_slot(int index) {
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_recall(client_socket, index);
-#endif
     return;
   }
   //
@@ -250,9 +248,7 @@ void store_memory_slot(int index) {
     // the updated memory slot but this arrives too late to get
     // the menu button updated.
     //
-#ifdef CLIENT_SERVER
     send_store(client_socket, index);
-#endif
     return;
   }
 }

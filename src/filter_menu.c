@@ -77,9 +77,7 @@ static void cw_peak_cb(GtkWidget *widget, gpointer data) {
   vfo[id].cwAudioPeakFilter = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_cwpeak(client_socket, id, vfo[id].cwAudioPeakFilter);
-#endif
   } else {
     if (id == 0) {
       int mode = vfo[id].mode;
@@ -182,14 +180,18 @@ static gboolean deviation_select_cb (GtkWidget *widget, gpointer data) {
   if (current != choice) {
     int id = active_receiver->id;
     current = choice;
-    vfo[id].deviation = choice->info;
-    rx_set_filter(active_receiver);
+    if (radio_is_remote) {
+      send_deviation(client_socket, id, choice->info);
+    } else {
+      vfo[id].deviation = choice->info;
+      rx_set_filter(active_receiver);
 
-    if (can_transmit) {
-      tx_set_filter(transmitter);
+      if (can_transmit) {
+        tx_set_filter(transmitter);
+      }
+      g_idle_add(ext_vfo_update, NULL);
     }
 
-    g_idle_add(ext_vfo_update, NULL);
   }
 
   return FALSE;
@@ -238,9 +240,7 @@ static void var_spin_low_cb (GtkWidget *widget, gpointer data) {
   }
 
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_filter_var(client_socket, m, f);
-#endif
   }
 
   //
@@ -306,9 +306,7 @@ static void var_spin_high_cb (GtkWidget *widget, gpointer data) {
   }
 
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
     send_filter_var(client_socket, m, f);
-#endif
   }
 
   //

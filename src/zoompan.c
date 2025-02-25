@@ -24,9 +24,7 @@
 
 #include "actions.h"
 #include "appearance.h"
-#ifdef CLIENT_SERVER
-  #include "client_server.h"
-#endif
+#include "client_server.h"
 #include "ext.h"
 #include "main.h"
 #include "message.h"
@@ -79,9 +77,7 @@ static void zoom_value_changed_cb(GtkWidget *widget, gpointer data) {
   active_receiver->zoom = (int)(gtk_range_get_value(GTK_RANGE(zoom_scale)) + 0.5);
 
   if (radio_is_remote) {
-#ifdef CLIENT_SERVER
-    send_zoom(client_socket, active_receiver->id, active_receiver->zoom);
-#endif
+    send_zoom(client_socket, active_receiver);
   } else {
     rx_update_zoom(active_receiver);
   }
@@ -147,9 +143,7 @@ static void pan_value_changed_cb(GtkWidget *widget, gpointer data) {
     active_receiver->pan = (int)(gtk_range_get_value(GTK_RANGE(pan_scale)) + 0.5);
 
     if (radio_is_remote) {
-#ifdef CLIENT_SERVER
-      send_pan(client_socket, active_receiver->id, active_receiver->pan);
-#endif
+      send_pan(client_socket, active_receiver);
     }
   }
 

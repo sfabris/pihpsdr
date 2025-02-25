@@ -57,18 +57,10 @@ static gboolean close_cb () {
 
 void update_noise() {
   int id = active_receiver->id;
-
-  if (radio_is_remote) {
-#ifdef CLIENT_SERVER
-    send_noise(client_socket, active_receiver);
-#endif
-    return;
-  }
-
   //
   // Update the mode settings
   //
-  if (id == 0) {
+  if (id == 0 && !radio_is_remote) {
     int mode = vfo[id].mode;
     mode_settings[mode].nr = active_receiver->nr;
     mode_settings[mode].nb = active_receiver->nb;

@@ -901,11 +901,12 @@ static gpointer receive_thread(gpointer arg) {
           break;
 
         case 2:  // response to a discovery packet
+        case 3:  // response to a discovery packet with "InUse" flag
           t_print("unexepected discovery response when not in discovery mode\n");
           break;
 
         default:
-          t_print("unexpected packet type: 0x%02X\n", buffer[2]);
+          t_print("unexpected packet type: 0x%02X len=%d\n", buffer[2], bytes_read);
           break;
         }
       } else {
@@ -1140,7 +1141,7 @@ static int how_many_receivers() {
 static int nreceiver;
 static int left_sample;
 static int right_sample;
-static short mic_sample;
+static short next_mic_sample;
 static double left_sample_double;
 static double right_sample_double;
 double left_sample_double_rx;
@@ -1506,33 +1507,16 @@ static void process_ozy_byte(int b) {
     break;
 
   case MIC_SAMPLE_HI:
-    mic_sample = (short)(b << 8);
+    next_mic_sample = (short)(b << 8);
     state++;
     break;
 
   case MIC_SAMPLE_LOW:
-    mic_sample |= (short)(b & 0xFF);
+    next_mic_sample |= (short)(b & 0xFF);
     mic_samples++;
 
     if (mic_samples >= mic_sample_divisor) { // reduce to 48000
-      //
-      // if radio_ptt is set, this usually means the PTT at the microphone connected
-      // to the SDR is pressed. In this case, we take audio from BOTH sources
-      // then we can use a "voice keyer" on some loop-back interface but at the same
-      // time use our microphone.
-      // In most situations only one source will be active so we just add.
-      //
-      float fsample;
-
-      if (radio_ptt) {
-        fsample = (float) mic_sample * 0.00003051;
-
-        if (transmitter->local_microphone) { fsample += audio_get_next_mic_sample(); }
-      } else {
-        fsample = transmitter->local_microphone ? audio_get_next_mic_sample() : (float) mic_sample * 0.00003051;
-      }
-
-      tx_add_mic_sample(transmitter, fsample);
+      tx_add_mic_sample(transmitter, next_mic_sample);
       mic_samples = 0;
     }
 

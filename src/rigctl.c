@@ -220,6 +220,7 @@ void shutdown_tcp_rigctl() {
 //
 
 #define CW_BUF_SIZE 80
+#define NSEC_PER_SEC 1000000000L
 static char cw_buf[CW_BUF_SIZE];
 static int  cw_buf_in = 0, cw_buf_out = 0;
 
@@ -231,77 +232,48 @@ static int dashsamples;
 // send_dot()          send a "key-down" of a dotlen,  followed by a "key-up" of a dotlen
 // send_space(int len) send a "key_down" of zero,      followed by a "key-up" of len*dotlen
 //
-// The "trick" to get proper timing is, that we really specify  the number of samples
-// for the next element (dash/dot/nothing) and the following pause. 30 wpm is no
-// problem, and without too much "busy waiting". We just take a nap until 10 msec
-// before we have to act, and then wait several times for 1 msec until we can shoot.
 //
 static void send_dash() {
-  for (;;) {
-    int TimeToGo = cw_key_up + cw_key_down;
-
-    // TimeToGo is invalid if local CW keying has set in
-    if (cw_key_hit || cw_not_ready) { return; }
-
-    if (TimeToGo == 0) { break; }
-
-    // sleep until 10 msec before ignition
-    if (TimeToGo > 500) { usleep((long)(TimeToGo - 500) * 20L); }
-
-    // sleep 1 msec
-    usleep(1000L);
+  struct timespec ts;
+  if (cw_key_hit) { return; }
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  tx_queue_cw_event(1, 0);
+  tx_queue_cw_event(0, dashsamples);
+  tx_queue_cw_event(0, dotsamples);
+  ts.tv_nsec += (dashsamples + dotsamples) * 20833;
+  while (ts.tv_nsec > NSEC_PER_SEC) {
+    ts.tv_nsec -= NSEC_PER_SEC;
+    ts.tv_sec++;
   }
-
-  // If local CW keying has set in, do not interfere
-  if (cw_key_hit || cw_not_ready) { return; }
-
-  cw_key_down = dashsamples;
-  cw_key_up   = dotsamples;
+  clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, NULL);
 }
 
 static void send_dot() {
-  for (;;) {
-    int TimeToGo = cw_key_up + cw_key_down;
-
-    // TimeToGo is invalid if local CW keying has set in
-    if (cw_key_hit || cw_not_ready) { return; }
-
-    if (TimeToGo == 0) { break; }
-
-    // sleep until 10 msec before ignition
-    if (TimeToGo > 500) { usleep((long)(TimeToGo - 500) * 20L); }
-
-    // sleep 1 msec
-    usleep(1000L);
+  struct timespec ts;
+  if (cw_key_hit) { return; }
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  tx_queue_cw_event(1, 0);
+  tx_queue_cw_event(0, dotsamples);
+  tx_queue_cw_event(0, dotsamples);
+  ts.tv_nsec += (2* dotsamples) * 20833;
+  while (ts.tv_nsec > NSEC_PER_SEC) {
+    ts.tv_nsec -= NSEC_PER_SEC;
+    ts.tv_sec++;
   }
-
-  // If local CW keying has set in, do not interfere
-  if (cw_key_hit || cw_not_ready) { return; }
-
-  cw_key_down = dotsamples;
-  cw_key_up   = dotsamples;
+  clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, NULL);
 }
 
 static void send_space(int len) {
-  for (;;) {
-    int TimeToGo = cw_key_up + cw_key_down;
-
-    // TimeToGo is invalid if local CW keying has set in
-    if (cw_key_hit || cw_not_ready) { return; }
-
-    if (TimeToGo == 0) { break; }
-
-    // sleep until 10 msec before ignition
-    if (TimeToGo > 500) { usleep((long)(TimeToGo - 500) * 20L); }
-
-    // sleep 1 msec
-    usleep(1000L);
+  struct timespec ts;
+  if (cw_key_hit) { return; }
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  tx_queue_cw_event(0, len*dotsamples);
+  ts.tv_nsec += (len* dotsamples) * 20833;
+  while (ts.tv_nsec > NSEC_PER_SEC) {
+    ts.tv_nsec -= NSEC_PER_SEC;
+    ts.tv_sec++;
   }
-
-  // If local CW keying has set in, do not interfere
-  if (cw_key_hit || cw_not_ready) { return; }
-
-  cw_key_up = len * dotsamples;
+  clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, NULL);
 }
 
 //
@@ -610,6 +582,7 @@ static gpointer rigctl_cw_thread(gpointer data) {
     // Take one character from the ring buffer
     //
     cwchar = cw_buf[cw_buf_out];
+    t_print("CWCHAR=%c\n", cwchar);
     i = cw_buf_out + 1;
 
     if (i >= CW_BUF_SIZE) { i = 0; }
@@ -668,7 +641,8 @@ static gpointer rigctl_cw_thread(gpointer data) {
     }
 
     CAT_cw_is_active = 1;
-    schedule_transmit_specific();
+
+    if (!radio_is_remote) { schedule_transmit_specific(); }
 
     if (!mox) {
       // activate PTT
@@ -676,35 +650,30 @@ static gpointer rigctl_cw_thread(gpointer data) {
       // have to wait until it is really there
       // Note that if out-of-band, we would wait
       // forever here, so allow at most 200 msec
-      // We also have to wait for cw_not_ready becoming zero
       i = 200;
 
-      while ((!mox || cw_not_ready) && i-- > 0) { usleep(1000L); }
+      while (!mox && i-- > 0) { usleep(1000L); }
 
       // still no MOX? --> silently discard CW character and give up
       if (!mox) {
         CAT_cw_is_active = 0;
-        schedule_transmit_specific();
+
+        if (!radio_is_remote) { schedule_transmit_specific(); }
+
         continue;
       }
     }
 
     // At this point, mox == 1 and CAT_cw_active == 1
-    if (cw_key_hit || cw_not_ready) {
+    if (cw_key_hit) {
       //
       // CW transmission has been aborted, either due to manually
       // removing MOX, changing the mode to non-CW, or because a CW key has been hit.
       // Do not remove PTT in the latter case
       buffered_speed = 0;
       CAT_cw_is_active = 0;
-      schedule_transmit_specific();
 
-      // If a CW key has been hit, we continue in TX mode.
-      // This also applies if we have an active foot-switch
-      // Otherwise, switch PTT off.
-      if (!cw_key_hit && mox && !radio_ptt) {
-        g_idle_add(ext_mox_update, GINT_TO_POINTER(0));
-      }
+      if (!radio_is_remote) { schedule_transmit_specific(); }
 
       //
       // keep draining ring buffer until it stays empty for 0.5 seconds
@@ -734,7 +703,8 @@ static gpointer rigctl_cw_thread(gpointer data) {
       if (cw_buf_in != cw_buf_out) { continue; }
 
       CAT_cw_is_active = 0;
-      schedule_transmit_specific();
+
+      if (!radio_is_remote) { schedule_transmit_specific(); }
 
       if (!cw_key_hit && !radio_ptt) {
         g_idle_add(ext_mox_update, GINT_TO_POINTER(0));
@@ -758,7 +728,9 @@ static gpointer rigctl_cw_thread(gpointer data) {
   // of a transmission
   if (CAT_cw_is_active) {
     CAT_cw_is_active = 0;
-    schedule_transmit_specific();
+
+    if (!radio_is_remote) { schedule_transmit_specific(); }
+
     g_idle_add(ext_mox_update, GINT_TO_POINTER(0));
   }
 
@@ -4273,7 +4245,7 @@ int parse_cmd(void *data) {
         send_resp(client->fd, reply);
       } else {
         //
-        // Recent versions of Hamlib send CW messages on character at a time.
+        // Recent versions of Hamlib send CW messages one character at a time.
         // So all trailing blanks have to be removed, and an entirely blank
         // message is interpreted as a inter-word distance.
         // Note we allow variable lengths of incoming messages here, although

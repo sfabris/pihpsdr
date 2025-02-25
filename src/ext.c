@@ -136,7 +136,6 @@ int ext_set_duplex(void *data) {
   return G_SOURCE_REMOVE;
 }
 
-#ifdef CLIENT_SERVER
 int ext_tx_remote_update_display(void *data) {
   TRANSMITTER *tx = (TRANSMITTER *)data;
   tx_remote_update_display(tx);
@@ -158,6 +157,12 @@ int ext_radio_remote_set_tune(void *data) {
 int ext_radio_remote_set_mox(void *data) {
   int val= GPOINTER_TO_INT(data);
   radio_remote_set_mox(val);
+  return G_SOURCE_REMOVE;
+}
+
+int ext_radio_remote_set_vox(void *data) {
+  int val= GPOINTER_TO_INT(data);
+  radio_remote_set_vox(val);
   return G_SOURCE_REMOVE;
 }
 
@@ -184,4 +189,7 @@ int ext_radio_remote_change_receivers(void *data) {
   return G_SOURCE_REMOVE;
 }
 
-#endif
+int ext_att_type_changed(void *data) {
+  att_type_changed();
+  return G_SOURCE_REMOVE;
+}
