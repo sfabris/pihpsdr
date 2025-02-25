@@ -184,6 +184,15 @@ void recall_memory_slot(int index) {
     vfo[VFO_B].filter         = mem[index].alt_filter;
     vfo[VFO_B].deviation      = mem[index].alt_deviation;
     vfo[VFO_B].lo             = band->frequencyLO + band->errorLO;
+
+    // When recalling a SAT/RSAT memory slot, also apply the split and duplex setting
+
+    radio_set_split(mem[index].split);
+
+    if (!radio_is_transmitting()) {
+      duplex = mem[index].duplex;
+      g_idle_add(ext_set_duplex, NULL);
+    }
   }
 
   if (can_transmit) {
@@ -200,6 +209,8 @@ void store_memory_slot(int index) {
   // Store current frequency, mode, and filter in slot #index
   //
   mem[index].sat_mode = sat_mode;
+  mem[index].split = split;
+  mem[index].duplex = duplex;
 
   if (sat_mode == SAT_NONE) {
     int id = active_receiver->id;

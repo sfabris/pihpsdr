@@ -28,6 +28,8 @@
 */
 struct _MEM_STORE {
   int sat_mode;
+  int split;        // this will only be used with SAT/RSAT
+  int duplex;       // this will only be used with SAT/RSAT
   long long frequency;
   long long ctun_frequency;
   int ctun;
