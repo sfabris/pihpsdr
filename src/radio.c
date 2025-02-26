@@ -148,7 +148,12 @@ int atlas_janus = 0;
 // "compagnion board" and  a variant of the HL2 firmware
 // This bit can be set in the "RADIO" menu.
 //
+// if hl2_cl1_input is set, CL1 is used as a master clock input
+// for a 10 MHz reference clock, and CL2 is used as a 10 MHz
+// reference output.
+//
 int hl2_audio_codec = 0;
+int hl2_cl1_input = 0;
 
 //
 // if anan10E is set, we have a limited-capacity HERMES board
@@ -2600,6 +2605,7 @@ static void radio_restore_state() {
     GetPropI0("atlas_mic_source",                            atlas_mic_source);
     GetPropI0("atlas_janus",                                 atlas_janus);
     GetPropI0("hl2_audio_codec",                             hl2_audio_codec);
+    GetPropI0("hl2_cl1_input",                               hl2_cl1_input);
     GetPropI0("anan10E",                                     anan10E);
     GetPropI0("tx_out_of_band",                              tx_out_of_band_allowed);
     GetPropI0("filter_board",                                filter_board);
@@ -2809,6 +2815,7 @@ void radio_save_state() {
     SetPropI0("atlas_mic_source",                            atlas_mic_source);
     SetPropI0("atlas_janus",                                 atlas_janus);
     SetPropI0("hl2_audio_codec",                             hl2_audio_codec);
+    SetPropI0("hl2_cl1_input",                               hl2_cl1_input);
     SetPropI0("anan10E",                                     anan10E);
     SetPropI0("tx_out_of_band",                              tx_out_of_band_allowed);
     SetPropI0("filter_board",                                filter_board);
