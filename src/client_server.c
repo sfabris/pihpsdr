@@ -87,6 +87,9 @@
 #include "radio_menu.h"
 #include "receiver.h"
 #include "sliders.h"
+#ifdef SOAPYSDR
+#include "soapy_protocol.h"
+#endif
 #include "store.h"
 #include "store_menu.h"
 #include "transmitter.h"
