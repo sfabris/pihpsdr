@@ -1469,7 +1469,7 @@ void tx_add_mic_sample(TRANSMITTER *tx, short next_mic_sample) {
   static int keydown = 0;   // 1: key-down, 0: key-up
   int i, j;
 
-  mic_sample_double = (double)next_mic_sample * 0.0003051;  // divide by 32768
+  mic_sample_double = (double)next_mic_sample * 0.00003051;  // divide by 32768
 
   //
   // If we have local tx microphone, we normally *replace* the sample by data
