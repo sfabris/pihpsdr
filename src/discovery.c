@@ -619,7 +619,6 @@ static void discovery() {
 
   loadProperties("remote.props");
   // Retrieve "host" property with fallback
-  strncpy(host_addr, "127.0.0.1", sizeof(host_addr));
   GetPropS0("current_host", host_addr);
 
   t_print("current host: %s\n", host_addr);
