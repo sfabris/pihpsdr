@@ -39,11 +39,6 @@ OPTHOMEBREW=0
 
 if [ -x /usr/local/bin/brew ]; then
   BREW=/usr/local/bin/brew
-  if [ z$PATH == z ]; then
-    export PATH=/usr/local/bin:/usr/local/sbin
-  else
-    export PATH=$PATH:/usr/local/bin:/usr/local/sbin
-  fi
   if [ z$CPATH == z ]; then
     export CPATH=/usr/local/include
   else
@@ -59,11 +54,6 @@ fi
 if [ -x /opt/homebrew/bin/brew ]; then
   BREW=/opt/homebrew/bin/brew
   OPTHOMEBREW=1
-  if [ z$PATH == z ]; then
-    export PATH=/opt/homebrew/bin:/opt/homebrew/sbin
-  else
-    export PATH=$PATH:/opt/homebrew/bin:/opt/homebrew/sbin
-  fi
   if [ z$CPATH == z ]; then
     export CPATH=/opt/homebrew/include
   else
@@ -96,13 +86,13 @@ echo "export CPATH=$CPATH" >> $HOME/.profile
 echo "export LIBRARY_PATH=$LIBRARY_PATH" >> $HOME/.profile
 fi
 if [ $SHELL == "/bin/csh" ]; then
-$BREW shellenv csh >> $HOME/.profile
+$BREW shellenv csh >> $HOME/.cshrc
 echo "setenv CPATH $CPATH" >> $HOME/.cshrc
 echo "setenv LIBRARY_PATH $LIBRARY_PATH" >> $HOME/.cshrc
 fi
 if [ $SHELL == "/bin/zsh" ]; then
 $BREW shellenv zsh >> $HOME/.profile
-echo "export CPATH=$CPATH" >> $HOME/.profile
+echo "export CPATH=$CPATH" >> $HOME/.zprofile
 echo "export LIBRARY_PATH=$LIBRARY_PATH" >> $HOME/.profile
 fi
 
