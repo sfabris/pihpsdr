@@ -110,6 +110,7 @@ $BREW install fftw
 $BREW install libusb
 $BREW install makedepend
 $BREW install cppcheck
+$BREW install openssl@3
 
 ################################################################
 #
