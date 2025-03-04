@@ -25,6 +25,7 @@
 #include "radio.h"
 #include "vfo.h"
 #include "band.h"
+#include "message.h"
 #include "waterfall.h"
 
 static int colorLowR = 0; // black
@@ -99,11 +100,9 @@ void waterfall_update(RECEIVER *rx) {
     long long vfofreq = vfo[rx->id].frequency; // access only once to be thread-safe
     int  freq_changed = 0;                    // flag whether we have just "rotated"
     int pan = rx->pan;
-    int zoom = rx->zoom;
 
     if (radio_is_remote) {
       pan = 0;
-      zoom = 1;
     }
 
     unsigned char *pixels = gdk_pixbuf_get_pixels (rx->pixbuf);
@@ -177,7 +176,7 @@ void waterfall_update(RECEIVER *rx) {
       memset(pixels, 0, my_width * my_heigt * 3);
       rx->waterfall_frequency = vfofreq;
       rx->waterfall_pan = pan;
-      rx->waterfall_zoom = zoom;
+      rx->waterfall_zoom = rx->zoom;
       rx->waterfall_sample_rate = rx->sample_rate;
     }
 

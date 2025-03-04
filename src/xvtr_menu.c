@@ -144,7 +144,7 @@ static void save_xvtr () {
   }
 }
 
-void pa_disable_cb(GtkWidget *widget, gpointer data) {
+static void pa_disable_cb(GtkWidget *widget, gpointer data) {
   int i = GPOINTER_TO_INT(data);
   BAND *xvtr = band_get_band(i);
   xvtr->disablePA = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));

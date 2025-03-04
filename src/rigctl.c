@@ -81,7 +81,7 @@ int rigctl_tcp_autoreporting = 0;
 
 gboolean rigctl_debug = FALSE;
 
-int parse_cmd (void *data);
+static int parse_cmd (void *data);
 
 int cat_control = 0;
 
@@ -282,7 +282,8 @@ static void send_space(int len) {
 static int join_cw_characters = 0;
 
 static void rigctl_send_cw_char(char cw_char) {
-  char pattern[9],*ptr;
+  char pattern[9];
+  const char *ptr;
   ptr = &pattern[0];
 
   switch (cw_char) {
@@ -1302,7 +1303,7 @@ static gpointer rigctl_client (gpointer data) {
   return NULL;
 }
 
-gboolean parse_extended_cmd (const char *command, CLIENT *client) {
+static gboolean parse_extended_cmd (const char *command, CLIENT *client) {
   gboolean implemented = TRUE;
   char reply[256];
   reply[0] = '\0';
@@ -3577,7 +3578,7 @@ gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 }
 
 // called with g_idle_add so that the processing is running on the main thread
-int parse_cmd(void *data) {
+static int parse_cmd(void *data) {
   COMMAND *info = (COMMAND *)data;
   CLIENT *client = info->client;
   char *command = info->command;
@@ -5497,7 +5498,7 @@ int parse_cmd(void *data) {
 }
 
 // Serial Port Launch
-int set_interface_attribs (int fd, speed_t speed, int parity) {
+static int set_interface_attribs (int fd, speed_t speed, int parity) {
   struct termios tty;
   memset (&tty, 0, sizeof tty);
 
@@ -5534,7 +5535,7 @@ int set_interface_attribs (int fd, speed_t speed, int parity) {
   return 0;
 }
 
-void set_blocking (int fd, int should_block) {
+static void set_blocking (int fd, int should_block) {
   struct termios tty;
   memset (&tty, 0, sizeof tty);
   int flags = fcntl(fd, F_GETFL, 0);

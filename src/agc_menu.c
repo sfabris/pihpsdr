@@ -53,8 +53,7 @@ static void agc_hang_threshold_value_changed_cb(GtkWidget *widget, gpointer data
   active_receiver->agc_hang_threshold = (int)gtk_range_get_value(GTK_RANGE(widget));
 
   if (radio_is_remote) {
-    send_agc_gain(client_socket, active_receiver->id, active_receiver->agc_gain, active_receiver->agc_hang,
-                  active_receiver->agc_thresh, active_receiver->agc_hang_threshold);
+    send_agc_gain(client_socket, active_receiver);
   } else {
     rx_set_agc(active_receiver);
   }

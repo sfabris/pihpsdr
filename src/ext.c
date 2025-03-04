@@ -183,12 +183,14 @@ int ext_set_title(void *data) {
   return G_SOURCE_REMOVE;
 }
 
+// cppcheck-suppress constParameterPointer
 int ext_radio_remote_change_receivers(void *data) {
   int r = GPOINTER_TO_INT(data);
   radio_remote_change_receivers(r);
   return G_SOURCE_REMOVE;
 }
 
+// cppcheck-suppress constParameterPointer
 int ext_att_type_changed(void *data) {
   att_type_changed();
   return G_SOURCE_REMOVE;

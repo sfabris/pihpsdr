@@ -59,6 +59,9 @@ static DISCOVERED *d;
 
 static GtkWidget *apps_combobox[MAX_DEVICES];
 
+static GtkWidget *host_combo = NULL;;
+static GtkWidget *host_pwd_entry = NULL;;
+
 GtkWidget *tcpaddr;
 #define IPADDR_LEN 20
 static char ipaddr_buf[IPADDR_LEN] = "";
@@ -68,11 +71,7 @@ int discover_only_stemlab = 0;
 
 int delayed_discovery(gpointer data);
 
-GtkWidget *host_addr_entry;
-static char host_addr_buffer[128] = "";
-char *host_addr = &host_addr_buffer[0];
-GtkWidget *host_port_spinner;
-int host_port = 50000; // default listening port
+static char host_addr[128] = "127.0.0.1:50000";
 
 static gboolean close_cb() {
   // There is nothing to clean up
@@ -192,35 +191,153 @@ static gboolean radio_ip_cb (GtkWidget *widget, GdkEventButton *event, gpointer 
   return FALSE;
 }
 
-static gboolean connect_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
-  // connect to remote host running piHPSDR
-  strncpy(host_addr, gtk_entry_get_text(GTK_ENTRY(host_addr_entry)), 30);
-  host_port = gtk_spin_button_get_value(GTK_SPIN_BUTTON(host_port_spinner));
-  t_print("connect_cb: %s:%d\n", host_addr, host_port);
-  clearProperties();
-  SetPropS0("host",   host_addr);
-  SetPropI0("port",   host_port);
-  saveProperties("remote.props");
+//------------------------------------------------------+
+// Supporting functions for the server selection screen |
+//------------------------------------------------------+
+static void saveHostList() {
+    GtkListStore *store = GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(host_combo)));
+    GtkTreeIter iter;
+    int count = 0;
+    clearProperties();
 
-  if (radio_connect_remote(host_addr, host_port) == 0) {
+    // Iterate over the combo box list
+    if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(store), &iter)) {
+        do {
+            gchar *entry;
+            gtk_tree_model_get(GTK_TREE_MODEL(store), &iter, 1, &entry, -1);
+            SetPropS1("host[%d]", count, entry);
+            count++;
+            g_free(entry);
+
+        } while (gtk_tree_model_iter_next(GTK_TREE_MODEL(store), &iter));
+    }
+
+    SetPropI0("num_hosts", count);
+    SetPropS0("current_host", host_addr);
+    SetPropS0("property_version", "3.00");
+    saveProperties("remote.props");
+}
+
+// Function to add a new "Host:Port" entry if not already in the list
+static void add_entry_to_list(const gchar *entry_text) {
+    GtkListStore *store = GTK_LIST_STORE(gtk_combo_box_get_model(GTK_COMBO_BOX(host_combo)));
+    GtkTreeIter iter;
+    gboolean found = FALSE;
+    gchar *existing_entry;
+  
+    // Check if the entry already exists
+    if (gtk_tree_model_get_iter_first(GTK_TREE_MODEL(store), &iter)) {
+        do {
+            gtk_tree_model_get(GTK_TREE_MODEL(store), &iter, 1, &existing_entry, -1);
+            if (g_strcmp0(existing_entry, entry_text) == 0) {
+                found = TRUE;
+            }
+            g_free(existing_entry);
+        } while (gtk_tree_model_iter_next(GTK_TREE_MODEL(store), &iter));
+    }
+
+    // If not found, add to the list
+    if (!found) {
+        gtk_list_store_append(store, &iter);
+        gtk_list_store_set(store, &iter, 0, "", 1, entry_text, -1);
+        saveHostList();  // Save the updated list
+    } 
+}   
+
+static gboolean connect_cb(GtkWidget *widget, GdkEventButton *event, gpointer user_data) {
+  char myhost[256];
+  int  myport;
+  const char *mypwd;
+
+  *myhost = 0;
+  myport = 0;
+  gchar **splitstr = g_strsplit(host_addr, ":", 2);
+  if (splitstr[0] && splitstr[1]) {
+     snprintf(myhost, sizeof(myhost), "%s", splitstr[0]);
+     myport = atoi(splitstr[1]);
+  }
+  g_strfreev(splitstr);
+  mypwd = gtk_entry_get_text(GTK_ENTRY(host_pwd_entry));
+
+
+  t_print("connect_cb: host=%s port=%d pw=%s\n", myhost, myport, mypwd);
+
+  if (*myhost == 0 || myport == 0) {
+    return TRUE;
+  }
+
+  switch (radio_connect_remote(myhost, myport, mypwd)) {
+  case 0:
     gtk_widget_destroy(discovery_dialog);
-  } else {
-    // dialog box to display connection error
-    GtkWidget *dialog = gtk_dialog_new_with_buttons("Remote Connect", GTK_WINDOW(discovery_dialog),
-                        GTK_DIALOG_DESTROY_WITH_PARENT, "OK", GTK_RESPONSE_NONE, NULL);
-    GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-    char message[128];
-    snprintf(message, sizeof(message), "Connection failed to %s:%d", host_addr, host_port);
-    GtkWidget *label = gtk_label_new(message);
-    g_signal_connect_swapped(dialog, "response", G_CALLBACK(gtk_widget_destroy), dialog);
-    gtk_container_add(GTK_CONTAINER(content_area), label);
-    gtk_widget_show_all(dialog);
+    break;
+  case -1:
+    g_idle_add(fatal_error, "NOTICE: remote connection failed.");
+    break;
+  case -2:
+    g_idle_add(fatal_error, "NOTICE: wrong password for remote.");
+    break;
+  default:
+    g_idle_add(fatal_error, "NOTICE: unknown error in connect.");
+    break;
   }
 
   return TRUE;
 }
 
-void discovery() {
+// Callback when user selects an item from the dropdown
+static void on_combo_changed(GtkComboBox *combo, gpointer user_data) {
+  GtkEntry *entry = GTK_ENTRY(gtk_bin_get_child(GTK_BIN(combo)));
+  GtkTreeIter iter;
+  GtkTreeModel *model;
+  gchar *selected_entry;
+
+  if (gtk_combo_box_get_active_iter(combo, &iter)) {
+    model = gtk_combo_box_get_model(combo);
+    gtk_tree_model_get(model, &iter, 1, &selected_entry, -1);
+    gtk_entry_set_text(entry, selected_entry);
+    snprintf(host_addr, sizeof(host_addr), "%s", selected_entry);
+    saveHostList();
+    g_free(selected_entry);
+  }
+}
+
+// Callback when user presses Enter in the editable field
+static void on_entry_activated(GtkEntry *entry, gpointer user_data) {
+  const char *text = gtk_entry_get_text(entry);
+
+  // Validate format "Host:Port"
+  const char *cp1 = index(text, ':');
+  const char *cp2 = rindex(text, ':');
+
+  if (cp1 == NULL || cp1 != cp2) {
+    return;
+  }
+  // so text has exactly one colong
+  int p = atoi(cp1 + 1);
+
+  if (p < 1024 || p > 65535) {
+    return;
+  }
+
+  snprintf(host_addr, sizeof(host_addr), "%s", text);
+  add_entry_to_list(text);
+}
+
+static void on_toggle_password_visibility(GtkToggleButton *button, gpointer user_data) {
+    GtkEntry *entry = GTK_ENTRY(user_data);
+    gboolean visible = !gtk_entry_get_visibility(entry);
+    gtk_entry_set_visibility(entry, visible);
+    if (visible) {
+      gtk_button_set_label(GTK_BUTTON(button), "Hide");
+    } else {
+      gtk_button_set_label(GTK_BUTTON(button), "Show");
+    }
+} 
+
+//----------------------------------------------------+
+// Build the discovery window                         |
+//----------------------------------------------------+
+static void discovery() {
   //
   // On the discovery screen, make the combo-boxes "touchscreen-friendly"
   //
@@ -344,6 +461,7 @@ void discovery() {
 
   if (devices == 0) {
     GtkWidget *label = gtk_label_new("No local devices found!");
+    gtk_widget_set_name(label, "med_txt");
     gtk_grid_attach(GTK_GRID(grid), label, 0, row, 3, 1);
     row++;
   } else {
@@ -495,24 +613,77 @@ void discovery() {
     }
   }
 
+  //----------------------------------------------------+
+  // Construct the Server selection and start interface |
+  //----------------------------------------------------+
+
   loadProperties("remote.props");
-  GetPropS0("host",   host_addr_buffer);
-  GetPropI0("port",   host_port);
-  GtkWidget *connect_b = gtk_button_new_with_label("Connect to Server");
-  g_signal_connect (connect_b, "button-press-event", G_CALLBACK(connect_cb), NULL);
-  gtk_grid_attach(GTK_GRID(grid), connect_b, 0, row, 1, 1);
-  host_addr_entry = gtk_entry_new();
-  gtk_entry_set_max_length(GTK_ENTRY(host_addr_entry), 30);
-  gtk_grid_attach(GTK_GRID(grid), host_addr_entry, 1, row, 1, 1);
-  gtk_entry_set_text(GTK_ENTRY(host_addr_entry), host_addr);
-  GtkWidget *host_port_label = gtk_label_new("Server Port");
-  gtk_widget_set_name(host_port_label, "boldlabel");
-  gtk_widget_show(host_port_label);
-  gtk_grid_attach(GTK_GRID(grid), host_port_label, 2, row, 1, 1);
-  host_port_spinner = gtk_spin_button_new_with_range(45000, 55000, 1);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(host_port_spinner), (double)host_port);
-  gtk_widget_show(host_port_spinner);
-  gtk_grid_attach(GTK_GRID(grid), host_port_spinner, 3, row, 1, 1);
+  // Retrieve "host" property with fallback
+  strncpy(host_addr, "127.0.0.1", sizeof(host_addr));
+  GetPropS0("current_host", host_addr);
+
+  t_print("current host: %s\n", host_addr);
+
+  // Create a "Start Server" button
+  GtkWidget *start_server_button = gtk_button_new_with_label("Start Server");
+  g_signal_connect(start_server_button, "clicked", G_CALLBACK(connect_cb), grid);
+  gtk_grid_attach(GTK_GRID(grid), start_server_button, 0, row, 1, 1);
+
+
+  // Create ListStore (1 column for IP:Port string)
+  GtkListStore *store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+
+  // Add the last used entry to the list only if it's valid
+  if (strlen(host_addr) > 0) {
+      GtkTreeIter iter;
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter, 0, "", 1, host_addr, -1);
+  }
+  // Initialise the host:port combo box and bind it to a model at creation time
+  host_combo = gtk_combo_box_new_with_model_and_entry (GTK_TREE_MODEL (store));
+  g_object_unref (store);
+  gtk_combo_box_set_entry_text_column (GTK_COMBO_BOX (host_combo), 1);
+  gtk_combo_box_set_id_column (GTK_COMBO_BOX (host_combo), 0);
+
+  // Get the entry part of the combo box
+  GtkEntry *host_entry = GTK_ENTRY(gtk_bin_get_child(GTK_BIN(host_combo)));
+  gtk_entry_set_text(host_entry, host_addr);
+  g_signal_connect(host_entry, "activate", G_CALLBACK(on_entry_activated), NULL);
+  g_signal_connect(host_combo, "changed", G_CALLBACK(on_combo_changed), NULL);
+
+  int num_hosts=0;
+  char str[128];
+  GetPropI0("num_hosts", num_hosts);
+  for (int i = 0; i < num_hosts; i++) {
+      *str = 0;
+      GetPropS1("host[%d]", i, str);
+      t_print("HOST ENTRY #%d = %s\n", i, str);
+      if (strcmp(str, host_addr) && *str) {  // Avoid duplicate
+          GtkTreeIter iter;
+          gtk_list_store_append(store, &iter);
+          gtk_list_store_set(store, &iter, 0, "", 1, str, -1);
+      }
+  }
+
+  // Create renderer for single column
+  GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+  gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(host_combo), renderer, TRUE);
+  gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(host_combo), renderer, "text", 0, NULL);
+
+  // Attach to grid (Replacing the old host address entry)
+  gtk_grid_attach(GTK_GRID(grid), host_combo, 1, row, 1, 1);
+
+  // Create the password entry box
+  host_pwd_entry = gtk_entry_new();
+  gtk_entry_set_visibility(GTK_ENTRY(host_pwd_entry), FALSE);
+  gtk_entry_set_placeholder_text(GTK_ENTRY(host_pwd_entry), "Server Password");
+  gtk_grid_attach(GTK_GRID(grid), host_pwd_entry, 2, row, 1, 1);
+
+  // Create the password visibility toggle button
+  GtkWidget *toggle_button = gtk_toggle_button_new_with_label("Show");
+  g_signal_connect(toggle_button, "toggled", G_CALLBACK(on_toggle_password_visibility), host_pwd_entry);
+  gtk_grid_attach(GTK_GRID(grid), toggle_button, 3, row, 1, 1);
+
   row++;
   controller = NO_CONTROLLER;
   gpioRestoreState();
@@ -534,22 +705,15 @@ void discovery() {
   g_signal_connect (protocols_b, "button-press-event", G_CALLBACK(protocols_cb), NULL);
   gtk_grid_attach(GTK_GRID(grid), protocols_b, 2, row, 1, 1);
   row++;
-#ifdef GPIO
-#if 0
-  GtkWidget *gpio_b = gtk_button_new_with_label("Configure GPIO");
-  g_signal_connect (gpio_b, "button-press-event", G_CALLBACK(gpio_cb), NULL);
-  gtk_grid_attach(GTK_GRID(grid), gpio_b, 0, row, 1, 1);
-#endif
-#endif
   GtkWidget *tcp_b = gtk_label_new("Radio IP Addr:");
   gtk_widget_set_name(tcp_b, "boldlabel");
-  gtk_grid_attach(GTK_GRID(grid), tcp_b, 1, row, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), tcp_b, 0, row, 1, 1);
   tcpaddr = gtk_entry_new();
   gtk_entry_set_max_length(GTK_ENTRY(tcpaddr), 20);
-  gtk_grid_attach(GTK_GRID(grid), tcpaddr, 2, row, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), tcpaddr, 1, row, 1, 1);
   gtk_entry_set_text(GTK_ENTRY(tcpaddr), ipaddr_radio);
   g_signal_connect (tcpaddr, "changed", G_CALLBACK(radio_ip_cb), NULL);
-  GtkWidget *exit_b = gtk_button_new_with_label("Exit");
+  GtkWidget *exit_b = gtk_button_new_with_label("Close");
   gtk_widget_set_name(exit_b, "close_button");
   g_signal_connect (exit_b, "button-press-event", G_CALLBACK(exit_cb), NULL);
   gtk_grid_attach(GTK_GRID(grid), exit_b, 3, row, 1, 1);

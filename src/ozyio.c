@@ -232,7 +232,7 @@ static int ishexit(unsigned char c) {
   return 0;
 }
 
-static int hexitsToUInt(char *p, int count) {
+static int hexitsToUInt(const char *p, int count) {
   unsigned int result = 0;
 
   for (int  i = 0; i < count; i++ ) {

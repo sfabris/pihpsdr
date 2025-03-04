@@ -154,7 +154,8 @@ Here we list the main new featured introduced in each version.
 \medskip
 \textbf{\pH Version 2.5, under development}
 \begin{itemize}
-\item{...}
+\item{First complete version of the Client/Server model (including the transmitter).}
+\item{Better HermesLite-II and RadioBerry support.}
 \end{itemize}
 
 \medskip
@@ -1834,6 +1835,9 @@ and hear your own signal.
 The TX spectrum scope then appears during transmitting in a small separate window.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{The \texttt{Server} Menu}
+This menu is part of client/server remote operation, which is explained in chapter \ref{sec:clientserver}.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter[VFO-related menus]{The Main Menu: VFO-related menus}
 
@@ -2010,7 +2014,16 @@ in the memory slots.
 So if you have some often used frequencies (e.g. for a net), the
 \bltt{Memory} menu allows you to become QRV there with only few mouse clicks.
 
-
+\textbf{Special behavior in SAT/RSAT mode.} Normally (that is, not in \bltt{SAT} or \bltt{RSAT} mode), a memory store
+operation stores the frequency/band/mode/filter settings of the active receiver in the memory slot,
+and a memory recall operation retrieves this data and modifies the active receiver accordingly. This would be
+too little to become QRV if one operates one of the satellite  modes. So when \bltt{SAT} or \bltt{RSAT} is
+active, the settings of both VFO-A and VFO-B are stored in the memory slot, together with the
+\bltt{SAT/RSAT}, \bltt{Split}
+and \bltt{Duplex} states. When recalling a memory slot where the \bltt{SAT} or \bltt{RSAT} state is set, then
+(and only then!) both
+the VFO-A/B frequencies/modes etc. are restored together with the \bltt{Split} and \bltt{Duplex} states. In the menu,
+the SAT or RSAT flag is indicated with the mode.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter[RX-related menus]{The Main Menu: RX-related menus}
@@ -3950,6 +3963,31 @@ functions become operative.
 Note that your assignments are permanent. They will be stored in the props file and be restored
 the next time you start \pH. If you think your choices were not that clever, you can always go back
 to the factory settings, which will then overwrite your personal assignments in the props file as well.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Client/Server remote operation}
+\label{sec:clientserver}
+
+In client/server operation, two instances of \pH are running closely coupled. The ,,local'' \pH program
+(called the server) runs as usual on a computer with direct network connection to the radio. This computer is usually located
+in the vicinity of the radio. On the other hand, the ,,remote'' \pH program (called the client) my run
+on a computer quite far away from the radio. Both instances of \pH are connected via a network connection
+that may bridge a long distance. Wireless connection is perfectly possible between the client and the server.
+The connection of the two \pH instances need much lower bandwidth as e.g. the server/radio connection.
+The data stream from the server to the client is dominated by the RX audio samples,(48k 16-bit
+stereo samples per second, or  1.5 MBit/sec) while the data stream from the client to the server requires
+only half as much since the TX microphone samples are mono. Note the TX microphone samples are only sent
+while TXing in modes other than CW, so no heavy protection/encryption is necessary: the data flowing is
+essentially that what can be heard on the air anyway. The method of generating CW inside \pH has been
+converted to a ,,time-stamped event model'', so sending CW is perfectly possible with remote operation.
+
+Since this is a legal requirement in many countries, access to the server is password protected to prevent
+illegal use of the transmitter. While the password is stored un-encrypted on the server side, a challenge/response
+model ensures that a non-encrypted password is never contained in the data stream connection the client and
+the server.
+
+This chapter is still under construction.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Miscellaneous Topics}
@@ -4083,7 +4121,9 @@ bar shows how much has already been recorded/replayed.}
 \item{Recording automatically stops if the buffer is full, and replaying automatically stops is all recorded audio
 has been replayed. In both cases, hitting the \bltt{Capture} button ends recording/replay before the end has been reached.}
 \end{itemize}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{HermesLite-II and RadioBerry support}
+\label{sec:hl2support}
 
 \appendix
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -7672,10 +7712,6 @@ The ,,git clone'' command loads the \pH repository, and the libinstall.sh comman
 within this repository) installs the
  \texttt{HomeBrew} universe. Installing \texttt{HomeBrew} starts with asking you for the administrator
  password, tells you what it wants to do and requires hitting \texttt{Enter} to proceed.
- On Apple Silicon Macs, you will be asked the administrator again at a later stage,
- since here we have to create three symbolic links in \texttt{/usr/local} (see the end of this section),
-which requires administrator privileges.
-
 Do not worry if \texttt{HomeBrew} was already installed on your computer, the installation
 procedure works in this case as well and does no harm. In addition to
  the \texttt{HomeBrew} core, additional libraries that \pH depends on (e.g. GTK\texttt{+}3), the SoapySDR
@@ -7722,38 +7758,6 @@ home directory, to the Desktop, this can also be accomplished with the additiona
 \grtt{mv pihpsdr.app \$HOME/Desktop}
 
 (take care that any older \pH application on the Desktop is moved or deleted first).
-
-\begin{center}
-\fbox{
-\parbox{\textwidth - 1cm}{
-\begin{center}
-\textbf{\color{red} -------- A note on Macs with Apple Silicon CPUs --------}
-\end{center}
-On Mac computers with Intel processors, \texttt{HomeBrew} is installed in \texttt{/usr/local},
-while on Mac computers with Silicon (M1, M2, M2 pro) processors, it is installed in
-\texttt{/opt/homebrew}.
-There is nothing wrong with this, except that some compilers in their default setup
-look for files in /usr/local but not in /opt/homebrew.
-Therefore, the installation
-procedure, after completing the \texttt{HomeBrew} installation, looks whether
- certain directories exist in \texttt{/usr/local} and, if not, places symbolic links
-there that point to
-
-\begin{align*}
-\vspace{0.5cm}
-\texttt{/usr/local/lib}     &\quad\to\quad \texttt{/opt/homebrew/lib} \\
-\texttt{/usr/local/include} &\quad\to\quad \texttt{/opt/homebrew/include} \\
-\texttt{/usr/local/bin}     &\quad\to\quad \texttt{/opt/homebrew/bin} \\
-\texttt{/usr/local/share}   &\quad\to\quad \texttt{/opt/homebrew/share} \\
-\end{align*}
-
-For some packages (e.g. SoapySDR) to be compiled from the source code, these symbolic
-links may be necessary, and certainly having them does not harm. Note that
-\textit{directories} that already reside in \texttt{/usr/local} are never removed,
-but \textit{symbolic links} residing there might get replaced.
-}
-}
-\end{center}
 
 \clearpage
 \textbf{Checking the SoapySDR installation.}

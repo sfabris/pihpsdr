@@ -37,7 +37,20 @@
 
 static GtkWidget *dialog = NULL;
 
-void cw_changed() {
+void cw_set_sidetone_freq(int val) {
+  cw_keyer_sidetone_frequency = val;
+  if (radio_is_remote) {
+    send_sidetone_freq(client_socket, cw_keyer_sidetone_frequency);
+  } else {
+    rx_filter_changed(active_receiver);
+    // changing the side tone frequency affects BFO frequency offsets
+    schedule_high_priority();
+    schedule_transmit_specific();
+  }
+  g_idle_add(ext_vfo_update, NULL);
+}
+
+static void cw_changed() {
   // inform the local keyer about CW parameter changes
   // NewProtocol: rely on periodically sent HighPrio packets
   keyer_update();

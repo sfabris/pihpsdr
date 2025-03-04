@@ -66,6 +66,9 @@
   #include <endian.h>
 #endif
 #include <semaphore.h>
+#include <fcntl.h>
+#include <math.h>
+#include <errno.h>
 
 #include "adc.h"
 #include "audio.h"
@@ -115,7 +118,8 @@ GMutex client_mutex;
 
 static char title[128];
 
-gboolean hpsdr_server = FALSE;
+int hpsdr_server = FALSE;
+char hpsdr_pwd[HPSDR_PWD_LEN] = { 0 };
 
 int client_socket = -1;
 GThread *client_thread_id;
@@ -206,14 +210,80 @@ static inline int from_short(uint16_t y) {
   return (int) s16;
 }
 
+//
+// version of connect() which takes a time-out.
+// take from monoxid.net
+//
+
+static int connect_wait (int sockno, struct sockaddr * addr, size_t addrlen, struct timeval * timeout) {
+  int res, opt;
+
+  // get socket flags
+  if ((opt = fcntl (sockno, F_GETFL, NULL)) < 0) {
+    return -1;
+  }
+
+  // set socket non-blocking
+  if (fcntl (sockno, F_SETFL, opt | O_NONBLOCK) < 0) {
+    return -1;
+  }
+
+  // try to connect
+  if ((res = connect (sockno, addr, addrlen)) < 0) {
+    if (errno == EINPROGRESS) {
+      fd_set wait_set;
+
+      // make file descriptor set with socket
+      FD_ZERO (&wait_set);
+      FD_SET (sockno, &wait_set);
+
+      // wait for socket to be writable; return after given timeout
+      res = select (sockno + 1, NULL, &wait_set, NULL, timeout);
+    }
+  } else {
+    // connection was successful immediately
+    res = 1;
+  }
+
+  // reset socket flags
+  if (fcntl (sockno, F_SETFL, opt) < 0) {
+    return -1;
+  }
+
+  // an error occured in connect or select
+  if (res <= 0) {
+    return -1;
+  } else {
+    socklen_t len = sizeof (opt);
+
+    // check for errors in socket layer
+   if (getsockopt (sockno, SOL_SOCKET, SO_ERROR, &opt, &len) < 0) {
+     return -1;
+   }
+
+   // there was an error
+   if (opt) {
+     errno = opt;
+     return -1;
+    }
+  }
+
+  return 0;
+}
 
 static int recv_bytes(int s, char *buffer, int bytes) {
   int bytes_read = 0;
+  int count = 0;
 
   while (bytes_read != bytes) {
     int rc = recv(s, &buffer[bytes_read], bytes - bytes_read, 0);
 
-    if (rc < 0) {
+//
+//  On LINUX (not MacOS), if the client suffered sudden death, the recv()
+//  will endlessly return with zero. So make sure that after 10 bunches
+//  we will return
+//
+    if (rc < 0 || ++count >= 10) {
       // return -1, so we need not check downstream
       // on incomplete messages received
       t_print("%s: read %d bytes, but expected %d.\n", __FUNCTION__, bytes_read, bytes);
@@ -368,9 +438,15 @@ void remote_rxaudio(const RECEIVER *rx, short left_sample, short right_sample) {
   }
 }
 
-static int send_spectrum(void *arg) {
+//
+// Note that this is now only called when
+// - display mutex is locked
+// - displaying is set and a pixel_samples contain valid data
+//
+void remote_send_spectrum(int id) {
   const float *samples;
   SPECTRUM_DATA spectrum_data;
+  int numsamples = 0;
 
   SYNC(spectrum_data.header.sync);
   spectrum_data.header.data_type = to_short(INFO_SPECTRUM);
@@ -381,75 +457,64 @@ static int send_spectrum(void *arg) {
   spectrum_data.vfo_a_offset = to_ll(vfo[VFO_A].offset);
   spectrum_data.vfo_b_offset = to_ll(vfo[VFO_B].offset);
 
-  for (int r = 0; r < 10; r++) {
-    int numsamples=0;
-    spectrum_data.id = r;
-    RECEIVER *rx = NULL;
-    TRANSMITTER *tx = NULL;
+  if (!remoteclient.send_spectrum[id]) {
+    return;
+  }
 
-    if (!remoteclient.send_spectrum[r]) { continue; }
+  spectrum_data.id = id;
 
-    if (r < receivers)  {
-      rx = receiver[r];
-      spectrum_data.meter = to_double(rx->meter);
-      spectrum_data.width = to_short(rx->width);
+  if (id < receivers) {
+    const RECEIVER *rx = receiver[id];
+    spectrum_data.meter = to_double(rx->meter);
+    spectrum_data.width = to_short(rx->width);
 
-      if (rx->displaying && (rx->pixels > 0) && (rx->pixel_samples != NULL)) {
-        g_mutex_lock(&rx->display_mutex);
-        samples = rx->pixel_samples;
-        numsamples = rx->width;
+    samples = rx->pixel_samples;
+    numsamples = rx->width;
 
-        if (numsamples > SPECTRUM_DATA_SIZE) { numsamples = SPECTRUM_DATA_SIZE; }
+    if (numsamples > SPECTRUM_DATA_SIZE) { numsamples = SPECTRUM_DATA_SIZE; }
 
-        for (int i = 0; i < numsamples; i++) {
-          spectrum_data.sample[i] = to_short(samples[i + rx->pan]);
-        }
-
-        g_mutex_unlock(&rx->display_mutex);
-     }
-
-    } else if (can_transmit) {
-      tx = transmitter;
-      spectrum_data.alc   = to_double(tx->alc);
-      spectrum_data.fwd   = to_double(tx->fwd);
-      spectrum_data.swr   = to_double(tx->swr);
-      spectrum_data.width = to_short(tx->width);
-
-      if (tx->displaying && (tx->pixels > 0) && (tx->pixel_samples != NULL)) {
-        g_mutex_lock(&tx->display_mutex);
-        samples = tx->pixel_samples;
-        numsamples = tx->width;
-
-        if (numsamples > SPECTRUM_DATA_SIZE) { numsamples = SPECTRUM_DATA_SIZE; }
-
-        //
-        // When running duplex, tx->pixels = 4*tx->width, so transfer only  a part
-        //
-        int offset = (tx->pixels - tx->width) / 2;
-        for (int i = 0; i < numsamples; i++) {
-          spectrum_data.sample[i] = to_short(samples[i + offset]);
-        }
-
-        g_mutex_unlock(&tx->display_mutex);
-      }
+    for (int i = 0; i < numsamples; i++) {
+      spectrum_data.sample[i] = to_short(samples[i + rx->pan]);
     }
+  } else if (can_transmit) {
+    const TRANSMITTER *tx = transmitter;
+    spectrum_data.alc   = to_double(tx->alc);
+    spectrum_data.fwd   = to_double(tx->fwd);
+    spectrum_data.swr   = to_double(tx->swr);
+    spectrum_data.width = to_short(tx->width);
 
-    if (numsamples > 0) {
-      //
-      // spectrum commands have a variable length, since this depends on the
-      // width of the screen. To this end, calculate the total number of bytes
-      // in THIS command (xferlen) and the length  of the payload.
-      //
-      int xferlen = sizeof(spectrum_data) - (SPECTRUM_DATA_SIZE - numsamples) * sizeof(uint16_t);
-      int payload = xferlen - sizeof(HEADER);
+    samples = tx->pixel_samples;
+    numsamples = tx->width;
 
-      if (payload > 32000) { fatal_error("Spectrum payload too large"); }
+    if (numsamples > SPECTRUM_DATA_SIZE) { numsamples = SPECTRUM_DATA_SIZE; }
 
-      spectrum_data.header.s1 = to_short(payload);
-      send_bytes(remoteclient.socket, (char *)&spectrum_data, xferlen);
+    //
+    // When running duplex, tx->pixels = 4*tx->width, so transfer only  a part
+    //
+    int offset = (tx->pixels - tx->width) / 2;
+    for (int i = 0; i < numsamples; i++) {
+      spectrum_data.sample[i] = to_short(samples[i + offset]);
     }
   }
 
+  if (numsamples > 0) {
+    //
+    // spectrum commands have a variable length, since this depends on the
+    // width of the screen. To this end, calculate the total number of bytes
+    // in THIS command (xferlen) and the length  of the payload.
+    //
+    int xferlen = sizeof(spectrum_data) - (SPECTRUM_DATA_SIZE - numsamples) * sizeof(uint16_t);
+    int payload = xferlen - sizeof(HEADER);
+
+    //cppcheck-suppress knownConditionTrueFalse
+    if (payload > 32000) { fatal_error("FATAL: Spectrum payload too large"); }
+
+    spectrum_data.header.s1 = to_short(payload);
+    send_bytes(remoteclient.socket, (char *)&spectrum_data, xferlen);
+  }
+}
+
+static int send_periodic_data(gpointer arg) {
   //
   // Use this periodic function to update PS info
   //
@@ -493,7 +558,7 @@ static int send_spectrum(void *arg) {
   return remoteclient.running;
 }
 
-void send_start_radio(int sock) {
+static void send_start_radio(int sock) {
   HEADER header;
   SYNC(header.sync);
   header.data_type = to_short(CMD_START_RADIO);
@@ -536,6 +601,8 @@ void send_radiomenu(int sock) {
   data.new_pa_board = new_pa_board;
   data.tx_out_of_band_allowed = tx_out_of_band_allowed;
   data.OCtune = OCtune;
+  data.full_tune = full_tune;
+  data.memory_tune = memory_tune;
 //
   data.rx_gain_calibration = to_short(rx_gain_calibration);
   data.OCfull_tune_time = to_short(OCfull_tune_time);
@@ -652,6 +719,8 @@ void send_radio_data(int sock) {
   data.mic_input_xlr = mic_input_xlr;
   data.cw_keyer_sidetone_volume = cw_keyer_sidetone_volume;
   data.OCtune = OCtune;
+  data.full_tune = full_tune;
+  data.memory_tune = memory_tune;
   data.mute_rx_while_transmitting = mute_rx_while_transmitting;
   data.mute_spkr_amp = mute_spkr_amp;
   data.adc0_filter_bypass = adc0_filter_bypass;
@@ -667,6 +736,8 @@ void send_radio_data(int sock) {
   data.have_saturn_xdma = have_saturn_xdma;
   data.rx_stack_horizontal = rx_stack_horizontal;
   data.n_adc = n_adc;
+  data.diversity_enabled = diversity_enabled;
+  data.soapy_iqswap = soapy_iqswap;
 //
   data.pa_power = to_short(pa_power);
   data.OCfull_tune_time = to_short(OCfull_tune_time);
@@ -678,7 +749,10 @@ void send_radio_data(int sock) {
   data.tx_filter_high = to_short(tx_filter_high);
   data.display_width = to_short(display_width);
 //
+  data.drive_max = to_double(drive_max);
   data.drive_digi_max = to_double(drive_digi_max);
+  data.div_gain = to_double(div_gain);
+  data.div_phase = to_double(div_phase);
 
   for (int i = 0; i < 11; i++) {
     data.pa_trim[i] = to_double(pa_trim[i]);
@@ -721,7 +795,7 @@ void send_adc_data(int sock, int i) {
   send_bytes(sock, (char *)&data, sizeof(ADC_DATA));
 }
 
-void send_tx_data(int sock) {
+static void send_tx_data(int sock) {
   if (can_transmit) {
     TRANSMITTER_DATA data;
     const TRANSMITTER *tx = transmitter;
@@ -790,7 +864,7 @@ void send_tx_data(int sock) {
   }
 }
 
-void send_rx_data(int sock, int id) {
+static void send_rx_data(int sock, int id) {
   RECEIVER_DATA data;
   SYNC(data.header.sync);
   data.header.data_type = to_short(INFO_RECEIVER);
@@ -1047,7 +1121,7 @@ static void server_loop() {
     // Now we have a valid header
     //
     int data_type = from_short(header.data_type);
-    //t_print("%s: received header: type=%d\n", __FUNCTION__, data_type);
+    t_print("%s: received header: type=%d\n", __FUNCTION__, data_type);
 
     switch (data_type) {
     case CMD_HEARTBEAT:
@@ -1132,19 +1206,7 @@ static void server_loop() {
     case CMD_SPECTRUM: {
       int id = header.b1;
       int state = header.b2;
-
-      int fps = 10;
-
-      if (state) {
-        remoteclient.send_spectrum[id] = TRUE;
-
-        if (remoteclient.spectrum_update_timer_id == 0) {
-          t_print("start send_spectrum thread: fps=%d\n", fps);
-          remoteclient.spectrum_update_timer_id = gdk_threads_add_timeout_full(G_PRIORITY_HIGH_IDLE, 1000 / fps, send_spectrum, NULL, NULL);
-        }
-      } else {
-        remoteclient.send_spectrum[id] = FALSE;
-      }
+      remoteclient.send_spectrum[id] = state;
     }
     break;
 
@@ -1347,7 +1409,6 @@ static void server_loop() {
     case CMD_SPLIT:
     case CMD_STEP:
     case CMD_STORE:
-    case CMD_SWAP_IQ:
     case CMD_TUNE:
     case CMD_TWOTONE:
     case CMD_TXFILTER:
@@ -1370,22 +1431,6 @@ static void server_loop() {
       remoteclient.running = FALSE;
       break;
     }
-  }
-
-  // close the socket to force listen to terminate
-  t_print("client disconnected\n");
-
-  if (remoteclient.socket != -1) {
-    close(remoteclient.socket);
-    remoteclient.socket = -1;
-  }
-
-  //
-  // Stop sending spectra to the client
-  //
-  if (remoteclient.spectrum_update_timer_id != 0) {
-    g_source_remove(remoteclient.spectrum_update_timer_id);
-    remoteclient.spectrum_update_timer_id = 0;
   }
 
   t_print("Server Loop Terminating\n");
@@ -1418,7 +1463,7 @@ void send_vfo_move_to(int s, int v, long long hz) {
   send_bytes(s, (char *)&command, sizeof(command));
 }
 
-void send_vfo_move(int s, int rx, long long hz, int round) {
+static void send_vfo_move(int s, int rx, long long hz, int round) {
   U64_COMMAND command;
   SYNC(command.header.sync);
   command.header.data_type = to_short(CMD_MOVE);
@@ -1555,16 +1600,15 @@ void send_agc(int s, int rx, int agc) {
   send_bytes(s, (char *)&header, sizeof(HEADER));
 }
 
-void send_agc_gain(int s, int rx, double gain, double hang, double thresh, double hang_thresh) {
+void send_agc_gain(int s, const RECEIVER *rx) {
   AGC_GAIN_COMMAND command;
-  t_print("send_agc_gain rx=%d gain=%f hang=%f thresh=%f hang_thresh=%f\n", rx, gain, hang, thresh, hang_thresh);
   SYNC(command.header.sync);
   command.header.data_type = to_short(CMD_AGC_GAIN);
-  command.id = rx;
-  command.gain = to_double(gain);
-  command.hang = to_double(hang);
-  command.thresh = to_double(thresh);
-  command.hang_thresh = to_double(hang_thresh);
+  command.id = rx->id;
+  command.gain = to_double(rx->agc_gain);
+  command.hang = to_double(rx->agc_hang);
+  command.thresh = to_double(rx->agc_thresh);
+  command.hang_thresh = to_double(rx->agc_hang_threshold);
   send_bytes(s, (char *)&command, sizeof(command));
 }
 
@@ -1751,16 +1795,21 @@ void send_filter_var(int s, int m, int f) {
   }
 }
 
-void send_filter_cut(int s, int rx) {
+void send_filter_cut(int s, int id) {
   //
   // This changes the filter cuts in the "receiver"
   //
   HEADER header;
   SYNC(header.sync);
   header.data_type = to_short(CMD_FILTER_CUT);
-  header.b1 = rx;
-  header.s1  =  to_short(receiver[rx]->filter_low);
-  header.s2  =  to_short(receiver[rx]->filter_high);
+  header.b1 = id;
+  if (id < receivers) {
+    header.s1  =  to_short(receiver[id]->filter_low);
+    header.s2  =  to_short(receiver[id]->filter_high);
+  } else if (can_transmit) {
+    header.s1  =  to_short(transmitter->filter_low);
+    header.s2  =  to_short(transmitter->filter_high);
+  }
   send_bytes(s, (char *)&header, sizeof(HEADER));
 }
 
@@ -1780,7 +1829,7 @@ void send_sidetone_freq(int s, int f) {
   HEADER header;
   SYNC(header.sync);
   header.data_type = to_short(CMD_SIDETONEFREQ);
-  header.s1 = f;
+  header.s1 = to_short(f);
   send_bytes(s, (char *)&header, sizeof(HEADER));
 }
 
@@ -2108,7 +2157,6 @@ void send_ctun(int s, int vfo, int ctun) {
 
 void send_rx_select(int s, int rx) {
   HEADER header;
-  t_print("%s: rx=%d\n", __FUNCTION__, rx);
   SYNC(header.sync);
   header.data_type = to_short(CMD_RX_SELECT);
   header.b1 = rx;
@@ -2168,15 +2216,6 @@ void send_filter_board(int s, int filter_board) {
   SYNC(header.sync);
   header.data_type = to_short(CMD_FILTER_BOARD);
   header.b1 = filter_board;
-  send_bytes(s, (char *)&header, sizeof(HEADER));
-}
-
-void send_swap_iq(int s, int iqswap) {
-  HEADER header;
-  t_print("send_swap_iq iqswap=%d\n", iqswap);
-  SYNC(header.sync);
-  header.data_type = to_short(CMD_SWAP_IQ);
-  header.b1 = soapy_iqswap;
   send_bytes(s, (char *)&header, sizeof(HEADER));
 }
 
@@ -2282,10 +2321,10 @@ static void *listen_thread(void *arg) {
     }
 
     //
-    // To save network bandwith, we re-send panadpater data every 100 msec
+    // Send PS and on-display data periodically
     //
     remoteclient.running = TRUE;
-    remoteclient.spectrum_update_timer_id = gdk_threads_add_timeout_full(G_PRIORITY_HIGH_IDLE, 100, send_spectrum, NULL, NULL);
+    remoteclient.timer_id = gdk_threads_add_timeout_full(G_PRIORITY_HIGH_IDLE, 150, send_periodic_data, NULL, NULL);
 
     //
     // We disable "CW handled in Radio" since this makes no sense
@@ -2306,11 +2345,11 @@ static void *listen_thread(void *arg) {
     schedule_transmit_specific();
 
     //
-    // Stop sending spectra to the client
+    // Stop sending periodic data
     //
-    if (remoteclient.spectrum_update_timer_id != 0) {
-      g_source_remove(remoteclient.spectrum_update_timer_id);
-      remoteclient.spectrum_update_timer_id = 0;
+    if (remoteclient.timer_id != 0) {
+      g_source_remove(remoteclient.timer_id);
+      remoteclient.timer_id = 0;
     }
 
     if (remoteclient.socket != -1) {
@@ -2681,6 +2720,8 @@ static void *client_thread(void* arg) {
       have_saturn_xdma = data.have_saturn_xdma;
       rx_stack_horizontal = data.rx_stack_horizontal;
       n_adc = data.n_adc;
+      diversity_enabled = data.diversity_enabled;
+      soapy_iqswap = data.soapy_iqswap;
 //
       pa_power = from_short(data.pa_power);
       OCfull_tune_time = from_short(data.OCfull_tune_time);
@@ -2691,7 +2732,11 @@ static void *client_thread(void* arg) {
       tx_filter_low = from_short(data.tx_filter_low);
       tx_filter_high = from_short(data.tx_filter_high);
       display_width = from_short(data.display_width);
+//
+      drive_max = from_double(data.drive_max);
       drive_digi_max = from_double(data.drive_digi_max);
+      div_gain = from_double(div_gain);
+      div_phase = from_double(div_phase);
 
       for (int i = 0; i < 11; i++) {
         pa_trim[i] = from_double(data.pa_trim[i]);
@@ -2939,22 +2984,15 @@ static void *client_thread(void* arg) {
         rx->meter = from_double(spectrum_data.meter);
         int width = from_short(spectrum_data.width);
 
-        if (rx->pixel_samples == NULL) {
-          rx->pixel_samples = g_new(float, (int) rx->width);
-        }
-
-        if (width != rx->width) {
-          //
-          // The spectral data does not fit to the panadapter,
-          // simply draw a line at -98 dBm
-          //
-          for (int i = 0; i < rx->width; i++) {
-            rx->pixel_samples[i] = -98.0;
+        if (width == rx->width) {
+          g_mutex_lock(&rx->display_mutex);
+          if (rx->pixel_samples == NULL) {
+            rx->pixel_samples = g_new(float, (int) rx->width);
           }
-        } else {
           for (int i = 0; i < rx->width; i++) {
             rx->pixel_samples[i] = (float)from_short(spectrum_data.sample[i]);
           }
+          g_mutex_unlock(&rx->display_mutex);
         }
         g_idle_add(ext_rx_remote_update_display, rx);
       } else if (can_transmit) {
@@ -3004,20 +3042,40 @@ static void *client_thread(void* arg) {
       RECEIVER *rx = receiver[adata.rx];
       int numsamples = from_short(adata.numsamples);
 
-      if (rx->local_audio) {
-        for (int i = 0; i < numsamples; i++) {
-          short left_sample = from_short(adata.samples[(i * 2)]);
-          short right_sample = from_short(adata.samples[(i * 2) + 1]);
+      for (int i = 0; i < numsamples; i++) {
+        short left_sample = from_short(adata.samples[(i * 2)]);
+        short right_sample = from_short(adata.samples[(i * 2) + 1]);
 
-          if (rx != active_receiver && rx->mute_when_not_active) {
-            left_sample = 0;
-            right_sample = 0;
+        //
+        // If CAPTURing, record the audio samples *before*
+        // manipulating them
+        //
+        if (rx == active_receiver && capture_state == CAP_RECORDING) {
+          if (capture_record_pointer < capture_max) {
+            //
+            // normalize samples:
+            // when using AGC, the samples of strong s9 signals are about 0.8
+            //
+            double scale = 0.6 * pow(10.0, -0.05 * rx->volume);
+            capture_data[capture_record_pointer++] = scale * (left_sample + right_sample);
+          } else {
+            // switching the state to RECORD_DONE takes care that the
+            // CAPTURE switch is "pressed" only once
+            capture_state = CAP_RECORD_DONE;
+            schedule_action(CAPTURE, PRESSED, 0);
           }
+        }
 
-          if (rx->audio_channel == LEFT)  { right_sample = 0; }
+        if (rx->mute_radio || (rx != active_receiver && rx->mute_when_not_active)) {
+          left_sample = 0;
+          right_sample = 0;
+        }
 
-          if (rx->audio_channel == RIGHT) { left_sample  = 0; }
+        if (rx->audio_channel == LEFT)  { right_sample = 0; }
 
+        if (rx->audio_channel == RIGHT) { left_sample  = 0; }
+
+        if (rx->local_audio) {
           audio_write(rx, (float)left_sample / 32767.0, (float)right_sample / 32767.0);
         }
       }
@@ -3192,26 +3250,6 @@ static void *client_thread(void* arg) {
     }
     break;
 
-    case CMD_FPS: {
-      int id = header.b1;
-      int fps = header.b2;
-
-      if (id == 8 && can_transmit) {
-        transmitter->fps = fps;
-      } else {
-        receiver[id]->fps = fps;
-      }
-    }
-    break;
-
-    case CMD_RX_SELECT: {
-      int rx = header.b1;
-      rx_set_active(receiver[rx]);
-    }
-
-    g_idle_add(ext_vfo_update, NULL);
-    break;
-
     case CMD_RIT_STEP: {
       int v = header.b1;
       int step = from_short(header.s1);
@@ -3240,7 +3278,6 @@ static void *client_thread(void* arg) {
     }
     break;
 
-    break;
     default:
       t_print("client_thread: Unknown type=%d\n", from_short(header.data_type));
       break;
@@ -3250,10 +3287,16 @@ static void *client_thread(void* arg) {
   return NULL;
 }
 
-int radio_connect_remote(char *host, int port) {
+//
+// Return values:
+//  0  successfully connected
+// -1  error or timeout in connect()
+// -2  wrong password
+//
+int radio_connect_remote(char *host, int port, const char *pwd) {
   struct sockaddr_in server_address;
+  struct timeval timeout;
   int on = 1;
-  t_print("radio_connect_remote: %s:%d\n", host, port);
   client_socket = socket(AF_INET, SOCK_STREAM, 0);
 
   if (client_socket == -1) {
@@ -3276,7 +3319,10 @@ int radio_connect_remote(char *host, int port) {
   bcopy((char *)server->h_addr, (char *)&server_address.sin_addr.s_addr, server->h_length);
   server_address.sin_port = to_short(port);
 
-  if (connect(client_socket, (struct sockaddr *)&server_address, sizeof(server_address)) != 0) {
+  timeout.tv_sec = 10;
+  timeout.tv_usec = 0;
+
+  if (connect_wait(client_socket, (struct sockaddr *)&server_address, sizeof(server_address), &timeout) != 0) {
     t_print("client_thread: connect failed\n");
     t_perror("client_thread");
     return -1;
@@ -3602,7 +3648,7 @@ static int remote_command(void *data) {
     //
     // Now hang and thresh have been calculated and need be sent back
     //
-    send_agc_gain(remoteclient.socket, rx->id, rx->agc_gain, rx->agc_hang, rx->agc_thresh, rx->agc_hang_threshold);
+    send_agc_gain(remoteclient.socket, rx);
   }
   break;
 
@@ -3784,12 +3830,16 @@ static int remote_command(void *data) {
     vfo_id_filter_changed(v, f);
 
     //
+    // AGC line positions have changed
     // filter edges in receiver(s) may have changed
     //
     for (int id = 0; id < receivers; id++) {
       send_filter_cut(remoteclient.socket, id);
+      send_agc_gain(remoteclient.socket, receiver[id]);
     }
     if (can_transmit) {
+      // This is only necessary if the transmitter uses the
+      // filter edges of the active receiver
       send_filter_cut(remoteclient.socket, transmitter->id);
     }
     g_idle_add(ext_vfo_update, NULL);
@@ -3823,7 +3873,7 @@ static int remote_command(void *data) {
   break;
 
   case CMD_SIDETONEFREQ: {
-    cw_keyer_sidetone_frequency = from_short(header->b2);
+    cw_keyer_sidetone_frequency = from_short(header->s1);
     rx_filter_changed(active_receiver);
     schedule_high_priority();
     g_idle_add(ext_vfo_update, NULL);
@@ -3875,15 +3925,12 @@ static int remote_command(void *data) {
     int id = header->b1;
     int fps = header->b2;
 
-    if (id == 8 && can_transmit) {
-      transmitter->fps = fps;
-      tx_set_framerate(transmitter);
-      send_fps(remoteclient.socket, id, transmitter->fps);
-    } else {
-      CHECK_RX(id);
+    if (id < receivers) {
       receiver[id]->fps = fps;
       rx_set_framerate(receiver[id]);
-      send_fps(remoteclient.socket, id, receiver[id]->fps);
+    } else if (can_transmit) {
+      transmitter->fps = fps;
+      tx_set_framerate(transmitter);
     }
   }
   break;
@@ -3892,7 +3939,6 @@ static int remote_command(void *data) {
     int rx = header->b1;
     CHECK_RX(rx);
     rx_set_active(receiver[rx]);
-    send_rx_select(remoteclient.socket, rx);
   }
   break;
 
@@ -4001,12 +4047,6 @@ static int remote_command(void *data) {
         send_band_data(remoteclient.socket, b);
       }
     }
-  }
-  break;
-
-  case CMD_SWAP_IQ: {
-    soapy_iqswap = header->b1;
-    send_swap_iq(remoteclient.socket, soapy_iqswap);
   }
   break;
 
@@ -4139,6 +4179,8 @@ static int remote_command(void *data) {
     new_pa_board = command->new_pa_board;
     tx_out_of_band_allowed = command->tx_out_of_band_allowed;
     OCtune = command->OCtune;
+    full_tune = command->full_tune;
+    memory_tune = command->memory_tune;
 //
     rx_gain_calibration = from_short(command->rx_gain_calibration);
     OCfull_tune_time = from_short(command->OCfull_tune_time);
@@ -4361,6 +4403,21 @@ static int remote_command(void *data) {
       pa_trim[i] = from_double(command->pa_trim[i]);
     }
 
+  }
+  break;
+
+  case CMD_FILTER_CUT: {
+    int id = header->b1;
+
+    if (id < receivers) {
+      RECEIVER *rx = receiver[id];
+      rx->filter_low = from_short(header->s1);
+      rx->filter_high = from_short(header->s2);
+      rx_set_bandpass(rx);
+      rx_set_agc(rx);
+      send_agc_gain(remoteclient.socket, rx);
+      g_idle_add(ext_vfo_update, NULL);
+    }
   }
   break;
 

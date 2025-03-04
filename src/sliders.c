@@ -81,7 +81,7 @@ static GtkWidget *squelch_enable;
 // Putting this into a separate function avoids much code repetition.
 //
 
-int scale_timeout_cb(gpointer data) {
+static int scale_timeout_cb(gpointer data) {
   gtk_widget_destroy(scale_dialog);
   scale_status = NO_ACTION;
   return FALSE;
@@ -135,7 +135,7 @@ void show_popup_slider(enum ACTION action, int rx, double min, double max, doubl
     gtk_widget_set_sensitive(popup_scale, FALSE);
     gtk_container_add(GTK_CONTAINER(content), popup_scale);
     scale_timer = g_timeout_add(2000, scale_timeout_cb, NULL);
-    gtk_dialog_run(GTK_DIALOG(scale_dialog));
+    gtk_widget_show_all(scale_dialog);
   } else {
     //
     // c) if a pop-up slider for THIS action is still on display, adjust value and reset timeout
@@ -192,15 +192,22 @@ void set_attenuation_value(double value) {
   //t_print("%s value=%f\n",__FUNCTION__,value);
   if (!have_rx_att) { return; }
 
-  adc[active_receiver->adc].attenuation = (int)value;
-  schedule_high_priority();
+  int id = active_receiver->adc;
+
+  adc[id].attenuation = (int)value;
+
+  if (radio_is_remote) {
+    send_attenuation(client_socket, id, adc[id].attenuation);
+  } else {
+    schedule_high_priority();
+  }
 
   if (display_sliders) {
-    gtk_range_set_value (GTK_RANGE(attenuation_scale), (double)adc[active_receiver->adc].attenuation);
+    gtk_range_set_value (GTK_RANGE(attenuation_scale), (double)adc[id].attenuation);
   } else {
     char title[64];
-    snprintf(title, 64, "Attenuation - ADC-%d (dB)", active_receiver->adc);
-    show_popup_slider(ATTENUATION, active_receiver->adc, 0.0, 31.0, 1.0, (double)adc[active_receiver->adc].attenuation,
+    snprintf(title, 64, "Attenuation - ADC-%d (dB)", id);
+    show_popup_slider(ATTENUATION, id, 0.0, 31.0, 1.0, (double)adc[id].attenuation,
                       title);
   }
 }
@@ -349,13 +356,7 @@ void update_c25_att() {
 
 static void agcgain_value_changed_cb(GtkWidget *widget, gpointer data) {
   active_receiver->agc_gain = gtk_range_get_value(GTK_RANGE(agc_scale));
-
-  if (radio_is_remote) {
-    send_agc_gain(client_socket, active_receiver->id, active_receiver->agc_gain, active_receiver->agc_hang,
-                  active_receiver->agc_thresh, active_receiver->agc_hang_threshold);
-  } else {
-    rx_set_agc(active_receiver);
-  }
+  rx_set_agc(active_receiver);
 }
 
 void set_agc_gain(int rx, double value) {
@@ -376,27 +377,22 @@ void set_agc_gain(int rx, double value) {
 
 static void afgain_value_changed_cb(GtkWidget *widget, gpointer data) {
   active_receiver->volume = gtk_range_get_value(GTK_RANGE(af_gain_scale));
-
-  if (radio_is_remote) {
-    send_volume(client_socket, active_receiver->id, active_receiver->volume);
-    return;
-  }
-
   rx_set_af_gain(active_receiver);
 }
 
-void set_af_gain(int rx, double value) {
-  if (rx >= receivers) { return; }
+void set_af_gain(int id, double value) {
+  if (id >= receivers) { return; }
+  RECEIVER *rx = receiver[id];
 
-  receiver[rx]->volume = value;
-  rx_set_af_gain(receiver[rx]);
+  rx->volume = value;
+  rx_set_af_gain(rx);
 
-  if (display_sliders && rx == active_receiver->id) {
+  if (display_sliders && id == active_receiver->id) {
     gtk_range_set_value (GTK_RANGE(af_gain_scale), value);
   } else {
     char title[64];
-    snprintf(title, 64, "AF Gain RX%d", rx + 1);
-    show_popup_slider(AF_GAIN, rx, -40.0, 0.0, 1.0, value, title);
+    snprintf(title, 64, "AF Gain RX%d", id + 1);
+    show_popup_slider(AF_GAIN, id, -40.0, 0.0, 1.0, value, title);
   }
 }
 
@@ -480,23 +476,26 @@ void show_filter_shift(int rx, int shift) {
 }
 
 static void micgain_value_changed_cb(GtkWidget *widget, gpointer data) {
-  double gain = gtk_range_get_value(GTK_RANGE(widget));
-  if (radio_is_remote) {
-    send_micgain(client_socket,gain);
-    return;
-  }
   if (can_transmit) {
-    int mode = vfo_get_tx_mode();
+    double gain = gtk_range_get_value(GTK_RANGE(widget));
     transmitter->mic_gain = gain;
-    mode_settings[mode].mic_gain = transmitter->mic_gain;
-    copy_mode_settings(mode);
     tx_set_mic_gain(transmitter);
+    if (!radio_is_remote) {
+      int mode = vfo_get_tx_mode();
+      mode_settings[mode].mic_gain = transmitter->mic_gain;
+      copy_mode_settings(mode);
+    }
   }
 }
 
 void set_linein_gain(double value) {
   //t_print("%s value=%f\n",__FUNCTION__, value);
   linein_gain = value;
+  if (radio_is_remote) {
+    send_txmenu(client_socket);
+  } else {
+    schedule_high_priority();
+  }
   show_popup_slider(LINEIN_GAIN, 0, -34.0, 12.0, 1.0, linein_gain, "LineIn Gain");
 }
 
@@ -507,49 +506,35 @@ void set_mic_gain(double value) {
     show_popup_slider(MIC_GAIN, 0, -12.0, 50.0, 1.0, value, "Mic Gain");
   }
 
-  if (radio_is_remote) {
-    send_micgain(client_socket, value);
-    return;
-  }
-
   if (can_transmit) {
-    int mode = vfo_get_tx_mode();
     transmitter->mic_gain = value;
-    mode_settings[mode].mic_gain = transmitter->mic_gain;
-    copy_mode_settings(mode);
     tx_set_mic_gain(transmitter);
+    if (!radio_is_remote) {
+      int mode = vfo_get_tx_mode();
+      mode_settings[mode].mic_gain = transmitter->mic_gain;
+      copy_mode_settings(mode);
+    }
   }
 }
 
 void set_drive(double value) {
-  if (display_sliders) {
-    gtk_range_set_value (GTK_RANGE(drive_scale), value);
-  } else {
-    show_popup_slider(DRIVE, 0, 0.0, drive_max, 1.0, value, "TX Drive");
-  }
-
-  if (radio_is_remote) {
-    send_drive(client_socket, value);
-    return;
-  }
-
   int txmode = vfo_get_tx_mode();
 
   if (txmode == modeDIGU || txmode == modeDIGL) {
     if (value > drive_digi_max) { value = drive_digi_max; }
   }
 
-  radio_set_drive(value);
+  if (display_sliders) {
+    gtk_range_set_value (GTK_RANGE(drive_scale), value);
+  } else {
+    show_popup_slider(DRIVE, 0, 0.0, drive_max, 1.0, value, "TX Drive");
+  }
 
+  radio_set_drive(value);
 }
 
 static void drive_value_changed_cb(GtkWidget *widget, gpointer data) {
   double value = gtk_range_get_value(GTK_RANGE(drive_scale));
-
-  if (radio_is_remote) {
-    send_drive(client_socket, value);
-    return;
-  }
 
   //t_print("%s: value=%f\n", __FUNCTION__, value);
   int txmode = vfo_get_tx_mode();
@@ -620,22 +605,12 @@ static void squelch_value_changed_cb(GtkWidget *widget, gpointer data) {
   active_receiver->squelch = gtk_range_get_value(GTK_RANGE(widget));
   active_receiver->squelch_enable = (active_receiver->squelch > 0.5);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(squelch_enable), active_receiver->squelch_enable);
-
-  if (radio_is_remote) {
-    send_squelch(client_socket, active_receiver->id, active_receiver->squelch_enable, active_receiver->squelch);
-  } else {
-    rx_set_squelch(active_receiver);
-  }
+  rx_set_squelch(active_receiver);
 }
 
 static void squelch_enable_cb(GtkWidget *widget, gpointer data) {
   active_receiver->squelch_enable = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
-
-  if (radio_is_remote) {
-    send_squelch(client_socket, active_receiver->id, active_receiver->squelch_enable, active_receiver->squelch);
-  } else {
-    rx_set_squelch(active_receiver);
-  }
+  rx_set_squelch(active_receiver);
 }
 
 void set_squelch(RECEIVER *rx) {

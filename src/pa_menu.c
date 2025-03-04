@@ -278,7 +278,7 @@ void pa_menu(GtkWidget *parent) {
       // while the menu is open, this will not appear (one has to close
       // and re-open the menu).
       //
-      BAND *band = band_get_band(bandGen);
+      const BAND *band = band_get_band(bandGen);
       GtkWidget *band_label = gtk_label_new(band->title);
       gtk_widget_set_name(band_label, "boldlabel");
       gtk_widget_show(band_label);
@@ -292,7 +292,7 @@ void pa_menu(GtkWidget *parent) {
     }
 
     for (int i = 0; i <= bands; i++) {
-      BAND *band = band_get_band(i);
+      const BAND *band = band_get_band(i);
       GtkWidget *band_label = gtk_label_new(band->title);
       gtk_widget_set_name(band_label, "boldlabel");
       gtk_widget_show(band_label);
@@ -306,7 +306,7 @@ void pa_menu(GtkWidget *parent) {
     }
 
     for (int i = BANDS; i < BANDS + XVTRS; i++) {
-      BAND *band = band_get_band(i);
+      const BAND *band = band_get_band(i);
 
       if (strlen(band->title) > 0) {
         GtkWidget *band_label = gtk_label_new(band->title);

@@ -216,32 +216,22 @@ static void spinbtn_cb(GtkWidget *widget, gpointer data) {
 
     case TX_COMP:
       transmitter->compressor_level = vi;
-      if (radio_is_remote) {
-        send_tx_compressor(client_socket);
-      } else {
+      tx_set_compressor(transmitter);
+      if (!radio_is_remote) {
         mode_settings[mode].compressor_level = vi;
         copy_mode_settings(mode);
-        tx_set_compressor(transmitter);
       }
       g_idle_add(ext_vfo_update, NULL);
       break;
 
     case TX_FILTER_LOW:
       tx_filter_low = vi;
-      if (radio_is_remote) {
-        send_txfilter(client_socket);
-      } else {
-        tx_set_filter(transmitter);
-      }
+      tx_set_filter(transmitter);
       break;
 
     case TX_FILTER_HIGH:
       tx_filter_high = vi;
-      if (radio_is_remote) {
-        send_txfilter(client_socket);
-      } else {
-        tx_set_filter(transmitter);
-      }
+      tx_set_filter(transmitter);
       break;
 
     case TX_PAN_LOW:
@@ -293,32 +283,26 @@ static void spinbtn_cb(GtkWidget *widget, gpointer data) {
   } else if (d == CFCFREQ) {
     // The CFC frequency spin buttons
     transmitter->cfc_freq[e] = v;
-    if (radio_is_remote) {
-      send_tx_compressor(client_socket);
-    } else {
+    tx_set_compressor(transmitter);
+    if (!radio_is_remote) {
       mode_settings[mode].cfc_freq[e] = v;
       copy_mode_settings(mode);
-      tx_set_compressor(transmitter);
     }
   } else if (d == CFCLVL) {
     // The CFC compression-level spin buttons
     transmitter->cfc_lvl[e] = v;
-    if (radio_is_remote) {
-      send_tx_compressor(client_socket);
-    } else {
+    tx_set_compressor(transmitter);
+    if (!radio_is_remote) {
       mode_settings[mode].cfc_lvl[e] = v;
       copy_mode_settings(mode);
-      tx_set_compressor(transmitter);
     }
   } else if (d == CFCPOST) {
     // The CFC Post-equalizer gain spin buttons
     transmitter->cfc_post[e] = v;
-    if (radio_is_remote) {
-      send_tx_compressor(client_socket);
-    } else {
+    tx_set_compressor(transmitter);
+    if (!radio_is_remote) {
       mode_settings[mode].cfc_post[e] = v;
       copy_mode_settings(mode);
-      tx_set_compressor(transmitter);
     }
   } else if (d == DEXP) {
     // The DEXP spin buttons. Note that the spin buttons for the
@@ -398,12 +382,10 @@ static void chkbtn_cb(GtkWidget *widget, gpointer data) {
 
     case TX_COMP_ENABLE:
       transmitter->compressor = v;
-      if (radio_is_remote) {
-        send_tx_compressor(client_socket);
-      } else {
+      tx_set_compressor(transmitter);
+      if (!radio_is_remote) {
         mode_settings[mode].compressor = transmitter->compressor;
         copy_mode_settings(mode);
-        tx_set_compressor(transmitter);
       }
       g_idle_add(ext_vfo_update, NULL);
       break;
@@ -434,11 +416,7 @@ static void chkbtn_cb(GtkWidget *widget, gpointer data) {
 
     case TX_USE_RX_FILTER:
       transmitter->use_rx_filter = v;
-      if (radio_is_remote) {
-        send_txfilter(client_socket);
-      } else {
-        tx_set_filter(transmitter);
-      }
+      tx_set_filter(transmitter);
 
       if (v) {
         gtk_widget_set_sensitive (tx_spin_low, FALSE);
@@ -490,11 +468,9 @@ static void chkbtn_cb(GtkWidget *widget, gpointer data) {
       break;
     }
 
-    if (radio_is_remote) {
-      send_tx_compressor(client_socket);
-    } else {
+    tx_set_compressor(transmitter);
+    if (!radio_is_remote) {
       copy_mode_settings(mode);
-      tx_set_compressor(transmitter);
     }
     g_idle_add(ext_vfo_update, NULL);
 

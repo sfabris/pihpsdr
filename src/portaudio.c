@@ -180,8 +180,8 @@ void audio_get_cards() {
 // The PA callback function then sends the data to the transmitter
 //
 
-int pa_mic_cb(const void*, void*, unsigned long, const PaStreamCallbackTimeInfo*, PaStreamCallbackFlags, void*);
-int pa_out_cb(const void*, void*, unsigned long, const PaStreamCallbackTimeInfo*, PaStreamCallbackFlags, void*);
+static int pa_mic_cb(const void*, void*, unsigned long, const PaStreamCallbackTimeInfo*, PaStreamCallbackFlags, void*);
+static int pa_out_cb(const void*, void*, unsigned long, const PaStreamCallbackTimeInfo*, PaStreamCallbackFlags, void*);
 
 int audio_open_input() {
   PaError err;
@@ -265,7 +265,7 @@ int audio_open_input() {
 //
 // PortAudio call-back function for Audio output
 //
-int pa_out_cb(const void *inputBuffer, void *outputBuffer, unsigned long framesPerBuffer,
+static int pa_out_cb(const void *inputBuffer, void *outputBuffer, unsigned long framesPerBuffer,
               const PaStreamCallbackTimeInfo* timeInfo,
               PaStreamCallbackFlags statusFlags,
               void *userdata) {
@@ -311,7 +311,7 @@ int pa_out_cb(const void *inputBuffer, void *outputBuffer, unsigned long framesP
 //
 // PortAudio call-back function for Audio input
 //
-int pa_mic_cb(const void *inputBuffer, void *outputBuffer, unsigned long framesPerBuffer,
+static int pa_mic_cb(const void *inputBuffer, void *outputBuffer, unsigned long framesPerBuffer,
               const PaStreamCallbackTimeInfo* timeInfo,
               PaStreamCallbackFlags statusFlags,
               void *userdata) {

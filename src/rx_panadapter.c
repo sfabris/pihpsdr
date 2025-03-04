@@ -107,7 +107,7 @@ void rx_panadapter_update(RECEIVER *rx) {
   long long f;
   long long divisor;
   double soffset;
-  gboolean active = active_receiver == rx;
+  gboolean active = (active_receiver == rx);
   int mywidth = gtk_widget_get_allocated_width (rx->panadapter);
   int myheight = gtk_widget_get_allocated_height (rx->panadapter);
   samples = rx->pixel_samples;
@@ -642,7 +642,7 @@ void rx_panadapter_update(RECEIVER *rx) {
         }
     }
   }
-  if (rx->id == 0 && !radio_is_remote) {
+  if (rx->id == 0) {
     display_panadapter_messages(cr, mywidth, rx->fps);
   }
 
@@ -708,6 +708,10 @@ void display_panadapter_messages(cairo_t *cr, int width, unsigned int fps) {
     // high SWR warning
     //
     // Are shown on display for 2 seconds
+    //
+    // For the time being, most of this data
+    // (which needs high-frequency update) is
+    // not available on the client side
     //
     cairo_set_source_rgba(cr, COLOUR_ALARM);
     cairo_set_font_size(cr, DISPLAY_FONT_SIZE2);

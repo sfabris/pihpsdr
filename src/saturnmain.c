@@ -208,10 +208,12 @@ static mybuffer *get_my_buffer(int numlist) {
 
   for (i = 0; i < j; i++) {
     bp = malloc(sizeof(mybuffer));
-    bp->free = 1;
-    bp->next = buflist[numlist];
-    buflist[numlist] = bp;
-    num_buf[numlist]++;
+    if (bp) {
+      bp->free = 1;
+      bp->next = buflist[numlist];
+      buflist[numlist] = bp;
+      num_buf[numlist]++;
+    }
   }
 
   t_print("%s: number of buffer[%s] %s to %d\n", __FUNCTION__, desc,
@@ -234,7 +236,7 @@ void saturn_free_buffers() {
   }
 }
 
-bool CreateDynamicMemory(void) {                            // return true if error
+static bool CreateDynamicMemory(void) {                     // return true if error
   uint32_t DDC;
   bool Result = false;
 
@@ -243,9 +245,11 @@ bool CreateDynamicMemory(void) {                            // return true if er
   //
   for (DDC = 0; DDC < VNUMDDC; DDC++) {
     DDCSampleBuffer[DDC] = malloc(DMABufferSize);
-    IQReadPtr[DDC] = DDCSampleBuffer[DDC] + VBASE;          // offset 4096 bytes into buffer
-    IQHeadPtr[DDC] = DDCSampleBuffer[DDC] + VBASE;
-    IQBasePtr[DDC] = DDCSampleBuffer[DDC] + VBASE;
+    if (DDCSampleBuffer[DDC]) {
+      IQReadPtr[DDC] = DDCSampleBuffer[DDC] + VBASE;          // offset 4096 bytes into buffer
+      IQHeadPtr[DDC] = DDCSampleBuffer[DDC] + VBASE;
+      IQBasePtr[DDC] = DDCSampleBuffer[DDC] + VBASE;
+    }
   }
 
   //
@@ -300,7 +304,7 @@ void saturn_register_init() {
 }
 
 // is there already a pihpsdr running and using xdma?
-bool is_already_running() {
+static bool is_already_running() {
   FILE *fp;
   char path[1035];
   fp = popen("lsof /dev/xdma0_user | grep pihpsdr", "r");
@@ -455,7 +459,7 @@ void saturn_discovery() {
 static int DMADUCWritefile_fd = -1;               // DMA read file device
 static unsigned char* DUCIQBasePtr;               // ptr to DMA location in I/Q memory
 
-void saturn_init_duc_iq() {
+static void saturn_init_duc_iq() {
   // variables for DMA buffer
   //
   uint8_t* IQWriteBuffer = NULL;              // data for DMA to write to DUC
@@ -566,7 +570,7 @@ static unsigned char* SpkBasePtr;
 static unsigned char* SpkReadPtr;               // pointer for reading out a spkr sample
 static unsigned char* SpkHeadPtr;               // ptr to 1st free location in spk memory
 
-void saturn_init_speaker_audio() {
+static void saturn_init_speaker_audio() {
   //
   // variables for DMA buffer
   //
@@ -668,7 +672,7 @@ void saturn_exit() {
 
 #define VHIGHPRIOTIYFROMSDRSIZE 60
 
-void start_saturn_high_priority_thread() {
+static void start_saturn_high_priority_thread() {
   t_print("%s: \n", __FUNCTION__);
   saturn_high_priority_thread_id = g_thread_new( "SATURN HP OUT", saturn_high_priority_thread, NULL);
 
@@ -790,7 +794,7 @@ static gpointer saturn_high_priority_thread(gpointer arg) {
   return NULL;
 }
 
-void start_saturn_micaudio_thread() {
+static void start_saturn_micaudio_thread() {
   t_print("%s\n", __FUNCTION__);
   saturn_micaudio_thread_id = g_thread_new( "SATURN MIC", saturn_micaudio_thread, NULL);
 
@@ -955,7 +959,7 @@ static gpointer saturn_micaudio_thread(gpointer arg) {
   return NULL;
 }
 
-void start_saturn_receive_thread() {
+static void start_saturn_receive_thread() {
   t_print("%s\n", __FUNCTION__);
   saturn_rx_thread_id = g_thread_new( "SATURN RX", saturn_rx_thread, NULL);
 
@@ -991,11 +995,12 @@ static gpointer saturn_rx_thread(gpointer arg) {
   //
   // variables for analysing a DDC frame
   //
-  uint32_t FrameLength = 0;                                       // number of words per frame
+  uint32_t FrameLength = 0;                                   // number of words per frame
   uint32_t DDCCounts[VNUMDDC];                                // number of samples per DDC in a frame
-  uint32_t RateWord = 0;                                          // DDC rate word from buffer
+  uint32_t RateWord = 0;                                      // DDC rate word from buffer
   uint32_t HdrWord;                                           // check word read form DMA's data
-  uint16_t* SrcWordPtr, * DestWordPtr;                        // 16 bit read & write pointers
+  const uint16_t* SrcWordPtr;
+  uint16_t *DestWordPtr;                                      // 16 bit read & write pointers
   uint32_t PrevRateWord;                                      // last used rate word
   uint32_t Cntr;                                              // sample word counter
   bool HeaderFound;
@@ -1330,7 +1335,7 @@ void saturn_handle_high_priority(bool FromNetwork, unsigned char *UDPInBuffer) {
     if (RunBit) {
       StartBitReceived = true;
 
-      if (ReplyAddressSet && StartBitReceived) {
+      if (ReplyAddressSet) {
         ServerActive = true;  // only set active if we have replay address too
       }
     } else {

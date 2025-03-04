@@ -1145,9 +1145,9 @@ void vfo_id_set_rit_step(int id, int step) {
 // *increases* the RX frequency.
 //
 void vfo_id_move(int id, long long hz, int round) {
-  long long delta;
 
   if (!locked) {
+    long long delta;
     if (radio_is_remote) {
       update_vfo_move(id, hz, round);
       return;

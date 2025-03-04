@@ -234,6 +234,42 @@ extern int clock_nanosleep(clockid_t __clock_id, int __flags,
                            struct timespec *__rem);
 #endif
 
+static void keyer_close() {
+  t_print(".... closing keyer thread.\n");
+  running = 0;
+  // keyer thread may be sleeping, so wake it up
+#ifdef __APPLE__
+  sem_post(cw_event);
+#else
+  sem_post(&cw_event);
+#endif
+  pthread_join(keyer_thread_id, NULL);
+#ifdef __APPLE__
+  sem_close(cw_event);
+#else
+  sem_close(&cw_event);
+#endif
+}
+
+static int keyer_init() {
+  int rc;
+  t_print(".... starting keyer thread.\n");
+#ifdef __APPLE__
+  cw_event = apple_sem(0);
+#else
+  sem_init(&cw_event, 0, 0);
+#endif
+  running = 1;
+  rc = pthread_create(&keyer_thread_id, NULL, keyer_thread, NULL);
+
+  if (rc < 0) {
+    g_idle_add(fatal_error, "WARNING: Could not start keyer thread");
+    running = 0;
+  }
+
+  return 0;
+}
+
 void keyer_update() {
   //
   // This function will take notice of changes in the following variables
@@ -591,39 +627,4 @@ static void* keyer_thread(void *arg) {
 
   t_print("keyer_thread: EXIT\n");
   return NULL;
-}
-
-void keyer_close() {
-  t_print(".... closing keyer thread.\n");
-  running = 0;
-  // keyer thread may be sleeping, so wake it up
-#ifdef __APPLE__
-  sem_post(cw_event);
-#else
-  sem_post(&cw_event);
-#endif
-  pthread_join(keyer_thread_id, NULL);
-#ifdef __APPLE__
-  sem_close(cw_event);
-#else
-  sem_close(&cw_event);
-#endif
-}
-
-int keyer_init() {
-  int rc;
-  t_print(".... starting keyer thread.\n");
-#ifdef __APPLE__
-  cw_event = apple_sem(0);
-#else
-  sem_init(&cw_event, 0, 0);
-#endif
-  running = 1;
-  rc = pthread_create(&keyer_thread_id, NULL, keyer_thread, NULL);
-
-  if (rc < 0) {
-    g_idle_add(fatal_error, "Could not start keyer thread");
-  }
-
-  return 0;
 }

@@ -160,7 +160,7 @@ void soapy_protocol_create_receiver(RECEIVER *rx) {
 
   if (rc != 0) {
     t_print("%s: SoapySDRDevice_setupStream (RX) failed: %s\n", __FUNCTION__, SoapySDR_errToStr(rc));
-    g_idle_add(fatal_error, "Soapy Setup RX Stream Failed");
+    g_idle_add(fatal_error, "FATAL: Soapy Setup RX Stream Failed");
   }
 
 #else
@@ -169,7 +169,7 @@ void soapy_protocol_create_receiver(RECEIVER *rx) {
 
   if (rx_stream[channel] == NULL) {
     t_print("%s: SoapySDRDevice_setupStream (RX) failed (rx_stream is NULL)\n", __FUNCTION__);
-    g_idle_add(fatal_error, "Soapy Setup RX Stream Failed");
+    g_idle_add(fatal_error, "FATAL: Soapy Setup RX Stream Failed");
   }
 
 #endif
@@ -208,7 +208,7 @@ void soapy_protocol_start_receiver(RECEIVER *rx) {
 
   if (rc != 0) {
     t_print("%s: SoapySDRDevice_activateStream failed: %s\n", __FUNCTION__, SoapySDR_errToStr(rc));
-    g_idle_add(fatal_error, "Soapy Start RX Stream failed");
+    g_idle_add(fatal_error, "FATAL: Soapy Start RX Stream failed");
   }
 
   t_print("%s: create receiver_thread\n", __FUNCTION__);
@@ -233,7 +233,7 @@ void soapy_protocol_create_transmitter(TRANSMITTER *tx) {
 
   if (rc != 0) {
     t_print("%s: SoapySDRDevice_setupStream (TX) failed: %s\n", __FUNCTION__, SoapySDR_errToStr(rc));
-    g_idle_add(fatal_error, "Soapy Setup TX Stream Failed");
+    g_idle_add(fatal_error, "FATAL: Soapy Setup TX Stream Failed");
   }
 
 #else
@@ -241,7 +241,7 @@ void soapy_protocol_create_transmitter(TRANSMITTER *tx) {
 
   if (tx_stream == NULL) {
     t_print("%s: SoapySDRDevice_setupStream (TX) failed: %s\n", __FUNCTION__, SoapySDR_errToStr(rc));
-    g_idle_add(fatal_error, "Soapy Setup TX Stream Failed");
+    g_idle_add(fatal_error, "FATAL: Soapy Setup TX Stream Failed");
   }
 
 #endif
@@ -263,7 +263,7 @@ void soapy_protocol_start_transmitter(TRANSMITTER *tx) {
 
   if (rc != 0) {
     t_print("soapy_protocol_start_transmitter: SoapySDRDevice_activateStream failed: %s\n", SoapySDR_errToStr(rc));
-    g_idle_add(fatal_error, "Soapy Start TX Stream Failed");
+    g_idle_add(fatal_error, "FATAL: Soapy Start TX Stream Failed");
   }
 }
 
@@ -286,7 +286,7 @@ void soapy_protocol_stop_transmitter(TRANSMITTER *tx) {
 
   if (rc != 0) {
     t_print("soapy_protocol_stop_transmitter: SoapySDRDevice_deactivateStream failed: %s\n", SoapySDR_errToStr(rc));
-    g_idle_add(fatal_error, "Soapy Stop TX Stream Failed");
+    g_idle_add(fatal_error, "FATAL: Soapy Stop TX Stream Failed");
   }
 }
 
@@ -317,7 +317,7 @@ void soapy_protocol_init(gboolean hf) {
 
   if (soapy_device == NULL) {
     t_print("%s: SoapySDRDevice_make failed: %s\n", __FUNCTION__, SoapySDRDevice_lastError());
-    g_idle_add(fatal_error, "Soapy Make Device Failed");
+    g_idle_add(fatal_error, "FATAL: Soapy Make Device Failed");
   }
 
   SoapySDRKwargs_clear(&args);

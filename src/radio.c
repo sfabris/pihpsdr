@@ -68,6 +68,7 @@
 #include "screen_menu.h"
 #include "sliders.h"
 #include "tci.h"
+#include "test_menu.h"
 #include "toolbar.h"
 #include "transmitter.h"
 #include "tx_panadapter.h"
@@ -811,6 +812,11 @@ static void radio_create_visual() {
   }
 
   active_receiver = receiver[0];
+  //
+  // Since we start with RX1 as the active receiver,
+  // make sure this one is also selected on the server
+  //
+  send_rx_select(client_socket, 0);
 
   if (!radio_is_remote) {
     //
@@ -1636,6 +1642,10 @@ void radio_start_radio() {
   if (hpsdr_server) {
     create_hpsdr_server();
   }
+
+  if (open_test_menu) {
+    test_menu(top_window);
+  }
 }
 
 void radio_remote_change_receivers(int r) {
@@ -2426,6 +2436,11 @@ void radio_set_drive(double value) {
 
   transmitter->drive = value;
 
+  if (radio_is_remote) {
+    send_drive(client_socket, value);
+    return;
+  }
+
   switch (protocol) {
   case ORIGINAL_PROTOCOL:
   case NEW_PROTOCOL:
@@ -2577,6 +2592,7 @@ static void radio_restore_state() {
   GetPropF0("vox_threshold",                                 vox_threshold);
   GetPropF0("vox_hang",                                      vox_hang);
   GetPropI0("radio.hpsdr_server",                            hpsdr_server);
+  GetPropS0("radio.hpsdr_pwd",                               hpsdr_pwd);
   GetPropI0("radio.hpsdr_server.listen_port",                listen_port);
 
 #ifdef TCI
@@ -2787,6 +2803,7 @@ void radio_save_state() {
   SetPropF0("vox_threshold",                                 vox_threshold);
   SetPropF0("vox_hang",                                      vox_hang);
   SetPropI0("radio.hpsdr_server",                            hpsdr_server);
+  SetPropS0("radio.hpsdr_pwd",                               hpsdr_pwd);
   SetPropI0("radio.hpsdr_server.listen_port",                listen_port);
 
 #ifdef TCI
@@ -3004,6 +3021,10 @@ int radio_remote_start(void *data) {
   for (int i = 0; i < receivers; i++) {
     //(void) gdk_threads_add_timeout_full(G_PRIORITY_DEFAULT_IDLE, 100, start_spectrum, receiver[i], NULL);
     send_startstop_spectrum(client_socket, i, 1);
+  }
+
+  if (open_test_menu) {
+    test_menu(top_window);
   }
 
   start_vfo_timer();

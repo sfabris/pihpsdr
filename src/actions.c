@@ -25,6 +25,7 @@
 #include "band_menu.h"
 #include "bandstack.h"
 #include "client_server.h"
+#include "cw_menu.h"
 #include "discovery.h"
 #include "diversity_menu.h"
 #include "equalizer_menu.h"
@@ -113,7 +114,7 @@ ACTION_TABLE ActionTable[] = {
   {CW_SPEED,            "CW Speed",             "CWSPD",        MIDI_KNOB  | MIDI_WHEEL | CONTROLLER_ENCODER},
   {CW_KEYER_KEYDOWN,    "CW Key\n(Keyer)",      "CWKy",         MIDI_KEY   | CONTROLLER_SWITCH},
   {CW_KEYER_PTT,        "PTT\n(CW Keyer)",      "CWKyPTT",      MIDI_KEY   | CONTROLLER_SWITCH},
-  {CW_KEYER_SPEED,      "Speed\n(Keyer)",       "CWKySpd",      MIDI_KNOB},
+  {CW_KEYER_SPEED,      "Speed\n(Keyer)",       "CWKySpd",      MIDI_KNOB  | MIDI_WHEEL | CONTROLLER_ENCODER},
   {DIV,                 "DIV On/Off",           "DIVT",         MIDI_KEY   | CONTROLLER_SWITCH},
   {DIV_GAIN,            "DIV Gain",             "DIVG",         MIDI_WHEEL | CONTROLLER_ENCODER},
   {DIV_GAIN_COARSE,     "DIV Gain\nCoarse",     "DIVGC",        MIDI_WHEEL | CONTROLLER_ENCODER},
@@ -502,7 +503,7 @@ int process_action(void *data) {
       int id = active_receiver->id;
       TOGGLE(active_receiver->anf);
 
-      if (id == 0) {
+      if (id == 0 && !radio_is_remote) {
         int mode = vfo[id].mode;
         mode_settings[mode].anf = active_receiver->anf;
         copy_mode_settings(mode);
@@ -805,11 +806,13 @@ int process_action(void *data) {
 
   case COMP_ENABLE:
     if (can_transmit && a->mode == PRESSED) {
-      int mode = vfo_get_tx_mode();
       TOGGLE(transmitter->compressor);
-      mode_settings[mode].compressor = transmitter->compressor;
-      copy_mode_settings(mode);
       tx_set_compressor(transmitter);
+      if (!radio_is_remote) {
+        int mode = vfo_get_tx_mode();
+        mode_settings[mode].compressor = transmitter->compressor;
+        copy_mode_settings(mode);
+      }
       g_idle_add(ext_vfo_update, NULL);
     }
 
@@ -821,10 +824,12 @@ int process_action(void *data) {
       value = KnobOrWheel(a, transmitter->compressor_level, 0.0, 20.0, 1.0);
       transmitter->compressor = SET(value > 0.5);
       transmitter->compressor_level = value;
-      mode_settings[mode].compressor = transmitter->compressor;
-      mode_settings[mode].compressor_level = transmitter->compressor_level;
-      copy_mode_settings(mode);
       tx_set_compressor(transmitter);
+      if (!radio_is_remote) {
+        mode_settings[mode].compressor = transmitter->compressor;
+        mode_settings[mode].compressor_level = transmitter->compressor_level;
+        copy_mode_settings(mode);
+      }
       g_idle_add(ext_vfo_update, NULL);
     }
 
@@ -840,19 +845,14 @@ int process_action(void *data) {
 
   case CW_AUDIOPEAKFILTER:
     if (a->mode == PRESSED) {
-      TOGGLE(vfo[active_receiver->id].cwAudioPeakFilter);
-      rx_filter_changed(active_receiver);
-      g_idle_add(ext_vfo_update, NULL);
+      int id = active_receiver->id;
+      filter_set_cwpeak(id, NOT(vfo[id].cwAudioPeakFilter));
     }
-
     break;
 
   case CW_FREQUENCY:
     value = KnobOrWheel(a, (double)cw_keyer_sidetone_frequency, 300.0, 1000.0, 10.0);
-    cw_keyer_sidetone_frequency = (int)value;
-    rx_filter_changed(active_receiver);
-    // we may omit the P2 high-prio packet since this is sent out at regular intervals
-    g_idle_add(ext_vfo_update, NULL);
+    cw_set_sidetone_freq((int) value);
     break;
 
   case CW_SPEED:
@@ -878,7 +878,7 @@ int process_action(void *data) {
     break;
 
   case DIV_GAIN_FINE:
-    set_diversity_gain((double)a->val * 0.01);
+    set_diversity_gain(div_gain + (double)a->val * 0.01);
     break;
 
   case DIV_PHASE:
@@ -1054,7 +1054,7 @@ int process_action(void *data) {
     break;
 
   case MENU_DIVERSITY:
-    if (a->mode == PRESSED) {
+    if (a->mode == PRESSED && RECEIVERS == 2 && n_adc > 1) {
       start_diversity();
     }
 
@@ -1226,7 +1226,7 @@ int process_action(void *data) {
 
       if (active_receiver->nb > 2) { active_receiver->nb = 0; }
 
-      if (id == 0) {
+      if (id == 0 && !radio_is_remote) {
         int mode = vfo[id].mode;
         mode_settings[mode].nb = active_receiver->nb;
         copy_mode_settings(mode);
@@ -1251,7 +1251,7 @@ int process_action(void *data) {
 
 #endif
 
-      if (id == 0) {
+      if (id == 0 && !radio_is_remote) {
         int mode = vfo[id].mode;
         mode_settings[mode].nr = active_receiver->nr;
         copy_mode_settings(mode);
@@ -1636,22 +1636,12 @@ int process_action(void *data) {
     if (a->mode == PRESSED) {
       int id = active_receiver->id;
 
-      if (active_receiver->snb == 0) {
-        active_receiver->snb = 1;
+      TOGGLE(active_receiver->snb);
 
-        if (id == 0) {
-          int mode = vfo[id].mode;
-          mode_settings[mode].snb = 1;
-          copy_mode_settings(mode);
-        }
-      } else {
-        active_receiver->snb = 0;
-
-        if (id == 0) {
-          int mode = vfo[id].mode;
-          mode_settings[mode].snb = 0;
-          copy_mode_settings(mode);
-        }
+      if (id == 0 && !radio_is_remote) {
+        int mode = vfo[id].mode;
+        mode_settings[mode].snb = active_receiver->snb;
+        copy_mode_settings(mode);
       }
 
       update_noise();
@@ -1745,6 +1735,9 @@ int process_action(void *data) {
       value = KnobOrWheel(a, (double) transmitter->tune_drive, 0.0, 100.0, 1.0);
       transmitter->tune_drive = (int) value;
       transmitter->tune_use_drive = 1;
+      if (radio_is_remote) {
+        send_txmenu(client_socket);
+      }
       show_popup_slider(TUNE_DRIVE, 0, 0.0, 100.0, 1.0, value, "TUNE DRIVE");
     }
 
@@ -1755,6 +1748,7 @@ int process_action(void *data) {
       if (can_transmit) {
         TOGGLE(full_tune);
         memory_tune = FALSE;
+        send_radiomenu(client_socket);
       }
     }
 
@@ -1765,6 +1759,7 @@ int process_action(void *data) {
       if (can_transmit) {
         TOGGLE(memory_tune);
         full_tune = FALSE;
+        send_radiomenu(client_socket);
       }
     }
 
@@ -1982,10 +1977,8 @@ int process_action(void *data) {
     // This is a MIDI message from a CW keyer. The MIDI controller
     // value maps 1:1 to the speed, but we keep it within limits.
     //
-    i = a->val;
-
-    if (i >= 1 && i <= 60) { cw_keyer_speed = i; }
-
+    value = KnobOrWheel(a, cw_keyer_speed, 1.0, 60.0, 1.0);
+    cw_keyer_speed = (int) value;
     keyer_update();
     g_idle_add(ext_vfo_update, NULL);
     break;

@@ -355,7 +355,7 @@ extern void my_combo_attach(GtkGrid *grid, GtkWidget *combo, int row, int col, i
 #define ASSERT_SERVER(ret)                                                    \
     if (radio_is_remote) {                                                    \
       char *msg = g_new(char, 512);                                           \
-      snprintf(msg, 512, "%s: Client/Server Not Implemented!", __FUNCTION__); \
+      snprintf(msg, 512, "WARNING %s:\nClient/Server Not Implemented!", __FUNCTION__); \
       g_idle_add(fatal_error, msg);                                           \
       return ret;                                                             \
    }

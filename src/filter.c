@@ -477,6 +477,18 @@ void filter_cut_default(int id) {
     rx->filter_high = filter->high;
   }
 
+  if (radio_is_remote) {
+    send_filter_cut(client_socket, rx->id);
+  } else {
+    rx_set_bandpass(rx);
+    rx_set_agc(rx);
+
+    if (mode == modeCWL || mode == modeCWU) {
+      int have_peak = vfo[id].cwAudioPeakFilter;
+      rx_set_cw_peak(rx, have_peak, (double) cw_keyer_sidetone_frequency);
+    }
+  }
+
   g_idle_add(ext_vfo_update, NULL);
 }
 
@@ -560,12 +572,17 @@ void filter_high_changed(int id, int increment) {
   //
   rx->filter_low = low;
   rx->filter_high = high;
-  rx_set_bandpass(rx);
-  rx_set_agc(rx);
 
-  if (mode == modeCWL || mode == modeCWU) {
-    int have_peak = vfo[id].cwAudioPeakFilter;
-    rx_set_cw_peak(rx, have_peak, (double) cw_keyer_sidetone_frequency);
+  if (radio_is_remote) {
+    send_filter_cut(client_socket, rx->id);
+  } else {
+    rx_set_bandpass(rx);
+    rx_set_agc(rx);
+
+    if (mode == modeCWL || mode == modeCWU) {
+      int have_peak = vfo[id].cwAudioPeakFilter;
+      rx_set_cw_peak(rx, have_peak, (double) cw_keyer_sidetone_frequency);
+    }
   }
 
   g_idle_add(ext_vfo_update, NULL);
@@ -642,12 +659,17 @@ void filter_low_changed(int id, int increment) {
   //
   rx->filter_low = low;
   rx->filter_high = high;
-  rx_set_bandpass(rx);
-  rx_set_agc(rx);
 
-  if (mode == modeCWL || mode == modeCWU) {
-    int have_peak = vfo[id].cwAudioPeakFilter;
-    rx_set_cw_peak(rx, have_peak, (double) cw_keyer_sidetone_frequency);
+  if (radio_is_remote) {
+    send_filter_cut(client_socket, rx->id);
+  } else {
+    rx_set_bandpass(rx);
+    rx_set_agc(rx);
+
+    if (mode == modeCWL || mode == modeCWU) {
+      int have_peak = vfo[id].cwAudioPeakFilter;
+      rx_set_cw_peak(rx, have_peak, (double) cw_keyer_sidetone_frequency);
+    }
   }
 
   g_idle_add(ext_vfo_update, NULL);
@@ -741,12 +763,17 @@ void filter_width_changed(int id, int increment) {
   //
   rx->filter_low = low;
   rx->filter_high = high;
-  rx_set_bandpass(rx);
-  rx_set_agc(rx);
 
-  if (mode == modeCWL || mode == modeCWU) {
-    int have_peak = vfo[id].cwAudioPeakFilter;
-    rx_set_cw_peak(rx, have_peak, (double) cw_keyer_sidetone_frequency);
+  if (radio_is_remote) {
+    send_filter_cut(client_socket, rx->id);
+  } else {
+    rx_set_bandpass(rx);
+    rx_set_agc(rx);
+
+    if (mode == modeCWL || mode == modeCWU) {
+      int have_peak = vfo[id].cwAudioPeakFilter;
+      rx_set_cw_peak(rx, have_peak, (double) cw_keyer_sidetone_frequency);
+    }
   }
 
   g_idle_add(ext_vfo_update, NULL);
@@ -812,14 +839,44 @@ void filter_shift_changed(int id, int increment) {
   //
   rx->filter_low = low;
   rx->filter_high = high;
-  rx_set_bandpass(rx);
-  rx_set_agc(rx);
 
-  if (mode == modeCWL || mode == modeCWU) {
-    int have_peak = vfo[id].cwAudioPeakFilter;
-    rx_set_cw_peak(rx, have_peak, (double) cw_keyer_sidetone_frequency);
+  if (radio_is_remote) {
+    send_filter_cut(client_socket, rx->id);
+  } else {
+    rx_set_bandpass(rx);
+    rx_set_agc(rx);
+
+    if (mode == modeCWL || mode == modeCWU) {
+      int have_peak = vfo[id].cwAudioPeakFilter;
+      rx_set_cw_peak(rx, have_peak, (double) cw_keyer_sidetone_frequency);
+    }
   }
 
   g_idle_add(ext_vfo_update, NULL);
-  show_filter_shift(id, sgn * shft);
+
+  shft = sgn * shft;
+
+  if (mode == modeCWU ||  mode == modeCWL) {
+    shft -= cw_keyer_sidetone_frequency;
+  }
+
+  show_filter_shift(id, shft);
 }
+
+void filter_set_cwpeak(int id, int peak) {
+  vfo[id].cwAudioPeakFilter = peak;
+  if (radio_is_remote) {
+    send_cwpeak(client_socket, id, peak);
+  } else {
+    if (id == 0) {
+      int mode = vfo[id].mode;
+      mode_settings[mode].cwPeak = vfo[id].cwAudioPeakFilter;
+      copy_mode_settings(mode);
+    }
+    if (id < receivers) {
+      rx_set_cw_peak(receiver[id], peak, (double) cw_keyer_sidetone_frequency);
+    }
+  }
+  g_idle_add(ext_vfo_update, NULL);
+}
+

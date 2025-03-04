@@ -146,7 +146,7 @@ static gpointer process_ozy_input_buffer_thread(gpointer arg);
 
 static void queue_two_ozy_input_buffers(unsigned const char *buf1,
                                         unsigned const char *buf2);
-void ozy_send_buffer(void);
+static void ozy_send_buffer(void);
 
 static unsigned char metis_buffer[1032];
 static uint32_t send_sequence = 0;
@@ -591,7 +591,7 @@ static void open_udp_socket() {
 
   if (tmp < 0) {
     t_perror("P1 create data socket:");
-    g_idle_add(fatal_error, "P1: could not create data socket");
+    g_idle_add(fatal_error, "FATAL: P1 could not create data socket");
   }
 
   int optval = 1;
@@ -686,7 +686,7 @@ static void open_udp_socket() {
 
   if (bind(tmp, (struct sockaddr * )&radio->info.network.interface_address, radio->info.network.interface_length) < 0) {
     t_perror("P1: bind socket:");
-    g_idle_add(fatal_error, "P1: could not bind data socket");
+    g_idle_add(fatal_error, "FATAL: P1 could not bind data socket");
   }
 
   memcpy(&data_addr, &radio->info.network.address, radio->info.network.address_length);
@@ -717,7 +717,7 @@ static void open_tcp_socket() {
 
   if (tmp < 0) {
     t_perror("P1: create TCP socket:");
-    g_idle_add(fatal_error, "P1: could not create TCP socket");
+    g_idle_add(fatal_error, "FATAL: P1 could not create TCP socket");
   }
 
   int optval = 1;
@@ -1765,7 +1765,7 @@ void old_protocol_iq_samples(int isample, int qsample, int side) {
   }
 }
 
-void ozy_send_buffer() {
+static void ozy_send_buffer() {
   int txmode = vfo_get_tx_mode();
   int txvfo = vfo_get_tx_vfo();
   int rxvfo = active_receiver->id;
@@ -2468,12 +2468,12 @@ void ozy_send_buffer() {
       // in pairs (xx, yy, xx, yy, ...) that then generate C&C packets with
       // C0,1,2,3,4 = 0x78, 0x06, 0xea, xx, yy
       //
-      static uint8_t HL2CL1on[48]  = { 0x10, 0xc0, 0x13, 0x03, 0x10, 0x40, 0x2d, 0x01, 0x2e, 0x20, 0x22, 0x03,
+      static const uint8_t HL2CL1on[48]  = { 0x10, 0xc0, 0x13, 0x03, 0x10, 0x40, 0x2d, 0x01, 0x2e, 0x20, 0x22, 0x03,
                                        0x23, 0x00, 0x24, 0x00, 0x25, 0x00, 0x19, 0x00, 0x1A, 0x00, 0x1B, 0x00,
                                        0x18, 0x00, 0x17, 0x12, 0x62, 0x3b, 0x2c, 0x00, 0x31, 0x81, 0x3d, 0x09,
                                        0x3e, 0x00, 0x32, 0x00, 0x33, 0x00, 0x34, 0x00, 0x35, 0x00, 0x63, 0x01 };
 
-      static uint8_t HL2CL1off[48] = { 0x10, 0xc0, 0x13, 0x00, 0x10, 0x80, 0x2d, 0x01, 0x2e, 0x10, 0x22, 0x00,
+      static const uint8_t HL2CL1off[48] = { 0x10, 0xc0, 0x13, 0x00, 0x10, 0x80, 0x2d, 0x01, 0x2e, 0x10, 0x22, 0x00,
                                        0x23, 0x00, 0x24, 0x00, 0x25, 0x00, 0x19, 0x00, 0x1A, 0x00, 0x1B, 0x00,
                                        0x18, 0x40, 0x17, 0x04, 0x62, 0x5b, 0x2c, 0x00, 0x31, 0x00, 0x3d, 0x00,
                                        0x3e, 0x00, 0x32, 0x00, 0x33, 0x00, 0x34, 0x00, 0x35, 0x00, 0x63, 0x00 };
@@ -2941,7 +2941,7 @@ static void metis_send_buffer(unsigned char* buffer, int length) {
   if (tcp_socket >= 0) {
     if (length != 1032) {
       t_print("PROGRAMMING ERROR: TCP LENGTH != 1032\n");
-      g_idle_add(fatal_error, "Programming Error in metis_send_buffer");
+      g_idle_add(fatal_error, "FATAL: P1 Programming Error in metis_send_buffer");
     }
 
     if (sendto(tcp_socket, buffer, length, 0, NULL, 0) != length) {
@@ -2958,6 +2958,6 @@ static void metis_send_buffer(unsigned char* buffer, int length) {
   } else {
     // This should not happen
     t_print("METIS send: neither UDP nor TCP socket available!\n");
-    g_idle_add(fatal_error, "P1: neither UDP nor TCP socket available");
+    g_idle_add(fatal_error, "FATAL: P1 neither UDP nor TCP socket available");
   }
 }

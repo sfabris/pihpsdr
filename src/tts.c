@@ -61,7 +61,7 @@
 //
 // tts_send: send broadcast UDP packet containing a string
 //
-void tts_send(char *msg) {
+static void tts_send(char *msg) {
   int sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
   int optval = 1;
   struct sockaddr_in addr;

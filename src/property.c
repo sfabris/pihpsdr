@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "main.h"
 #include "message.h"
 #include "property.h"
 #include "radio.h"
@@ -94,10 +95,14 @@ void loadProperties(const char* filename) {
         // Beware of "illegal" lines in corrupted files
         if (name != NULL && value != NULL) {
           property = malloc(sizeof(PROPERTY));
-          property->name = g_strdup(name);
-          property->value = g_strdup(value);
-          property->next_property = properties;
-          properties = property;
+          if (!property) {
+            fatal_error("FATAL: property malloc");
+          } else {
+            property->name = g_strdup(name);
+            property->value = g_strdup(value);
+            property->next_property = properties;
+            properties = property;
+          }
 
           if (strcmp(name, "property_version") == 0) {
             version = atof(value);
@@ -193,10 +198,14 @@ void setProperty(const char* name, const char* value) {
   } else {
     // new property
     property = malloc(sizeof(PROPERTY));
-    property->name = g_strdup(name);
-    property->value = g_strdup(value);
-    property->next_property = properties;
-    properties = property;
+    if (!property) {
+      fatal_error("FATAL: property malloc");
+    } else {
+      property->name = g_strdup(name);
+      property->value = g_strdup(value);
+      property->next_property = properties;
+      properties = property;
+    }
   }
 }
 

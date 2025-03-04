@@ -47,9 +47,9 @@ static int discovery_socket;
 static void new_discover(struct ifaddrs* iface, int discflag);
 
 static GThread *discover_thread_id;
-gpointer new_discover_receive_thread(gpointer data);
+static gpointer new_discover_receive_thread(gpointer data);
 
-void print_device(int i) {
+static void print_device(int i) {
   t_print("discovery: found protocol=%d device=%d software_version=%d status=%d address=%s (%02X:%02X:%02X:%02X:%02X:%02X) on %s\n",
           discovered[i].protocol,
           discovered[i].device,
@@ -260,7 +260,7 @@ static void new_discover(struct ifaddrs* iface, int discflag) {
   }
 }
 
-gpointer new_discover_receive_thread(gpointer data) {
+static gpointer new_discover_receive_thread(gpointer data) {
   struct sockaddr_in addr;
   socklen_t len;
   unsigned char buffer[2048];

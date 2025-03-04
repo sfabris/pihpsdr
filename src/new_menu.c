@@ -357,7 +357,7 @@ void start_agc() {
   }
 }
 
-void start_vox() {
+static void start_vox() {
   cleanup();
   vox_menu(top_window);
 }
@@ -368,7 +368,7 @@ static gboolean vox_cb (GtkWidget *widget, GdkEventButton *event, gpointer data)
   return TRUE;
 }
 
-void start_dsp() {
+static void start_dsp() {
   cleanup();
   fft_menu(top_window);
 }
@@ -456,7 +456,7 @@ static gboolean server_cb (GtkWidget *widget, GdkEventButton *event, gpointer da
 }
 
 #ifdef MIDI
-void start_midi() {
+static void start_midi() {
   cleanup();
   midi_menu(top_window);
 }

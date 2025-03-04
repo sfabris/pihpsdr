@@ -184,25 +184,26 @@ void set_diversity(int state) {
 
   if (radio_is_remote) {
     send_diversity(client_socket, state, div_gain, div_phase);
-    return;
-  }
-  //
-  // If we have only one receiver, then changing diversity
-  // changes the number of HPSR receivers so we restart the
-  // original protocol
-  //
-  if (protocol == ORIGINAL_PROTOCOL && receivers == 1) {
-    old_protocol_stop();
-  }
+    diversity_enabled = state;
+  } else {
+    //
+    // If we have only one receiver, then changing diversity
+    // changes the number of HPSR receivers so we restart the
+    // original protocol
+    //
+    if (protocol == ORIGINAL_PROTOCOL && receivers == 1) {
+      old_protocol_stop();
+    }
 
-  diversity_enabled = state;
+    diversity_enabled = state;
 
-  if (protocol == ORIGINAL_PROTOCOL && receivers == 1) {
-    old_protocol_run();
+    if (protocol == ORIGINAL_PROTOCOL && receivers == 1) {
+      old_protocol_run();
+    }
+
+    schedule_high_priority();
+    schedule_receive_specific();
   }
-
-  schedule_high_priority();
-  schedule_receive_specific();
   g_idle_add(ext_vfo_update, NULL);
 }
 

@@ -57,6 +57,7 @@
   #include "soapy_protocol.h"
 #endif
 #include "startup.h"
+#include "test_menu.h"
 #include "tts.h"
 #include "version.h"
 #include "vfo.h"
@@ -253,12 +254,11 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data) {
     break;
 
   //
-  // LOCALE problem: in countries where the "decimal point" is
-  // something else (e.g. a comma in Germany), the corresponding
-  // Numpad key may not report GDK_KEY_KP_Decimal.
-  // For a comma, we get GDK_KEY_KP_Separator so as a
-  // quick-and-dirty fix, we just treat both cases as a
-  // "decimal point"
+  // Some countries (e.g. Germany) do not have a "decimal point"
+  // in a properly localised OS. In Germany we have a comma instead.
+  // A quick-and-dirty fix accepts both a decimal and a comma
+  // (a.k.a. separator) here.
+  //
   case GDK_KEY_KP_Decimal:
   case GDK_KEY_KP_Separator:
     vfo_num_pad(-5, active_receiver->id);
@@ -279,7 +279,7 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data) {
 }
 
 // cppcheck-suppress constParameterCallback
-gboolean main_delete (GtkWidget *widget) {
+static gboolean main_delete (GtkWidget *widget) {
   if (radio != NULL) {
     stop_program();
   }
@@ -521,6 +521,21 @@ int main(int argc, char **argv) {
   }
 
   //
+  // If invoked with -TestMenu, then set a flag for using the test menu
+  // (debug and program development only)
+  //
+  if (argc >= 2 && !strcmp("-TestMenu", argv[1])) {
+    open_test_menu = 1;
+    //
+    // remove this argument from the list since GTK cannot handle it
+    //
+    for (int i = 2; i < argc; i++) {
+      argv[i-1] = argv[i];
+    }
+    argc--;
+  }
+
+  //
   // The following call will most likely fail (until this program
   // has the privileges to reduce the nice value). But if the
   // privilege is there, it may help to run piHPSDR at a lower nice
@@ -558,7 +573,7 @@ int fatal_error(void *data) {
   static int quit = 0;
 
   if (quit) {
-    return 0;
+    return G_SOURCE_REMOVE;
   }
 
   quit = 1;
@@ -569,12 +584,16 @@ int fatal_error(void *data) {
                         flags,
                         GTK_MESSAGE_ERROR,
                         GTK_BUTTONS_CLOSE,
-                        "<span color='red' size='x-large' weight='bold'>piHPSDR termination due to fatal error:</span>"
-                        "\n\n<span size='x-large'>   %s</span>\n\n",
+                        "<span color='red' size='x-large' weight='bold'>piHPSDR warning/error message:</span>"
+                        "\n\n<span size='x-large' weight='bold'>   %s</span>\n\n",
                         msg);
     gtk_dialog_run(GTK_DIALOG(dialog));
     gtk_widget_destroy(dialog);
   }
 
-  exit(1);
+  if (!strncmp(msg, "FATAL", 5)) {
+    exit(1);
+  }
+  quit = 0;
+  return G_SOURCE_REMOVE;
 }

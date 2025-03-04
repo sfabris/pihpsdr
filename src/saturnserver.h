@@ -100,17 +100,7 @@ extern uint16_t DefaultPorts[];
 
 void start_saturn_server(void);
 void shutdown_saturn_server(void);
-void* saturn_server(void *arg);
 
-//
-// function to make an incoming or outgoing socket, bound to the specified port in the structure
-// 1st parameter is a link into the socket data table
-//
-int MakeSocket(struct ThreadSocketData* Ptr, int DDCid);
-
-// END threaddata.h
-
-// START generalpacket.h
 //
 // protocol 2 handler for General Packet to SDR
 // parameter is a pointer to the UDP message buffer.
@@ -120,40 +110,10 @@ int MakeSocket(struct ThreadSocketData* Ptr, int DDCid);
 int HandleGeneralPacket(uint8_t *PacketBuffer);
 // END generalpacket.h
 
-// START IncomingDDCSpecific.h
 #define VDDCSPECIFICSIZE 1444           // DDC specific packet size in bytes
-
-//
-// protocol 2 handler for incoming DDC specific Packet to SDR
-//
-void *IncomingDDCSpecific(void *arg);           // listener thread
-// END IncomingDDCSpecific.h
-
-// START IncomingDUCSpecific.h
 #define VDUCSPECIFICSIZE 60             // DUC specific packet
-
-//
-// protocol 2 handler for incoming DUC specific Packet to SDR
-//
-void *IncomingDUCSpecific(void *arg);           // listener thread
-// END IncomingDUCSpecific.h
-
-// START InHighPriority.h
 #define VHIGHPRIOTIYTOSDRSIZE 1444      // high priority packet to SDR
-
-//
-// protocol 2 handler for incoming high priority Packet to SDR
-//
-void *IncomingHighPriority(void *arg);          // listener thread
-// END InHighPriority.h
-
-// START InDUCIQ.h
 #define VDUCIQSIZE 1444                 // TX DUC I/Q data packet
-
-//
-// protocol 2 handler for incoming DUC I/Q data Packet to SDR
-//
-void *IncomingDUCIQ(void *arg);                 // listener thread
 
 //
 // HandlerSetEERMode (bool EEREnabled)

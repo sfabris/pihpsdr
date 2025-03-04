@@ -101,7 +101,6 @@ enum _header_type_enum {
   CMD_START_RADIO,
   CMD_STEP,
   CMD_STORE,
-  CMD_SWAP_IQ,
   CMD_TUNE,
   CMD_TWOTONE,
   CMD_TXFFT,
@@ -143,7 +142,7 @@ typedef struct _remote_client {
   int socket;
   socklen_t address_length;
   struct sockaddr_in address;
-  guint spectrum_update_timer_id;
+  guint timer_id;
   int send_spectrum[10];  // slot #8 is for the transmitter
 } REMOTE_CLIENT;
 
@@ -189,6 +188,8 @@ typedef struct __attribute__((__packed__)) _radiomenu_data {
   uint8_t  new_pa_board;
   uint8_t  tx_out_of_band_allowed;
   uint8_t  OCtune;
+  uint8_t  full_tune;
+  uint8_t  memory_tune;
 //
   uint16_t rx_gain_calibration;
   uint16_t OCfull_tune_time;
@@ -333,6 +334,8 @@ typedef struct __attribute__((__packed__)) _radio_data {
   uint8_t  mic_input_xlr;
   uint8_t  cw_keyer_sidetone_volume;
   uint8_t  OCtune;
+  uint8_t  full_tune;
+  uint8_t  memory_tune;
   uint8_t  mute_rx_while_transmitting;
   uint8_t  mute_spkr_amp;
   uint8_t  adc0_filter_bypass;
@@ -348,6 +351,8 @@ typedef struct __attribute__((__packed__)) _radio_data {
   uint8_t  have_saturn_xdma;
   uint8_t  rx_stack_horizontal;
   uint8_t  n_adc;
+  uint8_t  diversity_enabled;
+  uint8_t  soapy_iqswap;
 //
   uint16_t pa_power;
   uint16_t OCfull_tune_time;
@@ -359,8 +364,11 @@ typedef struct __attribute__((__packed__)) _radio_data {
   uint16_t tx_filter_high;
   uint16_t display_width;
 //
+  mydouble drive_max;
   mydouble drive_digi_max;
   mydouble pa_trim[11];
+  mydouble div_gain;
+  mydouble div_phase;
 //
   uint64_t frequency_calibration;
   uint64_t soapy_radio_sample_rate;
@@ -749,8 +757,10 @@ typedef struct __attribute__((__packed__)) _noise_command {
   mydouble nr4_post_threshold;
 } NOISE_COMMAND;
 
-extern gboolean hpsdr_server;
-extern gboolean hpsdr_server;
+#define HPSDR_PWD_LEN 64
+extern int hpsdr_server;
+extern char hpsdr_pwd[HPSDR_PWD_LEN];
+
 extern int client_socket;
 extern int start_spectrum(void *data);
 extern void start_vfo_timer(void);
@@ -763,16 +773,17 @@ extern int listen_port;
 extern int create_hpsdr_server(void);
 extern int destroy_hpsdr_server(void);
 
-extern int radio_connect_remote(char *host, int port);
+extern int radio_connect_remote(char *host, int port, const char *pwd);
 extern void remote_rxaudio(const RECEIVER *rx, short left_sample, short right_sample);
 extern void server_tx_audio(short sample);
 extern short remote_get_mic_sample();
+extern void  remote_send_spectrum(int id);
 
 extern void send_adc(int s, int id, int adc);
 extern void send_adc_data(int sock, int i);
 extern void send_afbinaural(int s, const RECEIVER *rx);
 extern void send_agc(int s, int rx, int agc);
-extern void send_agc_gain(int s, int rx, double gain, double hang, double thresh, double hang_thresh);
+extern void send_agc_gain(int s, const RECEIVER *rx);
 extern void send_am_carrier(int s);
 extern void send_anan10E(int s, int new);
 extern void send_attenuation(int s, int rx, int attenuation);

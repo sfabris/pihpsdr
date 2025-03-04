@@ -120,11 +120,17 @@ pthread_t MicThread;
 pthread_t HighPriorityFromSDRThread;
 pthread_t CheckForNoActivityThread;           // thread looks for inactvity
 
+static void* saturn_server(void *arg);
+static void *IncomingDDCSpecific(void *arg);           // listener thread
+static void *IncomingDUCSpecific(void *arg);           // listener thread
+static void *IncomingHighPriority(void *arg);          // listener thread
+static void *IncomingDUCIQ(void *arg);                 // listener thread
+
 //
 // function to make an incoming or outgoing socket, bound to the specified port in the structure
 // 1st parameter is a link into the socket data table
 //
-int MakeSocket(struct ThreadSocketData* Ptr, int DDCid) {
+static int MakeSocket(struct ThreadSocketData* Ptr, int DDCid) {
   struct timeval ReadTimeout;                                       // read timeout
   int yes = 1;
 
@@ -174,7 +180,7 @@ int MakeSocket(struct ThreadSocketData* Ptr, int DDCid) {
 // if no messages in a second, goes back to "inactive" state.
 //
 // cppcheck-suppress constParameterCallback
-void* CheckForActivity(void *arg) {
+static void* CheckForActivity(void *arg) {
   while (1) {
     sleep(1000);                                   // wait for 1 second
     bool PreviouslyActiveState = ServerActive;     // see if active on entry
@@ -226,7 +232,7 @@ void start_saturn_server() {
 // has a loop that reads & processes incoming command packets
 // see protocol documentation
 //
-void* saturn_server(void *arg) {
+static void* saturn_server(void *arg) {
   int i, size;
   uint8_t UDPInBuffer[VDISCOVERYSIZE];
   //
@@ -430,7 +436,7 @@ void* saturn_server(void *arg) {
         saturn_handle_general_packet(true, UDPInBuffer);
         ReplyAddressSet = true;
 
-        if (ReplyAddressSet && StartBitReceived) {
+        if (StartBitReceived) {
           ServerActive = true;  // only set active if we have start bit too
         }
 
@@ -484,7 +490,7 @@ void* saturn_server(void *arg) {
 //
 // listener thread for incoming high priority packets
 //
-void *IncomingHighPriority(void *arg) {                 // listener thread
+static void *IncomingHighPriority(void *arg) {          // listener thread
   struct ThreadSocketData *ThreadData;                  // socket etc data for this thread
   struct sockaddr_in addr_from;                         // holds MAC address of source of incoming messages
   uint8_t UDPInBuffer[VHIGHPRIOTIYTOSDRSIZE];           // incoming buffer
@@ -582,7 +588,7 @@ void *IncomingDDCSpecific(void *arg) {                  // listener thread
 //
 // listener thread for incoming DUC specific packets
 //
-void *IncomingDUCSpecific(void *arg) {                  // listener thread
+static void *IncomingDUCSpecific(void *arg) {           // listener thread
   struct ThreadSocketData *ThreadData;                  // socket etc data for this thread
   struct sockaddr_in addr_from;                         // holds MAC address of source of incoming messages
   uint8_t UDPInBuffer[VDUCSPECIFICSIZE];                // incoming buffer
@@ -751,7 +757,7 @@ void *IncomingSpkrAudio(void *arg) {                    // listener thread
 // if sufficient FIFO data available: DMA that data and transfer it out.
 // if it turns out to be too inefficient, we'll have to try larger DMA.
 //
-void *IncomingDUCIQ(void *arg) {                        // listener thread
+static void *IncomingDUCIQ(void *arg) {                 // listener thread
   struct ThreadSocketData *ThreadData;                  // socket etc data for this thread
   struct sockaddr_in addr_from;                         // holds MAC address of source of incoming messages
   uint8_t UDPInBuffer[VDUCIQSIZE];                      // incoming buffer

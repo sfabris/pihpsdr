@@ -503,77 +503,12 @@ static gboolean tx_update_display(gpointer data) {
   TRANSMITTER *tx = (TRANSMITTER *)data;
   int rc;
 
-  if (tx->puresignal) {
-    tx_ps_getinfo(tx);
-  }
-
   if (tx->displaying) {
-    // if "MON" button is active (tx->feedback is TRUE),
-    // then obtain spectrum pixels from PS_RX_FEEDBACK,
-    // that is, display the (attenuated) TX signal from the "antenna"
-    //
-    g_mutex_lock(&tx->display_mutex);
 
-    if (tx->puresignal && tx->feedback) {
-      RECEIVER *rx_feedback = receiver[PS_RX_FEEDBACK];
-      g_mutex_lock(&rx_feedback->display_mutex);
-      rc = rx_get_pixels(rx_feedback);
-
-      if (rc) {
-        int full  = rx_feedback->pixels;  // number of pixels in the feedback spectrum
-        int width = tx->pixels;           // number of pixels to copy from the feedback spectrum
-        int start = (full - width) / 2;   // Copy from start ... (end-1)
-        float *tfp = tx->pixel_samples;
-        float *rfp = rx_feedback->pixel_samples + start;
-        float offset;
-        int i;
-
-        //
-        // The TX panadapter shows a RELATIVE signal strength. A CW or single-tone signal at
-        // full drive appears at 0dBm, the two peaks of a full-drive two-tone signal appear
-        // at -6 dBm each. THIS DOES NOT DEPEND ON THE POSITION OF THE DRIVE LEVEL SLIDER.
-        // The strength of the feedback signal, however, depends on the drive, on the PA and
-        // on the attenuation effective in the feedback path.
-        // We try to shift the RX feeback signal such that is looks like a "normal" TX
-        // panadapter if the feedback is optimal for PureSignal (that is, if the attenuation
-        // is optimal). The correction (offset) depends on the FPGA software inside the radio
-        // (diffent peak levels in the TX feedback channel).
-        //
-        // The (empirically) determined offset is 4.2 - 20*Log10(GetPk value), it is the larger
-        // the smaller the amplitude of the RX feedback signal is.
-        //
-        switch (protocol) {
-        case ORIGINAL_PROTOCOL:
-          // TX dac feedback peak = 0.406, on HermesLite2 0.230
-          offset = (device == DEVICE_HERMES_LITE2) ? 17.0 : 12.0;
-          break;
-
-        case NEW_PROTOCOL:
-          // TX dac feedback peak = 0.2899, on SATURN 0.6121
-          offset = (device == NEW_DEVICE_SATURN) ? 8.5 : 15.0;
-          break;
-
-        default:
-          // we probably never come here
-          offset = 0.0;
-          break;
-        }
-
-        for (i = 0; i < width; i++) {
-          *tfp++ = *rfp++ + offset;
-        }
-      }
-
-      g_mutex_unlock(&rx_feedback->display_mutex);
-    } else {
-      rc = tx_get_pixels(tx);
+    if (tx->puresignal) {
+      tx_ps_getinfo(tx);
     }
 
-    if (rc) {
-      tx_panadapter_update(tx);
-    }
-
-    g_mutex_unlock(&tx->display_mutex);
     tx->alc = tx_get_alc(tx);
     double constant1;
     double constant2;
@@ -776,6 +711,76 @@ static gboolean tx_update_display(gpointer data) {
     if (!duplex) {
       meter_update(active_receiver, POWER, tx->fwd, tx->alc, tx->swr);
     }
+
+    // if "MON" button is active (tx->feedback is TRUE),
+    // then obtain spectrum pixels from PS_RX_FEEDBACK,
+    // that is, display the (attenuated) TX signal from the "antenna"
+    //
+    g_mutex_lock(&tx->display_mutex);
+
+    if (tx->puresignal && tx->feedback) {
+      RECEIVER *rx_feedback = receiver[PS_RX_FEEDBACK];
+      g_mutex_lock(&rx_feedback->display_mutex);
+      rc = rx_get_pixels(rx_feedback);
+
+      if (rc) {
+        int full  = rx_feedback->pixels;  // number of pixels in the feedback spectrum
+        int width = tx->pixels;           // number of pixels to copy from the feedback spectrum
+        int start = (full - width) / 2;   // Copy from start ... (end-1)
+        float *tfp = tx->pixel_samples;
+        const float *rfp = rx_feedback->pixel_samples + start;
+        float offset;
+        int i;
+
+        //
+        // The TX panadapter shows a RELATIVE signal strength. A CW or single-tone signal at
+        // full drive appears at 0dBm, the two peaks of a full-drive two-tone signal appear
+        // at -6 dBm each. THIS DOES NOT DEPEND ON THE POSITION OF THE DRIVE LEVEL SLIDER.
+        // The strength of the feedback signal, however, depends on the drive, on the PA and
+        // on the attenuation effective in the feedback path.
+        // We try to shift the RX feeback signal such that is looks like a "normal" TX
+        // panadapter if the feedback is optimal for PureSignal (that is, if the attenuation
+        // is optimal). The correction (offset) depends on the FPGA software inside the radio
+        // (diffent peak levels in the TX feedback channel).
+        //
+        // The (empirically) determined offset is 4.2 - 20*Log10(GetPk value), it is the larger
+        // the smaller the amplitude of the RX feedback signal is.
+        //
+        switch (protocol) {
+        case ORIGINAL_PROTOCOL:
+          // TX dac feedback peak = 0.406, on HermesLite2 0.230
+          offset = (device == DEVICE_HERMES_LITE2) ? 17.0 : 12.0;
+          break;
+
+        case NEW_PROTOCOL:
+          // TX dac feedback peak = 0.2899, on SATURN 0.6121
+          offset = (device == NEW_DEVICE_SATURN) ? 8.5 : 15.0;
+          break;
+
+        default:
+          // we probably never come here
+          offset = 0.0;
+          break;
+        }
+
+        for (i = 0; i < width; i++) {
+          *tfp++ = *rfp++ + offset;
+        }
+      }
+
+      g_mutex_unlock(&rx_feedback->display_mutex);
+    } else {
+      rc = tx_get_pixels(tx);
+    }
+
+    if (rc) {
+      if (remoteclient.running) {
+        remote_send_spectrum(tx->id);
+      }
+      tx_panadapter_update(tx);
+    }
+
+    g_mutex_unlock(&tx->display_mutex);
 
     return TRUE; // keep going
   }
@@ -1810,7 +1815,10 @@ void tx_set_displaying(TRANSMITTER *tx) {
 }
 
 void tx_set_filter(TRANSMITTER *tx) {
-  ASSERT_SERVER();
+  if (radio_is_remote) {
+    send_txfilter(client_socket);
+    return;
+  }
   int txmode = vfo_get_tx_mode();
   // load default values
   int low  = tx_filter_low;
@@ -2061,11 +2069,13 @@ void tx_ps_getinfo(TRANSMITTER *tx) {
   GetPSInfo(tx->id, tx->psinfo);
 }
 
+// cppcheck-suppress constParameterPointer
 void tx_ps_getmx(TRANSMITTER *tx) {
   ASSERT_SERVER();
   GetPSMaxTX(tx->id, &transmitter->ps_getmx);
 }
 
+// cppcheck-suppress constParameterPointer
 void tx_ps_getpk(TRANSMITTER *tx) {
   ASSERT_SERVER();
   GetPSHWPeak(tx->id, &transmitter->ps_getpk);
@@ -2298,7 +2308,10 @@ void tx_set_bandpass(const TRANSMITTER *tx) {
 }
 
 void tx_set_compressor(TRANSMITTER *tx) {
-  ASSERT_SERVER();
+  if (radio_is_remote) {
+    send_tx_compressor(client_socket);
+    return;
+  }
   //
   // - Although I see not much juice therein, the
   //   usage of CFC alongside with the speech processor
@@ -2446,7 +2459,10 @@ void tx_set_fft_size(const TRANSMITTER *tx) {
 }
 
 void tx_set_mic_gain(const TRANSMITTER *tx) {
-  ASSERT_SERVER();
+  if (radio_is_remote) {
+    send_micgain(client_socket, tx->mic_gain);
+    return;
+  }
   SetTXAPanelGain1(tx->id, pow(10.0, tx->mic_gain * 0.05));
 #ifdef WDSPTXDEBUG
   t_print("TX id=%d MicGain(dB)=%g\n", tx->id, tx->mic_gain);

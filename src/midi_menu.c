@@ -434,6 +434,10 @@ static void updateDescription() {
     // This is a new Note/Event combination, so we need a new entry
     //
     current_cmd = (struct desc *) malloc(sizeof(struct desc));
+    if (!current_cmd) {
+      fatal_error("FATAL: malloc cmd in midi");
+      return;
+    }
     current_cmd->next = NULL;
     addFlag = 1;
   }
@@ -959,7 +963,7 @@ typedef struct MYEVENT {
   int            val;
 } myevent;
 
-int ProcessNewMidiConfigureEvent(void * data) {
+static int ProcessNewMidiConfigureEvent(void * data) {
   //
   // This is now running in the GTK idle queue
   //
@@ -1234,6 +1238,11 @@ void midiRestoreState() {
       // Construct descriptor and add to the list of MIDI commands
       //
       struct desc *desc = (struct desc *) malloc(sizeof(struct desc));
+
+      if (!desc) {
+        fatal_error("FATAL: alloc desc in midi");
+        return;
+      }
       desc->next     = NULL;
       desc->action   = action; // MIDIaction
       desc->type     = type;   // MIDItype

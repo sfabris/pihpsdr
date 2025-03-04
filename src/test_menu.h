@@ -1,5 +1,5 @@
 /* Copyright (C)
-* 2015 - John Melton, G0ORX/N6LYT
+* 2024 - Christoph van W"ullen, DL1YCF
 *
 *   This program is free software: you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -18,5 +18,5 @@
 
 #include <gtk/gtk.h>
 
-extern void cw_menu(GtkWidget *parent);
-extern void cw_set_sidetone_freq(int f);
+extern int  open_test_menu;
+extern void test_menu(GtkWidget *parent);

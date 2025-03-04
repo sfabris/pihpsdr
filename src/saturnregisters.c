@@ -344,7 +344,7 @@ void SetByteSwapping(bool IsSwapped) {
 // internal function to set the keyer on or off
 // needed because keyer setting can change by message, of by TX operation
 //
-void ActivateCWKeyer(bool Keyer) {
+static void ActivateCWKeyer(bool Keyer) {
   uint32_t Register = GCWKeyerSetup;                           // get current settings
 
   if (Keyer) {
