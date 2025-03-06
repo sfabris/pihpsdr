@@ -1,8 +1,8 @@
 # pihpsdr
 
-**piHPSDR Manual: (Release 2.3 Version) ** https://github.com/dl1ycf/pihpsdr/releases/download/v2.3/piHPSDR-Manual.pdf
+**piHPSDR Manual: (Release 2.4 Version) ** https://github.com/dl1ycf/pihpsdr/releases/download/v2.4/piHPSDR-Manual.pdf
 
-**piHPSDR Manual: (current Version) ** https://github.com/dl1ycf/pihpsdr/releases/download/v2.3/piHPSDR-Manual-current.pdf
+**piHPSDR Manual: (current Version) ** https://github.com/dl1ycf/pihpsdr/releases/download/v2.4/piHPSDR-Manual-current.pdf
 
 Standalone code for HPSDR,
 supporting both the old (P1) and new (P2) HPSDR protocols, as well as the SoapySDR framework.
@@ -19,6 +19,7 @@ Consult the Manual (**link given above**) on how to compile/install piHPSDR on y
 
 Latest features:
 
+- client/server model for remote operation (including transmitting in phone and CW)
 - full support for Anan G2-Ultra radios, including customizable panel button/encoder functions
 - added continuous frequency compressor (**CFC**) and downward expander (**DEXP**) to the TX chain
 - in-depth manual (**link given above**)
