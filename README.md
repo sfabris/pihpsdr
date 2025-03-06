@@ -19,7 +19,7 @@ Consult the Manual (**link given above**) on how to compile/install piHPSDR on y
 
 Latest features:
 
-- client/server model for remote operation (including transmitting in phone and CW)
+- **client/server model for remote operation** (including transmitting in phone and CW)
 - full support for Anan G2-Ultra radios, including customizable panel button/encoder functions
 - added continuous frequency compressor (**CFC**) and downward expander (**DEXP**) to the TX chain
 - in-depth manual (**link given above**)
