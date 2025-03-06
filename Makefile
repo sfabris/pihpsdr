@@ -12,7 +12,6 @@
 #
 #######################################################################################
 
-TCI=ON
 GPIO=ON
 MIDI=ON
 SATURN=ON
@@ -26,7 +25,6 @@ EXTENDED_NR=OFF
 #
 # Explanation of compile time options
 #
-# TCI          | If ON, compile with TCI support (needs OpenSSL)
 # GPIO         | If ON, compile with GPIO support (RaspPi only, needs libgpiod)
 # MIDI         | If ON, compile with MIDI support
 # SATURN       | If ON, compile with native SATURN/G2 XDMA support
@@ -333,23 +331,6 @@ endif
 
 ##############################################################################
 #
-# Add TCI support, if requested
-#
-##############################################################################
-
-ifeq ($(TCI), ON)
-TCI_OPTIONS=-DTCI
-TCI_INCLUDE=`$(PKG_CONFIG) --cflags openssl`
-TCI_LIBS=`$(PKG_CONFIG) --libs openssl`
-TCI_SOURCES=src/tci.c
-TCI_OBJS=src/tci.o
-endif
-CPP_INCLUDE += `$(PKG_CONFIG) --cflags openssl`
-CPP_DEFINES += -DTCI
-CPP_SOURCES += src/tci.c
-
-##############################################################################
-#
 # End of "libraries for optional features" section
 #
 ##############################################################################
@@ -363,6 +344,16 @@ CPP_SOURCES += src/tci.c
 GTKINCLUDE=`$(PKG_CONFIG) --cflags gtk+-3.0`
 GTKLIBS=`$(PKG_CONFIG) --libs gtk+-3.0`
 CPP_INCLUDE += $(GTKINCLUDE)
+
+##############################################################################
+#
+# Includes/Libraries for OpenSSL (used for TCI and client/server password)
+#
+##############################################################################
+
+OPENSSL_INCLUDE=`$(PKG_CONFIG) --cflags openssl`
+OPENSSL_LIBS=`$(PKG_CONFIG) --libs openssl`
+CPP_INCLUDE += `$(PKG_CONFIG) --cflags openssl`
 
 ##############################################################################
 #
@@ -393,7 +384,7 @@ OPTIONS=$(MIDI_OPTIONS) $(USBOZY_OPTIONS) \
 	$(AUDIO_OPTIONS) $(EXTNR_OPTIONS) $(TCI_OPTIONS) \
 	-D GIT_DATE='"$(GIT_DATE)"' -D GIT_VERSION='"$(GIT_VERSION)"' -D GIT_COMMIT='"$(GIT_COMMIT)"'
 
-INCLUDES=$(GTKINCLUDE) $(WDSP_INCLUDE) $(AUDIO_INCLUDE) $(STEMLAB_INCLUDE) $(TCI_INCLUDE)
+INCLUDES=$(GTKINCLUDE) $(WDSP_INCLUDE) $(OPENSSL_INCLUDE) $(AUDIO_INCLUDE) $(STEMLAB_INCLUDE)
 COMPILE=$(CC) $(CFLAGS) $(OPTIONS) $(INCLUDES)
 
 .c.o:
@@ -406,7 +397,7 @@ COMPILE=$(CC) $(CFLAGS) $(OPTIONS) $(INCLUDES)
 ##############################################################################
 
 LIBS=	$(LDFLAGS) $(AUDIO_LIBS) $(USBOZY_LIBS) $(GTKLIBS) $(GPIO_LIBS) $(SOAPYSDRLIBS) $(STEMLAB_LIBS) \
-	$(MIDI_LIBS) $(TCI_LIBS) $(WDSP_LIBS) -lm $(SYSLIBS)
+	$(MIDI_LIBS) $(OPENSSL_LIBS) $(WDSP_LIBS) -lm $(SYSLIBS)
 
 ##############################################################################
 #
@@ -488,6 +479,7 @@ src/startup.c \
 src/store.c \
 src/store_menu.c \
 src/switch_menu.c \
+src/tci.c \
 src/test_menu.c \
 src/toolbar.c \
 src/toolbar_menu.c \
@@ -582,6 +574,7 @@ src/startup.h \
 src/store.h \
 src/store_menu.h \
 src/switch_menu.h \
+src/tci.h \
 src/test_menu.h \
 src/toolbar.h \
 src/toolbar_menu.h \
@@ -670,6 +663,7 @@ src/startup.o \
 src/store.o \
 src/store_menu.o \
 src/switch_menu.o \
+src/tci.o \
 src/test_menu.o \
 src/toolbar.o \
 src/toolbar_menu.o \
@@ -692,7 +686,7 @@ src/zoompan.o
 #
 ##############################################################################
 
-$(PROGRAM):  $(OBJS) $(AUDIO_OBJS) $(USBOZY_OBJS) $(SOAPYSDR_OBJS) $(TCI_OBJS) \
+$(PROGRAM):  $(OBJS) $(AUDIO_OBJS) $(USBOZY_OBJS) $(SOAPYSDR_OBJS) \
 		$(MIDI_OBJS) $(STEMLAB_OBJS) $(SERVER_OBJS) $(SATURN_OBJS)
 	$(COMPILE) -c -o src/version.o src/version.c
 ifneq (z$(WDSP_INCLUDE), z)
@@ -700,7 +694,7 @@ ifneq (z$(WDSP_INCLUDE), z)
 endif
 	$(LINK) -o $(PROGRAM) $(OBJS) $(AUDIO_OBJS) $(USBOZY_OBJS) $(SOAPYSDR_OBJS) \
 		$(MIDI_OBJS) $(STEMLAB_OBJS) $(SERVER_OBJS) $(SATURN_OBJS) \
-		$(TCI_OBJS) $(LIBS)
+		$(LIBS)
 
 ##############################################################################
 #
@@ -1063,9 +1057,9 @@ src/pa_menu.o: src/vfo.h
 src/portaudio.o: src/audio.h src/receiver.h src/client_server.h src/mode.h
 src/portaudio.o: src/transmitter.h src/message.h src/radio.h src/adc.h
 src/portaudio.o: src/dac.h src/discovered.h src/vfo.h
-src/property.o: src/message.h src/property.h src/mystring.h src/radio.h
-src/property.o: src/adc.h src/dac.h src/discovered.h src/receiver.h
-src/property.o: src/transmitter.h
+src/property.o: src/main.h src/message.h src/property.h src/mystring.h
+src/property.o: src/radio.h src/adc.h src/dac.h src/discovered.h
+src/property.o: src/receiver.h src/transmitter.h
 src/protocols.o: src/property.h src/mystring.h src/protocols.h src/radio.h
 src/protocols.o: src/adc.h src/dac.h src/discovered.h src/receiver.h
 src/protocols.o: src/transmitter.h
@@ -1116,7 +1110,8 @@ src/rigctl.o: src/zoompan.h
 src/rigctl_menu.o: src/band.h src/bandstack.h src/message.h src/mystring.h
 src/rigctl_menu.o: src/new_menu.h src/radio.h src/adc.h src/dac.h
 src/rigctl_menu.o: src/discovered.h src/receiver.h src/transmitter.h
-src/rigctl_menu.o: src/rigctl_menu.h src/rigctl.h src/vfo.h src/mode.h
+src/rigctl_menu.o: src/rigctl_menu.h src/rigctl.h src/tci.h src/vfo.h
+src/rigctl_menu.o: src/mode.h
 src/rx_menu.o: src/audio.h src/receiver.h src/band.h src/bandstack.h
 src/rx_menu.o: src/client_server.h src/mode.h src/transmitter.h
 src/rx_menu.o: src/discovered.h src/filter.h src/message.h src/mystring.h

@@ -264,7 +264,11 @@ usually lets the problem vanish.
 If more than one radio is available, or a radio can be connected via more than one network interface,
 you will see several \rett{Start} buttons.
 If you see at least one \rett{Start} button, you can start the corresponding radio simply
-by clicking that button. But let us first explain the
+by clicking that button.
+
+The second line of control elementes, beginning with the \rett{Connect Server} button, belongs to the
+client/server feature that is described in chapter \ref{sec:clientserver}, so
+let us first explain the
 purpose of the other buttons! Easiest to explain is the \rett{Exit} button, this will simply terminate
 the program. Most likely, you may want to go into the \rett{Protocols} menu sooner or later.
 By default, \pH tries to discover the presence of a radio using all protocols known to \pH. However,
@@ -308,7 +312,7 @@ stores its settings. On a G2, this is usually \texttt{\$HOME/github/pihpsdr}.
 Sometimes \pH needs to know the IP address of the radio. This is, for example, the case for the
 \texttt{STEMlab} discovery
 described above. In such a case the IP address in numerical form (xxx.xxx.xxx.xxx) can be entered in the box
-with the label \rett{Radio IP Addr:}. If a legal IP address is contained in this box, protocol-1 and
+with the label \rett{Radio IP Addr}. If a legal IP address is contained in this box, protocol-1 and
 protocol-2 discovery queries
 will also be sent to the IP address specified, in addition to the standard broadcast discovery packets which
 can only reach
@@ -318,7 +322,7 @@ radio on the world
 provided it is on the internet. However, the original HPSDR standard states that a broadcast packet must be
 used, so radios strictly adhering to that standard
 won't reply. On the other hand, there are some radios such as a RedPitaya or a HermesLite-II which
-allow being discovered by such a routed (non-broadcast) packet.
+allow being discovered by such ``routed'' (non-broadcast) packets.
 
 The \rett{Discover} button re-starts the discovery process. This is useful if the radio has been powered up
 too late and
@@ -3987,7 +3991,83 @@ illegal use of the transmitter. While the password is stored un-encrypted on the
 model ensures that a non-encrypted password is never contained in the data stream connection the client and
 the server.
 
-This chapter is still under construction.
+In the \pH ``server`` instance (connected directly to the radio), client/server operation must be enabled
+via the \bltt{Server} menu, to be opened by a button in the bottom  part of the leftmost  column of the  main menu.
+The server menu is shown in Fig. \ref{fig:servermenu} and only has a few controls.
+
+\begin{figure}[ht]
+\center
+\includegraphics[scale=0.45]{ServerMenu.png}
+\caption{The \bltt{Server} menu}
+\label{fig:servermenu}
+\end{figure}
+
+The \rett{Server Enable} check-box can be used to enable or disable remote operation. If the box is not
+checked, a client cannot connect. The  spin-box  to the right of the \rett{Server Port} label lets the user
+choose the TCP port to be  used for remote operation. This must be a port that is not yet used on the
+computer running the \pH server instance. The default value 50000 works in most cases, but you can choose
+another value should the port 50000 be in use on your computer. Other ports used by \pH are 19090 (the default
+port for CAT-over-TCP) and 40000 (the default port for the TCI server).
+
+In the text entry field to the left of   the \rett{Server Password} label, you must enter a password for
+client-server operation. If it is a really long password, only the first 50 characters are used, and if it
+is shorter than 5 characters, no client is allowed to connect. No particular security measure is taken
+to protect the password on the server side: it is  shown while you type it into the  text field, and it is
+stored in the local preferences file without encryption. The idea here is that you set up the server
+in a private environment, and against those who manage to hack your computer running the \pH server instance
+there is nothing one can do from within \pH.
+
+Let us assume you have a server instance of \pH running, so how to connect  to it from a  remote location?
+Here it is useful to show again the discovery menu on the \pH start screen (Fig. \ref{fig:clientmenu}):
+
+\begin{figure}[ht]
+\center
+\includegraphics[scale=0.45]{ClientMenu.png}
+\caption{The discovery menu on the client side}
+\label{fig:clientmenu}
+\end{figure}
+
+Here, no local radios have been found as indicated in the first line. The second line contains the controls
+relevant for  client/server operation. There is a pop-down menu to the right of the \rett{Use Server} button.
+Here one has to specify the host address and port number of the server, address and port separated by a colon.
+For the host address, on can use numerical IP addresses of the form xxx.xxx.xxx.xxx but equally well a
+host name. The port number must, of course, match the port number specified in the \bltt{Server} menu in
+the \pH server instance (see above).
+
+In the \texttt{host:addr} pop-down menu, you can choose the entry matching your server. On a virgin system, this menu
+will  only show a default entry which is 127.0.0.1:50000, and an empty entry. By clicking into the text field, you
+can change an entry such that it matches for \pH server instance. You can also select the empty entry from
+the pop-down menu and enter a new \texttt{host:addr} pair, which will then be added to the list. The last element of
+the pop-down menu is always an empty one, so you can add as many different entries as you wish. If you select
+an entry, click  into the text  field and clear it, then this entry is  removed from the pop-down menu.
+In this way, you can configure your client computer to use several different \pH server instances, but also
+to use a \pH server instance that has different IP addresses or host names depending from where you connect.
+
+The second text field in the server line must be used to enter a password. This password will not be
+stored in the preferences file so you have to enter it each time you connect. By default, the last button in
+the server line reads \rett{Show} and the password is hidden (each character is represented by a bullet).
+If clicking the \rett{Show} button, its label changes to \rett{Hide} and the password becomes visible. You
+might have guessed that clicking the \rett{Hide} button then conceals the password again and the button
+label reads \rett{Show} again.
+
+\textbf{A note on network security:}
+The password you enter is \textbf{not} transmitted ``as is'' over the line. Instead, the server sends a random
+64-byte \textit{challenge} which is different for each connection.
+On the client side, a four-byte version number and the password is added
+to the challenge and a SHA256 key is built from the result and then sent back to the server. The server
+does the same with its version number and the password entered in the \bltt{Server} menu and then asserts
+that the two SHA256 keys are identical. This is most likely not top-notch cyber security, but should provide
+a decent level to fulfil your  obligations as a radio amateur to prevent your gear from unlawful use.
+If you feel you must go beyond, your option is to set up a VPN \textit{virtual private network} in which
+you can have cyber security provided by your network infrastructure rather than by an application such 
+as \pH.
+
+\textbf{Auto disconnect feature:} Equally important is to prevent that your radio stops transmitting if
+the connection to the client breaks down. To this end, the server closes the connection and goes RX if
+it has not received any command from the client for about 30 seconds, or if the attempt to read the
+next command from the client failed (the client will send and empty
+``heartbeat'' command every 15 seconds).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Miscellaneous Topics}
@@ -7103,11 +7183,6 @@ This option is not activated by default since it delays the startup a little bit
 avoided if  there is no need for it, and it needs the \texttt{libcurl}  library to be installed on your system.
 }
 
-\item[\rett{TCI}] {(default: \texttt{ON})
-With this option,  \pH can start a TCI server that communicates operating frequencies
-and modes to logbook programs or PAs. The TCI code depends on the OpenSSL library, and the only reason to
-deactivate TCI is if  this library is  not available on your system.}
-
 \item[\rett{AUDIO}] {(default: empty)
 On Linux systems (including the Raspberry PI), if setting the value to \texttt{ALSA},
 the standard Linux ALSA sound library is used for local audio
@@ -7129,17 +7204,6 @@ reduction facilities which are based on  \texttt{rnnnoise} and \texttt{libspecbl
  that the WDSP shared library is installed in \texttt{/usr/local/lib} and the WDSP header file
  in \texttt{/usr/local/include}. The \texttt{wdsp} directory that is part of
  the \pH repository is not used if \texttt{EXTENDED\_NR} is activated.}
-
-
-%\item[\rett{SERVER}] {(\textbf{Unfinished/Experimental}, default: \texttt{OFF})
-% This is not yet completed but is mentioned here anyway. There are plans to have
-% a client/server model in \pH such that you can have a ,,distant'' radio with a computer
-% running \pH connected to that radio, and a ,,local'' computer running \pH, and an
-% internet connection between the two computers. All the time-critical data exchange happens
-% between the ,,distant'' radio and the ,,distant'' computer using a straight internet
-% cable connection, while the user interface data is exchanged between the two copies of
-% \pH running on the two computers.
-%}
 
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -7675,10 +7739,26 @@ files with saved preferences (\texttt{*.props}) which you may want to re-use.
 
 The \pH repository is downloaded, and support libraries are installed, with the commands
 
+\grtt{cd \$HOME} \\
 \grtt{git clone https://github.com/dl1ycf/pihpsdr} \\
 \grtt{cd pihpsdr} \\
 \grtt{MacOS/libinstall.sh} \\
 
+The \texttt{git clone} command loads the \pH repository, and with the command
+\texttt{MacOS/libinstall.sh} 
+(which is then executed within the just-created \texttt{pihpsdr} directory) installs the
+ \texttt{HomeBrew} universe. Installing \texttt{HomeBrew} starts with asking you for the administrator
+ password, tells you what it wants to do and requires hitting \texttt{Enter} to proceed.
+Do not worry if \texttt{HomeBrew} was already installed on your computer, the installation
+procedure works in this case as well and does no harm. In addition to
+ the \texttt{HomeBrew} core, additional libraries that \pH depends on (e.g. GTK\texttt{+}3), the SoapySDR
+ core and SoapySDR modules for several radios are installed.
+
+ In case something went wrong, or simply to check that \texttt{HomeBrew} has been correctly installed,
+ open a \textit{new} terminal window and type the command
+
+
+\grtt{brew config}
 
 \begin{center}
 \fbox{
@@ -7708,20 +7788,7 @@ to switch between version with the \texttt{git} command can be given in this man
 }
 \end{center}
 
-The ,,git clone'' command loads the \pH repository, and the libinstall.sh command (that is
-within this repository) installs the
- \texttt{HomeBrew} universe. Installing \texttt{HomeBrew} starts with asking you for the administrator
- password, tells you what it wants to do and requires hitting \texttt{Enter} to proceed.
-Do not worry if \texttt{HomeBrew} was already installed on your computer, the installation
-procedure works in this case as well and does no harm. In addition to
- the \texttt{HomeBrew} core, additional libraries that \pH depends on (e.g. GTK\texttt{+}3), the SoapySDR
- core and SoapySDR modules for several radios are installed.
 
- In case something went wrong, or simply to check that \texttt{HomeBrew} has been correctly installed,
- open a \textit{new} terminal window and type the command
-
-
-\grtt{brew config}
 
  This should give you lots of information on the currently installed version of \texttt{HomeBrew},
  but also on the CPU of your machine, the compilers and MacOS version info, etc. If the command

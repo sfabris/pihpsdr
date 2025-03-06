@@ -134,11 +134,13 @@ enum _header_type_enum {
   CLIENT_SERVER_COMMANDS,
 };
 
+#define CLIENT_SERVER_VERSION 0x01000000 // 32-bit version number
 #define SPECTRUM_DATA_SIZE 4096          // Maximum width of a panadapter
 #define AUDIO_DATA_SIZE 1024             // 1024 stereo samples
 
 typedef struct _remote_client {
   int running;
+  int authorised;
   int socket;
   socklen_t address_length;
   struct sockaddr_in address;

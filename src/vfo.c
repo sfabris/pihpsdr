@@ -1420,17 +1420,21 @@ void vfo_update() {
     rxlow  -= cw_keyer_sidetone_frequency;
   }
 
-  if (w < 995) {
+  if (w < 0) {
+    snprintf(wid, sizeof(wid), "---");
+  } else if (w < 995) {
     w = 10 * ((w + 5) / 10); // between 0 and 990
     snprintf(wid, sizeof(wid), "%3d", w);
   } else if (w < 9950) {
     w = 100 * ((w + 50) / 100); // between 1000 and 9900
     // print "2.7k" for a width of 2700
     snprintf(wid, sizeof(wid), "%d.%dk", w / 1000, (w % 1000) / 100);
-  } else {
+  } else if (w < 99999) {
     // print "11k" for a width of 11000
     w = (w + 500) / 1000;
     snprintf(wid, sizeof(wid), "%2dk", w);
+  } else {
+    snprintf(wid, sizeof(wid), "+++");
   }
 
   int f = vfo[id].filter;

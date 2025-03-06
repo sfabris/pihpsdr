@@ -617,7 +617,7 @@ static gpointer tci_server(gpointer data) {
 
   while (tci_running) {
     int spare;
-    char buf[MAXDATASIZE + 40];
+    char buf[MAXDATASIZE + 150];
     char key[MAXDATASIZE + 1];
     unsigned char sha[SHA_DIGEST_LENGTH];
     ssize_t nbytes;
@@ -715,7 +715,7 @@ static gpointer tci_server(gpointer data) {
     //
     // 4. Send answer back, containing the magic string in key
     //
-    snprintf(buf, 1024,
+    snprintf(buf, sizeof(buf),
              "HTTP/1.1 101 Switching Protocols\r\n"
              "Connection: Upgrade\r\n"
              "Upgrade: websocket\r\n"
@@ -763,7 +763,7 @@ static int digest_frame(const unsigned char *buff, char *msg,  int offset, int *
   int head = 2;   // number  of bytes preceeding the payload
   int mask = (buff[1] & 0x80);
   int len = (buff[1] & 0x7F);
-  int mstrt;
+  int mstrt = 0;
 
   if (len == 127) {
     // Do not even try

@@ -204,6 +204,7 @@ static void* CheckForActivity(void *arg) {
   }
 
   t_print("ENDING CheckForActivity thread\n");
+  return NULL;
 }
 
 //

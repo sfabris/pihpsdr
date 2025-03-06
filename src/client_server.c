@@ -69,6 +69,8 @@
 #include <fcntl.h>
 #include <math.h>
 #include <errno.h>
+#include <openssl/rand.h>
+#include <openssl/sha.h>
 
 #include "adc.h"
 #include "audio.h"
@@ -101,10 +103,9 @@
 #include "zoompan.h"
 
 //
-// The syncbytes include a version number
-// in the  last two bytes
+// Four bytes to sync on
 //
-static uint8_t syncbytes[4] = {0xFA, 0xFA, 0x00, 0x00};
+static uint8_t syncbytes[4] = {0xFA, 0xFA, 0xAF, 0xAF};
 
 #define SYNC(x) memcpy(x, syncbytes, sizeof(syncbytes))
 
@@ -250,22 +251,25 @@ static int connect_wait (int sockno, struct sockaddr * addr, size_t addrlen, str
     return -1;
   }
 
-  // an error occured in connect or select
-  if (res <= 0) {
+  if (res < 0) {
+    // an error occured in connect or select
     return -1;
+  } else if (res == 0) {
+    // time-out
+    return -2;
   } else {
     socklen_t len = sizeof (opt);
 
     // check for errors in socket layer
-   if (getsockopt (sockno, SOL_SOCKET, SO_ERROR, &opt, &len) < 0) {
-     return -1;
-   }
+     if (getsockopt (sockno, SOL_SOCKET, SO_ERROR, &opt, &len) < 0) {
+       return -1;
+     }
 
-   // there was an error
-   if (opt) {
-     errno = opt;
-     return -1;
-    }
+     // there was an error
+     if (opt) {
+       errno = opt;
+       return -1;
+      }
   }
 
   return 0;
@@ -1083,10 +1087,10 @@ static void server_loop() {
 
     if (memcmp(header.sync, syncbytes, sizeof(syncbytes))  != 0) {
       t_print("header.sync mismatch: %02x %02x %02x %02x\n",
-              header.sync[0], 
-              header.sync[1], 
-              header.sync[2], 
-              header.sync[3]); 
+              header.sync[0],
+              header.sync[1],
+              header.sync[2],
+              header.sync[3]);
       int syncs = 0;
       uint8_t c;
 
@@ -2311,38 +2315,84 @@ static void *listen_thread(void *arg) {
     timeout.tv_usec = 0;
     setsockopt(remoteclient.socket, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
 
+    unsigned char s[128];
+    unsigned char sha[SHA256_DIGEST_LENGTH];
 
-    char s[128];
-    inet_ntop(AF_INET, &(((struct sockaddr_in *)&remoteclient.address)->sin_addr), s, 128);
+    inet_ntop(AF_INET, &(((struct sockaddr_in *)&remoteclient.address)->sin_addr), (char *)s, 128);
     t_print("Client_connected from %s\n", s);
+    remoteclient.running = TRUE;
 
-    for (int id = 0; id < 10; id++) {
-      remoteclient.send_spectrum[id] = FALSE;
+    if (RAND_bytes(s, 64) != 1) {
+      //
+      // If RAND_bytes fails, use the non-secure pedestrian way
+      //
+      for (int i = 0; i < 64; i++) s[i] = (rand() & 0xFF);
     }
 
-    //
-    // Send PS and on-display data periodically
-    //
-    remoteclient.running = TRUE;
-    remoteclient.timer_id = gdk_threads_add_timeout_full(G_PRIORITY_HIGH_IDLE, 150, send_periodic_data, NULL, NULL);
+    send_bytes(remoteclient.socket, (char *)s, 64);
 
     //
-    // We disable "CW handled in Radio" since this makes no sense
-    // for remote operation.
+    // Include version number in challenge
     //
-    int old_cwi = cw_keyer_internal;
-    cw_keyer_internal = 1;
-    keyer_update();  // shut down iambic keyer
-    cw_keyer_internal = 0;
-    schedule_transmit_specific();
-    server_loop();
+    s[64] = (CLIENT_SERVER_VERSION >> 24) & 0xFF;
+    s[65] = (CLIENT_SERVER_VERSION >> 16) & 0xFF;
+    s[66] = (CLIENT_SERVER_VERSION >>  8) & 0xFF;
+    s[67] = (CLIENT_SERVER_VERSION >>  0) & 0xFF;
+
+    int pwdlen = strlen(hpsdr_pwd);
+
+    if (pwdlen < 5) { remoteclient.running = FALSE; }
+
+    if (pwdlen > 50) { pwdlen = 50; }
+
+    for  (int i = 0; i < pwdlen; i++) {
+      s[68+i]=hpsdr_pwd[i];
+    }
+
+    SHA256(s, 68+pwdlen, sha);
+
+    if (recv_bytes(remoteclient.socket, (char *)s, SHA256_DIGEST_LENGTH) < 0) {
+      t_print("Could not receive Passwd Response/n");
+      remoteclient.running = FALSE;
+    }
+
+    if (memcmp(sha, s, SHA256_DIGEST_LENGTH)  != 0) {
+      t_print("Wrong password!\n");
+      remoteclient.running = FALSE;
+      *s = 0;
+    } else {
+      *s = 0x7F;
+    }
+    send_bytes(remoteclient.socket, (char *)s, 1);
+
+    if (remoteclient.running) {
+      for (int id = 0; id < 10; id++) {
+        remoteclient.send_spectrum[id] = FALSE;
+      }
+
+      //
+      // Send PS and on-display data periodically
+      //
+      remoteclient.timer_id = gdk_threads_add_timeout_full(G_PRIORITY_HIGH_IDLE, 150, send_periodic_data, NULL, NULL);
+
+      //
+      // We disable "CW handled in Radio" since this makes no sense
+      // for remote operation.
+      //
+      int old_cwi = cw_keyer_internal;
+      cw_keyer_internal = 1;
+      keyer_update();  // shut down iambic keyer
+      cw_keyer_internal = 0;
+      schedule_transmit_specific();
+      server_loop();
+      cw_keyer_internal = old_cwi;
+      keyer_update();  // possibly restart iambic keyer
+      schedule_transmit_specific();
+    }
     //
     // If the connection breaks while transmitting, go RX
     //
     g_idle_add(ext_mox_update, GINT_TO_POINTER(0));
-    cw_keyer_internal = old_cwi;
-    keyer_update();  // possibly restart iambic keyer
-    schedule_transmit_specific();
 
     //
     // Stop sending periodic data
@@ -3173,7 +3223,7 @@ static void *client_thread(void* arg) {
       } else if (can_transmit) {
         transmitter->filter_low = from_short(header.s1);
         transmitter->filter_high = from_short(header.s2);
-      }    
+      }
 
       g_idle_add(ext_vfo_update, NULL);
     }
@@ -3297,6 +3347,8 @@ int radio_connect_remote(char *host, int port, const char *pwd) {
   struct sockaddr_in server_address;
   struct timeval timeout;
   int on = 1;
+  int rc;
+
   client_socket = socket(AF_INET, SOCK_STREAM, 0);
 
   if (client_socket == -1) {
@@ -3310,7 +3362,7 @@ int radio_connect_remote(char *host, int port, const char *pwd) {
 
   if (server == NULL) {
     t_print("radio_connect_remote: no such host: %s\n", host);
-    return -1;
+    return -3;
   }
 
   // assign IP, PORT and bind to address
@@ -3322,13 +3374,51 @@ int radio_connect_remote(char *host, int port, const char *pwd) {
   timeout.tv_sec = 10;
   timeout.tv_usec = 0;
 
-  if (connect_wait(client_socket, (struct sockaddr *)&server_address, sizeof(server_address), &timeout) != 0) {
-    t_print("client_thread: connect failed\n");
-    t_perror("client_thread");
-    return -1;
+  rc = connect_wait(client_socket, (struct sockaddr *)&server_address, sizeof(server_address), &timeout);
+
+  if (rc != 0) {
+    t_perror("ConnectWait");
+    return rc;  // -1: general error, -2: timeout
   }
 
   t_print("radio_connect_remote: socket %d bound to %s:%d\n", client_socket, host, port);
+
+  int pwdlen = strlen(pwd);
+
+  if (pwdlen > 60) { pwdlen = 60; }
+
+  unsigned char s[128];
+
+  if (recv_bytes(client_socket, (char *)s, 64) < 0) {
+    t_print("Could not receive Challenge\n");
+    return -4;
+  }
+
+  //
+  // Include version number in challenge
+  //
+  s[64] = (CLIENT_SERVER_VERSION >> 24) & 0xFF;
+  s[65] = (CLIENT_SERVER_VERSION >> 16) & 0xFF;
+  s[66] = (CLIENT_SERVER_VERSION >>  8) & 0xFF;
+  s[67] = (CLIENT_SERVER_VERSION >>  0) & 0xFF;
+
+  for (int i = 0; i < pwdlen; i++) {
+    s[68+i] = pwd[i];
+  }
+
+  unsigned char sha[SHA256_DIGEST_LENGTH];
+  SHA256(s, 68+pwdlen, sha);
+
+  send_bytes(client_socket, (char *)sha, SHA256_DIGEST_LENGTH);
+
+  if (recv_bytes(client_socket, (char *)s, 1) < 0) {
+    t_print("Could not receive Pwd Receipt\n");
+    return -4;
+  }
+  if (*s != 0x7F) {
+    t_print("Server did not accept password\n");
+    return -4;
+  }
   snprintf(server_host, 128, "%s:%d", host, port);
   client_thread_id = g_thread_new("remote_client", client_thread, &server_host);
   return 0;
@@ -3953,7 +4043,6 @@ static int remote_command(void *data) {
     if (can_transmit) {
       send_tx_data(remoteclient.socket);
     }
- 
   }
   break;
 
@@ -4268,7 +4357,7 @@ static int remote_command(void *data) {
   break;
 
   case CMD_TXMENU: {
-    if (can_transmit) {  
+    if (can_transmit) {
       const TXMENU_DATA *command = (TXMENU_DATA *)data;
       transmitter->tune_drive = command->tune_drive;
       transmitter->tune_use_drive = command->tune_use_drive;

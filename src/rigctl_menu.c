@@ -31,9 +31,7 @@
 #include "radio.h"
 #include "rigctl_menu.h"
 #include "rigctl.h"
-#ifdef TCI
-  #include "tci.h"
-#endif
+#include "tci.h"
 #include "vfo.h"
 
 static GtkWidget *dialog = NULL;
@@ -72,7 +70,6 @@ static void rigctl_debug_cb(GtkWidget *widget, gpointer data) {
   rigctl_debug = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 }
 
-#ifdef TCI
 static void tci_enable_cb(GtkWidget *widget, gpointer data) {
   tci_enable = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 
@@ -94,8 +91,6 @@ static void tci_port_changed_cb(GtkWidget *widget, gpointer data) {
 static void tci_txonly_changed_cb(GtkWidget *widget, gpointer data) {
   tci_txonly = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 }
-
-#endif
 
 static void rigctl_tcp_enable_cb(GtkWidget *widget, gpointer data) {
   rigctl_tcp_enable = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
@@ -235,11 +230,7 @@ void rigctl_menu(GtkWidget *parent) {
   GtkWidget *headerbar = gtk_header_bar_new();
   gtk_window_set_titlebar(GTK_WINDOW(dialog), headerbar);
   gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(headerbar), TRUE);
-#ifdef TCI
   gtk_header_bar_set_title(GTK_HEADER_BAR(headerbar), "piHPSDR - CAT/TCI");
-#else
-  gtk_header_bar_set_title(GTK_HEADER_BAR(headerbar), "piHPSDR - CAT");
-#endif
   g_signal_connect (dialog, "delete_event", G_CALLBACK (close_cb), NULL);
   g_signal_connect (dialog, "destroy", G_CALLBACK (close_cb), NULL);
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
@@ -251,11 +242,7 @@ void rigctl_menu(GtkWidget *parent) {
   gtk_widget_set_name(w, "close_button");
   g_signal_connect (w, "button-press-event", G_CALLBACK(close_cb), NULL);
   gtk_grid_attach(GTK_GRID(grid), w, 0, row, 2, 1);
-#ifdef TCI
   w = gtk_check_button_new_with_label("Enable CAT/TCI Debug Logging");
-#else
-  w = gtk_check_button_new_with_label("Enable CAT Debug Logging");
-#endif
   gtk_widget_set_name(w, "boldlabel");
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (w), rigctl_debug);
   gtk_grid_attach(GTK_GRID(grid), w, 4, row, 4, 1);
@@ -292,12 +279,12 @@ void rigctl_menu(GtkWidget *parent) {
 
   /* Put the Serial Port stuff here, one port per line */
   for (int i = 0; i < MAX_SERIAL; i++) {
-    char str[64];
+    char str[512];
     row++;
     //
     // If this serial port is used internally in a G2 simply state port name
     //
-    snprintf (str, 64, "Serial");
+    snprintf (str, sizeof(str), "Serial");
     w = gtk_label_new(str);
     gtk_widget_set_name(w, "boldlabel");
     gtk_widget_set_halign(w, GTK_ALIGN_END);
@@ -358,7 +345,7 @@ void rigctl_menu(GtkWidget *parent) {
       // If the Serial port is used for the G2 panel, just report port name.
       // If it is not enabled, this means the initial launch_serial() failed.
       //
-      snprintf (str, 64, "%s %s for G2-internal communication", SerialPorts[i].port,
+      snprintf (str, sizeof(str), "%s %s for G2-internal communication", SerialPorts[i].port,
                 SerialPorts[i].enable ? "used" : "failed");
       w = gtk_label_new(str);
       gtk_widget_set_name(w, "boldlabel");
@@ -367,7 +354,6 @@ void rigctl_menu(GtkWidget *parent) {
     }
   }
 
-#ifdef TCI
   row++;
   w = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
   gtk_widget_set_size_request(w, -1, 3);
@@ -393,7 +379,7 @@ void rigctl_menu(GtkWidget *parent) {
   gtk_widget_show(w);
   gtk_grid_attach(GTK_GRID(grid), w, 5, row, 3, 1);
   g_signal_connect(w, "toggled", G_CALLBACK(tci_txonly_changed_cb), NULL);
-#endif
+
   gtk_container_add(GTK_CONTAINER(content), grid);
   sub_menu = dialog;
   gtk_widget_show_all(dialog);

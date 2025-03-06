@@ -1553,13 +1553,10 @@ void radio_start_radio() {
   radio_change_region(region);
   radio_create_visual();
   radio_reconfigure_screen();
-#ifdef TCI
 
   if (tci_enable) {
     launch_tci();
   }
-
-#endif
 
   if (rigctl_tcp_enable) {
     launch_tcp_rigctl();
@@ -2594,12 +2591,9 @@ static void radio_restore_state() {
   GetPropI0("radio.hpsdr_server",                            hpsdr_server);
   GetPropS0("radio.hpsdr_pwd",                               hpsdr_pwd);
   GetPropI0("radio.hpsdr_server.listen_port",                listen_port);
-
-#ifdef TCI
   GetPropI0("tci_enable",                                    tci_enable);
   GetPropI0("tci_port",                                      tci_port);
   GetPropI0("tci_txonly",                                    tci_txonly);
-#endif
 
   if (!radio_is_remote) {
     GetPropI0("full_screen",                                 full_screen);
@@ -2805,12 +2799,9 @@ void radio_save_state() {
   SetPropI0("radio.hpsdr_server",                            hpsdr_server);
   SetPropS0("radio.hpsdr_pwd",                               hpsdr_pwd);
   SetPropI0("radio.hpsdr_server.listen_port",                listen_port);
-
-#ifdef TCI
   SetPropI0("tci_enable",                                    tci_enable);
   SetPropI0("tci_port",                                      tci_port);
   SetPropI0("tci_txonly",                                    tci_txonly);
-#endif
 
   if (!radio_is_remote) {
     SetPropI0("full_screen",                                 full_screen);
@@ -2956,13 +2947,9 @@ int radio_remote_start(void *data) {
   radio_create_visual();
   radio_reconfigure_screen();
 
-#ifdef TCI
-
   if (tci_enable) {
     launch_tci();
   }
-
-#endif
 
   if (rigctl_tcp_enable) {
     launch_tcp_rigctl();
