@@ -709,8 +709,8 @@ RECEIVER *rx_create_receiver(int id, int pixels, int width, int height) {
   if (device == SOAPYSDR_USB_DEVICE) {
 #ifdef SOAPYSDR
     rx->sample_rate = radio->info.soapy.sample_rate;
-    t_print("%s: RXid=%d sample_rate=%d\n", __FUNCTION__, rx->id, rx->sample_rate);
 #endif
+    t_print("%s: RXid=%d sample_rate=%d\n", __FUNCTION__, rx->id, rx->sample_rate);
     rx->resampler = NULL;
     rx->resample_buffer = NULL;
   }
@@ -1032,12 +1032,12 @@ void rx_frequency_changed(RECEIVER *rx) {
   case NEW_PROTOCOL:
     schedule_high_priority(); // send new frequency
     break;
-#if SOAPYSDR
 
   case SOAPYSDR_PROTOCOL:
+#if SOAPYSDR
     soapy_protocol_set_rx_frequency(rx, id);
-    break;
 #endif
+    break;
   }
 }
 
@@ -1415,14 +1415,14 @@ void rx_change_sample_rate(RECEIVER *rx, int sample_rate) {
   SetInputSamplerate(rx->id, sample_rate);
   SetEXTANBSamplerate (rx->id, sample_rate);
   SetEXTNOBSamplerate (rx->id, sample_rate);
-#ifdef SOAPYSDR
 
   if (protocol == SOAPYSDR_PROTOCOL) {
+#ifdef SOAPYSDR
     soapy_protocol_change_sample_rate(rx);
     soapy_protocol_set_mic_sample_rate(rx->sample_rate);
+#endif
   }
 
-#endif
   rx_on(rx);
   }
   //

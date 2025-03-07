@@ -318,7 +318,6 @@ extern double radio_get_drive(void);
 extern void   radio_set_drive(double d);
 extern void   radio_calc_drive_level(void);
 extern void   radio_calc_tune_drive_level(void);
-extern void   radio_set_rf_gain(const RECEIVER *rx);
 extern void   radio_set_attenuation(int value);
 extern void   radio_set_alex_attenuation(int v);
 extern int    radio_is_transmitting(void);

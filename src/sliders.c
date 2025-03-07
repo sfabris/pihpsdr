@@ -405,12 +405,12 @@ static void rf_gain_value_changed_cb(GtkWidget *widget, gpointer data) {
   }
 
   switch (protocol) {
-#ifdef SOAPYSDR
 
   case SOAPYSDR_PROTOCOL:
+#ifdef SOAPYSDR
     soapy_protocol_set_gain(active_receiver);
-    break;
 #endif
+    break;
 
   default:
     break;
@@ -425,13 +425,12 @@ void set_rf_gain(int rx, double value) {
   int rxadc = receiver[rx]->adc;
   //t_print("%s rx=%d adc=%d val=%f\n",__FUNCTION__, rx, rxadc, value);
   adc[rxadc].gain = value;
-#ifdef SOAPYSDR
 
   if (protocol == SOAPYSDR_PROTOCOL) {
+#ifdef SOAPYSDR
     soapy_protocol_set_gain(receiver[rx]);
-  }
-
 #endif
+  }
 
   if (display_sliders && active_receiver->id == rx) {
     gtk_range_set_value (GTK_RANGE(rf_gain_scale), adc[rxadc].gain);

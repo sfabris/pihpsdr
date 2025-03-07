@@ -179,21 +179,11 @@ static void get_info(char *driver) {
 
   for (size_t i = 0; i < rx_antennas_length; i++) { t_print( "RX antenna: %s\n", rx_antennas[i]); }
 
-  if (tx_channels > 0) {
-    tx_antennas = SoapySDRDevice_listAntennas(sdr, SOAPY_SDR_TX, 0, &tx_antennas_length);
-
-    for (size_t i = 0; i < tx_antennas_length; i++) { t_print( "TX antenna: %s\n", tx_antennas[i]); }
-  }
-
   char **rx_gains = SoapySDRDevice_listGains(sdr, SOAPY_SDR_RX, 0, &rx_gains_length);
   gboolean has_automatic_gain = SoapySDRDevice_hasGainMode(sdr, SOAPY_SDR_RX, 0);
   t_print("has_automaic_gain=%d\n", has_automatic_gain);
   gboolean has_automatic_dc_offset_correction = SoapySDRDevice_hasDCOffsetMode(sdr, SOAPY_SDR_RX, 0);
   t_print("has_automaic_dc_offset_correction=%d\n", has_automatic_dc_offset_correction);
-
-  if (tx_channels > 0) {
-    tx_gains = SoapySDRDevice_listGains(sdr, SOAPY_SDR_TX, 0, &tx_gains_length);
-  }
 
   size_t formats_length;
   char **formats = SoapySDRDevice_getStreamFormats(sdr, SOAPY_SDR_RX, 0, &formats_length);
@@ -251,38 +241,59 @@ static void get_info(char *driver) {
       STRLCPY(discovered[devices].info.soapy.version, "", sizeof(discovered[devices].info.soapy.version));
     }
 
+    //
+    // Client/Server version:
+    // The RX/TX gains and antennas are now stored in "radio" in a fixed place,
+    // where we have up to 8 strings of max length (including trailing zero) of 64
+    //
+    if (rx_gains_length > 8) { rx_gains_length = 8; }
+    if (rx_antennas_length > 8) { rx_antennas_length = 8; }
+
     discovered[devices].info.soapy.rx_channels = rx_channels;
     discovered[devices].info.soapy.rx_gains = rx_gains_length;
-    discovered[devices].info.soapy.rx_gain = rx_gains;
-    discovered[devices].info.soapy.rx_range = malloc(rx_gains_length * sizeof(SoapySDRRange));
 
     for (size_t i = 0; i < rx_gains_length; i++) {
-      t_print("RX gain %s\n", rx_gains[i]);
       SoapySDRRange rx_range = SoapySDRDevice_getGainElementRange(sdr, SOAPY_SDR_RX, 0, rx_gains[i]);
       t_print("RX gain available: %s, %f -> %f step=%f\n", rx_gains[i], rx_range.minimum, rx_range.maximum, rx_range.step);
-      discovered[devices].info.soapy.rx_range[i] = rx_range;
+      snprintf(&discovered[devices].info.soapy.rx_gain[0][i], 64, "%s", rx_gains[i]);
+      discovered[devices].info.soapy.rx_range_step[i] = rx_range.step;
+      discovered[devices].info.soapy.rx_range_min[i] = rx_range.minimum;
+      discovered[devices].info.soapy.rx_range_max[i] = rx_range.maximum;
     }
 
     discovered[devices].info.soapy.rx_has_automatic_gain = has_automatic_gain;
     discovered[devices].info.soapy.rx_has_automatic_dc_offset_correction = has_automatic_dc_offset_correction;
     discovered[devices].info.soapy.rx_antennas = rx_antennas_length;
-    discovered[devices].info.soapy.rx_antenna = rx_antennas;
     discovered[devices].info.soapy.tx_channels = tx_channels;
 
+    for (size_t i = 0; i < rx_antennas_length; i++) {
+      snprintf(&discovered[devices].info.soapy.rx_antenna[0][i], 64, "%s", rx_antennas[i]);
+    }
+
     if (tx_channels > 0) {
+      tx_gains = SoapySDRDevice_listGains(sdr, SOAPY_SDR_TX, 0, &tx_gains_length);
+
+      if (tx_gains_length > 8) { tx_gains_length = 8; }
+
       discovered[devices].info.soapy.tx_gains = tx_gains_length;
-      discovered[devices].info.soapy.tx_gain = tx_gains;
-      discovered[devices].info.soapy.tx_range = malloc(tx_gains_length * sizeof(SoapySDRRange));
 
       for (size_t i = 0; i < tx_gains_length; i++) {
-        t_print("%s ", tx_gains[i]);
         SoapySDRRange tx_range = SoapySDRDevice_getGainElementRange(sdr, SOAPY_SDR_TX, 0, tx_gains[i]);
         t_print("TX gain %s, %f -> %f step=%f\n", tx_gains[i], tx_range.minimum, tx_range.maximum, tx_range.step);
-        discovered[devices].info.soapy.tx_range[i] = tx_range;
+        snprintf(&discovered[devices].info.soapy.tx_gain[0][i], 64, "%s", tx_gains[i]);
+        discovered[devices].info.soapy.tx_range_step[i] = tx_range.step;
+        discovered[devices].info.soapy.tx_range_min[i] = tx_range.minimum;
+        discovered[devices].info.soapy.tx_range_max[i] = tx_range.maximum;
       }
 
+      tx_antennas = SoapySDRDevice_listAntennas(sdr, SOAPY_SDR_TX, 0, &tx_antennas_length);
+      if (tx_antennas_length > 8) { tx_antennas_length = 8; }
       discovered[devices].info.soapy.tx_antennas = tx_antennas_length;
-      discovered[devices].info.soapy.tx_antenna = tx_antennas;
+
+      for (size_t i = 0; i < tx_antennas_length; i++) {
+        t_print( "TX antenna: %s\n", tx_antennas[i]);
+        snprintf(&discovered[devices].info.soapy.tx_antenna[0][i], 64, "%s", tx_antennas[i]);
+      }
     }
 
     discovered[devices].info.soapy.sensors = sensors;

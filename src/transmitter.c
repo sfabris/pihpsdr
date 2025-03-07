@@ -1372,21 +1372,20 @@ static void tx_full_buffer(TRANSMITTER *tx) {
         }
 
         break;
-#ifdef SOAPYSDR
 
       case SOAPYSDR_PROTOCOL:
-
         //
         // No scaling, no audio.
         // generate audio samples to be sent to the radio
         //
         for (j = 0; j < tx->output_samples; j++) {
+#ifdef SOAPYSDR
           double ramp = tx->cw_sig_rf[j];                   // between 0.0 and 1.0
           soapy_protocol_iq_samples(0.0F, (float)ramp);     // SOAPY: just convert double to float
+#endif
         }
 
         break;
-#endif
       }
     } else {
       //
@@ -1407,13 +1406,13 @@ static void tx_full_buffer(TRANSMITTER *tx) {
         case NEW_PROTOCOL:
           new_protocol_iq_samples(isample, qsample);
           break;
-#ifdef SOAPYSDR
 
         case SOAPYSDR_PROTOCOL:
           // SOAPY: just convert the double IQ samples (is,qs) to float.
+#ifdef SOAPYSDR
           soapy_protocol_iq_samples((float)is, (float)qs);
-          break;
 #endif
+          break;
         }
       }
     }

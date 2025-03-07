@@ -70,10 +70,12 @@ SoapySDRDevice *get_soapy_device() {
 }
 
 void soapy_protocol_set_mic_sample_rate(int rate) {
+  ASSERT_SERVER();
   mic_sample_divisor = rate / 48000;
 }
 
 void soapy_protocol_change_sample_rate(RECEIVER *rx) {
+  ASSERT_SERVER();
   //
   // rx->mutex already locked, so we can call this  only
   // if the radio is stopped -- we cannot change the resampler
@@ -135,6 +137,7 @@ void soapy_protocol_change_sample_rate(RECEIVER *rx) {
 }
 
 void soapy_protocol_create_receiver(RECEIVER *rx) {
+  ASSERT_SERVER();
   int rc;
   mic_sample_divisor = rx->sample_rate / 48000;
   t_print("%s: device=%p adc=%d setting bandwidth=%f\n", __FUNCTION__, soapy_device, rx->adc, bandwidth);
@@ -198,6 +201,7 @@ void soapy_protocol_create_receiver(RECEIVER *rx) {
 }
 
 void soapy_protocol_start_receiver(RECEIVER *rx) {
+  ASSERT_SERVER();
   int rc;
   t_print("%s: id=%d soapy_device=%p rx_stream=%p\n", __FUNCTION__, rx->id, soapy_device, rx_stream);
   size_t channel = rx->adc;
@@ -217,6 +221,7 @@ void soapy_protocol_start_receiver(RECEIVER *rx) {
 }
 
 void soapy_protocol_create_transmitter(TRANSMITTER *tx) {
+  ASSERT_SERVER();
   int rc;
   t_print("%s: setting samplerate=%f\n", __FUNCTION__, (double)tx->iq_output_rate);
   rc = SoapySDRDevice_setSampleRate(soapy_device, SOAPY_SDR_TX, tx->dac, (double)tx->iq_output_rate);
@@ -256,6 +261,7 @@ void soapy_protocol_create_transmitter(TRANSMITTER *tx) {
 }
 
 void soapy_protocol_start_transmitter(TRANSMITTER *tx) {
+  ASSERT_SERVER();
   int rc;
   double rate = SoapySDRDevice_getSampleRate(soapy_device, SOAPY_SDR_TX, tx->dac);
   t_print("soapy_protocol_start_transmitter: activateStream rate=%f\n", rate);
@@ -268,6 +274,7 @@ void soapy_protocol_start_transmitter(TRANSMITTER *tx) {
 }
 
 void soapy_protocol_stop_receiver(const RECEIVER *rx) {
+  ASSERT_SERVER();
   // argument rx unused
   running = FALSE;
 
@@ -279,6 +286,7 @@ void soapy_protocol_stop_receiver(const RECEIVER *rx) {
 
 // cppcheck-suppress unusedFunction
 void soapy_protocol_stop_transmitter(TRANSMITTER *tx) {
+  ASSERT_SERVER();
   int rc;
   t_print("soapy_protocol_stop_transmitter: deactivateStream\n");
   // argument tx unused
@@ -291,6 +299,7 @@ void soapy_protocol_stop_transmitter(TRANSMITTER *tx) {
 }
 
 void soapy_protocol_init(gboolean hf) {
+  ASSERT_SERVER();
   SoapySDRKwargs args = {};
   char temp[32];
   SoapySDR_setLogLevel(SOAPY_SDR_TRACE);
@@ -334,6 +343,7 @@ void soapy_protocol_init(gboolean hf) {
 }
 
 static void *receive_thread(void *arg) {
+  ASSERT_SERVER(NULL);
   //
   //  Since no mic samples arrive in SOAPY, we must use
   //  the incoming RX samples as a "heart beat" for the
@@ -427,6 +437,7 @@ static void *receive_thread(void *arg) {
 }
 
 void soapy_protocol_iq_samples(float isample, float qsample) {
+  ASSERT_SERVER();
   int flags = 0;
 
   if (radio_is_transmitting()) {
@@ -462,11 +473,13 @@ void soapy_protocol_iq_samples(float isample, float qsample) {
 
 // cppcheck-suppress unusedFunction
 void soapy_protocol_stop() {
+  ASSERT_SERVER();
   t_print("soapy_protocol_stop\n");
   running = FALSE;
 }
 
 void soapy_protocol_set_rx_frequency(RECEIVER *rx, int v) {
+  ASSERT_SERVER();
   if (soapy_device != NULL) {
     double f = (double)(vfo[v].frequency - vfo[v].lo);
     int rc = SoapySDRDevice_setFrequency(soapy_device, SOAPY_SDR_RX, rx->adc, f, NULL);
@@ -478,6 +491,7 @@ void soapy_protocol_set_rx_frequency(RECEIVER *rx, int v) {
 }
 
 void soapy_protocol_set_tx_frequency(TRANSMITTER *tx) {
+  ASSERT_SERVER();
   int v;
   v = vfo_get_tx_vfo();
 
@@ -504,6 +518,7 @@ void soapy_protocol_set_tx_frequency(TRANSMITTER *tx) {
 }
 
 void soapy_protocol_set_rx_antenna(RECEIVER *rx, int ant) {
+  ASSERT_SERVER();
   if (soapy_device != NULL) {
     if (ant >= (int) radio->info.soapy.rx_antennas) { ant = (int) radio->info.soapy.rx_antennas - 1; }
 
@@ -517,6 +532,7 @@ void soapy_protocol_set_rx_antenna(RECEIVER *rx, int ant) {
 }
 
 void soapy_protocol_set_tx_antenna(TRANSMITTER *tx, int ant) {
+  ASSERT_SERVER();
   if (soapy_device != NULL) {
     if (ant >= (int) radio->info.soapy.tx_antennas) { ant = (int) radio->info.soapy.tx_antennas - 1; }
 
@@ -530,6 +546,7 @@ void soapy_protocol_set_tx_antenna(TRANSMITTER *tx, int ant) {
 }
 
 void soapy_protocol_set_gain(RECEIVER *rx) {
+  ASSERT_SERVER();
   int rc;
   //t_print("soapy_protocol_set_gain: adc=%d gain=%f\n",gain);
   rc = SoapySDRDevice_setGain(soapy_device, SOAPY_SDR_RX, rx->adc, adc[rx->adc].gain);
@@ -540,6 +557,7 @@ void soapy_protocol_set_gain(RECEIVER *rx) {
 }
 
 void soapy_protocol_set_gain_element(const RECEIVER *rx, char *name, int gain) {
+  ASSERT_SERVER();
   int rc;
   t_print("%s: adc=%d %s=%d\n", __FUNCTION__, rx->adc, name, gain);
   rc = SoapySDRDevice_setGainElement(soapy_device, SOAPY_SDR_RX, rx->adc, name, (double)gain);
@@ -550,6 +568,7 @@ void soapy_protocol_set_gain_element(const RECEIVER *rx, char *name, int gain) {
 }
 
 void soapy_protocol_set_tx_gain(TRANSMITTER *tx, int gain) {
+  ASSERT_SERVER();
   int rc;
   rc = SoapySDRDevice_setGain(soapy_device, SOAPY_SDR_TX, tx->dac, (double)gain);
 
@@ -559,6 +578,7 @@ void soapy_protocol_set_tx_gain(TRANSMITTER *tx, int gain) {
 }
 
 void soapy_protocol_set_tx_gain_element(TRANSMITTER *tx, char *name, int gain) {
+  ASSERT_SERVER();
   int rc;
   rc = SoapySDRDevice_setGainElement(soapy_device, SOAPY_SDR_TX, tx->dac, name, (double)gain);
 
@@ -568,12 +588,14 @@ void soapy_protocol_set_tx_gain_element(TRANSMITTER *tx, char *name, int gain) {
 }
 
 int soapy_protocol_get_gain_element(RECEIVER *rx, char *name) {
+  ASSERT_SERVER(0);
   double gain;
   gain = SoapySDRDevice_getGainElement(soapy_device, SOAPY_SDR_RX, rx->adc, name);
   return (int)gain;
 }
 
 int soapy_protocol_get_tx_gain_element(TRANSMITTER *tx, char *name) {
+  ASSERT_SERVER(0);
   double gain;
   gain = SoapySDRDevice_getGainElement(soapy_device, SOAPY_SDR_TX, tx->dac, name);
   return (int)gain;
@@ -581,11 +603,13 @@ int soapy_protocol_get_tx_gain_element(TRANSMITTER *tx, char *name) {
 
 // cppcheck-suppress unusedFunction
 gboolean soapy_protocol_get_automatic_gain(RECEIVER *rx) {
+  ASSERT_SERVER(0);
   gboolean mode = SoapySDRDevice_getGainMode(soapy_device, SOAPY_SDR_RX, rx->adc);
   return mode;
 }
 
 void soapy_protocol_set_automatic_gain(RECEIVER *rx, gboolean mode) {
+  ASSERT_SERVER();
   int rc;
   rc = SoapySDRDevice_setGainMode(soapy_device, SOAPY_SDR_RX, rx->adc, mode);
 

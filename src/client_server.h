@@ -95,6 +95,9 @@ enum _header_type_enum {
   CMD_SAT,
   CMD_SCREEN,
   CMD_SIDETONEFREQ,
+  CMD_SOAPY_AGC,
+  CMD_SOAPY_RXANT,
+  CMD_SOAPY_TXANT,
   CMD_SPECTRUM,
   CMD_SPLIT,
   CMD_SQUELCH,
@@ -134,7 +137,7 @@ enum _header_type_enum {
   CLIENT_SERVER_COMMANDS,
 };
 
-#define CLIENT_SERVER_VERSION 0x01000000 // 32-bit version number
+#define CLIENT_SERVER_VERSION 0x01000001 // 32-bit version number
 #define SPECTRUM_DATA_SIZE 4096          // Maximum width of a panadapter
 #define AUDIO_DATA_SIZE 1024             // 1024 stereo samples
 
@@ -355,6 +358,19 @@ typedef struct __attribute__((__packed__)) _radio_data {
   uint8_t  n_adc;
   uint8_t  diversity_enabled;
   uint8_t  soapy_iqswap;
+  uint8_t  soapy_rx_antennas;
+  uint8_t  soapy_tx_antennas;
+  uint8_t  soapy_rx_gains;
+  uint8_t  soapy_tx_gains;
+  uint8_t  soapy_tx_channels;
+  uint8_t  soapy_rx_has_automatic_gain;
+//
+  char     soapy_hardware_key[64];
+  char     soapy_driver_key[64];
+  char     soapy_rx_antenna[64][8];
+  char     soapy_tx_antenna[64][8];
+  char     soapy_rx_gain[64][8];
+  char     soapy_tx_gain[64][8];
 //
   uint16_t pa_power;
   uint16_t OCfull_tune_time;
@@ -371,6 +387,12 @@ typedef struct __attribute__((__packed__)) _radio_data {
   mydouble pa_trim[11];
   mydouble div_gain;
   mydouble div_phase;
+  mydouble soapy_rx_range_step[8];
+  mydouble soapy_rx_range_min[8];
+  mydouble soapy_rx_range_max[8];
+  mydouble soapy_tx_range_step[8];
+  mydouble soapy_tx_range_min[8];
+  mydouble soapy_tx_range_max[8];
 //
   uint64_t frequency_calibration;
   uint64_t soapy_radio_sample_rate;
@@ -421,13 +443,7 @@ typedef struct __attribute__((__packed__)) _dac_data {
 typedef struct __attribute__((__packed__)) _adc_data {
   HEADER header;
   uint8_t adc;
-  uint8_t dither;
-  uint8_t random;
-  uint8_t preamp;
 //
-  uint16_t filters;
-  uint16_t hpf;
-  uint16_t lpf;
   uint16_t antenna;
   uint16_t attenuation;
 //
@@ -844,6 +860,9 @@ extern void send_sample_rate(int s, int rx, int sample_rate);
 extern void send_sat(int s, int sat);
 extern void send_screen(int s, int hstack, int width);
 extern void send_sidetone_freq(int s, int freq);
+extern void send_soapy_rxant(int s);
+extern void send_soapy_txant(int s);
+extern void send_soapy_agc(int s, int id);
 extern void send_split(int s, int state);
 extern void send_squelch(int s, int rx, int enable, double squelch);
 extern void send_startstop_spectrum(int s, int id, int state);

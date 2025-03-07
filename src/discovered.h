@@ -112,35 +112,39 @@ struct _DISCOVERED {
       char interface_name[64];
     } network;
 
-#ifdef SOAPYSDR
     struct soapy {
-      char version[128];
       char hardware_key[64];
       char driver_key[64];
+      double rx_range_step[8];
+      double rx_range_min[8];
+      double rx_range_max[8];
+      double tx_range_step[8];
+      double tx_range_min[8];
+      double tx_range_max[8];
+      int    rx_antennas;
+      int    tx_antennas;
+      char rx_antenna[64][8];
+      char tx_antenna[64][8];
+      int sample_rate;
+      int    rx_gains;
+      int    tx_gains;
+      char rx_gain[64][8];
+      char tx_gain[64][8];
+      int rx_has_automatic_gain;
+      int    tx_channels;
+#ifdef SOAPYSDR
+      char version[128];
       int rtlsdr_count;
       int sdrplay_count;
-      int sample_rate;
-      size_t rx_channels;
-      size_t rx_gains;
-      char **rx_gain;
-      SoapySDRRange *rx_range;
-      gboolean rx_has_automatic_gain;
+      int    rx_channels;
       gboolean rx_has_automatic_dc_offset_correction;
-      size_t rx_antennas;
-      char **rx_antenna;
-      size_t tx_channels;
-      size_t tx_gains;
-      char **tx_gain;
-      SoapySDRRange *tx_range;
-      size_t tx_antennas;
-      char **tx_antenna;
-      size_t sensors;
+      int    sensors;
       char **sensor;
       gboolean has_temp;
       char address[64];
+#endif
     } soapy;
 
-#endif
   } info;
 };
 

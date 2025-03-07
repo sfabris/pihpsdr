@@ -839,12 +839,10 @@ static void radio_create_visual() {
     case NEW_PROTOCOL:
       radio_has_transmitter = 1;
       break;
-#ifdef SOAPYSDR
 
     case SOAPYSDR_PROTOCOL:
       radio_has_transmitter = (radio->info.soapy.tx_channels != 0);
       break;
-#endif
     }
 
     if (radio_has_transmitter) {
@@ -953,12 +951,12 @@ static void radio_create_visual() {
     case NEW_PROTOCOL:
       new_protocol_init();
       break;
-#ifdef SOAPYSDR
 
     case SOAPYSDR_PROTOCOL:
+#ifdef SOAPYSDR
       soapy_protocol_init(FALSE);
-      break;
 #endif
+      break;
     }
   }
 
@@ -1276,7 +1274,6 @@ void radio_start_radio() {
     snprintf(ip, 32, "%s", inet_ntoa(radio->info.network.address.sin_addr));
     snprintf(iface, 64, "%s", radio->info.network.interface_name);
     break;
-#ifdef SOAPYSDR
 
   case SOAPYSDR_PROTOCOL:
     STRLCPY(p, "SoapySDR", 32);
@@ -1286,7 +1283,6 @@ void radio_start_radio() {
              (radio->software_version % 100) / 10,
              radio->software_version % 10);
     break;
-#endif
   }
 
   //
@@ -1438,19 +1434,12 @@ void radio_start_radio() {
   }
 
   /* Set defaults */
-  adc[0].antenna = ANTENNA_1;
-  adc[0].filters = AUTOMATIC;
-  adc[0].hpf = HPF_13;
-  adc[0].lpf = LPF_30_20;
-  adc[0].dither = FALSE;
-  adc[0].random = FALSE;
-  adc[0].preamp = FALSE;
+  adc[0].antenna = 0;
   adc[0].attenuation = 0;
-  adc[0].enable_step_attenuation = 0;
   adc[0].gain = rx_gain_calibration;
   adc[0].min_gain = 0.0;
   adc[0].max_gain = 100.0;
-  dac.antenna = 1;
+  dac.antenna = 0;
   dac.gain = 0;
 
   if (have_rx_gain && (protocol == ORIGINAL_PROTOCOL || protocol == NEW_PROTOCOL)) {
@@ -1464,26 +1453,17 @@ void radio_start_radio() {
   }
 
   adc[0].agc = FALSE;
-#ifdef SOAPYSDR
 
   if (device == SOAPYSDR_USB_DEVICE) {
     if (radio->info.soapy.rx_gains > 0) {
-      adc[0].min_gain = radio->info.soapy.rx_range[0].minimum;
-      adc[0].max_gain = radio->info.soapy.rx_range[0].maximum;;
+      adc[0].min_gain = radio->info.soapy.rx_range_min[0];
+      adc[0].max_gain = radio->info.soapy.rx_range_max[0];
       adc[0].gain = adc[0].min_gain;
     }
   }
 
-#endif
-  adc[1].antenna = ANTENNA_1;
-  adc[1].filters = AUTOMATIC;
-  adc[1].hpf = HPF_9_5;
-  adc[1].lpf = LPF_60_40;
-  adc[1].dither = FALSE;
-  adc[1].random = FALSE;
-  adc[1].preamp = FALSE;
+  adc[1].antenna = 0;
   adc[1].attenuation = 0;
-  adc[1].enable_step_attenuation = 0;
   adc[1].gain = rx_gain_calibration;
   adc[1].min_gain = 0.0;
   adc[1].max_gain = 100.0;
@@ -1494,19 +1474,17 @@ void radio_start_radio() {
   }
 
   adc[1].agc = FALSE;
-#ifdef SOAPYSDR
 
   if (device == SOAPYSDR_USB_DEVICE) {
     if (radio->info.soapy.rx_gains > 0) {
-      adc[1].min_gain = radio->info.soapy.rx_range[0].minimum;
-      adc[1].max_gain = radio->info.soapy.rx_range[0].maximum;;
+      adc[1].min_gain = radio->info.soapy.rx_range_min[0];
+      adc[1].max_gain = radio->info.soapy.rx_range_max[0];
       adc[1].gain = adc[1].min_gain;
     }
 
     soapy_radio_sample_rate = radio->info.soapy.sample_rate;
   }
 
-#endif
 #ifdef GPIO
 
   switch (controller) {
@@ -1580,36 +1558,42 @@ void radio_start_radio() {
   }
 
   schedule_high_priority();
-#ifdef SOAPYSDR
 
   if (protocol == SOAPYSDR_PROTOCOL) {
     RECEIVER *rx = receiver[0];
+#ifdef SOAPYSDR
     soapy_protocol_create_receiver(rx);
+#endif
 
     if (can_transmit) {
+#ifdef SOAPYSDR
       soapy_protocol_create_transmitter(transmitter);
       soapy_protocol_set_tx_antenna(transmitter, dac.antenna);
       soapy_protocol_set_tx_gain(transmitter, transmitter->drive);
       soapy_protocol_set_tx_frequency(transmitter);
       soapy_protocol_start_transmitter(transmitter);
+#endif
     }
 
+#ifdef SOAPYSDR
     soapy_protocol_set_rx_antenna(rx, adc[0].antenna);
     soapy_protocol_set_rx_frequency(rx, VFO_A);
     soapy_protocol_set_automatic_gain(rx, adc[0].agc);
 
     if (!adc[0].agc) { soapy_protocol_set_gain(rx); }
+#endif
 
     if (vfo[0].ctun) {
       rx_set_frequency(rx, vfo[0].ctun_frequency);
     }
 
+#ifdef SOAPYSDR
     soapy_protocol_start_receiver(rx);
     //t_print("radio: set rf_gain=%f\n",rx->rf_gain);
     soapy_protocol_set_gain(rx);
+#endif
   }
 
-#endif
   g_idle_add(ext_vfo_update, NULL);
   gdk_window_set_cursor(gtk_widget_get_window(top_window), gdk_cursor_new(GDK_ARROW));
 #ifdef MIDI
@@ -1749,7 +1733,6 @@ void radio_change_sample_rate(int rate) {
     }
 
     break;
-#ifdef SOAPYSDR
 
   case SOAPYSDR_PROTOCOL:
     if (receiver[0]->sample_rate != rate) {
@@ -1759,7 +1742,6 @@ void radio_change_sample_rate(int rate) {
     }
 
     break;
-#endif
   }
 }
 
@@ -2443,12 +2425,12 @@ void radio_set_drive(double value) {
   case NEW_PROTOCOL:
     radio_calc_drive_level();
     break;
-#ifdef SOAPYSDR
 
   case SOAPYSDR_PROTOCOL:
+#ifdef SOAPYSDR
     soapy_protocol_set_tx_gain(transmitter, transmitter->drive);
-    break;
 #endif
+    break;
   }
 }
 
@@ -2459,12 +2441,6 @@ void radio_set_satmode(int mode) {
   }
 
   sat_mode = mode;
-}
-
-void radio_set_rf_gain(const RECEIVER *rx) {
-#ifdef SOAPYSDR
-  soapy_protocol_set_gain_element(rx, radio->info.soapy.rx_gain[rx->adc], (int)adc[rx->adc].gain);
-#endif
 }
 
 void radio_set_alex_antennas() {
@@ -2667,15 +2643,8 @@ static void radio_restore_state() {
     }
 
     for (int i = 0; i < n_adc; i++) {
-      GetPropI1("radio.adc[%d].filters", i,                  adc[i].filters);
-      GetPropI1("radio.adc[%d].hpf", i,                      adc[i].hpf);
-      GetPropI1("radio.adc[%d].lpf", i,                      adc[i].lpf);
       GetPropI1("radio.adc[%d].antenna", i,                  adc[i].antenna);
-      GetPropI1("radio.adc[%d].dither", i,                   adc[i].dither);
-      GetPropI1("radio.adc[%d].random", i,                   adc[i].random);
-      GetPropI1("radio.adc[%d].preamp", i,                   adc[i].preamp);
       GetPropI1("radio.adc[%d].attenuation", i,              adc[i].attenuation);
-      GetPropI1("radio.adc[%d].enable_step_attenuation", i,  adc[i].enable_step_attenuation);
       GetPropF1("radio.adc[%d].gain", i,                     adc[i].gain);
       GetPropF1("radio.adc[%d].min_gain", i,                 adc[i].min_gain);
       GetPropF1("radio.adc[%d].max_gain", i,                 adc[i].max_gain);
@@ -2875,15 +2844,8 @@ void radio_save_state() {
     }
 
     for (int i = 0; i < n_adc; i++) {
-      SetPropI1("radio.adc[%d].filters", i,                  adc[i].filters);
-      SetPropI1("radio.adc[%d].hpf", i,                      adc[i].hpf);
-      SetPropI1("radio.adc[%d].lpf", i,                      adc[i].lpf);
       SetPropI1("radio.adc[%d].antenna", i,                  adc[i].antenna);
-      SetPropI1("radio.adc[%d].dither", i,                   adc[i].dither);
-      SetPropI1("radio.adc[%d].random", i,                   adc[i].random);
-      SetPropI1("radio.adc[%d].preamp", i,                   adc[i].preamp);
       SetPropI1("radio.adc[%d].attenuation", i,              adc[i].attenuation);
-      SetPropI1("radio.adc[%d].enable_step_attenuation", i,  adc[i].enable_step_attenuation);
       SetPropF1("radio.adc[%d].gain", i,                     adc[i].gain);
       SetPropF1("radio.adc[%d].min_gain", i,                 adc[i].min_gain);
       SetPropF1("radio.adc[%d].max_gain", i,                 adc[i].max_gain);
@@ -3129,12 +3091,12 @@ void radio_protocol_stop() {
   case NEW_PROTOCOL:
     new_protocol_menu_stop();
     break;
-#ifdef SOAPYSDR
 
   case SOAPYSDR_PROTOCOL:
+#ifdef SOAPYSDR
     soapy_protocol_stop_receiver(receiver[0]);
-    break;
 #endif
+    break;
   }
 }
 
@@ -3147,12 +3109,12 @@ void radio_protocol_run() {
   case NEW_PROTOCOL:
     new_protocol_menu_start();
     break;
-#ifdef SOAPYSDR
 
   case SOAPYSDR_PROTOCOL:
+#ifdef SOAPYSDR
     soapy_protocol_start_receiver(receiver[0]);
-    break;
 #endif
+    break;
   }
 }
 

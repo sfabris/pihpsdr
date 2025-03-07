@@ -742,6 +742,31 @@ void send_radio_data(int sock) {
   data.n_adc = n_adc;
   data.diversity_enabled = diversity_enabled;
   data.soapy_iqswap = soapy_iqswap;
+  data.soapy_rx_antennas = radio->info.soapy.rx_antennas;
+  data.soapy_tx_antennas = radio->info.soapy.tx_antennas;
+  data.soapy_rx_gains = radio->info.soapy.rx_gains;
+  data.soapy_tx_gains = radio->info.soapy.tx_gains;
+  data.soapy_tx_channels = radio->info.soapy.tx_channels;
+  data.soapy_rx_has_automatic_gain = radio->info.soapy.rx_has_automatic_gain;
+//
+  memcpy(data.soapy_hardware_key, radio->info.soapy.hardware_key, 64);
+  memcpy(data.soapy_driver_key, radio->info.soapy.driver_key, 64);
+
+  for (int i = 0; i < radio->info.soapy.rx_antennas; i++) {
+    memcpy(&data.soapy_rx_antenna[0][i], &radio->info.soapy.rx_antenna[0][i], 64);
+  }
+
+  for (int i = 0; i < radio->info.soapy.tx_antennas; i++) {
+    memcpy(&data.soapy_tx_antenna[0][i], &radio->info.soapy.tx_antenna[0][i], 64);
+  }
+
+  for (int i = 0; i < radio->info.soapy.rx_gains; i++) {
+    memcpy(&data.soapy_rx_gain[0][i], &radio->info.soapy.rx_gain[0][i], 64);
+  }
+
+  for (int i = 0; i < radio->info.soapy.tx_gains; i++) {
+    memcpy(&data.soapy_tx_gain[0][i], &radio->info.soapy.tx_gain[0][i], 64);
+  }
 //
   data.pa_power = to_short(pa_power);
   data.OCfull_tune_time = to_short(OCfull_tune_time);
@@ -762,6 +787,18 @@ void send_radio_data(int sock) {
     data.pa_trim[i] = to_double(pa_trim[i]);
   }
 
+  for (int i = 0; i < radio->info.soapy.rx_gains; i++) {
+    data.soapy_rx_range_step[i] = to_double(radio->info.soapy.rx_range_step[i]);
+    data.soapy_rx_range_min[i] = to_double(radio->info.soapy.rx_range_min[i]);
+    data.soapy_rx_range_max[i] = to_double(radio->info.soapy.rx_range_max[i]);
+  }
+
+  for (int i = 0; i < radio->info.soapy.tx_gains; i++) {
+    data.soapy_tx_range_step[i] = to_double(radio->info.soapy.tx_range_step[i]);
+    data.soapy_tx_range_min[i] = to_double(radio->info.soapy.tx_range_min[i]);
+    data.soapy_tx_range_max[i] = to_double(radio->info.soapy.tx_range_max[i]);
+  }
+//
   data.frequency_calibration = to_ll(frequency_calibration);
   data.soapy_radio_sample_rate = to_ll(soapy_radio_sample_rate);
   data.radio_frequency_min = to_ll(radio->frequency_min);
@@ -784,13 +821,7 @@ void send_adc_data(int sock, int i) {
   SYNC(data.header.sync);
   data.header.data_type = to_short(INFO_ADC);
   data.adc = i;
-  data.filters = to_short(adc[i].filters);
-  data.hpf = to_short(adc[i].hpf);
-  data.lpf = to_short(adc[i].lpf);
   data.antenna = to_short(adc[i].antenna);
-  data.dither = adc[i].dither;
-  data.random = adc[i].random;
-  data.preamp = adc[i].preamp;
   data.attenuation = to_short(adc[i].attenuation);
   data.gain = to_double(adc[i].gain);
   data.min_gain = to_double(adc[i].min_gain);
@@ -1410,6 +1441,9 @@ static void server_loop() {
     case CMD_SAT:
     case CMD_SCREEN:
     case CMD_SIDETONEFREQ:
+    case CMD_SOAPY_AGC:
+    case CMD_SOAPY_RXANT:
+    case CMD_SOAPY_TXANT:
     case CMD_SPLIT:
     case CMD_STEP:
     case CMD_STORE:
@@ -2076,6 +2110,31 @@ void send_heartbeat(int s) {
   send_bytes(s, (char *)&header, sizeof(HEADER));
 }
 
+void send_soapy_rxant(int s) {
+  HEADER header;
+  SYNC(header.sync);
+  header.data_type = to_short(CMD_SOAPY_RXANT);
+  header.b1 = adc[0].antenna;
+  send_bytes(s, (char *)&header, sizeof(HEADER));
+}
+
+void send_soapy_txant(int s) {
+  HEADER header;
+  SYNC(header.sync);
+  header.data_type = to_short(CMD_SOAPY_TXANT);
+  header.b1 = dac.antenna;
+  send_bytes(s, (char *)&header, sizeof(HEADER));
+}
+
+void send_soapy_agc(int s, int id) {
+  HEADER header;
+  SYNC(header.sync);
+  header.data_type = to_short(CMD_SOAPY_AGC);
+  header.b1 = id;
+  header.b2 = adc[id].agc;
+  send_bytes(s, (char *)&header, sizeof(HEADER));
+}
+
 void send_split(int s, int state) {
   HEADER header;
   SYNC(header.sync);
@@ -2506,6 +2565,7 @@ static void *client_thread(void* arg) {
     g_mutex_init(&rx->display_mutex);
     g_mutex_init(&rx->mutex);
     g_mutex_init(&rx->local_audio_mutex);
+    rx->id = i;
     rx->pixel_samples = NULL;
     rx->local_audio_buffer = NULL;
     rx->display_panadapter = 1;
@@ -2772,6 +2832,31 @@ static void *client_thread(void* arg) {
       n_adc = data.n_adc;
       diversity_enabled = data.diversity_enabled;
       soapy_iqswap = data.soapy_iqswap;
+      radio->info.soapy.rx_antennas = data.soapy_rx_antennas;
+      radio->info.soapy.tx_antennas = data.soapy_tx_antennas;
+      radio->info.soapy.rx_gains = data.soapy_rx_gains;
+      radio->info.soapy.tx_gains = data.soapy_tx_gains;
+      radio->info.soapy.tx_channels = data.soapy_tx_channels;
+      radio->info.soapy.rx_has_automatic_gain = data.soapy_rx_has_automatic_gain;
+//
+      memcpy(radio->info.soapy.hardware_key, data.soapy_hardware_key, 64);
+      memcpy(radio->info.soapy.driver_key, data.soapy_driver_key, 64);
+
+      for (int i = 0; i < radio->info.soapy.rx_antennas; i++) {
+        memcpy(&radio->info.soapy.rx_antenna[0][i], &data.soapy_rx_antenna[0][i], 64);
+      }
+
+      for (int i = 0; i < radio->info.soapy.tx_antennas; i++) {
+        memcpy(&radio->info.soapy.tx_antenna[0][i], &data.soapy_tx_antenna[0][i], 64);
+      }
+
+      for (int i = 0; i < radio->info.soapy.rx_gains; i++) {
+        memcpy(&radio->info.soapy.rx_gain[0][i], &data.soapy_rx_gain[0][i], 64);
+      }
+
+      for (int i = 0; i < radio->info.soapy.tx_gains; i++) {
+        memcpy(&radio->info.soapy.tx_gain[0][i], &data.soapy_tx_gain[0][i], 64);
+      }
 //
       pa_power = from_short(data.pa_power);
       OCfull_tune_time = from_short(data.OCfull_tune_time);
@@ -2785,24 +2870,34 @@ static void *client_thread(void* arg) {
 //
       drive_max = from_double(data.drive_max);
       drive_digi_max = from_double(data.drive_digi_max);
-      div_gain = from_double(div_gain);
-      div_phase = from_double(div_phase);
+      div_gain = from_double(data.div_gain);
+      div_phase = from_double(data.div_phase);
 
       for (int i = 0; i < 11; i++) {
         pa_trim[i] = from_double(data.pa_trim[i]);
       }
 
+      for (int i = 0; i < radio->info.soapy.rx_gains; i++) {
+        radio->info.soapy.rx_range_step[i] = from_double(data.soapy_rx_range_step[i]);
+        radio->info.soapy.rx_range_min [i] = from_double(data.soapy_rx_range_min [i]);
+        radio->info.soapy.rx_range_max [i] = from_double(data.soapy_rx_range_max [i]);
+      }
+
+      for (int i = 0; i < radio->info.soapy.tx_gains; i++) {
+        radio->info.soapy.tx_range_step[i] = from_double(data.soapy_tx_range_step[i]);
+        radio->info.soapy.tx_range_min [i] = from_double(data.soapy_tx_range_min [i]);
+        radio->info.soapy.tx_range_max [i] = from_double(data.soapy_tx_range_max [i]);
+      }
+//
       frequency_calibration = from_ll(data.frequency_calibration);
       soapy_radio_sample_rate = from_ll(data.soapy_radio_sample_rate);
       radio->frequency_min = from_ll(data.radio_frequency_min);
       radio->frequency_max = from_ll(data.radio_frequency_max);
-#ifdef SOAPYSDR
 
       if (protocol == SOAPYSDR_PROTOCOL) {
         radio->info.soapy.sample_rate = soapy_radio_sample_rate;
       }
 
-#endif
       g_idle_add(ext_att_type_changed, NULL);
       snprintf(title, 128, "piHPSDR: %s remote at %s", radio->name, server);
       g_idle_add(ext_set_title, (void *)title);
@@ -2823,13 +2918,7 @@ static void *client_thread(void* arg) {
       if (recv_bytes(client_socket, (char *)&data + sizeof(HEADER), sizeof(ADC_DATA) - sizeof(HEADER)) < 0) { return NULL; }
 
       int i = data.adc;
-      adc[i].filters = from_short(data.filters);
-      adc[i].hpf = from_short(data.hpf);
-      adc[i].lpf = from_short(data.lpf);
       adc[i].antenna = from_short(data.antenna);
-      adc[i].dither = data.dither;
-      adc[i].random = data.random;
-      adc[i].preamp = data.preamp;
       adc[i].attenuation = from_short(data.attenuation);
       adc[i].gain = from_double(data.gain);
       adc[i].min_gain = from_double(data.min_gain);
@@ -3114,6 +3203,11 @@ static void *client_thread(void* arg) {
             capture_state = CAP_RECORD_DONE;
             schedule_action(CAPTURE, PRESSED, 0);
           }
+        }
+
+        if (radio_is_transmitting() && (!duplex || mute_rx_while_transmitting)) {
+          left_sample = 0.0;
+          right_sample = 0.0;
         }
 
         if (rx->mute_radio || (rx != active_receiver && rx->mute_when_not_active)) {
@@ -3948,6 +4042,39 @@ static int remote_command(void *data) {
       send_filter_cut(remoteclient.socket, transmitter->id);
     }
     g_idle_add(ext_vfo_update, NULL);
+  }
+  break;
+
+  case CMD_SOAPY_RXANT: {
+    if (device == SOAPYSDR_USB_DEVICE) {
+      adc[0].antenna = header->b1;
+#ifdef SOAPYSDR
+      soapy_protocol_set_rx_antenna(receiver[0], adc[0].antenna);
+#endif
+    }
+  }
+  break;
+
+  case CMD_SOAPY_TXANT: {
+    if (device == SOAPYSDR_USB_DEVICE && can_transmit) {
+      dac.antenna = header->b1;
+#ifdef SOAPYSDR
+      soapy_protocol_set_tx_antenna(transmitter, dac.antenna);
+#endif
+    }
+  }
+  break;
+
+  case CMD_SOAPY_AGC: {
+    if (device == SOAPYSDR_USB_DEVICE) {
+      int id = header->b1;
+      int agc = header->b2;
+      adc[id].agc = agc;
+#ifdef SOAPYSDR
+      soapy_protocol_set_automatic_gain(active_receiver, agc);
+      if (!agc) { soapy_protocol_set_gain(active_receiver); }
+#endif
+    }
   }
   break;
 
