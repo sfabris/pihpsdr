@@ -43,6 +43,7 @@
 #include "exit_menu.h"
 #include "ext.h"
 #include "gpio.h"
+#include "hpsdr_logo.h"
 #include "main.h"
 #include "message.h"
 #include "mystring.h"
@@ -361,7 +362,6 @@ static void activate_pihpsdr(GtkApplication *app, gpointer data) {
   //
   // Create top window with minimum size
   //
-  t_print("create top level window\n");
   top_window = gtk_application_window_new (app);
   gtk_widget_set_size_request(top_window, 100, 100);
   gtk_window_set_title (GTK_WINDOW (top_window), "piHPSDR");
@@ -416,89 +416,43 @@ static void activate_pihpsdr(GtkApplication *app, gpointer data) {
     gtk_window_fullscreen_on_monitor(GTK_WINDOW(top_window), screen, this_monitor);
   }
 
-  //
-  // For some binary installations, the piHPSDR working directory may be empty
-  // upon first start, and the hpsdr icon placed somewhere else.
-  // To help such "package" maintainers, look for a file hpsdr.png in the
-  // current working directory, then in /usr/share/pihpsdr, then in /usr/local/share/pihpsdr
-  //
-  GError *error;
-  GtkWidget *image;
-  gboolean rc;
-  t_print("create image and icon\n");
-  error = NULL;
-  rc = gtk_window_set_icon_from_file (GTK_WINDOW(top_window), "hpsdr.png", &error);
-
-  if (rc) {
-    image = gtk_image_new_from_file("hpsdr.png");
-  } else {
-    if (error) {
-      t_print("%s\n", error->message);
-      g_error_free(error);
-    }
-
-    error = NULL;
-    rc = gtk_window_set_icon_from_file (GTK_WINDOW(top_window), "/usr/share/pihpsdr/hpsdr.png", &error);
-
-    if (rc) {
-      image = gtk_image_new_from_file("/usr/share/pihpsdr/hpsdr.png");
-    } else {
-      if (error) {
-        t_print("%s\n", error->message);
-        g_error_free(error);
-      }
-
-      error = NULL;
-      rc = gtk_window_set_icon_from_file (GTK_WINDOW(top_window), "/usr/local/share/pihpsdr/hpsdr.png", &error);
-      image = gtk_image_new_from_file("/usr/local/share/pihpsdr/hpsdr.png");
-
-      if (!rc) {
-        if (error) {
-          t_print("%s\n", error->message);
-          g_error_free(error);
-        }
-      }
-    }
-  }
-
   g_signal_connect (top_window, "delete-event", G_CALLBACK (main_delete), NULL);
   //
   // We want to use the space-bar as an alternative to go to TX
   //
   gtk_widget_add_events(top_window, GDK_KEY_PRESS_MASK);
   g_signal_connect(top_window, "key_press_event", G_CALLBACK(keypress_cb), NULL);
-  t_print("create grid\n");
   topgrid = gtk_grid_new();
   gtk_widget_set_size_request(topgrid, display_width, display_height);
   gtk_grid_set_row_homogeneous(GTK_GRID(topgrid), FALSE);
   gtk_grid_set_column_homogeneous(GTK_GRID(topgrid), FALSE);
   gtk_grid_set_column_spacing (GTK_GRID(topgrid), 10);
-  t_print("add grid\n");
   gtk_container_add (GTK_CONTAINER (top_window), topgrid);
-  t_print("add image to grid\n");
-  gtk_grid_attach(GTK_GRID(topgrid), image, 0, 0, 1, 2);
-  t_print("create pi label\n");
+  //
+  // Closely following Heiko's suggestion, we now have the HPSDR log contained
+  // in the code and need not fiddle around with the question from where to load it.
+  //
+  GtkWidget *image = hpsdr_logo();
+
+  if (image) {
+    gtk_grid_attach(GTK_GRID(topgrid), image, 0, 0, 1, 2);
+  }
+
   GtkWidget *pi_label = gtk_label_new("piHPSDR by John Melton G0ORX/N6LYT");
   gtk_widget_set_name(pi_label, "big_txt");
   gtk_widget_set_halign(pi_label, GTK_ALIGN_START);
-  t_print("add pi label to grid\n");
   gtk_grid_attach(GTK_GRID(topgrid), pi_label, 1, 0, 3, 1);
-  t_print("create build label\n");
   snprintf(text, 256, "Built %s, Version %s\nOptions: %s\nAudio module: %s",
            build_date, build_version, build_options, build_audio);
   GtkWidget *build_date_label = gtk_label_new(text);
   gtk_widget_set_name(build_date_label, "med_txt");
   gtk_widget_set_halign(build_date_label, GTK_ALIGN_START);
-  t_print("add build label to grid\n");
   gtk_grid_attach(GTK_GRID(topgrid), build_date_label, 1, 1, 3, 1);
-  t_print("create status\n");
   status_label = gtk_label_new(NULL);
   gtk_widget_set_name(status_label, "med_txt");
   gtk_widget_set_halign(status_label, GTK_ALIGN_START);
-  t_print("add status to grid\n");
   gtk_grid_attach(GTK_GRID(topgrid), status_label, 1, 2, 3, 1);
   gtk_widget_show_all(top_window);
-  t_print("g_idle_add: init\n");
   g_idle_add(init, NULL);
 }
 
