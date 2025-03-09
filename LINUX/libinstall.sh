@@ -164,7 +164,6 @@ cp $TARGET/pihpsdr.desktop $HOME/Desktop
 mkdir -p $HOME/.local/share/applications
 cp $TARGET/pihpsdr.desktop $HOME/.local/share/applications
 
-cp $PIHPSDR/hpsdr.png $TARGET
 cp $PIHPSDR/hpsdr_icon.png $TARGET
 
 
