@@ -223,7 +223,7 @@ typedef struct __attribute__((__packed__)) _rxmenu_data {
 } RXMENU_DATA;
 
 //
-// This is data from the TX menu that requires no special 
+// This is data from the TX menu that requires no special
 // processing in P1 (but possibly packet schedules in P2).
 //
 typedef struct __attribute__((__packed__)) _txmenu_data {
@@ -622,7 +622,9 @@ typedef struct __attribute__((__packed__)) _vfo_data {
 typedef struct __attribute__((__packed__)) _spectrum_data {
   HEADER header;
   uint8_t id;
+  uint8_t zoom;
   uint16_t width;
+  uint16_t pan;
 //
   uint64_t vfo_a_freq;
   uint64_t vfo_b_freq;

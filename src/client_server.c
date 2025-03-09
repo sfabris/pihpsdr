@@ -469,6 +469,8 @@ void remote_send_spectrum(int id) {
 
   if (id < receivers) {
     const RECEIVER *rx = receiver[id];
+    spectrum_data.zoom  = rx->zoom;
+    spectrum_data.pan   = to_short(rx->pan);
     spectrum_data.meter = to_double(rx->meter);
     spectrum_data.width = to_short(rx->width);
 
@@ -3120,6 +3122,8 @@ static void *client_thread(void* arg) {
 
       if (r < receivers) {
         RECEIVER *rx = receiver[r];
+        rx->zoom = spectrum_data.zoom;
+        rx->pan  = from_short(spectrum_data.pan);
         rx->meter = from_double(spectrum_data.meter);
         int width = from_short(spectrum_data.width);
 
