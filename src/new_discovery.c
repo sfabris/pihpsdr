@@ -49,75 +49,52 @@ static void new_discover(struct ifaddrs* iface, int discflag);
 static GThread *discover_thread_id;
 static gpointer new_discover_receive_thread(gpointer data);
 
-static void print_device(int i) {
-  t_print("discovery: found protocol=%d device=%d software_version=%d status=%d address=%s (%02X:%02X:%02X:%02X:%02X:%02X) on %s\n",
-          discovered[i].protocol,
-          discovered[i].device,
-          discovered[i].software_version,
-          discovered[i].status,
-          inet_ntoa(discovered[i].info.network.address.sin_addr),
-          discovered[i].info.network.mac_address[0],
-          discovered[i].info.network.mac_address[1],
-          discovered[i].info.network.mac_address[2],
-          discovered[i].info.network.mac_address[3],
-          discovered[i].info.network.mac_address[4],
-          discovered[i].info.network.mac_address[5],
-          discovered[i].info.network.interface_name);
-}
-
 void new_discovery() {
   struct ifaddrs *addrs,*ifa;
-  int i, is_local;
-  getifaddrs(&addrs);
-  ifa = addrs;
 
-  while (ifa) {
-    g_main_context_iteration(NULL, 0);
+  //
+  // Start with discovering from a fixed ip address
+  //
+  int previous_devices = devices;
+  new_discover(NULL, 2);
 
-    //
-    // Sometimes there are many (virtual) interfaces, and some
-    // of them are very unlikely to offer a radio connection.
-    // These are skipped.
-    //
-    if (ifa->ifa_addr) {
-      if (
-        ifa->ifa_addr->sa_family == AF_INET
-        && (ifa->ifa_flags & IFF_UP) == IFF_UP
-        && (ifa->ifa_flags & IFF_RUNNING) == IFF_RUNNING
-        && (ifa->ifa_flags & IFF_LOOPBACK) != IFF_LOOPBACK
-        && strncmp("veth", ifa->ifa_name, 4)
-        && strncmp("dock", ifa->ifa_name, 4)
-        && strncmp("hass", ifa->ifa_name, 4)
-      ) {
-        new_discover(ifa, 1);   // send UDP broadcast packet to interface
+  //
+  // If we have been successful with the fixed IP address,
+  // assume that we want that radio, and do not discover any
+  // more.
+  //
+  if (devices <= previous_devices) {
+    getifaddrs(&addrs);
+    ifa = addrs;
+    while (ifa) {
+      g_main_context_iteration(NULL, 0);
+
+      //
+      // Sometimes there are many (virtual) interfaces, and some
+      // of them are very unlikely to offer a radio connection.
+      // These are skipped.
+      //
+      if (ifa->ifa_addr) {
+        if (
+          ifa->ifa_addr->sa_family == AF_INET
+          && (ifa->ifa_flags & IFF_UP) == IFF_UP
+          && (ifa->ifa_flags & IFF_RUNNING) == IFF_RUNNING
+          && (ifa->ifa_flags & IFF_LOOPBACK) != IFF_LOOPBACK
+          && strncmp("veth", ifa->ifa_name, 4)
+          && strncmp("dock", ifa->ifa_name, 4)
+          && strncmp("hass", ifa->ifa_name, 4)
+        ) {
+          new_discover(ifa, 1);   // send UDP broadcast packet to interface
+        }
       }
+
+      ifa = ifa->ifa_next;
     }
 
-    ifa = ifa->ifa_next;
+    freeifaddrs(addrs);
   }
-
-  freeifaddrs(addrs);
-  //
-  // If an IP address has already been "discovered" via a
-  // METIS broadcast package, it makes no sense to re-discover
-  // it via a routed UDP packet.
-  //
-  is_local = 0;
-
-  for (i = 0; i < devices; i++) {
-    if (!strncmp(inet_ntoa(discovered[i].info.network.address.sin_addr), ipaddr_radio, 20)
-        && discovered[i].protocol == NEW_PROTOCOL) {
-      is_local = 1;
-    }
-  }
-
-  if (!is_local) { new_discover(NULL, 2); }
 
   t_print( "new_discovery found %d devices\n", devices);
-
-  for (i = 0; i < devices; i++) {
-    print_device(i);
-  }
 }
 
 //
@@ -186,6 +163,7 @@ static void new_discover(struct ifaddrs* iface, int discflag) {
     //
     // prepeare socket for sending an UPD packet to ipaddr_radio
     //
+    STRLCPY(interface_name, "UDP", sizeof(interface_name));
     interface_addr.sin_family = AF_INET;
     interface_addr.sin_addr.s_addr = INADDR_ANY;
     memset(&to_addr, 0, sizeof(to_addr));
@@ -216,7 +194,7 @@ static void new_discover(struct ifaddrs* iface, int discflag) {
   setsockopt(discovery_socket, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
   rc = devices;
   // start a receive thread to collect discovery response packets
-  discover_thread_id = g_thread_new( "new discover receive", new_discover_receive_thread, NULL);
+  discover_thread_id = g_thread_new( "new discover receive", new_discover_receive_thread, GINT_TO_POINTER(discflag));
   // send discovery packet
   buffer[0] = 0x00;
   buffer[1] = 0x00;
@@ -252,7 +230,7 @@ static void new_discover(struct ifaddrs* iface, int discflag) {
       //
       memcpy((void *)&discovered[rc].info.network.address, (void *)&to_addr, sizeof(to_addr));
       discovered[rc].info.network.address_length = sizeof(to_addr);
-      STRLCPY(discovered[rc].info.network.interface_name, "UDP", sizeof(discovered[rc].info.network.interface_name));
+      //STRLCPY(discovered[rc].info.network.interface_name, "UDP", sizeof(discovered[rc].info.network.interface_name));
       discovered[rc].use_routing = 1;
     }
 
@@ -266,6 +244,8 @@ static gpointer new_discover_receive_thread(gpointer data) {
   unsigned char buffer[2048];
   struct timeval tv;
   int i;
+  int flag = GPOINTER_TO_INT(data);
+  int oldnumdev = devices;
   double frequency_min, frequency_max;
   tv.tv_sec = 2;
   tv.tv_usec = 0;
@@ -273,6 +253,14 @@ static gpointer new_discover_receive_thread(gpointer data) {
   len = sizeof(addr);
 
   while (1) {
+    if (flag != 1 && devices > oldnumdev) {
+      //
+      // For a 'directed' (UDP) discovery packet, return as soon as there
+      // has been a valid answer.
+      //
+      break;
+    }
+
     int bytes_read = recvfrom(discovery_socket, buffer, sizeof(buffer), 0, (struct sockaddr*)&addr, &len);
 
     if (bytes_read < 0) {

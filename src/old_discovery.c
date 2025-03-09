@@ -235,7 +235,7 @@ static void discover(struct ifaddrs* iface, int discflag) {
   setsockopt(discovery_socket, SOL_SOCKET, SO_REUSEPORT, &optval, sizeof(optval));
   rc = devices;
   // start a receive thread to collect discovery response packets
-  discover_thread_id = g_thread_new( "old discover receive", discover_receive_thread, NULL);
+  discover_thread_id = g_thread_new( "old discover receive", discover_receive_thread, GINT_TO_POINTER(discflag));
 
   // send discovery packet
   // If this is a TCP connection, send a "long" packet
@@ -314,6 +314,8 @@ static gpointer discover_receive_thread(gpointer data) {
   unsigned char buffer[2048];
   struct timeval tv;
   int i;
+  int flag = GPOINTER_TO_INT(data);
+  int oldnumdev = devices;
   t_print("discover_receive_thread\n");
   tv.tv_sec = 2;
   tv.tv_usec = 0;
@@ -321,6 +323,15 @@ static gpointer discover_receive_thread(gpointer data) {
   len = sizeof(addr);
 
   while (1) {
+
+    if (flag != 1 && devices > oldnumdev) {
+      //
+      // For a 'directed' (UDP or TCP) discovery packet, return as soon as there
+      // has been a valid answer.
+      //
+      break;
+    }
+
     int bytes_read = recvfrom(discovery_socket, buffer, sizeof(buffer), 1032, (struct sockaddr*)&addr, &len);
 
     if (bytes_read < 0) {
@@ -476,15 +487,20 @@ static gpointer discover_receive_thread(gpointer data) {
 
 void old_discovery() {
   struct ifaddrs *addrs,*ifa;
-  int i, is_local;
   t_print("old_discovery\n");
 
   //
-  // In the second phase of the STEMlab (RedPitaya) discovery,
-  // we know that it can be reached by a specific IP address
-  // and need no discovery any more
+  // Start with discovering from a fixed ip address
   //
-  if (!discover_only_stemlab) {
+  int previous_devices = devices;
+  discover(NULL, 2);
+  discover(NULL, 3);
+  //
+  // If we have been successful with the fixed IP address,
+  // assume that we want that radio, and do not discover any
+  // more.
+  //
+  if (devices <= previous_devices) {
     getifaddrs(&addrs);
     ifa = addrs;
 
@@ -519,26 +535,9 @@ void old_discovery() {
     freeifaddrs(addrs);
   }
 
-  //
-  // If an IP address has already been "discovered" via a
-  // METIS broadcast package, it makes no sense to re-discover
-  // it via a routed UDP packet.
-  //
-  is_local = 0;
-
-  for (i = 0; i < devices; i++) {
-    if (!strncmp(inet_ntoa(discovered[i].info.network.address.sin_addr), ipaddr_radio, 20)
-        && discovered[i].protocol == ORIGINAL_PROTOCOL) {
-      is_local = 1;
-    }
-  }
-
-  if (!is_local) { discover(NULL, 2); }
-
-  discover(NULL, 3);
   t_print( "discovery found %d devices\n", devices);
 
-  for (i = 0; i < devices; i++) {
+  for (int i = 0; i < devices; i++) {
     t_print("discovery: found device=%d software_version=%d status=%d address=%s (%02X:%02X:%02X:%02X:%02X:%02X) on %s\n",
             discovered[i].device,
             discovered[i].software_version,

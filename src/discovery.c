@@ -81,6 +81,22 @@ static char host_addr[128] = "127.0.0.1:50000";
 
 static void host_entry_cb(GtkWidget *widget, gpointer data);
 
+static void print_device(int i) {
+  t_print("discovery: found protocol=%d device=%d software_version=%d status=%d address=%s (%02X:%02X:%02X:%02X:%02X:%02X) on %s\n",
+          discovered[i].protocol,
+          discovered[i].device,
+          discovered[i].software_version,
+          discovered[i].status,
+          inet_ntoa(discovered[i].info.network.address.sin_addr),
+          discovered[i].info.network.mac_address[0],
+          discovered[i].info.network.mac_address[1],
+          discovered[i].info.network.mac_address[2],
+          discovered[i].info.network.mac_address[3],
+          discovered[i].info.network.mac_address[4],
+          discovered[i].info.network.mac_address[5],
+          discovered[i].info.network.interface_name);
+}
+
 static gboolean close_cb() {
   host_entry_cb(host_entry, NULL);
   return TRUE;
@@ -467,6 +483,9 @@ static void discovery() {
   // subsequent discoveries check all protocols enabled.
   discover_only_stemlab = 0;
   t_print("discovery: found %d devices\n", devices);
+
+  for (int i = 0; i < devices; i++) { print_device(i); }
+
   gdk_window_set_cursor(gtk_widget_get_window(top_window), gdk_cursor_new(GDK_ARROW));
   discovery_dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(discovery_dialog), GTK_WINDOW(top_window));
