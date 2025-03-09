@@ -62,6 +62,7 @@ static GtkWidget *apps_combobox[MAX_DEVICES];
 static GtkWidget *host_combo = NULL;
 static GtkWidget *host_entry = NULL;
 static GtkWidget *host_pwd = NULL;
+static int        host_entry_changed = 0;
 static int        host_pos = 0;
 static int        host_empty = 0;
 static gulong     host_combo_signal_id = 0;
@@ -78,8 +79,10 @@ int delayed_discovery(gpointer data);
 
 static char host_addr[128] = "127.0.0.1:50000";
 
+static void host_entry_cb(GtkWidget *widget, gpointer data);
+
 static gboolean close_cb() {
-  // There is nothing to clean up
+  host_entry_cb(host_entry, NULL);
   return TRUE;
 }
 
@@ -228,37 +231,51 @@ static void save_hostlist() {
 
 static void host_entry_cb(GtkWidget *widget, gpointer data) {
   //
-  // This is called when a new text has been entered and
-  // the ENTER key is hit
+  // This is called when the ENTER key is hit in the text entry,
+  // but also at other occasions to update the combo-box and save
+  // its contents.
   //
-  const gchar *text = gtk_entry_get_text(GTK_ENTRY(widget));
+  if (host_entry_changed) {
+    //
+    // If  this flag has been set, something has been entered into the
+    // text entry field. host_addr has been updated but not the combo
+    // box itself. If the text entry field is empty, usually text==NULL
+    // rather than strlen(text)==0.
+    //
+    g_signal_handler_block(G_OBJECT(host_combo), host_combo_signal_id);
+    const gchar *text = gtk_entry_get_text(GTK_ENTRY(widget));
 
-  if (!host_empty) {
-    // Remove old combobox entry unless it was  empty
-    gtk_combo_box_text_remove(GTK_COMBO_BOX_TEXT(host_combo), host_pos);
-  }
+    if (!host_empty) {
+      // Remove old combobox entry unless it was  empty
+      gtk_combo_box_text_remove(GTK_COMBO_BOX_TEXT(host_combo), host_pos);
+    }
 
-  if (strlen(text) > 0) {
-    // Add new entry at the beginning, unless the new text is empty
-    gtk_combo_box_text_prepend(GTK_COMBO_BOX_TEXT(host_combo), NULL, text);
-    snprintf(host_addr, sizeof(host_addr), "%s", text);
+    if (text && (strlen(text) > 0)) {
+      // Add new entry at the beginning, unless the new text is empty
+      gtk_combo_box_text_prepend(GTK_COMBO_BOX_TEXT(host_combo), NULL, text);
+      snprintf(host_addr, sizeof(host_addr), "%s", text);
+    }
+
+    gtk_combo_box_set_active(GTK_COMBO_BOX(host_combo), 0);
+    host_pos = 0;
+    text = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(host_combo));
+    host_empty = !(text && (strlen(text) > 0));
+    host_entry_changed = 0;
+    g_signal_handler_unblock(G_OBJECT(host_combo), host_combo_signal_id);
   }
 
   //
   // The combo box has changed, so dump contents to props file
   //
   save_hostlist();
-
-  gtk_combo_box_set_active(GTK_COMBO_BOX(host_combo), 0);
-  host_pos = 0;
-  text = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(host_combo));
-  host_empty = (strlen(text) < 1);
 }
 
 static gboolean connect_cb(GtkWidget *widget, GdkEventButton *event, gpointer user_data) {
   char myhost[256];
   int  myport;
   const char *mypwd;
+
+  host_entry_cb(host_entry, NULL);
 
   *myhost = 0;
   myport = 0;
@@ -277,8 +294,6 @@ static gboolean connect_cb(GtkWidget *widget, GdkEventButton *event, gpointer us
     g_idle_add(fatal_error, "NOTICE: invalid host:port string.");
     return TRUE;
   }
-
-  save_hostlist();
 
   switch (radio_connect_remote(myhost, myport, mypwd)) {
   case 0:
@@ -304,24 +319,34 @@ static gboolean connect_cb(GtkWidget *widget, GdkEventButton *event, gpointer us
   return TRUE;
 }
 
-//
-// This is called  if a new choice is made (val >=0) and also
-// if something is typed into the entry (val < 0)
-//
 static void host_combo_cb(GtkWidget *widget, gpointer data) {
   int val = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
 
   if (val >= 0) {
+    //
+    // An existing entry has been selected
+    //
     host_pos = val;
     const gchar *c = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget));
     host_empty = (strlen(c) < 1);
     if (!host_empty) {
       snprintf(host_addr, sizeof(host_addr), "%s", c);
     }
+  } else {
+    //
+    // Something has been typed into the entry  field: update host_addr
+    //
+    const gchar *text = gtk_entry_get_text(GTK_ENTRY(host_entry));
+    if (text) {
+      snprintf(host_addr, sizeof(host_addr), "%s", text);
+    } else {
+      *host_addr = 0;
+    }
+    host_entry_changed = 1;
   }
 }
 
-static void on_toggle_password_visibility(GtkToggleButton *button, gpointer user_data) {
+static void password_visibility_cb(GtkToggleButton *button, gpointer user_data) {
     GtkEntry *entry = GTK_ENTRY(user_data);
     gboolean visible = !gtk_entry_get_visibility(entry);
     gtk_entry_set_visibility(entry, visible);
@@ -666,7 +691,7 @@ static void discovery() {
 
   // Create the password visibility toggle button
   GtkWidget *toggle_button = gtk_toggle_button_new_with_label("Show");
-  g_signal_connect(toggle_button, "toggled", G_CALLBACK(on_toggle_password_visibility), host_pwd);
+  g_signal_connect(toggle_button, "toggled", G_CALLBACK(password_visibility_cb), host_pwd);
   gtk_grid_attach(GTK_GRID(grid), toggle_button, 3, row, 1, 1);
 
   row++;
