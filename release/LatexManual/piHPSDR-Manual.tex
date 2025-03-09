@@ -3540,10 +3540,12 @@ TCP CAT connections are established when the \textit{client} successfully connec
 \rett{AutoRprt}. If a CAT connection (either via TCP or via a serial line) is opened and this box is checked,
 the connection is put in ,,auto reporting'' mode. This mode can generally be enabled and disabled with the
 ZZAI or AI CAT commands (see Appendix \ref{sec:catcommands}), but with this checkbox, the connection can be put
-in auto reporting mode without the CAT client sending AI commands. In auto reporting mode, frequency changes
-are transmitted via FA and FB CAT messages, and mode changes of VFO-A are transmitted via MD CAT commands.
-The main use for auto reporting mode is, if a power amplifier or a logbook program
-is connected via a serial line that needs frequency or mode  info via CAT. If you do not have hardware that depends
+into ``level 1'' auto reporting mode without the CAT client sending AI commands. ``Level 1'' means that \pH
+behaves as if an \texttt{AI1;} or \texttt{ZZAI1;} command had been received. In this level, frequency changes
+are transmitted via FA and FB CAT messages, but mode changes are not transmitted.
+The main use for auto reporting mode is, if a buggy power amplifier or a buggy logbook program
+is connected via a serial line that needs frequency or mode  info via CAT but fails to send a proper
+\texttt{AI} command.  If you do not have hardware that depends
 on such unsolicited (without requesting them via ZZAI or AI commands) messages, this box should never be checked.
 
 \rett{TCI}. To the right of this string, there is a spin button which selects the TCP port used by the
@@ -4042,7 +4044,9 @@ the \pH server instance (see above).
 In the \texttt{host:addr} pop-down menu, you can choose the entry matching your server. On a virgin system, this menu
 will  only show a default entry which is 127.0.0.1:50000, and an empty entry. By clicking into the text field, you
 can change an entry such that it matches for \pH server instance. You can also select the empty entry from
-the pop-down menu and enter a new \texttt{host:addr} pair, which will then be added to the list. The last element of
+the pop-down menu and enter a new \texttt{host:addr} pair, which will then be added to the list. {\color{red}
+After making changes in the text field, you have to press the \texttt{Enter} key to store the new entry
+and make it effective.} The last element of
 the pop-down menu is always an empty one, so you can add as many different entries as you wish. If you select
 an entry, click  into the text  field and clear it, then this entry is  removed from the pop-down menu.
 In this way, you can configure your client computer to use several different \pH server instances, but also
