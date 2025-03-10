@@ -1238,7 +1238,7 @@ static void tx_full_buffer(TRANSMITTER *tx) {
 
        if (sample > mypeak) { mypeak = sample; }
 
-       if (-sample > mypeak) { mypeak = sample; }
+       if (-sample > mypeak) { mypeak = -sample; }
     }
     vox_update(mypeak);
 
@@ -2582,6 +2582,6 @@ void tx_set_twotone(TRANSMITTER *tx, int state) {
     }
   }
 
-  g_idle_add(ext_mox_update, GINT_TO_POINTER(state));
+  g_idle_add(ext_set_mox, GINT_TO_POINTER(state));
 }
 

@@ -1041,6 +1041,7 @@ void radio_start_radio() {
       //
       // This is a RadioBerry.
       //
+      controller = NO_CONTROLLER;
       if (radio->software_version < 732) {
         have_radioberry1 = 1;
       } else {
@@ -1949,30 +1950,12 @@ static void rxtx(int state) {
   gpio_set_ptt(state);
 }
 
-void radio_mox_update(int state) {
-  if (!can_transmit) { return; }
-
-  if (state && !TransmitAllowed()) {
-    state = 0;
-    tx_set_out_of_band(transmitter);
+void radio_toggle_mox() {
+  if (radio_is_remote) {
+    send_toggle_mox(client_socket);
+    return;
   }
-
-  radio_set_mox(state);
-  g_idle_add(ext_vfo_update, NULL);
-}
-
-void radio_tune_update(int state) {
-  if (!can_transmit) { return; }
-
-  radio_set_mox(0);  // This will also cancel VOX and TUNE
-
-  if (state && !TransmitAllowed()) {
-    state = 0;
-    tx_set_out_of_band(transmitter);
-  }
-
-  radio_set_tune(state);
-  g_idle_add(ext_vfo_update, NULL);
+  radio_set_mox(!mox);
 }
 
 void radio_remote_set_vox(int state) {
@@ -1982,6 +1965,7 @@ void radio_remote_set_vox(int state) {
   mox = 0;
   tune = 0;
   vox = state;
+  g_idle_add(ext_vfo_update, NULL);
 }
 void radio_remote_set_mox(int state) {
   if (state != radio_is_transmitting()) {
@@ -1991,12 +1975,14 @@ void radio_remote_set_mox(int state) {
   mox = state;
   tune = 0;
   vox = 0;
+  g_idle_add(ext_vfo_update, NULL);
 }
 
 void radio_remote_set_twotone(int state) {
   if (can_transmit) {
     transmitter->twotone = state;
   }
+  g_idle_add(ext_vfo_update, NULL);
 }
 
 void radio_remote_set_tune(int state) {
@@ -2011,16 +1997,22 @@ void radio_remote_set_tune(int state) {
     rxtx(state);
     tune=state;
   }
+  g_idle_add(ext_vfo_update, NULL);
 }
 
 void radio_set_mox(int state) {
+
+  if (!can_transmit) { return; }
+
   if (radio_is_remote) {
-    send_ptt(client_socket, state);
+    send_mox(client_socket, state);
     return;
   }
 
-  //t_print("%s: mox=%d vox=%d tune=%d NewState=%d\n", __FUNCTION__, mox,vox,tune,state);
-  if (!can_transmit) { return; }
+  if (state && !TransmitAllowed()) {
+    state = 0;
+    tx_set_out_of_band(transmitter);
+  }
 
   if (state && TxInhibit) { return; }
 
@@ -2051,6 +2043,7 @@ void radio_set_mox(int state) {
 
   schedule_high_priority();
   schedule_receive_specific();
+  g_idle_add(ext_vfo_update, NULL);
 }
 
 int radio_get_mox() {
@@ -2076,6 +2069,7 @@ void radio_set_vox(int state) {
     schedule_high_priority();
     schedule_receive_specific();
   }
+  g_idle_add(ext_vfo_update, NULL);
 }
 
 void radio_set_twotone(TRANSMITTER *tx, int state) {
@@ -2084,6 +2078,16 @@ void radio_set_twotone(TRANSMITTER *tx, int state) {
     return;
   }
   tx_set_twotone(tx, state);
+  g_idle_add(ext_vfo_update, NULL);
+}
+
+void radio_toggle_tune() {
+  if (radio_is_remote) {
+    send_toggle_tune(client_socket);
+    return;
+  }
+  radio_set_tune(!tune);
+  g_idle_add(ext_vfo_update, NULL);
 }
 
 void radio_set_tune(int state) {
@@ -2266,6 +2270,7 @@ void radio_set_tune(int state) {
   schedule_high_priority();
   schedule_transmit_specific();
   schedule_receive_specific();
+  g_idle_add(ext_vfo_update, NULL);
 }
 
 int radio_get_tune() {
@@ -3080,7 +3085,7 @@ void radio_protocol_stop() {
   //
   // paranoia ...
   //
-  radio_mox_update(0);
+  radio_set_mox(0);
   usleep(100000);
 
   switch (protocol) {
@@ -3140,7 +3145,7 @@ static gpointer auto_tune_thread(gpointer data) {
   // but  it may stop tuning before.
   //
   int count = 0;
-  g_idle_add(ext_tune_update, GINT_TO_POINTER(1));
+  g_idle_add(ext_set_tune, GINT_TO_POINTER(1));
 
   for (;;) {
     if (count >= 0) {
@@ -3150,12 +3155,12 @@ static gpointer auto_tune_thread(gpointer data) {
     usleep(50000);
 
     if (auto_tune_end) {
-      g_idle_add(ext_tune_update, GINT_TO_POINTER(0));
+      g_idle_add(ext_set_tune, GINT_TO_POINTER(0));
       break;
     }
 
     if (count >= 200) {
-      g_idle_add(ext_tune_update, GINT_TO_POINTER(0));
+      g_idle_add(ext_set_tune, GINT_TO_POINTER(0));
       count = -1;
     }
   }

@@ -1157,9 +1157,7 @@ int process_action(void *data) {
 
   case MOX:
     if (a->mode == PRESSED) {
-      int state = radio_get_mox();
-      radio_mox_update(!state);
-      //t_print("MOX pressed; bool = %d\n", (int)!state);
+      radio_toggle_mox();
     }
 
     break;
@@ -1425,7 +1423,7 @@ int process_action(void *data) {
 
   case PTT:
     if (a->mode == PRESSED || a->mode == RELEASED) {
-      radio_mox_update(a->mode == PRESSED);
+      radio_set_mox(a->mode == PRESSED);
     }
 
     break;
@@ -1724,8 +1722,7 @@ int process_action(void *data) {
 
   case TUNE:
     if (a->mode == PRESSED) {
-      int state = radio_get_tune();
-      radio_tune_update(!state);
+      radio_toggle_tune();
     }
 
     break;
@@ -1945,10 +1942,10 @@ int process_action(void *data) {
       MIDI_cw_is_active = 1;         // disable "CW handled in radio"
       cw_key_hit = 1;                // this tells rigctl to abort CAT CW
       if (radio_is_remote) {
-        send_ptt(client_socket, 1);
+        send_mox(client_socket, 1);
       } else {
         schedule_transmit_specific();
-        radio_mox_update(1);
+        radio_set_mox(1);
       }
       break;
 
@@ -1956,11 +1953,11 @@ int process_action(void *data) {
       MIDI_cw_is_active = 0;         // enable "CW handled in radio", if it was selected
       if (radio_is_remote) {
         usleep(100000);              // since we delayed the start of the first CW, increase hang time
-        send_ptt(client_socket, 0);
+        send_mox(client_socket, 0);
       } else {
         schedule_transmit_specific();
 
-        if (!radio_ptt) { radio_mox_update(0); }
+        if (!radio_ptt) { radio_set_mox(0); }
 
       }
       break;

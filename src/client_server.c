@@ -384,6 +384,10 @@ void server_tx_audio(short sample) {
   // This is called in the client and collects data to be
   // sent to the server
   //
+  if (!can_transmit) {
+    return;
+  }
+
   int txmode = vfo_get_tx_mode();
   static short speak = 0;
 
@@ -395,7 +399,7 @@ void server_tx_audio(short sample) {
 
   txaudio_data.samples[txaudio_buffer_index++] = to_short(sample);
   if (txaudio_buffer_index >= AUDIO_DATA_SIZE) {
-    if (radio_is_transmitting() && txmode != modeCWU && txmode != modeCWL) {
+    if (radio_is_transmitting() && txmode != modeCWU && txmode != modeCWL && !tune && !transmitter->twotone) {
       //
       // The actual transmission of the mic audio samples only takes  place
       // if we *need* them (note VOX is handled locally)
@@ -1426,6 +1430,7 @@ static void server_loop() {
     case CMD_LOCK:
     case CMD_METER:
     case CMD_MODE:
+    case CMD_MOX:
     case CMD_MUTE_RX:
     case CMD_PAN:
     case CMD_PREEMP:
@@ -1433,7 +1438,6 @@ static void server_loop() {
     case CMD_PSONOFF:
     case CMD_PSRESET:
     case CMD_PSRESUME:
-    case CMD_PTT:
     case CMD_RCL:
     case CMD_RECEIVERS:
     case CMD_REGION:
@@ -1449,6 +1453,8 @@ static void server_loop() {
     case CMD_SPLIT:
     case CMD_STEP:
     case CMD_STORE:
+    case CMD_TOGGLE_MOX:
+    case CMD_TOGGLE_TUNE:
     case CMD_TUNE:
     case CMD_TWOTONE:
     case CMD_TXFILTER:
@@ -1800,10 +1806,24 @@ void send_vox(int s, int state) {
   send_bytes(s, (char *)&header, sizeof(header));
 }
 
-void send_ptt(int s, int state) {
+void send_toggle_mox(int s) {
   HEADER header;
   SYNC(header.sync);
-  header.data_type = to_short(CMD_PTT);
+  header.data_type = to_short(CMD_TOGGLE_MOX);
+  send_bytes(s, (char *)&header, sizeof(header));
+}
+
+void send_toggle_tune(int s) {
+  HEADER header;
+  SYNC(header.sync);
+  header.data_type = to_short(CMD_TOGGLE_TUNE);
+  send_bytes(s, (char *)&header, sizeof(header));
+}
+
+void send_mox(int s, int state) {
+  HEADER header;
+  SYNC(header.sync);
+  header.data_type = to_short(CMD_MOX);
   header.b1 = state;
   send_bytes(s, (char *)&header, sizeof(header));
 }
@@ -2453,7 +2473,7 @@ static void *listen_thread(void *arg) {
     //
     // If the connection breaks while transmitting, go RX
     //
-    g_idle_add(ext_mox_update, GINT_TO_POINTER(0));
+    g_idle_add(ext_set_mox, GINT_TO_POINTER(0));
 
     //
     // Stop sending periodic data
@@ -3405,7 +3425,8 @@ static void *client_thread(void* arg) {
     }
     break;
 
-    case CMD_PTT: {
+    case CMD_MOX: {
+      t_print("RCVD MOX=%d\n", header.b1);
       g_idle_add(ext_radio_remote_set_mox, GINT_TO_POINTER(header.b1));
     }
     break;
@@ -3788,10 +3809,26 @@ static int remote_command(void *data) {
   }
   break;
 
-  case CMD_PTT: {
-   radio_mox_update(header->b1);
+  case CMD_TOGGLE_TUNE: {
+   radio_toggle_tune();
    g_idle_add(ext_vfo_update, NULL);
-   send_ptt(remoteclient.socket, mox);
+   send_tune(remoteclient.socket, tune);
+  }
+  break;
+
+  case CMD_TOGGLE_MOX: {
+   t_print("MOX b4:%d\n", mox);
+   radio_toggle_mox();
+   g_idle_add(ext_vfo_update, NULL);
+   t_print("MOX after:%d\n", mox);
+   send_mox(remoteclient.socket, mox);
+  }
+  break;
+
+  case CMD_MOX: {
+   radio_set_mox(header->b1);
+   g_idle_add(ext_vfo_update, NULL);
+   send_mox(remoteclient.socket, mox);
   }
   break;
 
@@ -3800,14 +3837,14 @@ static int remote_command(void *data) {
    // Vox is handled in the client, so do a  mox update
    // but report back properly
    //
-   radio_mox_update(header->b1);
+   radio_set_mox(header->b1);
    g_idle_add(ext_vfo_update, NULL);
    send_vox(remoteclient.socket, mox);
   }
   break;
 
   case CMD_TUNE: {
-   radio_tune_update(header->b1);
+   radio_set_tune(header->b1);
    g_idle_add(ext_vfo_update, NULL);
    send_tune(remoteclient.socket, tune);
   }

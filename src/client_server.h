@@ -68,6 +68,7 @@ enum _header_type_enum {
   CMD_MODE,
   CMD_MOVE,
   CMD_MOVETO,
+  CMD_MOX,
   CMD_MUTE_RX,
   CMD_NOISE,
   CMD_PAN,
@@ -78,7 +79,6 @@ enum _header_type_enum {
   CMD_PSPARAMS,
   CMD_PSRESET,
   CMD_PSRESUME,
-  CMD_PTT,
   CMD_RADIOMENU,
   CMD_RCL,
   CMD_RECEIVERS,
@@ -104,6 +104,8 @@ enum _header_type_enum {
   CMD_START_RADIO,
   CMD_STEP,
   CMD_STORE,
+  CMD_TOGGLE_MOX,
+  CMD_TOGGLE_TUNE,
   CMD_TUNE,
   CMD_TWOTONE,
   CMD_TXFFT,
@@ -137,7 +139,7 @@ enum _header_type_enum {
   CLIENT_SERVER_COMMANDS,
 };
 
-#define CLIENT_SERVER_VERSION 0x01000002 // 32-bit version number
+#define CLIENT_SERVER_VERSION 0x01000003 // 32-bit version number
 #define SPECTRUM_DATA_SIZE 4096          // Maximum width of a panadapter
 #define AUDIO_DATA_SIZE 1024             // 1024 stereo samples
 
@@ -845,7 +847,7 @@ extern void send_psonoff(int s, int state);
 extern void send_psparams(int s, const TRANSMITTER *tx);
 extern void send_psreset(int s);
 extern void send_psresume(int s);
-extern void send_ptt(int s, int state);
+extern void send_mox(int s, int state);
 extern void send_radio_data(int sock);
 extern void send_radiomenu(int s);
 extern void send_recall(int s, int index);
@@ -870,6 +872,8 @@ extern void send_squelch(int s, int rx, int enable, double squelch);
 extern void send_startstop_spectrum(int s, int id, int state);
 extern void send_store(int s, int index);
 extern void send_swap_iq(int s, int swap_iq);
+extern void send_toggle_mox(int s);
+extern void send_toggle_tune(int s);
 extern void send_tune(int s, int state);
 extern void send_twotone(int s, int state);
 extern void send_tx_compressor(int s);

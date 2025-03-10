@@ -35,8 +35,8 @@ extern int ext_att_type_changed(void *data);
 //
 extern int ext_start_radio(void *data);
 extern int ext_vfo_update(void *data);
-extern int ext_tune_update(void *data);
-extern int ext_mox_update(void *data);
+extern int ext_set_tune(void *data);
+extern int ext_set_mox(void *data);
 extern int ext_start_tx(void *data);        // is this necessary?
 extern int ext_start_rx(void *data);
 extern int ext_start_vfo(void *data);

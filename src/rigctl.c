@@ -647,7 +647,7 @@ static gpointer rigctl_cw_thread(gpointer data) {
 
     if (!mox) {
       // activate PTT
-      g_idle_add(ext_mox_update, GINT_TO_POINTER(1));
+      g_idle_add(ext_set_mox, GINT_TO_POINTER(1));
       // have to wait until it is really there
       // Note that if out-of-band, we would wait
       // forever here, so allow at most 200 msec
@@ -708,7 +708,7 @@ static gpointer rigctl_cw_thread(gpointer data) {
       if (!radio_is_remote) { schedule_transmit_specific(); }
 
       if (!cw_key_hit && !radio_ptt) {
-        g_idle_add(ext_mox_update, GINT_TO_POINTER(0));
+        g_idle_add(ext_set_mox, GINT_TO_POINTER(0));
         // wait up to 500 msec for MOX having gone
         // otherwise there might be a race condition when sending
         // the next character really soon
@@ -732,7 +732,7 @@ static gpointer rigctl_cw_thread(gpointer data) {
 
     if (!radio_is_remote) { schedule_transmit_specific(); }
 
-    g_idle_add(ext_mox_update, GINT_TO_POINTER(0));
+    g_idle_add(ext_set_mox, GINT_TO_POINTER(0));
   }
 
   rigctl_cw_thread_id = NULL;
@@ -3009,7 +3009,7 @@ static gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         snprintf(reply, 256, "ZZTU%d;", tune);
         send_resp(client->fd, reply) ;
       } else if (command[5] == ';') {
-        radio_tune_update(atoi(&command[4]));
+        radio_set_tune(atoi(&command[4]));
       }
 
       break;
@@ -3027,7 +3027,7 @@ static gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         snprintf(reply, 256, "ZZTX%d;", mox);
         send_resp(client->fd, reply) ;
       } else if (command[5] == ';') {
-        radio_mox_update(atoi(&command[4]));
+        radio_set_mox(atoi(&command[4]));
       }
 
       break;
@@ -4813,7 +4813,7 @@ static int parse_cmd(void *data) {
       //SET       RX;
       //ENDDEF
       if (command[2] == ';') {
-        radio_mox_update(0);
+        radio_set_mox(0);
       }
 
       break;
@@ -5309,7 +5309,7 @@ static int parse_cmd(void *data) {
       //ENDDEF
       // set transceiver to TX mode
       if (command[2] == ';') {
-        radio_mox_update(1);
+        radio_set_mox(1);
       }
 
       break;

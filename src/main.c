@@ -157,20 +157,7 @@ gboolean keypress_cb(GtkWidget *widget, GdkEventKey *event, gpointer data) {
     break;
 
   case GDK_KEY_space:
-    if (can_transmit) {
-      if (radio_get_tune() == 1) {
-        radio_set_tune(0);
-      }
-
-      if (radio_get_mox() == 1) {
-        radio_set_mox(0);
-      } else if (TransmitAllowed()) {
-        radio_set_mox(1);
-      } else {
-        tx_set_out_of_band(transmitter);
-      }
-    }
-
+    radio_toggle_mox();
     break;
 
   case  GDK_KEY_d:

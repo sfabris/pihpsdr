@@ -295,8 +295,9 @@ extern const int tx_dialog_height;
 // All global functions declared here start with "radio_",
 // exception: my_combo_attach()
 //
-extern void   radio_tune_update(int state);
-extern void   radio_mox_update(int state);
+extern void   radio_set_mox(int state);
+extern void   radio_toggle_mox(void);
+extern void   radio_toggle_tune(void);
 extern void   radio_save_state();
 extern void   radio_stop(void);
 extern void   radio_reconfigure(void);

@@ -260,7 +260,7 @@ int andromeda_execute_button(int v, int p) {
     case 47: // MOX
       if (v == 0) {
       } else {
-        radio_mox_update(mox ^ 1);
+        radio_toggle_mox();
       }
 
       break;
@@ -268,7 +268,7 @@ int andromeda_execute_button(int v, int p) {
     case 48: // TUNE
       if (v == 0) {
       } else {
-        radio_tune_update(tune ^ 1);
+        radio_toggle_tune();
       }
 
       break;

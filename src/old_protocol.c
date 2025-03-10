@@ -1175,7 +1175,7 @@ static void process_control_bytes() {
   radio_ptt  = (control_in[0]     ) & 0x01;
 
   if (previous_ptt != radio_ptt) {
-    g_idle_add(ext_mox_update, GINT_TO_POINTER(radio_ptt));
+    g_idle_add(ext_set_mox, GINT_TO_POINTER(radio_ptt));
   }
 
   if ((device == DEVICE_HERMES_LITE2) && (control_in[0] & 0x80)) {
@@ -1239,7 +1239,7 @@ static void process_control_bytes() {
 
       if (!TxInhibit && data == 0) {
         TxInhibit = 1;
-        g_idle_add(ext_mox_update, GINT_TO_POINTER(0));
+        g_idle_add(ext_set_mox, GINT_TO_POINTER(0));
       }
 
       if (data == 1) { TxInhibit = 0; }

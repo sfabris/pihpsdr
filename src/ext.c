@@ -79,13 +79,13 @@ int ext_vfo_update(void *data) {
   return G_SOURCE_REMOVE;
 }
 
-int ext_tune_update(void *data) {
-  radio_tune_update(GPOINTER_TO_INT(data));
+int ext_set_tune(void *data) {
+  radio_set_tune(GPOINTER_TO_INT(data));
   return G_SOURCE_REMOVE;
 }
 
-int ext_mox_update(void *data) {
-  radio_mox_update(GPOINTER_TO_INT(data));
+int ext_set_mox(void *data) {
+  radio_set_mox(GPOINTER_TO_INT(data));
   return G_SOURCE_REMOVE;
 }
 

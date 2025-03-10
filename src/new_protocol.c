@@ -2548,7 +2548,7 @@ static void process_high_priority() {
   }
 
   if (previous_ptt != radio_ptt) {
-    g_idle_add(ext_mox_update, GINT_TO_POINTER(radio_ptt));
+    g_idle_add(ext_set_mox, GINT_TO_POINTER(radio_ptt));
   }
 
   if (enable_tx_inhibit) {
@@ -2560,7 +2560,7 @@ static void process_high_priority() {
 
     if (!TxInhibit && data == 0) {
       TxInhibit = 1;
-      g_idle_add(ext_mox_update, GINT_TO_POINTER(0));
+      g_idle_add(ext_set_mox, GINT_TO_POINTER(0));
     }
 
     if (data == 1) { TxInhibit = 0; }
