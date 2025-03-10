@@ -494,7 +494,9 @@ void old_discovery() {
   //
   int previous_devices = devices;
   discover(NULL, 2);
-  discover(NULL, 3);
+  if (tcp_enable) {
+    discover(NULL, 3);
+  }
   //
   // If we have been successful with the fixed IP address,
   // assume that we want that radio, and do not discover any

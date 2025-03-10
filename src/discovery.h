@@ -19,7 +19,8 @@
 #include <gtk/gtk.h>
 
 extern int  discover_only_stemlab;
-extern char *ipaddr_radio;
+extern char ipaddr_radio[];
+extern int  tcp_enable;
 
 extern int delayed_discovery(gpointer data);
 extern void discovery(void);

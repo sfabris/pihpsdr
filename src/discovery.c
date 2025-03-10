@@ -69,9 +69,8 @@ static gulong     host_combo_signal_id = 0;
 
 
 GtkWidget *tcpaddr;
-#define IPADDR_LEN 20
-static char ipaddr_buf[IPADDR_LEN] = "";
-char *ipaddr_radio = &ipaddr_buf[0];
+char ipaddr_radio[128] = { 0 };
+int tcp_enable = 0;
 
 int discover_only_stemlab = 0;
 
@@ -184,35 +183,34 @@ static gboolean exit_cb (GtkWidget *widget, GdkEventButton *event, gpointer data
   return TRUE;
 }
 
+void save_ipaddr() {
+  clearProperties();
+
+  if (strlen(ipaddr_radio) > 0) {
+    SetPropS0("radio_ip_addr", ipaddr_radio);
+  }
+
+  SetPropI0("radio_tcp_enable", tcp_enable);
+  saveProperties("ipaddr.props");
+}
+
 static gboolean radio_ip_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
-  struct sockaddr_in sa;
-  int len;
   const char *cp;
   cp = gtk_entry_get_text(GTK_ENTRY(tcpaddr));
-  len = strnlen(cp, IPADDR_LEN);
 
-  if (len == 0) {
-    // if the text entry field is empty, delete ip.addr
-    unlink("ip.addr");
-    return TRUE;
+  if (cp && (strlen(cp) > 0)) {
+    strncpy(ipaddr_radio, cp, sizeof(ipaddr_radio));
+  } else {
+    ipaddr_radio[0]=0;
   }
 
-  if (inet_pton(AF_INET, cp, &(sa.sin_addr)) != 1) {
-    // if text is non-empty but also not a valid IP addr,
-    // do nothing
-    return TRUE;
-  }
-
-  strncpy(ipaddr_radio, cp, IPADDR_LEN);
-  ipaddr_radio[IPADDR_LEN - 1] = 0;
-  FILE *fp = fopen("ip.addr", "w");
-
-  if (fp) {
-    fprintf(fp, "%s\n", ipaddr_radio);
-    fclose(fp);
-  }
-
+  save_ipaddr();
   return FALSE;
+}
+
+static void tcp_en_cb(GtkWidget *widget, gpointer data) {
+  tcp_enable = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  save_ipaddr();
 }
 
 //------------------------------------------------------+
@@ -385,22 +383,9 @@ static void discovery() {
   protocolsRestoreState();
   selected_device = 0;
   devices = 0;
-  // Try to locate IP addr
-  FILE *fp = fopen("ip.addr", "r");
-
-  if (fp) {
-    (void) fgets(ipaddr_radio, IPADDR_LEN, fp);
-    fclose(fp);
-    ipaddr_radio[IPADDR_LEN - 1] = 0;
-    // remove possible trailing newline char in ipaddr_radio
-    int len = strnlen(ipaddr_radio, IPADDR_LEN);
-
-    while (--len >= 0) {
-      if (ipaddr_radio[len] != '\n') { break; }
-
-      ipaddr_radio[len] = 0;
-    }
-  }
+  loadProperties("ipaddr.props");
+  GetPropS0("radio_ip_addr", ipaddr_radio);
+  GetPropI0("radio_tcp_enable", tcp_enable);
 
 #ifdef USBOZY
 
@@ -661,7 +646,6 @@ static void discovery() {
   //----------------------------------------------------+
 
   loadProperties("remote.props");
-  // Retrieve "host" property with fallback
   GetPropS0("current_host", host_addr);
 
   t_print("current host: %s\n", host_addr);
@@ -733,6 +717,7 @@ static void discovery() {
   GtkWidget *protocols_b = gtk_button_new_with_label("Protocols");
   g_signal_connect (protocols_b, "button-press-event", G_CALLBACK(protocols_cb), NULL);
   gtk_grid_attach(GTK_GRID(grid), protocols_b, 2, row, 1, 1);
+//
   row++;
   GtkWidget *tcp_b = gtk_label_new("Radio IP Addr ");
   gtk_widget_set_name(tcp_b, "boldlabel");
@@ -743,6 +728,12 @@ static void discovery() {
   gtk_grid_attach(GTK_GRID(grid), tcpaddr, 1, row, 1, 1);
   gtk_entry_set_text(GTK_ENTRY(tcpaddr), ipaddr_radio);
   g_signal_connect (tcpaddr, "changed", G_CALLBACK(radio_ip_cb), NULL);
+  GtkWidget *tcp_en = gtk_check_button_new_with_label("Enable TCP");
+  gtk_widget_set_name(tcp_en, "boldlabel");
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(tcp_en), tcp_enable);
+  gtk_widget_set_halign (tcp_b, GTK_ALIGN_START);
+  gtk_grid_attach(GTK_GRID(grid), tcp_en, 2, row, 1, 1);
+  g_signal_connect(tcp_en, "toggled", G_CALLBACK(tcp_en_cb), NULL);
   GtkWidget *exit_b = gtk_button_new_with_label("Close");
   gtk_widget_set_name(exit_b, "close_button");
   g_signal_connect (exit_b, "button-press-event", G_CALLBACK(exit_cb), NULL);

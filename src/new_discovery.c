@@ -230,7 +230,6 @@ static void new_discover(struct ifaddrs* iface, int discflag) {
       //
       memcpy((void *)&discovered[rc].info.network.address, (void *)&to_addr, sizeof(to_addr));
       discovered[rc].info.network.address_length = sizeof(to_addr);
-      //STRLCPY(discovered[rc].info.network.interface_name, "UDP", sizeof(discovered[rc].info.network.interface_name));
       discovered[rc].use_routing = 1;
     }
 
