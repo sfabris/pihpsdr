@@ -199,7 +199,7 @@ static gboolean radio_ip_cb (GtkWidget *widget, GdkEventButton *event, gpointer 
   cp = gtk_entry_get_text(GTK_ENTRY(tcpaddr));
 
   if (cp && (strlen(cp) > 0)) {
-    strncpy(ipaddr_radio, cp, sizeof(ipaddr_radio));
+    STRLCPY(ipaddr_radio, cp, sizeof(ipaddr_radio));
   } else {
     ipaddr_radio[0]=0;
   }
@@ -731,7 +731,7 @@ static void discovery() {
   GtkWidget *tcp_en = gtk_check_button_new_with_label("Enable TCP");
   gtk_widget_set_name(tcp_en, "boldlabel");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(tcp_en), tcp_enable);
-  gtk_widget_set_halign (tcp_b, GTK_ALIGN_START);
+  gtk_widget_set_halign (tcp_en, GTK_ALIGN_START);
   gtk_grid_attach(GTK_GRID(grid), tcp_en, 2, row, 1, 1);
   g_signal_connect(tcp_en, "toggled", G_CALLBACK(tcp_en_cb), NULL);
   GtkWidget *exit_b = gtk_button_new_with_label("Close");
