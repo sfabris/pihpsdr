@@ -266,10 +266,11 @@ you will see several \rett{Start} buttons.
 If you see at least one \rett{Start} button, you can start the corresponding radio simply
 by clicking that button.
 
-The second line of control elementes, beginning with the \rett{Connect Server} button, belongs to the
-client/server feature that is described in chapter \ref{sec:clientserver}, so
-let us first explain the
-purpose of the other buttons! Easiest to explain is the \rett{Exit} button, this will simply terminate
+The line of control elements following the radios discovered begins with the \rett{Use Server} button,
+and belongs to the
+client/server feature that is described in chapter \ref{sec:clientserver}, it will not be discussed
+here where we now explain the purpose of the remaining control elements.
+ Easiest to explain is the \rett{Close} button, this will simply terminate
 the program. Most likely, you may want to go into the \rett{Protocols} menu sooner or later.
 By default, \pH tries to discover the presence of a radio using all protocols known to \pH. However,
 if you know that your radio, for example, uses Protocol-2, then trying to discover a Protocol-1
@@ -324,9 +325,21 @@ used, so radios strictly adhering to that standard
 won't reply. On the other hand, there are some radios such as a RedPitaya or a HermesLite-II which
 allow being discovered by such ``routed'' (non-broadcast) packets.
 
+In rare cases (the STEMLAB case is the only one I know of) it is even possible to use the TCP protocol
+rather than the standard UDP one for communicating with the radio. A ``TCP discovery'' will take three
+seconds if there is just no response, which should be the case for most radios. Therefore, trying to
+connect via TCP is only done if the \rett{Enable TCP} box is checked.
+
+Note that if a radio IP address is specified, the discovery process skips sending broadcast discovery
+packets if a radio could be detected on the specified IP address. So if you specify a radio IP address
+and such a radio exists, \pH will not discover any other radio that might also be connected to the same
+network segment. This behaviour enables very fast program startup e.g. for HermesLite-II radios, but
+make sure the \rett{Enable TCP} box is \textit{not} checked.
+
 The \rett{Discover} button re-starts the discovery process. This is useful if the radio has been powered up
 too late and
-was not yet ready when \pH was started. Simply press \rett{Discover} to start another attempt.
+was not yet ready when \pH was started. Simply press \rett{Discover} to start another attempt. This is
+largely equivalent to quitting and restarting \pH but much more convenient.
 
 The combo-box (pop-down menu) to the left of the \rett{Discover} button lets you choose which type of GPIO
 controller you
@@ -358,12 +371,14 @@ automatically.}
 \textbf{Attention.} Be sure to choose a controller only if such a controller is actually connected to your
 Raspberry Pi. Unexpected things can happen if you chose one type of controller here but have totally different
 hardware connected to the GPIO. For example, if you have a so-called ,,audio hat'' attached to the RaspPi
-GPIO, then it is safest to choose \texttt{No Controller} to avoid \pH using GPIO lines actually used
-by the audio hat. The same applies to G2 Ultras where GPIO lines may be used for serial connection
-to the panel.
+GPIO, then it is safest to compile \pH without GPIO support.
+The same applies to G2 Ultras where GPIO lines may be used for serial connection
+to the panel. Note that even if you choose \texttt{No Controller}, some GPIO lines are still used
+e.g. for CW, as documented in Appendix \ref{sec:gpio}.
 
-All settings (protocols, controller, IP address) made in this menu are stored in the global (radio
-independent) settings
+All settings (protocols, controller, IP address, Server address) made in this menu are stored in
+radio-independent) files ( \texttt{gpio.props}, \texttt{ipaddr.props}, \texttt{protocols.props},
+\texttt{remote.props})
 and are restored when \pH is started the next time.
 
 If all went well, a radio could be discovered and you hit the \rett{Start} button, the radio is started, and
@@ -4044,22 +4059,23 @@ the \pH server instance (see above).
 In the \texttt{host:addr} pop-down menu, you can choose the entry matching your server. On a virgin system, this menu
 will  only show a default entry which is 127.0.0.1:50000, and an empty entry. By clicking into the text field, you
 can change an entry such that it matches for \pH server instance. You can also select the empty entry from
-the pop-down menu and enter a new \texttt{host:addr} pair, which will then be added to the list. {\color{red}
-After making changes in the text field, you have to press the \texttt{Enter} key to store the new entry
-and make it effective.} The last element of
+the pop-down menu and enter a new \texttt{host:addr} pair, which will then be added to the list.
+ The last element of
 the pop-down menu is always an empty one, so you can add as many different entries as you wish. If you select
 an entry, click  into the text  field and clear it, then this entry is  removed from the pop-down menu.
 In this way, you can configure your client computer to use several different \pH server instances, but also
 to use a \pH server instance that has different IP addresses or host names depending from where you connect.
 
 The second text field in the server line must be used to enter a password. This password will not be
-stored in the preferences file so you have to enter it each time you connect. By default, the last button in
+stored in the preferences file so you have to enter it each time you connect (I might change this in the
+future, but at the moment this seems to be the most secure option). By default, the last button in
 the server line reads \rett{Show} and the password is hidden (each character is represented by a bullet).
 If clicking the \rett{Show} button, its label changes to \rett{Hide} and the password becomes visible. You
 might have guessed that clicking the \rett{Hide} button then conceals the password again and the button
 label reads \rett{Show} again.
 
-\textbf{A note on network security:}
+\clearpage
+\textbf{A note on network security:} \\
 The password you enter is \textbf{not} transmitted ``as is'' over the line. Instead, the server sends a random
 64-byte \textit{challenge} which is different for each connection.
 On the client side, a four-byte version number and the password is added
@@ -4068,15 +4084,31 @@ does the same with its version number and the password entered in the \bltt{Serv
 that the two SHA256 keys are identical. This is most likely not top-notch cyber security, but should provide
 a decent level to fulfil your  obligations as a radio amateur to prevent your gear from unlawful use.
 If you feel you must go beyond, your option is to set up a VPN \textit{virtual private network} in which
-you can have cyber security provided by your network infrastructure rather than by an application such 
+you can have cyber security provided by your network infrastructure rather than by an application such
 as \pH.
 
-\textbf{Auto disconnect feature:} Equally important is to prevent that your radio stops transmitting if
+\textbf{Auto disconnect feature:}\\
+Equally important is to prevent that your radio stops transmitting if
 the connection to the client breaks down. To this end, the server closes the connection and goes RX if
 it has not received any command from the client for about 30 seconds, or if the attempt to read the
 next command from the client failed (the client will send and empty
 ``heartbeat'' command every 15 seconds).
 
+\textbf{Network bandwidth required for client/server operation:}\\
+ The user commands and even the spectrum
+data to be displayed in the panadapters and waterfalls are the smallest part of the data flowing between the client
+and the server. The (by far!) largest part is the audio data. Audio data is transferred as signed 16-bit integers
+at a sample rate of 48 kHz, in stereo for the RX audio (Server $\to$ Client) and in mono for the TX
+microphone data (Client $\to$ server). During RX, and also during TX when doing CW, no TX microphone data
+is transferred. If not using duplex, no RX audio data is transferred when TXing.
+
+This means that during RX, about 96 kByte/sec (768 kbit/sec) are transferred from the Server to the Client
+(twice as much if running two receivers), while only half of this is transferred from the Client to the Server during
+TX if doing SSB. When TXing in CW, very little data (the CW key-down/up time stamps) is actually sent.
+My first tests indicate that client/server operation works very well even
+if parts of the connection between Client and Server
+is using a WLAN. I mention this because my attempts using WLAN for connection to the \textit{radio}
+(that is, for the baseband IQ data) were not entirely successful.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Miscellaneous Topics}
@@ -4186,6 +4218,7 @@ button. During replay, the status string changes to \rett{Replay} (written in re
 turns read and starts from the left until (at the latest) all of the actual recording (marked by a small
 vertical yellow line) is completely replayed (Fig. \ref{fig:capture2}). Again, the replay can be stopped any time by hitting
 the \bltt{Capture} button.
+
 \begin{figure}[ht]
 \center
 \includegraphics[scale=0.45]{Capture2.png}
@@ -4211,8 +4244,105 @@ bar shows how much has already been recorded/replayed.}
 has been replayed. In both cases, hitting the \bltt{Capture} button ends recording/replay before the end has been reached.}
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{HermesLite-II and RadioBerry support}
+\section{HermesLite-II support}
 \label{sec:hl2support}
+
+A. \texttt{https://github.com/softerhardware/Hermes-Lite2/wiki/Releases} \\
+B. \texttt{https://james.ahlstrom.name/hl2filter/}  \\
+C. \texttt{https://www.hermeslite2plus.com/}\\
+D. \texttt{https://github.com/jimahlstrom/HL2IOBoard}
+
+\begin{figure}[ht]
+\center
+\includegraphics[scale=0.45]{RadioMenuHL2.png}
+\caption{The \bltt{Radio} menu for the HL2}
+\label{fig:hl2radiomenu}
+\end{figure}
+
+The HermesLite-II (HL2 for  short, see internet link A above) is an open software / open hardware project,
+a small SDR radio with a QRP (5 watts) PA
+and covering the HF bands up to about 38 MHz. Unlike standard HPSDR boards, it does not have a fixed
+pre-amplifier and a programmable step attenuator in the RF front end, but instead a single combined
+preamp/attenuator that goes from -12 to +48 dB (a negative value indicates attenuation). The RX
+calibration value (see the \bltt{Radio} menu) which is around zero for standard HPSDR boards must
+be in the range 11--14 for the HL2, depending on the filtering in the RF front end
+(a value of 14 is the default one if a HL2 is detected). The sliders
+area of \pH does not show an attenuation (\texttt{ATT}) slider, but instead a \texttt{RF gain}
+slider that encompasses values from -12 to +48. A value of about 14 lets the HL2 behave similar
+to a standard HPSDR radio with the \texttt{ATT} slider at zero. Note that when using adaptive
+predistortion (PURESIGNAL), the whole range of these values is used when auto-levelling the
+RX feedback signal.
+
+Normally, the HL2 is used together with the N2ADR  filter
+board (link B) featuring the low-pass filters that are required before connecting the HL2 to an antenna.
+Some have also included the so-called AK4951 companion board (link C) that features, among others,
+ an audio codec so you can connect a headphone and a microphone. There is also a more recent HL2 I/O-board
+ (link D) that offers a variety of I/O resources. All these boards are supported by \pH:
+
+
+
+ Fig \ref{fig:hl2radiomenu} shows the \bltt{Radio} menu as it shows when \pH runs a HL2. To use the N2ADR
+ filter board, choose \texttt{N2ADR} in the \rett{Filter Board:} pop-down menu. Using this filter board
+ requires a special settings of the open-collector outputs, so to be sure these are set, the safest way
+ after playing around in the \bltt{OC} menu
+ is to choose another filter board in the \bltt{Radio} menu and then again the \texttt{N2ADR} board
+ because then the necessary adjustement to the open-collector settings are automatically made.
+ Note that when
+ using the \texttt{N2ADR} filter board, you should  change  settings in the open collector (\bltt{OC})
+ menu for transverter bands only!
+
+ \rett{HL2 audio codec} Check this box if you have the AK4951 companion board installed. \pH then activates
+ (and used) the audio codec on that board.
+
+ \rett{HL2 CL1/2} The HL2 has two SMA jacks denoted CL1 and CL2 in the front panel. When checking this box,
+ you can feed a 10 MHz reference clock to the (input) CL1 jack, and the (output) Cl2 jack then
+ has an internally re-generated 10 Mhz output signal with about 3.3 V$_{pp}$.
+
+\textbf{Support for the HL2 I/O board} is as follows: if the presence of an HL2 I/O board has been detected,
+\pH transfers in regular intervals and in round-robin fashion
+the current TX frequency and the RX1/RX2 band codes. Note that the dial (!) frequencies are sent.
+When using a 2m transverter the TX frequency and the RX frequency codes are for the
+144 MHz band although the HL2 transmits and receives at frequencies < 38 Mhz.
+ While the TX frequency is sent as a 40-bit word (covering frequencies up to 100 GHz),
+the RX frequencies are sent as 8-bit  ``band codes'' $C$ calculated from the frequency $f$ (in Hz) as
+
+\begin{align}
+C = (int) \left\{ 0.5 + 15.47 * ln(f / 18748.1)\right\}
+\end{align}
+
+so frequencies in the 80m band generated code 81 or 82, frequencies in the 2m band code 138 or 139,
+and the 3cm (10 GHz) band generates a band code that is 204.
+
+What the HL2 I/O board actually does with this information is up to the firmware of the board, in the
+easiest case it generates a band voltage for an external PA, but it also has enough I/O lines
+to switch transverters, external filter boards etc. This all need be implemented in the board firmware
+on the built-in RaspberryPico micro controller,
+\pH just passed the information needed.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{RadioBerry support}
+
+Information on RadioBerry project created by Johan PA3GSB can be found on his home page
+\texttt{https://www.pa3gsb.nl/}. It is built around the same Analog Devices modem chip AD9866
+as the HermesLite-II (see previous section) and even identifies itself as a HermesLite-II. So from
+the viewpoint of an SDR program such as \pH, there is little difference between the RadioBerry and
+the HermesLite-II.
+
+Normally the RadioBerry hardware is a ``hat'' that is mounted on a RaspberryPi computer which runs
+the drivers for the RadioBerry but which also can run the SDR software. The communication between
+ \pH and the RadioBerry driver is via the local loop-back internet
+interface. Normally \pH does not query loop-back devices when discovering radios, but to support
+the RadioBerry, local loopback devices are queried for protocol-2.
+
+The communication between the RaspberryPi and the RadioBerry uses nearly all GPIO lines of the
+RaspPi, so the general recommendation is to compile \pH without GPIO support. However, two GPIO lines
+(14/15 for first-generation RadioBerries, and 17/18 for second-generation ones)
+are actually available, so if \pH is compiled with GPIO support and detects a RadioBerry ``hat''
+from the presence of the special device file  \texttt{/dev/radioberry},
+then it enforces
+the \texttt{No Controller} GPIO choice and only uses the two available lines for
+\texttt{CWL}/\texttt{CWR}, so one can attach a paddle to the two lines and use the iambic
+keyer built into \pH.
+
 
 \appendix
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -7246,6 +7376,12 @@ discretion, but all those often used by other hardware are marked as not to use.
 for example, \pH even if compiled with the GPIO option will run smoothly together with additional
 hardware such as ,,audio hats''.
 
+\textbf{A note on the RadioBerry.} If \pH detects that it runs a RadioBerry device that is GPIO-connected,
+it will only use GPIO lines 14 (for \bltt{CWL}) and 15 (for \bltt{CWR}) if \texttt{No Controller} is
+selected. Any other controller choice will not work in this case anyway. This allows RadioBerry users
+to compile \pH with GPIO enabled and use these two lines to attach a paddle and  work with the iambic
+keyer built into \pH.
+
 The function of GPIO lines actually used by the controllers are indicated in black colour. No detailed
 explanation is needed since these are hard wired and one therefore should not change this assignment.
 
@@ -7754,7 +7890,7 @@ The \pH repository is downloaded, and support libraries are installed, with the 
 \grtt{MacOS/libinstall.sh} \\
 
 The \texttt{git clone} command loads the \pH repository, and with the command
-\texttt{MacOS/libinstall.sh} 
+\texttt{MacOS/libinstall.sh}
 (which is then executed within the just-created \texttt{pihpsdr} directory) installs the
  \texttt{HomeBrew} universe. Installing \texttt{HomeBrew} starts with asking you for the administrator
  password, tells you what it wants to do and requires hitting \texttt{Enter} to proceed.
