@@ -42,6 +42,8 @@ struct _CHOICE {
 
 typedef struct _CHOICE CHOICE;
 
+static int myvfo;
+
 static struct _CHOICE *first = NULL;
 static struct _CHOICE *current = NULL;
 
@@ -78,7 +80,7 @@ static gboolean bandstack_select_cb (GtkWidget *widget, gpointer data) {
     g_signal_handler_unblock(G_OBJECT(current->button), current->signal);
   }
 
-  if (active_receiver->id == 0 && current) {
+  if (myvfo == 0 && current) {
     //
     // vfo_bandstack_changed() calls vfo_save_bandstack(), so the frequency/mode
     // of the previous "current" bandstack will be overwritten with the
@@ -98,7 +100,7 @@ static gboolean bandstack_select_cb (GtkWidget *widget, gpointer data) {
   }
 
   current = choice;
-  vfo_bandstack_changed(choice->info);
+  vfo_id_bandstack_changed(myvfo, choice->info);
   return FALSE;
 }
 
@@ -107,7 +109,8 @@ void bandstack_menu(GtkWidget *parent) {
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(parent));
   char title[64];
-  snprintf(title, 64, "piHPSDR - Band Stack (VFO-%s)", active_receiver->id == 0 ? "A" : "B");
+  myvfo = active_receiver->id;
+  snprintf(title, 64, "piHPSDR - Band Stack (VFO-%s)", myvfo == 0 ? "A" : "B");
   GtkWidget *headerbar = gtk_header_bar_new();
   gtk_window_set_titlebar(GTK_WINDOW(dialog), headerbar);
   gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(headerbar), TRUE);
@@ -124,7 +127,7 @@ void bandstack_menu(GtkWidget *parent) {
   gtk_widget_set_name(close_b, "close_button");
   g_signal_connect (close_b, "button-press-event", G_CALLBACK(close_cb), NULL);
   gtk_grid_attach(GTK_GRID(grid), close_b, 0, 0, 1, 1);
-  BAND *band = band_get_band(vfo[active_receiver->id].band);
+  BAND *band = band_get_band(vfo[myvfo].band);
   BANDSTACK *bandstack = band->bandstack;
   char label[32];
   int row = 1;
@@ -151,7 +154,7 @@ void bandstack_menu(GtkWidget *parent) {
     choice->info = i;
     choice->button = w;
 
-    if (i == vfo[active_receiver->id].bandstack) {
+    if (i == vfo[myvfo].bandstack) {
       current = choice;
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(current->button), TRUE);
     }

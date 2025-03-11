@@ -45,6 +45,8 @@ struct _CHOICE {
 
 typedef struct _CHOICE CHOICE;
 
+static RECEIVER *rx;
+
 static struct _CHOICE *first = NULL;
 static struct _CHOICE *current = NULL;
 
@@ -73,13 +75,13 @@ static void cleanup() {
 }
 
 static void cw_peak_cb(GtkWidget *widget, gpointer data) {
-  int id = active_receiver->id;
+  int id = rx->id;
   int val = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   filter_set_cwpeak(id, val);
 }
 
 static gboolean default_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
-  int mode = vfo[active_receiver->id].mode;
+  int mode = vfo[rx->id].mode;
   int f = GPOINTER_TO_INT(data);
   int low, high;
   GtkWidget *spinlow, *spinhigh;
@@ -166,13 +168,13 @@ static gboolean deviation_select_cb (GtkWidget *widget, gpointer data) {
   }
 
   if (current != choice) {
-    int id = active_receiver->id;
+    int id = rx->id;
     current = choice;
     if (radio_is_remote) {
       send_deviation(client_socket, id, choice->info);
     } else {
       vfo[id].deviation = choice->info;
-      rx_set_filter(active_receiver);
+      rx_set_filter(rx);
 
       if (can_transmit) {
         tx_set_filter(transmitter);
@@ -190,7 +192,7 @@ static gboolean deviation_select_cb (GtkWidget *widget, gpointer data) {
 //
 static void var_spin_low_cb (GtkWidget *widget, gpointer data) {
   int f = GPOINTER_TO_UINT(data);
-  int id = active_receiver->id;
+  int id = rx->id;
   int m = vfo[id].mode;
   FILTER *mode_filters = filters[m];
   FILTER *filter = &mode_filters[f];
@@ -247,7 +249,7 @@ static void var_spin_low_cb (GtkWidget *widget, gpointer data) {
 //
 static void var_spin_high_cb (GtkWidget *widget, gpointer data) {
   int f = GPOINTER_TO_UINT(data);
-  int id = active_receiver->id;
+  int id = rx->id;
   FILTER *mode_filters = filters[vfo[id].mode];
   FILTER *filter = &mode_filters[f];
   int m = vfo[id].mode;
@@ -309,14 +311,17 @@ static void var_spin_high_cb (GtkWidget *widget, gpointer data) {
 }
 
 void filter_menu(GtkWidget *parent) {
-  int id = active_receiver->id;
-  int f = vfo[id].filter;
-  int m = vfo[id].mode;
   GtkWidget *w;
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(parent));
   char title[64];
-  snprintf(title, 64, "piHPSDR - Filter (RX%d VFO-%s)", id + 1, id == 0 ? "A" : "B");
+  //
+  // This guards against changing the active receiver while the menu is open
+  //
+  rx = active_receiver;
+  int f = vfo[rx->id].filter;
+  int m = vfo[rx->id].mode;
+  snprintf(title, 64, "piHPSDR - Filter (RX%d VFO-%s)", rx->id + 1, rx->id == 0 ? "A" : "B");
   GtkWidget *headerbar = gtk_header_bar_new();
   gtk_window_set_titlebar(GTK_WINDOW(dialog), headerbar);
   gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(headerbar), TRUE);
@@ -347,7 +352,7 @@ void filter_menu(GtkWidget *parent) {
     choice->info = 2500;
     choice->button = w;
 
-    if (active_receiver->deviation == 2500) {
+    if (rx->deviation == 2500) {
       current = choice;
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), TRUE);
     }
@@ -362,7 +367,7 @@ void filter_menu(GtkWidget *parent) {
     choice->info = 5000;
     choice->button = w;
 
-    if (active_receiver->deviation == 5000) {
+    if (rx->deviation == 5000) {
       current = choice;
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), TRUE);
     }
@@ -536,7 +541,7 @@ void filter_menu(GtkWidget *parent) {
       GtkWidget *cw_peak_b = gtk_check_button_new_with_label("Enable additional CW Audio peak filter");
       gtk_widget_set_name(cw_peak_b, "boldlabel");
       gtk_widget_set_halign(cw_peak_b, GTK_ALIGN_START);
-      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (cw_peak_b), vfo[active_receiver->id].cwAudioPeakFilter);
+      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (cw_peak_b), vfo[rx->id].cwAudioPeakFilter);
       gtk_grid_attach(GTK_GRID(grid), cw_peak_b, 4, 0, 6, 1);
       g_signal_connect(cw_peak_b, "toggled", G_CALLBACK(cw_peak_cb), NULL);
     }

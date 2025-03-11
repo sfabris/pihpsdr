@@ -738,6 +738,10 @@ void vfo_id_band_changed(int id, int b) {
 
 void vfo_bandstack_changed(int b) {
   int id = active_receiver->id;
+  vfo_id_bandstack_changed(id, b);
+}
+
+void vfo_id_bandstack_changed(int id, int b) {
   int oldmode = vfo[id].mode;
   BANDSTACK *bandstack = bandstack_get_bandstack(vfo[id].band);
   int oldstack = bandstack->current_entry;

@@ -46,6 +46,8 @@ typedef struct _CHOICE CHOICE;
 static struct _CHOICE *first = NULL;
 static struct _CHOICE *current = NULL;
 
+static int myvfo;
+
 static void cleanup() {
   if (dialog != NULL) {
     GtkWidget *tmp = dialog;
@@ -72,7 +74,6 @@ static gboolean close_cb () {
 
 gboolean band_select_cb (GtkWidget *widget, gpointer data) {
   CHOICE *choice = (CHOICE *) data;
-  int id = active_receiver->id;
   int newband;
 
   //
@@ -80,12 +81,12 @@ gboolean band_select_cb (GtkWidget *widget, gpointer data) {
   // band stack
   //
   if (radio_is_remote) {
-    send_band(client_socket, id, choice->info);
+    send_band(client_socket, myvfo, choice->info);
     // We have to assume that the band change succeeded, we just cannot know.
     newband = choice->info;
   } else {
-    vfo_id_band_changed(id, choice->info);
-    newband = vfo[id].band;
+    vfo_id_band_changed(myvfo, choice->info);
+    newband = vfo[myvfo].band;
   }
 
   if (newband != choice->info) {
@@ -132,7 +133,8 @@ void band_menu(GtkWidget *parent) {
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(parent));
   char title[64];
-  snprintf(title, 64, "piHPSDR - Band (VFO-%s)", active_receiver->id == 0 ? "A" : "B");
+  myvfo = active_receiver->id;
+  snprintf(title, 64, "piHPSDR - Band (VFO-%s)", myvfo == 0 ? "A" : "B");
   GtkWidget *headerbar = gtk_header_bar_new();
   gtk_window_set_titlebar(GTK_WINDOW(dialog), headerbar);
   gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(headerbar), TRUE);
@@ -178,7 +180,7 @@ void band_menu(GtkWidget *parent) {
       choice->info = i;
       choice->button = w;
 
-      if (i == vfo[active_receiver->id].band) {
+      if (i == vfo[myvfo].band) {
         current = choice;
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), TRUE);
       }
