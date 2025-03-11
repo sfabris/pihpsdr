@@ -509,7 +509,7 @@ int process_action(void *data) {
         copy_mode_settings(mode);
       }
 
-      update_noise();
+      update_noise(active_receiver);
       g_idle_add(ext_vfo_update, NULL);
     }
 
@@ -1230,7 +1230,7 @@ int process_action(void *data) {
         copy_mode_settings(mode);
       }
 
-      update_noise();
+      update_noise(active_receiver);
     }
 
     break;
@@ -1255,7 +1255,7 @@ int process_action(void *data) {
         copy_mode_settings(mode);
       }
 
-      update_noise();
+      update_noise(active_receiver);
     }
 
     break;
@@ -1642,7 +1642,7 @@ int process_action(void *data) {
         copy_mode_settings(mode);
       }
 
-      update_noise();
+      update_noise(active_receiver);
     }
 
     break;

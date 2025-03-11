@@ -18,5 +18,7 @@
 
 #include <gtk/gtk.h>
 
+#include "receiver.h"
+
 extern void noise_menu(GtkWidget *parent);
-extern void update_noise(void);
+extern void update_noise(RECEIVER *rx);

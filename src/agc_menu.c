@@ -33,7 +33,7 @@
 
 static GtkWidget *dialog = NULL;
 
-static RECEIVER *rx;
+static RECEIVER *myrx;
 
 static void cleanup() {
   if (dialog != NULL) {
@@ -52,23 +52,23 @@ static gboolean close_cb () {
 }
 
 static void agc_hang_threshold_value_changed_cb(GtkWidget *widget, gpointer data) {
-  rx->agc_hang_threshold = (int)gtk_range_get_value(GTK_RANGE(widget));
+  myrx->agc_hang_threshold = (int)gtk_range_get_value(GTK_RANGE(widget));
 
   if (radio_is_remote) {
-    send_agc_gain(client_socket, rx);
+    send_agc_gain(client_socket, myrx);
   } else {
-    rx_set_agc(rx);
+    rx_set_agc(myrx);
   }
 }
 
 static void agc_cb (GtkToggleButton *widget, gpointer data) {
   int val = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
-  rx->agc = val;
+  myrx->agc = val;
 
   if (radio_is_remote) {
-    send_agc(client_socket, rx->id, rx->agc);
+    send_agc(client_socket, myrx->id, myrx->agc);
   } else {
-    rx_set_agc(rx);
+    rx_set_agc(myrx);
   }
 
   g_idle_add(ext_vfo_update, NULL);
@@ -81,8 +81,8 @@ void agc_menu(GtkWidget *parent) {
   //
   // This guards against changing the active receiver while the menu is open
   //
-  rx = active_receiver;
-  snprintf(title, 64, "piHPSDR - AGC (RX%d VFO-%s)", rx->id + 1, rx->id == 0 ? "A" : "B");
+  myrx = active_receiver;
+  snprintf(title, 64, "piHPSDR - AGC (RX%d VFO-%s)", myrx->id + 1, myrx->id == 0 ? "A" : "B");
   GtkWidget *headerbar = gtk_header_bar_new();
   gtk_window_set_titlebar(GTK_WINDOW(dialog), headerbar);
   gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(headerbar), TRUE);
@@ -110,7 +110,7 @@ void agc_menu(GtkWidget *parent) {
   gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(agc_combo), NULL, "Slow");
   gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(agc_combo), NULL, "Medium");
   gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(agc_combo), NULL, "Fast");
-  gtk_combo_box_set_active(GTK_COMBO_BOX(agc_combo), rx->agc);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(agc_combo), myrx->agc);
   my_combo_attach(GTK_GRID(grid), agc_combo, 1, 1, 1, 1);
   g_signal_connect(agc_combo, "changed", G_CALLBACK(agc_cb), NULL);
   GtkWidget *agc_hang_threshold_label = gtk_label_new("Hang Threshold");
@@ -120,7 +120,7 @@ void agc_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(grid), agc_hang_threshold_label, 0, 2, 1, 1);
   GtkWidget *agc_hang_threshold_scale = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0.0, 100.0, 1.0);
   gtk_range_set_increments (GTK_RANGE(agc_hang_threshold_scale), 1.0, 1.0);
-  gtk_range_set_value (GTK_RANGE(agc_hang_threshold_scale), rx->agc_hang_threshold);
+  gtk_range_set_value (GTK_RANGE(agc_hang_threshold_scale), myrx->agc_hang_threshold);
   gtk_widget_show(agc_hang_threshold_scale);
   gtk_grid_attach(GTK_GRID(grid), agc_hang_threshold_scale, 1, 2, 2, 1);
   g_signal_connect(G_OBJECT(agc_hang_threshold_scale), "value_changed", G_CALLBACK(agc_hang_threshold_value_changed_cb),

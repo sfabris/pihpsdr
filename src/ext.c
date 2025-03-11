@@ -119,12 +119,6 @@ int ext_start_tx(void *data) {
 }
 
 // cppcheck-suppress constParameterPointer
-int ext_update_noise(void *data) {
-  update_noise();
-  return G_SOURCE_REMOVE;
-}
-
-// cppcheck-suppress constParameterPointer
 int ext_update_eq(void *data) {
   update_eq();
   return G_SOURCE_REMOVE;

@@ -645,7 +645,7 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
   // defer update_eq() until here since it also applies TX EQ settings
   //
   rx_set_agc(rx);
-  update_noise();
+  update_noise(rx);
   update_eq();
   g_idle_add(ext_vfo_update, NULL);
 }
