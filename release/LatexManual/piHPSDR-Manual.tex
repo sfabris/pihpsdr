@@ -4277,9 +4277,7 @@ Normally, the HL2 is used together with the N2ADR  filter
 board (link B) featuring the low-pass filters that are required before connecting the HL2 to an antenna.
 Some have also included the so-called AK4951 companion board (link C) that features, among others,
  an audio codec so you can connect a headphone and a microphone. There is also a more recent HL2 I/O-board
- (link D) that offers a variety of I/O resources. All these boards are supported by \pH:
-
-
+ (link D) that offers a variety of I/O resources. All these boards are supported by \pH.
 
  Fig \ref{fig:hl2radiomenu} shows the \bltt{Radio} menu as it shows when \pH runs a HL2. To use the N2ADR
  filter board, choose \texttt{N2ADR} in the \rett{Filter Board:} pop-down menu. Using this filter board
@@ -4298,7 +4296,9 @@ Some have also included the so-called AK4951 companion board (link C) that featu
  you can feed a 10 MHz reference clock to the (input) CL1 jack, and the (output) Cl2 jack then
  has an internally re-generated 10 Mhz output signal with about 3.3 V$_{pp}$.
 
-\textbf{Support for the HL2 I/O board} is as follows: if the presence of an HL2 I/O board has been detected,
+\textbf{Support for the HL2 I/O board}
+
+If the presence of an HL2 I/O board has been detected,
 \pH transfers in regular intervals and in round-robin fashion
 the current TX frequency and the RX1/RX2 band codes. Note that the dial (!) frequencies are sent.
 When using a 2m transverter the TX frequency and the RX frequency codes are for the
@@ -4307,7 +4307,7 @@ When using a 2m transverter the TX frequency and the RX frequency codes are for 
 the RX frequencies are sent as 8-bit  ``band codes'' $C$ calculated from the frequency $f$ (in Hz) as
 
 \begin{align}
-C = (int) \left\{ 0.5 + 15.47 * ln(f / 18748.1)\right\}
+C = \textrm{Floor}\left( 0.5 + 15.47 * \ln(f / 18748.1)\right)
 \end{align}
 
 so frequencies in the 80m band generated code 81 or 82, frequencies in the 2m band code 138 or 139,
@@ -4318,8 +4318,27 @@ easiest case it generates a band voltage for an external PA, but it also has eno
 to switch transverters, external filter boards etc. This all need be implemented in the board firmware
 on the built-in RaspberryPico micro controller,
 \pH just passed the information needed.
+
+\textbf{``TX latency'' and ``PTT hang time''}
+
+There has been much discussion about which are the optimal values for these parameters. \pH has not 
+user interface for there but sets the TX-latency to 40 msec and the PTT hang time to 20 msec.
+
+After a RX/TX transition, the HL2 does not start transmitting until the internal buffer (within the FPGA)
+for the TX samples reaches a  minimum filling, this is the TX latency. A too low value may lead to
+frequent TX buffer underruns especially for a  sloppy network connection, a too high value does not
+only delay the TX signal but also risks TX buffer overflows. Experience in the HL2  discussion group
+seems to be that a value of 20 msec is somewhat small, so \pH sets the TX latency to 40 msec. My measurements
+indicate that the buffer can hold about 75msec of TX data so a value of 40 msec leaves enough headroom.
+
+The so-called PTT hang time stops transmitting if the TX sample buffer became empty for the specified
+amount of time. Together with a too small TX latency value this leads to ``relay chatter'' during transmit
+if the network connection is sloppy because the T/R relay is frequently switched. With a decently chosen
+value of the TX latency, the PTT hang time is not very critical so I set it to 20 msec.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{RadioBerry support}
+\label{sec:radioberry}
 
 Information on RadioBerry project created by Johan PA3GSB can be found on his home page
 \texttt{https://www.pa3gsb.nl/}. It is built around the same Analog Devices modem chip AD9866
@@ -4335,8 +4354,10 @@ the RadioBerry, local loopback devices are queried for protocol-2.
 
 The communication between the RaspberryPi and the RadioBerry uses nearly all GPIO lines of the
 RaspPi, so the general recommendation is to compile \pH without GPIO support. However, two GPIO lines
-(14/15 for first-generation RadioBerries, and 17/18 for second-generation ones)
-are actually available, so if \pH is compiled with GPIO support and detects a RadioBerry ``hat''
+are actually available, namely GPIO14/15for first-generation RadioBerries
+ (with firmware versions smaller than 73.2),
+and GPIO17/18 for second-generation ones (with firmware versions 73.2 and larger).
+Therefore, if \pH is compiled with GPIO support and detects a RadioBerry ``hat''
 from the presence of the special device file  \texttt{/dev/radioberry},
 then it enforces
 the \texttt{No Controller} GPIO choice and only uses the two available lines for
@@ -6542,6 +6563,7 @@ key. The pre-defined GPIO lines are, if there is "No Controller":
 \item{GPIO line 12 for \bltt{CW Key (keyer)}}
 \end{itemize}
 
+Note that this is different for the RadioBerry, see chapter \ref{sec:radioberry}.
 In the case of \texttt{Controller1} the GPIO lines that can be used for CW are
 
 \begin{itemize}
@@ -7357,7 +7379,7 @@ other single-board computers with a GPIO.
 \center
 \includegraphics[scale=0.6]{GPIO.pdf}
 \caption{GPIO lines used with various controllers. Note that Controller2V2 and the G2 front panel
-share the used GPIO lines.}
+share the used GPIO lines. The assignment is different for a RadioBerry, see chapter \ref{sec:radioberry}}
 \label{fig:GPIO}
 \end{figure}
 
@@ -7374,13 +7396,8 @@ not use from within \pH for the case at hand. For the controllers, these are the
 with the I2C interface(s). If there is no controller, we could, in principle, use all GPIO pins at our
 discretion, but all those often used by other hardware are marked as not to use. This ensures that,
 for example, \pH even if compiled with the GPIO option will run smoothly together with additional
-hardware such as ,,audio hats''.
-
-\textbf{A note on the RadioBerry.} If \pH detects that it runs a RadioBerry device that is GPIO-connected,
-it will only use GPIO lines 14 (for \bltt{CWL}) and 15 (for \bltt{CWR}) if \texttt{No Controller} is
-selected. Any other controller choice will not work in this case anyway. This allows RadioBerry users
-to compile \pH with GPIO enabled and use these two lines to attach a paddle and  work with the iambic
-keyer built into \pH.
+hardware such as ,,audio hats''. Note only two GPIO lines are available if using a RadioBerry
+directly attached to the RaspPi, as detailed in chapter \ref{sec:radioberry}.
 
 The function of GPIO lines actually used by the controllers are indicated in black colour. No detailed
 explanation is needed since these are hard wired and one therefore should not change this assignment.
@@ -7409,7 +7426,7 @@ a Morse paddle key.
 
 
 \rett{PTTIN} (Input with pull-up, active low). This input triggers a "PTT on/off" signal.
-Not that it does not toggle the PTT state, but enforces PTT as long as the input is pulled low,
+Not that it does not \textit{toggle} the PTT state, but enforces PTT as long as the input is pulled low,
 and releases PTT when it goes high. This input is typically connected to the PTT button of
 a microphone or the PTT output of an external CW keyer.
 
@@ -7440,59 +7457,6 @@ the GPIO lines are switched
 to ,,input with pull-up'' upon booting. An input line with a built-in pull-up
 resistor is, however,
 nearly indistinguishable from an output line with high level.
-
-If you are not happy with the default assignment of the ,,extra'' GPIO lines, this can be changed
-but you have to modify the file \texttt{src/gpio.c} and recompile \pH (there is no user interface
-for GPIO line assignment). To give an example, suppose you are using the Controller2 V2 (with double
-encoders) with an Adalm Pluto and need a hardware PTT out signal. This controller a single spare GPIO line
-(GPIO14) which by default is assigned to \rett{PTTIN}. Locate the function \texttt{gpio\_set\_defaults}
-in the source code file. It starts like this
-
-\begin{small}
-\begin{verbatim}
-void gpio_set_defaults(int ctrlr) {
-  t_print("%s: %d\n", __FUNCTION__, ctrlr);
-
-  switch (ctrlr) {
-  case CONTROLLER1:
-    //
-    // GPIO lines not used by controller: 9, 10, 11, 14, 15
-    //
-    CWL_LINE = 9;
-    CWR_LINE = 11;
-    CWKEY_LINE = 10;
-    PTTIN_LINE = 14;
-    PTTOUT_LINE = 15;
-    CWOUT_LINE = -1;
-...
-\end{verbatim}
-\end{small}
-
-You clearly see the default assignments for the Controller1 case (a negative value means ,,do not use'').
-If you scroll down, you will also find the assignments for the other cases (Controller2 V1, Controller 2 V2,
-G2 front panel, and ,,no controller''). The assignment for the Controller2 V2 (the version with double
-encoders) is only few lines below and reads
-
-\begin{small}
-\begin{verbatim}
-  case CONTROLLER2_V2:
-    //
-    // GPIO lines not used by controller: 14. Assigned to PTTIN
-    //
-    CWL_LINE = -1;
-    CWR_LINE = -1;
-    PTTIN_LINE = 14;
-    CWKEY_LINE = -1;
-    PTTOUT_LINE = -1;
-...
-\end{verbatim}
-\end{small}
-
-To use GPIO14 for \texttt{PTTOUT}, simply modify the assignment such that the variable
- \texttt{PTTIN\_LINE} is assigned the
-value \texttt{-1} and \texttt{PTTOUT\_LINE} gets the value \texttt{14}.
- That's all except that you have to recompile
-simply by typing in the command ,,make'' in the \pH directory (see Appendix \ref{sec:installsources}).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
