@@ -2604,6 +2604,7 @@ static void *client_thread(void* arg) {
     rx->waterfall_high = -40;
     rx->waterfall_low = -140;
     rx->waterfall_automatic = 1;
+    rx->waterfall_percent = 50;
     rx->display_filled = 1;
     rx->display_gradient = 1;
     rx->local_audio_buffer = NULL;

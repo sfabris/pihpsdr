@@ -251,6 +251,7 @@ void rx_save_state(const RECEIVER *rx) {
   SetPropI1("receiver.%d.waterfall_low", rx->id,                rx->waterfall_low);
   SetPropI1("receiver.%d.waterfall_high", rx->id,               rx->waterfall_high);
   SetPropI1("receiver.%d.waterfall_automatic", rx->id,          rx->waterfall_automatic);
+  SetPropI1("receiver.%d.waterfall_percent", rx->id,            rx->waterfall_percent);
 
   if (!radio_is_remote) {
     SetPropI1("receiver.%d.smetermode", rx->id,                 rx->smetermode);
@@ -351,6 +352,7 @@ void rx_restore_state(RECEIVER *rx) {
   GetPropI1("receiver.%d.waterfall_low", rx->id,                rx->waterfall_low);
   GetPropI1("receiver.%d.waterfall_high", rx->id,               rx->waterfall_high);
   GetPropI1("receiver.%d.waterfall_automatic", rx->id,          rx->waterfall_automatic);
+  GetPropI1("receiver.%d.waterfall_percent", rx->id,            rx->waterfall_percent);
 
   if (!radio_is_remote) {
     GetPropI1("receiver.%d.smetermode", rx->id,                 rx->smetermode);
@@ -427,29 +429,35 @@ void rx_restore_state(RECEIVER *rx) {
 void rx_reconfigure(RECEIVER *rx, int height) {
   int y = 0;
   //
-  // myheight is the size of the waterfall or the panadapter
-  // which is the full or half of the height depending on whether BOTH
-  // are displayed
+  // Calculate the height of the panadapter (pheight) and the waterfall (wheight)
+  // depending on whether only one or both are shown, and depending on the relative
+  // waterfall height
   //
+  int pheight = height;
+  int wheight = height;
+
+  if (rx->display_panadapter && rx->display_waterfall) {
+    wheight = (rx->waterfall_percent * height) / 100;
+    pheight = height - wheight;
+  }
   t_print("%s: rx=%d width=%d height=%d\n", __FUNCTION__, rx->id, rx->width, rx->height);
   g_mutex_lock(&rx->display_mutex);
-  int myheight = (rx->display_panadapter && rx->display_waterfall) ? height / 2 : height;
   rx->height = height; // total height
   gtk_widget_set_size_request(rx->panel, rx->width, rx->height);
 
   if (rx->display_panadapter) {
     if (rx->panadapter == NULL) {
-      t_print("%s: panadapter_init: width:%d height:%d\n", __FUNCTION__, rx->width, myheight);
-      rx_panadapter_init(rx, rx->width, myheight);
+      t_print("%s: panadapter_init: width:%d height:%d\n", __FUNCTION__, rx->width, pheight);
+      rx_panadapter_init(rx, rx->width, pheight);
       gtk_fixed_put(GTK_FIXED(rx->panel), rx->panadapter, 0, y); // y=0 here always
     } else {
       // set the size
-      gtk_widget_set_size_request(rx->panadapter, rx->width, myheight);
+      gtk_widget_set_size_request(rx->panadapter, rx->width, pheight);
       // move the current one
       gtk_fixed_move(GTK_FIXED(rx->panel), rx->panadapter, 0, y);
     }
 
-    y += myheight;
+    y += pheight;
   } else {
     if (rx->panadapter != NULL) {
       gtk_container_remove(GTK_CONTAINER(rx->panel), rx->panadapter);
@@ -459,13 +467,13 @@ void rx_reconfigure(RECEIVER *rx, int height) {
 
   if (rx->display_waterfall) {
     if (rx->waterfall == NULL) {
-      t_print("%s: waterfall_init: width:%d height:%d\n", __FUNCTION__, rx->width, myheight);
-      waterfall_init(rx, rx->width, myheight);
+      t_print("%s: waterfall_init: width:%d height:%d\n", __FUNCTION__, rx->width, wheight);
+      waterfall_init(rx, rx->width, wheight);
       gtk_fixed_put(GTK_FIXED(rx->panel), rx->waterfall, 0, y); // y=0 if ONLY waterfall is present
     } else {
       // set the size
-      t_print("%s: waterfall set_size_request: width:%d height:%d\n", __FUNCTION__, rx->width, myheight);
-      gtk_widget_set_size_request(rx->waterfall, rx->width, myheight);
+      t_print("%s: waterfall set_size_request: width:%d height:%d\n", __FUNCTION__, rx->width, wheight);
+      gtk_widget_set_size_request(rx->waterfall, rx->width, wheight);
       // move the current one
       gtk_fixed_move(GTK_FIXED(rx->panel), rx->waterfall, 0, y);
     }
@@ -747,6 +755,7 @@ RECEIVER *rx_create_receiver(int id, int pixels, int width, int height) {
   rx->waterfall_high = -40;
   rx->waterfall_low = -140;
   rx->waterfall_automatic = 1;
+  rx->waterfall_percent = 50;
   rx->display_filled = 1;
   rx->display_gradient = 1;
   rx->display_detector_mode = DET_AVERAGE;

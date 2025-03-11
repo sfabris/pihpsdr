@@ -182,6 +182,7 @@ typedef struct _receiver {
   int waterfall_low;
   int waterfall_high;
   int waterfall_automatic;
+  int waterfall_percent;
   cairo_surface_t *panadapter_surface;
   GdkPixbuf *pixbuf;
   int local_audio;

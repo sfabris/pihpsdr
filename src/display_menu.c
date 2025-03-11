@@ -39,12 +39,19 @@ static int which_container = GENERAL_CONTAINER;
 
 static GtkWidget *general_container;
 static GtkWidget *peaks_container;
+static GtkWidget *wf_percent;
 
 static GtkWidget *dialog = NULL;
 static GtkWidget *waterfall_high_r = NULL;
 static GtkWidget *waterfall_low_r = NULL;
 static GtkWidget *general_container;
 static GtkWidget *peaks_container;
+
+//
+// This guards against changing the active receiver while the
+// menu is open
+//
+static RECEIVER *rx;
 
 static void cleanup() {
   if (dialog != NULL) {
@@ -98,26 +105,26 @@ static void detector_cb(GtkToggleButton *widget, gpointer data) {
 
   switch (val) {
   case 0:
-    active_receiver->display_detector_mode = DET_PEAK;
+    rx->display_detector_mode = DET_PEAK;
     break;
 
   case 1:
-    active_receiver->display_detector_mode = DET_ROSENFELL;
+    rx->display_detector_mode = DET_ROSENFELL;
     break;
 
   case 2:
-    active_receiver->display_detector_mode = DET_AVERAGE;
+    rx->display_detector_mode = DET_AVERAGE;
     break;
 
   case 3:
-    active_receiver->display_detector_mode = DET_SAMPLEHOLD;
+    rx->display_detector_mode = DET_SAMPLEHOLD;
     break;
   }
 
   if (radio_is_remote) {
-    send_display(client_socket, active_receiver->id);
+    send_display(client_socket, rx->id);
   } else {
-    rx_set_detector(active_receiver);
+    rx_set_detector(rx);
   }
 }
 
@@ -126,116 +133,122 @@ static void average_cb(GtkToggleButton *widget, gpointer data) {
 
   switch (val) {
   case 0:
-    active_receiver->display_average_mode = AVG_NONE;
+    rx->display_average_mode = AVG_NONE;
     break;
 
   case 1:
-    active_receiver->display_average_mode = AVG_RECURSIVE;
+    rx->display_average_mode = AVG_RECURSIVE;
     break;
 
   case 2:
-    active_receiver->display_average_mode = AVG_TIMEWINDOW;
+    rx->display_average_mode = AVG_TIMEWINDOW;
     break;
 
   case 3:
-    active_receiver->display_average_mode = AVG_LOGRECURSIVE;
+    rx->display_average_mode = AVG_LOGRECURSIVE;
     break;
   }
 
   if (radio_is_remote) {
-    send_display(client_socket, active_receiver->id);
+    send_display(client_socket, rx->id);
   } else {
-    rx_set_average(active_receiver);
+    rx_set_average(rx);
   }
 }
 
 static void panadapter_peaks_on_cb(GtkWidget *widget, gpointer data) {
-  active_receiver->panadapter_peaks_on = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  rx->panadapter_peaks_on = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 }
 
 static void time_value_changed_cb(GtkWidget *widget, gpointer data) {
-  active_receiver->display_average_time = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
+  rx->display_average_time = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
   if (radio_is_remote) {
-    send_display(client_socket, active_receiver->id);
+    send_display(client_socket, rx->id);
   } else {
-    rx_set_average(active_receiver);
+    rx_set_average(rx);
   }
 }
 
 static void filled_cb(GtkWidget *widget, gpointer data) {
-  active_receiver->display_filled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  rx->display_filled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 }
 
 static void panadapter_hide_noise_filled_cb(GtkWidget *widget, gpointer data) {
-  active_receiver->panadapter_hide_noise_filled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  rx->panadapter_hide_noise_filled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 }
 
 static void panadapter_peaks_in_passband_filled_cb(GtkWidget *widget, gpointer data) {
-  active_receiver->panadapter_peaks_in_passband_filled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  rx->panadapter_peaks_in_passband_filled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 }
 
 static void gradient_cb(GtkWidget *widget, gpointer data) {
-  active_receiver->display_gradient = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  rx->display_gradient = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
 }
 
 static void frames_per_second_value_changed_cb(GtkWidget *widget, gpointer data) {
-  active_receiver->fps = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+  rx->fps = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
   if (radio_is_remote) {
-    send_fps(client_socket, active_receiver->id, active_receiver->fps);
+    send_fps(client_socket, rx->id, rx->fps);
   } else {
-    rx_set_framerate(active_receiver);
+    rx_set_framerate(rx);
   }
 }
 
 static void panadapter_high_value_changed_cb(GtkWidget *widget, gpointer data) {
-  active_receiver->panadapter_high = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+  rx->panadapter_high = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
 }
 
 static void panadapter_low_value_changed_cb(GtkWidget *widget, gpointer data) {
-  active_receiver->panadapter_low = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+  rx->panadapter_low = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
 }
 
 static void panadapter_step_value_changed_cb(GtkWidget *widget, gpointer data) {
-  active_receiver->panadapter_step = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+  rx->panadapter_step = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
 }
 
 static void panadapter_num_peaks_value_changed_cb(GtkWidget *widget, gpointer data) {
-  active_receiver->panadapter_num_peaks = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+  rx->panadapter_num_peaks = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
 }
 
 static void panadapter_ignore_range_divider_value_changed_cb(GtkWidget *widget, gpointer data) {
-  active_receiver->panadapter_ignore_range_divider = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+  rx->panadapter_ignore_range_divider = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
 }
 
 static void panadapter_ignore_noise_percentile_value_changed_cb(GtkWidget *widget, gpointer data) {
-  active_receiver->panadapter_ignore_noise_percentile = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+  rx->panadapter_ignore_noise_percentile = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
 }
 
 static void waterfall_high_value_changed_cb(GtkWidget *widget, gpointer data) {
-  active_receiver->waterfall_high = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+  rx->waterfall_high = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
 }
 
 static void waterfall_low_value_changed_cb(GtkWidget *widget, gpointer data) {
-  active_receiver->waterfall_low = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+  rx->waterfall_low = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
 }
 
 static void waterfall_automatic_cb(GtkWidget *widget, gpointer data) {
   int val = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-  active_receiver->waterfall_automatic = val;
+  rx->waterfall_automatic = val;
   gtk_widget_set_sensitive(waterfall_high_r, !val);
   gtk_widget_set_sensitive(waterfall_low_r, !val);
 }
 
 static void display_waterfall_cb(GtkWidget *widget, gpointer data) {
-  active_receiver->display_waterfall = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  rx->display_waterfall = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  gtk_widget_set_sensitive(wf_percent, rx->display_panadapter && rx->display_waterfall);
   radio_reconfigure();
 }
 
 static void display_panadapter_cb(GtkWidget *widget, gpointer data) {
-  active_receiver->display_panadapter = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  rx->display_panadapter = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  gtk_widget_set_sensitive(wf_percent, rx->display_panadapter && rx->display_waterfall);
   radio_reconfigure();
 }
 
+static void wf_percent_cb(GtkWidget *widget, gpointer data) {
+  rx->waterfall_percent = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+  radio_reconfigure();
+}
 
 //
 // Some symbolic constants used in callbacks
@@ -244,12 +257,19 @@ static void display_panadapter_cb(GtkWidget *widget, gpointer data) {
 
 void display_menu(GtkWidget *parent) {
   GtkWidget *label;
+  char title[64];
   dialog = gtk_dialog_new();
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(parent));
   GtkWidget *headerbar = gtk_header_bar_new();
   gtk_window_set_titlebar(GTK_WINDOW(dialog), headerbar);
   gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(headerbar), TRUE);
-  gtk_header_bar_set_title(GTK_HEADER_BAR(headerbar), "piHPSDR - Display");
+  //
+  // Store the active receiver in rx, so it is kept constant while the
+  // menu is open, even if the active receiver changes later
+  //
+  rx = active_receiver;
+  snprintf(title, sizeof(title), "piHPSDR - Display RX%d", rx->id + 1);
+  gtk_header_bar_set_title(GTK_HEADER_BAR(headerbar), title);
   g_signal_connect (dialog, "delete_event", G_CALLBACK (close_cb), NULL);
   g_signal_connect (dialog, "destroy", G_CALLBACK (close_cb), NULL);
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
@@ -309,7 +329,7 @@ void display_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(general_grid), label, col, row, 1, 1);
   col++;
   GtkWidget *frames_per_second_r = gtk_spin_button_new_with_range(1.0, 100.0, 1.0);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(frames_per_second_r), (double)active_receiver->fps);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(frames_per_second_r), (double)rx->fps);
   gtk_widget_show(frames_per_second_r);
   gtk_grid_attach(GTK_GRID(general_grid), frames_per_second_r, col, row, 1, 1);
   g_signal_connect(frames_per_second_r, "value_changed", G_CALLBACK(frames_per_second_value_changed_cb), NULL);
@@ -321,7 +341,7 @@ void display_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(general_grid), label, col, row, 1, 1);
   col++;
   GtkWidget *panadapter_high_r = gtk_spin_button_new_with_range(-220.0, 100.0, 1.0);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(panadapter_high_r), (double)active_receiver->panadapter_high);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(panadapter_high_r), (double)rx->panadapter_high);
   gtk_widget_show(panadapter_high_r);
   gtk_grid_attach(GTK_GRID(general_grid), panadapter_high_r, col, row, 1, 1);
   g_signal_connect(panadapter_high_r, "value_changed", G_CALLBACK(panadapter_high_value_changed_cb), NULL);
@@ -333,7 +353,7 @@ void display_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(general_grid), label, col, row, 1, 1);
   col++;
   GtkWidget *panadapter_low_r = gtk_spin_button_new_with_range(-220.0, 100.0, 1.0);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(panadapter_low_r), (double)active_receiver->panadapter_low);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(panadapter_low_r), (double)rx->panadapter_low);
   gtk_widget_show(panadapter_low_r);
   gtk_grid_attach(GTK_GRID(general_grid), panadapter_low_r, col, row, 1, 1);
   g_signal_connect(panadapter_low_r, "value_changed", G_CALLBACK(panadapter_low_value_changed_cb), NULL);
@@ -345,7 +365,7 @@ void display_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(general_grid), label, col, row, 1, 1);
   col++;
   GtkWidget *panadapter_step_r = gtk_spin_button_new_with_range(1.0, 20.0, 1.0);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(panadapter_step_r), (double)active_receiver->panadapter_step);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(panadapter_step_r), (double)rx->panadapter_step);
   gtk_widget_show(panadapter_step_r);
   gtk_grid_attach(GTK_GRID(general_grid), panadapter_step_r, col, row, 1, 1);
   g_signal_connect(panadapter_step_r, "value_changed", G_CALLBACK(panadapter_step_value_changed_cb), NULL);
@@ -357,7 +377,7 @@ void display_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(general_grid), label, col, row, 1, 1);
   col++;
   waterfall_high_r = gtk_spin_button_new_with_range(-220.0, 100.0, 1.0);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(waterfall_high_r), (double)active_receiver->waterfall_high);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(waterfall_high_r), (double)rx->waterfall_high);
   gtk_widget_show(waterfall_high_r);
   gtk_grid_attach(GTK_GRID(general_grid), waterfall_high_r, col, row, 1, 1);
   g_signal_connect(waterfall_high_r, "value_changed", G_CALLBACK(waterfall_high_value_changed_cb), NULL);
@@ -369,7 +389,7 @@ void display_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(general_grid), label, col, row, 1, 1);
   col++;
   waterfall_low_r = gtk_spin_button_new_with_range(-220.0, 100.0, 1.0);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(waterfall_low_r), (double)active_receiver->waterfall_low);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(waterfall_low_r), (double)rx->waterfall_low);
   gtk_widget_show(waterfall_low_r);
   gtk_grid_attach(GTK_GRID(general_grid), waterfall_low_r, col, row, 1, 1);
   g_signal_connect(waterfall_low_r, "value_changed", G_CALLBACK(waterfall_low_value_changed_cb), NULL);
@@ -381,10 +401,22 @@ void display_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(general_grid), label, col, row, 1, 1);
   col++;
   GtkWidget *waterfall_automatic_b = gtk_check_button_new();
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (waterfall_automatic_b), active_receiver->waterfall_automatic);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (waterfall_automatic_b), rx->waterfall_automatic);
   gtk_widget_show(waterfall_automatic_b);
   gtk_grid_attach(GTK_GRID(general_grid), waterfall_automatic_b, col, row, 1, 1);
   g_signal_connect(waterfall_automatic_b, "toggled", G_CALLBACK(waterfall_automatic_cb), NULL);
+  col++;
+  label = gtk_label_new("Waterfall Height (%):");
+  gtk_widget_set_name (label, "boldlabel");
+  gtk_widget_set_halign(label, GTK_ALIGN_END);
+  gtk_grid_attach(GTK_GRID(general_grid), label, col, row, 1, 1);
+  col++; 
+  wf_percent = gtk_spin_button_new_with_range(20.0, 80.0, 5.0);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(wf_percent), (double) rx->waterfall_percent);
+  gtk_grid_attach(GTK_GRID(general_grid), wf_percent, col, row, 1, 1);
+  g_signal_connect(wf_percent, "value-changed", G_CALLBACK(wf_percent_cb), NULL);
+ 
+
   col = 2;
   row = 1;
   label = gtk_label_new("Detector:");
@@ -397,7 +429,7 @@ void display_menu(GtkWidget *parent) {
   gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(detector_combo), NULL, "Average");
   gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(detector_combo), NULL, "Sample");
 
-  switch (active_receiver->display_detector_mode) {
+  switch (rx->display_detector_mode) {
   case DET_PEAK:
     gtk_combo_box_set_active(GTK_COMBO_BOX(detector_combo), 0);
     break;
@@ -428,7 +460,7 @@ void display_menu(GtkWidget *parent) {
   gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(average_combo), NULL, "Time Window");
   gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(average_combo), NULL, "Log Recursive");
 
-  switch (active_receiver->display_average_mode) {
+  switch (rx->display_average_mode) {
   case AVG_NONE:
     gtk_combo_box_set_active(GTK_COMBO_BOX(average_combo), 0);
     break;
@@ -454,31 +486,36 @@ void display_menu(GtkWidget *parent) {
   gtk_widget_set_halign(label, GTK_ALIGN_END);
   gtk_grid_attach(GTK_GRID(general_grid), label, col, row, 1, 1);
   GtkWidget *time_r = gtk_spin_button_new_with_range(1.0, 9999.0, 1.0);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(time_r), (double)active_receiver->display_average_time);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(time_r), (double)rx->display_average_time);
   gtk_widget_show(time_r);
   gtk_grid_attach(GTK_GRID(general_grid), time_r, col + 1, row, 1, 1);
   g_signal_connect(time_r, "value_changed", G_CALLBACK(time_value_changed_cb), NULL);
   row++;
   GtkWidget *filled_b = gtk_check_button_new_with_label("Fill Panadapter");
   gtk_widget_set_name (filled_b, "boldlabel");
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (filled_b), active_receiver->display_filled);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (filled_b), rx->display_filled);
   gtk_widget_show(filled_b);
   gtk_grid_attach(GTK_GRID(general_grid), filled_b, col, row, 1, 1);
   g_signal_connect(filled_b, "toggled", G_CALLBACK(filled_cb), NULL);
   GtkWidget *gradient_b = gtk_check_button_new_with_label("Gradient");
   gtk_widget_set_name (gradient_b, "boldlabel");
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (gradient_b), active_receiver->display_gradient);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (gradient_b), rx->display_gradient);
   gtk_widget_show(gradient_b);
   gtk_grid_attach(GTK_GRID(general_grid), gradient_b, col + 1, row, 1, 1);
   g_signal_connect(gradient_b, "toggled", G_CALLBACK(gradient_cb), NULL);
   row++;
   GtkWidget *b_display_panadapter = gtk_check_button_new_with_label("Display Panadapter");
   gtk_widget_set_name (b_display_panadapter, "boldlabel");
-  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (b_display_panadapter), active_receiver->display_panadapter);
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (b_display_panadapter), rx->display_panadapter);
   gtk_widget_show(b_display_panadapter);
   gtk_grid_attach(GTK_GRID(general_grid), b_display_panadapter, col, row, 1, 1);
   g_signal_connect(b_display_panadapter, "toggled", G_CALLBACK(display_panadapter_cb), NULL);
-  GtkWidget *b_display_waterfall = gtk_check_button_new_with_label("Display Waterfall"); gtk_widget_set_name (b_display_waterfall, "boldlabel"); gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (b_display_waterfall), active_receiver->display_waterfall); gtk_widget_show(b_display_waterfall); gtk_grid_attach(GTK_GRID(general_grid), b_display_waterfall, col, ++row, 1, 1); g_signal_connect(b_display_waterfall, "toggled", G_CALLBACK(display_waterfall_cb), NULL);
+  GtkWidget *b_display_waterfall = gtk_check_button_new_with_label("Display Waterfall");
+  gtk_widget_set_name (b_display_waterfall, "boldlabel");
+  gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (b_display_waterfall), rx->display_waterfall);
+  gtk_widget_show(b_display_waterfall);
+  gtk_grid_attach(GTK_GRID(general_grid), b_display_waterfall, col+1, row, 1, 1);
+  g_signal_connect(b_display_waterfall, "toggled", G_CALLBACK(display_waterfall_cb), NULL);
 
 
   //
@@ -494,7 +531,7 @@ void display_menu(GtkWidget *parent) {
   row = 0;
   GtkWidget *b_panadapter_peaks_on = gtk_check_button_new_with_label("Label Strongest Peaks");
   gtk_widget_set_name(b_panadapter_peaks_on, "boldlabel");
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(b_panadapter_peaks_on), active_receiver->panadapter_peaks_on);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(b_panadapter_peaks_on), rx->panadapter_peaks_on);
   gtk_widget_show(b_panadapter_peaks_on);
   gtk_grid_attach(GTK_GRID(peaks_grid), b_panadapter_peaks_on, col, row, 1, 1);
   g_signal_connect(b_panadapter_peaks_on, "toggled", G_CALLBACK(panadapter_peaks_on_cb), NULL);
@@ -503,14 +540,14 @@ void display_menu(GtkWidget *parent) {
   
   GtkWidget *b_pan_peaks_in_passband = gtk_check_button_new_with_label("Label in Passband Only");
   gtk_widget_set_name(b_pan_peaks_in_passband, "boldlabel");
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(b_pan_peaks_in_passband), active_receiver->panadapter_peaks_in_passband_filled);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(b_pan_peaks_in_passband), rx->panadapter_peaks_in_passband_filled);
   gtk_widget_show(b_pan_peaks_in_passband);
   gtk_grid_attach(GTK_GRID(peaks_grid), b_pan_peaks_in_passband, col, row, 1, 1);
   g_signal_connect(b_pan_peaks_in_passband, "toggled", G_CALLBACK(panadapter_peaks_in_passband_filled_cb), NULL);
 
   GtkWidget *b_pan_hide_noise = gtk_check_button_new_with_label("No Labels Below Noise Floor");
   gtk_widget_set_name(b_pan_hide_noise, "boldlabel");
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(b_pan_hide_noise), active_receiver->panadapter_hide_noise_filled);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(b_pan_hide_noise), rx->panadapter_hide_noise_filled);
   gtk_widget_show(b_pan_hide_noise);
   gtk_grid_attach(GTK_GRID(peaks_grid), b_pan_hide_noise, col, ++row, 1, 1);
   g_signal_connect(b_pan_hide_noise, "toggled", G_CALLBACK(panadapter_hide_noise_filled_cb), NULL);
@@ -521,7 +558,7 @@ void display_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(peaks_grid), label, col, ++row, 1, 1);
   col++;
   GtkWidget *panadapter_num_peaks_r = gtk_spin_button_new_with_range(1.0, 10.0, 1.0);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(panadapter_num_peaks_r), (double)active_receiver->panadapter_num_peaks);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(panadapter_num_peaks_r), (double)rx->panadapter_num_peaks);
   gtk_widget_show(panadapter_num_peaks_r);
   gtk_grid_attach(GTK_GRID(peaks_grid), panadapter_num_peaks_r, col, row, 1, 1);
   g_signal_connect(panadapter_num_peaks_r, "value_changed", G_CALLBACK(panadapter_num_peaks_value_changed_cb), NULL);
@@ -534,7 +571,7 @@ void display_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(peaks_grid), label, col, row, 1, 1);
   col++;
   GtkWidget *panadapter_ignore_range_divider_r = gtk_spin_button_new_with_range(1.0, 150.0, 1.0);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(panadapter_ignore_range_divider_r), (double)active_receiver->panadapter_ignore_range_divider);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(panadapter_ignore_range_divider_r), (double)rx->panadapter_ignore_range_divider);
   gtk_widget_show(panadapter_ignore_range_divider_r);
   gtk_grid_attach(GTK_GRID(peaks_grid), panadapter_ignore_range_divider_r, col, row, 1, 1);
   g_signal_connect(panadapter_ignore_range_divider_r, "value_changed", G_CALLBACK(panadapter_ignore_range_divider_value_changed_cb), NULL);
@@ -547,7 +584,7 @@ void display_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(peaks_grid), label, col, row, 1, 1);
   col++;
   GtkWidget *panadapter_ignore_noise_percentile_r = gtk_spin_button_new_with_range(1.0, 100.0, 1.0);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(panadapter_ignore_noise_percentile_r), (double)active_receiver->panadapter_ignore_noise_percentile);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(panadapter_ignore_noise_percentile_r), (double)rx->panadapter_ignore_noise_percentile);
   gtk_widget_show(panadapter_ignore_noise_percentile_r);
   gtk_grid_attach(GTK_GRID(peaks_grid), panadapter_ignore_noise_percentile_r, col, row, 1, 1);
   g_signal_connect(panadapter_ignore_noise_percentile_r, "value_changed", G_CALLBACK(panadapter_ignore_noise_percentile_value_changed_cb), NULL);
@@ -557,10 +594,12 @@ void display_menu(GtkWidget *parent) {
 
   sub_menu = dialog;
 
-  if (active_receiver->waterfall_automatic) {
+  if (rx->waterfall_automatic) {
     gtk_widget_set_sensitive(waterfall_high_r, FALSE);
     gtk_widget_set_sensitive(waterfall_low_r, FALSE);
   }
+
+  gtk_widget_set_sensitive(wf_percent, rx->display_panadapter && rx->display_waterfall);
 
   gtk_widget_show_all(dialog);
 
