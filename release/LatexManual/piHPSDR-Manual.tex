@@ -1623,9 +1623,8 @@ colour (yellow) in the waterfall. If the \rett{Waterfall Automatic:} box is chec
 If the \rett{Waterfall Automatic:} box is checked
 (see below), this spin button is greyed out and inactive.
 
-\rett{Waterfall Automatic:} If this box is checked (as is the case in
-Fig. \ref{fig:DisplayMenu}), the \rett{Waterfall High} and
-\rett{Waterfall Low} controls are inactive and the values are not used. Instead,
+\rett{Waterfall Automatic:} If this box is checked, the \rett{Waterfall High} and
+\rett{Waterfall Low} parameters are not used. Instead,
 the lowest and highest signal strength in the RX spectrum are automatically determined
 in each update of the waterfall, and these min/max values
 are then used instead of the waterfall High/Low control values to determine which
@@ -1650,11 +1649,19 @@ for the RX  spectrum scope (see chapter \ref{sec:FillingGradient}).
 \rett{Display Panadapter}. This option enables/disables the pan-adapter display
 on the RX panels. With the pan-adapter enabled, you can have the waterfall alone.
 
-\rett{Display Waterfall}. This option enables/disables the waterfall display
+\rett{Display Waterfall} This option enables/disables the waterfall display
 of the RX panels. Note if both the waterfall and the pan-adapter is disabled,
 there will simply be a large ,,hole'' in the \pH window. This makes little sense
 except on machines with very weak CPUs, since \textit{not} displaying neither waterfall
 nor pan-adapter saves some CPU time in the graphics back-end.
+
+\rett{Waterfall Height (\%):} This parameter can be chosen between 20 and 80
+(percent) with the spin button to the right of this label,
+and only has an effect if \textit{both} the panadapter and the waterfall are displayed.
+In this case, the parameter determines how much vertical space
+the waterfall gets, as a percentage of the total height of the panel for the
+receiver. The default value is 50 and means that panadapter and waterfall
+are of equal height.
 
 \subsection{Display Menu: Peak Labels}
 
@@ -4335,6 +4342,14 @@ The so-called PTT hang time stops transmitting if the TX sample buffer became em
 amount of time. Together with a too small TX latency value this leads to ``relay chatter'' during transmit
 if the network connection is sloppy because the T/R relay is frequently switched. With a decently chosen
 value of the TX latency, the PTT hang time is not very critical so I set it to 20 msec.
+
+\textbf{HL2 parameters/warnings displayed in the panadapter}
+
+The HL2 transfers some non-standard information about its state to the host program (\pH) that can be displayed.
+If the box \rett{Display PA current} is checked in the \bltt{Screen} menu (see Fig. \ref{fig:ScreenMenu}),
+the PA temperature and the PA current is shown, while transmitting, in the panadapter in the upper
+left corner in yellow color. If \rett{Display Warnings} is checked in the same menu, then in addition to
+the usual warning, also an underrun or an overflow of the FPGA TX sample buffer is reported.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{RadioBerry support}
