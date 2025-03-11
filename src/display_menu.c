@@ -39,11 +39,8 @@ static int which_container = GENERAL_CONTAINER;
 
 static GtkWidget *general_container;
 static GtkWidget *peaks_container;
-static GtkWidget *wf_percent;
 
 static GtkWidget *dialog = NULL;
-static GtkWidget *waterfall_high_r = NULL;
-static GtkWidget *waterfall_low_r = NULL;
 static GtkWidget *general_container;
 static GtkWidget *peaks_container;
 
@@ -229,23 +226,19 @@ static void waterfall_low_value_changed_cb(GtkWidget *widget, gpointer data) {
 static void waterfall_automatic_cb(GtkWidget *widget, gpointer data) {
   int val = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   rx->waterfall_automatic = val;
-  gtk_widget_set_sensitive(waterfall_high_r, !val);
-  gtk_widget_set_sensitive(waterfall_low_r, !val);
 }
 
 static void display_waterfall_cb(GtkWidget *widget, gpointer data) {
   rx->display_waterfall = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-  gtk_widget_set_sensitive(wf_percent, rx->display_panadapter && rx->display_waterfall);
   radio_reconfigure();
 }
 
 static void display_panadapter_cb(GtkWidget *widget, gpointer data) {
   rx->display_panadapter = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
-  gtk_widget_set_sensitive(wf_percent, rx->display_panadapter && rx->display_waterfall);
   radio_reconfigure();
 }
 
-static void wf_percent_cb(GtkWidget *widget, gpointer data) {
+static void waterfall_percent_cb(GtkWidget *widget, gpointer data) {
   rx->waterfall_percent = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
   radio_reconfigure();
 }
@@ -330,7 +323,6 @@ void display_menu(GtkWidget *parent) {
   col++;
   GtkWidget *frames_per_second_r = gtk_spin_button_new_with_range(1.0, 100.0, 1.0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(frames_per_second_r), (double)rx->fps);
-  gtk_widget_show(frames_per_second_r);
   gtk_grid_attach(GTK_GRID(general_grid), frames_per_second_r, col, row, 1, 1);
   g_signal_connect(frames_per_second_r, "value_changed", G_CALLBACK(frames_per_second_value_changed_cb), NULL);
   row++;
@@ -342,7 +334,6 @@ void display_menu(GtkWidget *parent) {
   col++;
   GtkWidget *panadapter_high_r = gtk_spin_button_new_with_range(-220.0, 100.0, 1.0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(panadapter_high_r), (double)rx->panadapter_high);
-  gtk_widget_show(panadapter_high_r);
   gtk_grid_attach(GTK_GRID(general_grid), panadapter_high_r, col, row, 1, 1);
   g_signal_connect(panadapter_high_r, "value_changed", G_CALLBACK(panadapter_high_value_changed_cb), NULL);
   row++;
@@ -354,7 +345,6 @@ void display_menu(GtkWidget *parent) {
   col++;
   GtkWidget *panadapter_low_r = gtk_spin_button_new_with_range(-220.0, 100.0, 1.0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(panadapter_low_r), (double)rx->panadapter_low);
-  gtk_widget_show(panadapter_low_r);
   gtk_grid_attach(GTK_GRID(general_grid), panadapter_low_r, col, row, 1, 1);
   g_signal_connect(panadapter_low_r, "value_changed", G_CALLBACK(panadapter_low_value_changed_cb), NULL);
   row++;
@@ -366,7 +356,6 @@ void display_menu(GtkWidget *parent) {
   col++;
   GtkWidget *panadapter_step_r = gtk_spin_button_new_with_range(1.0, 20.0, 1.0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(panadapter_step_r), (double)rx->panadapter_step);
-  gtk_widget_show(panadapter_step_r);
   gtk_grid_attach(GTK_GRID(general_grid), panadapter_step_r, col, row, 1, 1);
   g_signal_connect(panadapter_step_r, "value_changed", G_CALLBACK(panadapter_step_value_changed_cb), NULL);
   row++;
@@ -376,9 +365,8 @@ void display_menu(GtkWidget *parent) {
   gtk_widget_set_halign(label, GTK_ALIGN_END);
   gtk_grid_attach(GTK_GRID(general_grid), label, col, row, 1, 1);
   col++;
-  waterfall_high_r = gtk_spin_button_new_with_range(-220.0, 100.0, 1.0);
+  GtkWidget *waterfall_high_r = gtk_spin_button_new_with_range(-220.0, 100.0, 1.0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(waterfall_high_r), (double)rx->waterfall_high);
-  gtk_widget_show(waterfall_high_r);
   gtk_grid_attach(GTK_GRID(general_grid), waterfall_high_r, col, row, 1, 1);
   g_signal_connect(waterfall_high_r, "value_changed", G_CALLBACK(waterfall_high_value_changed_cb), NULL);
   row++;
@@ -388,9 +376,8 @@ void display_menu(GtkWidget *parent) {
   gtk_widget_set_halign(label, GTK_ALIGN_END);
   gtk_grid_attach(GTK_GRID(general_grid), label, col, row, 1, 1);
   col++;
-  waterfall_low_r = gtk_spin_button_new_with_range(-220.0, 100.0, 1.0);
+  GtkWidget *waterfall_low_r = gtk_spin_button_new_with_range(-220.0, 100.0, 1.0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(waterfall_low_r), (double)rx->waterfall_low);
-  gtk_widget_show(waterfall_low_r);
   gtk_grid_attach(GTK_GRID(general_grid), waterfall_low_r, col, row, 1, 1);
   g_signal_connect(waterfall_low_r, "value_changed", G_CALLBACK(waterfall_low_value_changed_cb), NULL);
   row++;
@@ -402,7 +389,6 @@ void display_menu(GtkWidget *parent) {
   col++;
   GtkWidget *waterfall_automatic_b = gtk_check_button_new();
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (waterfall_automatic_b), rx->waterfall_automatic);
-  gtk_widget_show(waterfall_automatic_b);
   gtk_grid_attach(GTK_GRID(general_grid), waterfall_automatic_b, col, row, 1, 1);
   g_signal_connect(waterfall_automatic_b, "toggled", G_CALLBACK(waterfall_automatic_cb), NULL);
   col++;
@@ -411,10 +397,10 @@ void display_menu(GtkWidget *parent) {
   gtk_widget_set_halign(label, GTK_ALIGN_END);
   gtk_grid_attach(GTK_GRID(general_grid), label, col, row, 1, 1);
   col++; 
-  wf_percent = gtk_spin_button_new_with_range(20.0, 80.0, 5.0);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(wf_percent), (double) rx->waterfall_percent);
-  gtk_grid_attach(GTK_GRID(general_grid), wf_percent, col, row, 1, 1);
-  g_signal_connect(wf_percent, "value-changed", G_CALLBACK(wf_percent_cb), NULL);
+  GtkWidget *waterfall_percent = gtk_spin_button_new_with_range(20.0, 80.0, 5.0);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(waterfall_percent), (double) rx->waterfall_percent);
+  gtk_grid_attach(GTK_GRID(general_grid), waterfall_percent, col, row, 1, 1);
+  g_signal_connect(waterfall_percent, "value-changed", G_CALLBACK(waterfall_percent_cb), NULL);
  
 
   col = 2;
@@ -487,33 +473,28 @@ void display_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(general_grid), label, col, row, 1, 1);
   GtkWidget *time_r = gtk_spin_button_new_with_range(1.0, 9999.0, 1.0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(time_r), (double)rx->display_average_time);
-  gtk_widget_show(time_r);
   gtk_grid_attach(GTK_GRID(general_grid), time_r, col + 1, row, 1, 1);
   g_signal_connect(time_r, "value_changed", G_CALLBACK(time_value_changed_cb), NULL);
   row++;
   GtkWidget *filled_b = gtk_check_button_new_with_label("Fill Panadapter");
   gtk_widget_set_name (filled_b, "boldlabel");
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (filled_b), rx->display_filled);
-  gtk_widget_show(filled_b);
   gtk_grid_attach(GTK_GRID(general_grid), filled_b, col, row, 1, 1);
   g_signal_connect(filled_b, "toggled", G_CALLBACK(filled_cb), NULL);
   GtkWidget *gradient_b = gtk_check_button_new_with_label("Gradient");
   gtk_widget_set_name (gradient_b, "boldlabel");
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (gradient_b), rx->display_gradient);
-  gtk_widget_show(gradient_b);
   gtk_grid_attach(GTK_GRID(general_grid), gradient_b, col + 1, row, 1, 1);
   g_signal_connect(gradient_b, "toggled", G_CALLBACK(gradient_cb), NULL);
   row++;
   GtkWidget *b_display_panadapter = gtk_check_button_new_with_label("Display Panadapter");
   gtk_widget_set_name (b_display_panadapter, "boldlabel");
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (b_display_panadapter), rx->display_panadapter);
-  gtk_widget_show(b_display_panadapter);
   gtk_grid_attach(GTK_GRID(general_grid), b_display_panadapter, col, row, 1, 1);
   g_signal_connect(b_display_panadapter, "toggled", G_CALLBACK(display_panadapter_cb), NULL);
   GtkWidget *b_display_waterfall = gtk_check_button_new_with_label("Display Waterfall");
   gtk_widget_set_name (b_display_waterfall, "boldlabel");
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (b_display_waterfall), rx->display_waterfall);
-  gtk_widget_show(b_display_waterfall);
   gtk_grid_attach(GTK_GRID(general_grid), b_display_waterfall, col+1, row, 1, 1);
   g_signal_connect(b_display_waterfall, "toggled", G_CALLBACK(display_waterfall_cb), NULL);
 
@@ -532,7 +513,6 @@ void display_menu(GtkWidget *parent) {
   GtkWidget *b_panadapter_peaks_on = gtk_check_button_new_with_label("Label Strongest Peaks");
   gtk_widget_set_name(b_panadapter_peaks_on, "boldlabel");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(b_panadapter_peaks_on), rx->panadapter_peaks_on);
-  gtk_widget_show(b_panadapter_peaks_on);
   gtk_grid_attach(GTK_GRID(peaks_grid), b_panadapter_peaks_on, col, row, 1, 1);
   g_signal_connect(b_panadapter_peaks_on, "toggled", G_CALLBACK(panadapter_peaks_on_cb), NULL);
   row++;
@@ -541,14 +521,12 @@ void display_menu(GtkWidget *parent) {
   GtkWidget *b_pan_peaks_in_passband = gtk_check_button_new_with_label("Label in Passband Only");
   gtk_widget_set_name(b_pan_peaks_in_passband, "boldlabel");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(b_pan_peaks_in_passband), rx->panadapter_peaks_in_passband_filled);
-  gtk_widget_show(b_pan_peaks_in_passband);
   gtk_grid_attach(GTK_GRID(peaks_grid), b_pan_peaks_in_passband, col, row, 1, 1);
   g_signal_connect(b_pan_peaks_in_passband, "toggled", G_CALLBACK(panadapter_peaks_in_passband_filled_cb), NULL);
 
   GtkWidget *b_pan_hide_noise = gtk_check_button_new_with_label("No Labels Below Noise Floor");
   gtk_widget_set_name(b_pan_hide_noise, "boldlabel");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(b_pan_hide_noise), rx->panadapter_hide_noise_filled);
-  gtk_widget_show(b_pan_hide_noise);
   gtk_grid_attach(GTK_GRID(peaks_grid), b_pan_hide_noise, col, ++row, 1, 1);
   g_signal_connect(b_pan_hide_noise, "toggled", G_CALLBACK(panadapter_hide_noise_filled_cb), NULL);
 
@@ -559,7 +537,6 @@ void display_menu(GtkWidget *parent) {
   col++;
   GtkWidget *panadapter_num_peaks_r = gtk_spin_button_new_with_range(1.0, 10.0, 1.0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(panadapter_num_peaks_r), (double)rx->panadapter_num_peaks);
-  gtk_widget_show(panadapter_num_peaks_r);
   gtk_grid_attach(GTK_GRID(peaks_grid), panadapter_num_peaks_r, col, row, 1, 1);
   g_signal_connect(panadapter_num_peaks_r, "value_changed", G_CALLBACK(panadapter_num_peaks_value_changed_cb), NULL);
   row++;
@@ -572,7 +549,6 @@ void display_menu(GtkWidget *parent) {
   col++;
   GtkWidget *panadapter_ignore_range_divider_r = gtk_spin_button_new_with_range(1.0, 150.0, 1.0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(panadapter_ignore_range_divider_r), (double)rx->panadapter_ignore_range_divider);
-  gtk_widget_show(panadapter_ignore_range_divider_r);
   gtk_grid_attach(GTK_GRID(peaks_grid), panadapter_ignore_range_divider_r, col, row, 1, 1);
   g_signal_connect(panadapter_ignore_range_divider_r, "value_changed", G_CALLBACK(panadapter_ignore_range_divider_value_changed_cb), NULL);
   row++;
@@ -585,25 +561,14 @@ void display_menu(GtkWidget *parent) {
   col++;
   GtkWidget *panadapter_ignore_noise_percentile_r = gtk_spin_button_new_with_range(1.0, 100.0, 1.0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(panadapter_ignore_noise_percentile_r), (double)rx->panadapter_ignore_noise_percentile);
-  gtk_widget_show(panadapter_ignore_noise_percentile_r);
   gtk_grid_attach(GTK_GRID(peaks_grid), panadapter_ignore_noise_percentile_r, col, row, 1, 1);
   g_signal_connect(panadapter_ignore_noise_percentile_r, "value_changed", G_CALLBACK(panadapter_ignore_noise_percentile_value_changed_cb), NULL);
   row++;
 
-
-
   sub_menu = dialog;
-
-  if (rx->waterfall_automatic) {
-    gtk_widget_set_sensitive(waterfall_high_r, FALSE);
-    gtk_widget_set_sensitive(waterfall_low_r, FALSE);
-  }
-
-  gtk_widget_set_sensitive(wf_percent, rx->display_panadapter && rx->display_waterfall);
-
   gtk_widget_show_all(dialog);
 
-    // Only show one of the General, Peaks containers
+  // Only show one of the General, Peaks containers
   // This is the General container upon first invocation of the Display menu,
   // but subsequent Display menu openings will show the container that
   // was active when leaving this menu before.
