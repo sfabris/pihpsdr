@@ -51,7 +51,6 @@ static gpointer new_discover_receive_thread(gpointer data);
 
 void new_discovery() {
   struct ifaddrs *addrs,*ifa;
-
   //
   // Start with discovering from a fixed ip address
   //
@@ -66,6 +65,7 @@ void new_discovery() {
   if (devices <= previous_devices) {
     getifaddrs(&addrs);
     ifa = addrs;
+
     while (ifa) {
       g_main_context_iteration(NULL, 0);
 

@@ -138,6 +138,7 @@ static void save_xvtr () {
         send_bandstack_data(client_socket, b, s);
       }
     }
+
     send_xvtr_changed(client_socket);
   } else {
     vfo_xvtr_changed();

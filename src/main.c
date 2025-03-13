@@ -467,12 +467,14 @@ int main(int argc, char **argv) {
   //
   if (argc >= 2 && !strcmp("-TestMenu", argv[1])) {
     open_test_menu = 1;
+
     //
     // remove this argument from the list since GTK cannot handle it
     //
     for (int i = 2; i < argc; i++) {
-      argv[i-1] = argv[i];
+      argv[i - 1] = argv[i];
     }
+
     argc--;
   }
 
@@ -535,6 +537,7 @@ int fatal_error(void *data) {
   if (!strncmp(msg, "FATAL", 5)) {
     exit(1);
   }
+
   quit = 0;
   return G_SOURCE_REMOVE;
 }

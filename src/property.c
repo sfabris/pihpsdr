@@ -95,6 +95,7 @@ void loadProperties(const char* filename) {
         // Beware of "illegal" lines in corrupted files
         if (name != NULL && value != NULL) {
           property = malloc(sizeof(PROPERTY));
+
           if (!property) {
             fatal_error("FATAL: property malloc");
           } else {
@@ -198,6 +199,7 @@ void setProperty(const char* name, const char* value) {
   } else {
     // new property
     property = malloc(sizeof(PROPERTY));
+
     if (!property) {
       fatal_error("FATAL: property malloc");
     } else {

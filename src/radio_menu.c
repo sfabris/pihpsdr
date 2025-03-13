@@ -86,14 +86,17 @@ static void agc_changed_cb(GtkWidget *widget, gpointer data) {
   if (device == SOAPYSDR_USB_DEVICE) {
     int agc = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
     adc[active_receiver->adc].agc = agc;
+
     if (radio_is_remote) {
       send_soapy_agc(client_socket, 0);
       return;
     }
+
 #ifdef SOAPYSDR
     soapy_protocol_set_automatic_gain(active_receiver, agc);
 
     if (!agc) { soapy_protocol_set_gain(active_receiver); }
+
 #endif
   }
 }
@@ -101,6 +104,7 @@ static void agc_changed_cb(GtkWidget *widget, gpointer data) {
 
 static void calibration_value_changed_cb(GtkWidget *widget, gpointer data) {
   frequency_calibration = (long long)gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+
   if (radio_is_remote) {
     send_radiomenu(client_socket);
   }
@@ -157,6 +161,7 @@ static void toggle_cb(GtkWidget *widget, gpointer data) {
 
 static void anan10e_cb(GtkWidget *widget, gpointer data) {
   int new = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+
   if (radio_is_remote) {
     send_anan10E(client_socket, new);
   } else {
@@ -166,6 +171,7 @@ static void anan10e_cb(GtkWidget *widget, gpointer data) {
 
 static void split_cb(GtkWidget *widget, gpointer data) {
   int new = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+
   if (radio_is_remote) {
     send_split(client_socket, new);
   } else {
@@ -186,7 +192,7 @@ void setDuplex() {
   if (duplex) {
     // TX is in separate window, also in full-screen mode
     gtk_container_remove(GTK_CONTAINER(fixed), transmitter->panel);
-    tx_reconfigure(transmitter, 4*tx_dialog_width, tx_dialog_width,  tx_dialog_height);
+    tx_reconfigure(transmitter, 4 * tx_dialog_width, tx_dialog_width,  tx_dialog_height);
     tx_create_dialog(transmitter);
   } else {
     GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(transmitter->dialog));
@@ -258,6 +264,7 @@ void load_filters() {
     send_filter_board(client_socket, filter_board);
     return;
   }
+
   switch (filter_board) {
   case N2ADR:
     n2adr_oc_settings();
@@ -372,6 +379,7 @@ static void receivers_cb(GtkToggleButton *widget, gpointer data) {
 
 static void region_cb(GtkWidget *widget, gpointer data) {
   int r = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
+
   if (radio_is_remote) {
     send_region(client_socket, r);
   } else {
@@ -408,6 +416,7 @@ static void ck10mhz_cb(GtkWidget *widget, gpointer data) {
 
 static void ck128mhz_cb(GtkWidget *widget, gpointer data) {
   atlas_clock_source_128mhz = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
+
   if (radio_is_remote) {
     send_radiomenu(client_socket);
   }
@@ -415,6 +424,7 @@ static void ck128mhz_cb(GtkWidget *widget, gpointer data) {
 
 static void micsource_cb(GtkWidget *widget, gpointer data) {
   atlas_mic_source = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
+
   if (radio_is_remote) {
     send_radiomenu(client_socket);
   }
@@ -422,6 +432,7 @@ static void micsource_cb(GtkWidget *widget, gpointer data) {
 
 static void tx_cb(GtkWidget *widget, gpointer data) {
   atlas_penelope = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
+
   if (radio_is_remote) {
     send_radiomenu(client_socket);
   }
@@ -823,6 +834,7 @@ void radio_menu(GtkWidget *parent) {
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ChkBtn), mute_rx_while_transmitting);
     gtk_grid_attach(GTK_GRID(grid), ChkBtn, col, row, 1, 1);
     g_signal_connect(ChkBtn, "toggled", G_CALLBACK(toggle_cb), &mute_rx_while_transmitting);
+
     if (protocol ==  ORIGINAL_PROTOCOL || protocol == NEW_PROTOCOL) {
       col++;
       ChkBtn = gtk_check_button_new_with_label("PA enable");
@@ -831,6 +843,7 @@ void radio_menu(GtkWidget *parent) {
       gtk_grid_attach(GTK_GRID(grid), ChkBtn, col, row, 1, 1);
       g_signal_connect(ChkBtn, "toggled", G_CALLBACK(toggle_cb), &pa_enabled);
     }
+
     row++;
   }
 

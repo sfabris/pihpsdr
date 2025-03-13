@@ -65,21 +65,23 @@ static gboolean store_select_cb (GtkWidget *widget, GdkEventButton *event, gpoin
     snprintf(fw, 16, "%s", filters[mode][filter].title);
   }
 
-  switch(mem[ind].sat_mode) {
+  switch (mem[ind].sat_mode) {
   case SAT_MODE:
     snprintf(sm, 16, "%s", "SAT, ");
     break;
+
   case RSAT_MODE:
     snprintf(sm, 16, "%s", "RSAT, ");
     break;
+
   default:
-    sm[0]=0;
+    sm[0] = 0;
     break;
   }
 
   snprintf(label_str, 40, "M%d=%8.3f MHz (%s%s, %s)", ind,
-             mem[ind].ctun ? (double) mem[ind].ctun_frequency * 1E-6 : (double) mem[ind].frequency * 1E-6,
-             sm, mode_string[mode], fw);
+           mem[ind].ctun ? (double) mem[ind].ctun_frequency * 1E-6 : (double) mem[ind].frequency * 1E-6,
+           sm, mode_string[mode], fw);
   gtk_button_set_label(GTK_BUTTON(store_button[ind]), label_str);
   return FALSE;
 }
@@ -129,15 +131,17 @@ void store_menu(GtkWidget *parent) {
       snprintf(fw, 16, "%s", filters[mode][filter].title);
     }
 
-    switch(mem[ind].sat_mode) {
+    switch (mem[ind].sat_mode) {
     case SAT_MODE:
       snprintf(sm, 16, "%s", "SAT, ");
       break;
+
     case RSAT_MODE:
       snprintf(sm, 16, "%s", "RSAT, ");
       break;
+
     default:
-      sm[0]=0;
+      sm[0] = 0;
       break;
     }
 

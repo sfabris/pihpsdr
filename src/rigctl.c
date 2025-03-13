@@ -235,44 +235,56 @@ static int dashsamples;
 //
 static void send_dash() {
   struct timespec ts;
+
   if (cw_key_hit) { return; }
+
   clock_gettime(CLOCK_MONOTONIC, &ts);
   tx_queue_cw_event(1, 0);
   tx_queue_cw_event(0, dashsamples);
   tx_queue_cw_event(0, dotsamples);
   ts.tv_nsec += (dashsamples + dotsamples) * 20833;
+
   while (ts.tv_nsec > NSEC_PER_SEC) {
     ts.tv_nsec -= NSEC_PER_SEC;
     ts.tv_sec++;
   }
+
   clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, NULL);
 }
 
 static void send_dot() {
   struct timespec ts;
+
   if (cw_key_hit) { return; }
+
   clock_gettime(CLOCK_MONOTONIC, &ts);
   tx_queue_cw_event(1, 0);
   tx_queue_cw_event(0, dotsamples);
   tx_queue_cw_event(0, dotsamples);
-  ts.tv_nsec += (2* dotsamples) * 20833;
+  ts.tv_nsec += (2 * dotsamples) * 20833;
+
   while (ts.tv_nsec > NSEC_PER_SEC) {
     ts.tv_nsec -= NSEC_PER_SEC;
     ts.tv_sec++;
   }
+
   clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, NULL);
 }
 
 static void send_space(int len) {
   struct timespec ts;
+
   if (cw_key_hit) { return; }
+
   clock_gettime(CLOCK_MONOTONIC, &ts);
-  tx_queue_cw_event(0, len*dotsamples);
-  ts.tv_nsec += (len* dotsamples) * 20833;
+  tx_queue_cw_event(0, len * dotsamples);
+  ts.tv_nsec += (len * dotsamples) * 20833;
+
   while (ts.tv_nsec > NSEC_PER_SEC) {
     ts.tv_nsec -= NSEC_PER_SEC;
     ts.tv_sec++;
   }
+
   clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &ts, NULL);
 }
 

@@ -62,9 +62,11 @@ static void smeter_select_cb (GtkToggleButton *widget, gpointer        data) {
 
   if (radio_is_remote) {
     int alcmode = 0;
+
     if (can_transmit) {
       alcmode = transmitter->alcmode;
     }
+
     send_meter(client_socket, active_receiver->smetermode, alcmode);
   }
 }

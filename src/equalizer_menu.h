@@ -18,5 +18,9 @@
 
 #include <gtk/gtk.h>
 
+#include "receiver.h"
+#include "transmitter.h"
+
 void equalizer_menu(GtkWidget *parent);
-void update_eq(void);
+void update_rxeq(RECEIVER *rx);
+void update_txeq(TRANSMITTER *tx);

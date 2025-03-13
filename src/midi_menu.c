@@ -434,10 +434,12 @@ static void updateDescription() {
     // This is a new Note/Event combination, so we need a new entry
     //
     current_cmd = (struct desc *) malloc(sizeof(struct desc));
+
     if (!current_cmd) {
       fatal_error("FATAL: malloc cmd in midi");
       return;
     }
+
     current_cmd->next = NULL;
     addFlag = 1;
   }
@@ -1243,6 +1245,7 @@ void midiRestoreState() {
         fatal_error("FATAL: alloc desc in midi");
         return;
       }
+
       desc->next     = NULL;
       desc->action   = action; // MIDIaction
       desc->type     = type;   // MIDItype

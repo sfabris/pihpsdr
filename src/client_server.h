@@ -56,10 +56,8 @@ enum _header_type_enum {
   CMD_DRIVE,
   CMD_DUP,
   CMD_FILTER_BOARD,
-  CMD_FILTER_CUT,
   CMD_FILTER_SEL,
   CMD_FILTER_VAR,
-  CMD_FPS,
   CMD_FREQ,
   CMD_HEARTBEAT,
   CMD_LOCK,
@@ -90,7 +88,10 @@ enum _header_type_enum {
   CMD_RXMENU,
   CMD_RX_DISPLAY,
   CMD_RX_EQ,
+  CMD_RX_FILTER_CUT,
+  CMD_RX_FPS,
   CMD_RX_SELECT,
+  CMD_RX_SPECTRUM,
   CMD_SAMPLE_RATE,
   CMD_SAT,
   CMD_SCREEN,
@@ -98,7 +99,6 @@ enum _header_type_enum {
   CMD_SOAPY_AGC,
   CMD_SOAPY_RXANT,
   CMD_SOAPY_TXANT,
-  CMD_SPECTRUM,
   CMD_SPLIT,
   CMD_SQUELCH,
   CMD_START_RADIO,
@@ -113,6 +113,9 @@ enum _header_type_enum {
   CMD_TXMENU,
   CMD_TX_DISPLAY,
   CMD_TX_EQ,
+  CMD_TX_FILTER_CUT,
+  CMD_TX_FPS,
+  CMD_TX_SPECTRUM,
   CMD_VFO_A_TO_B,
   CMD_VFO_B_TO_A,
   CMD_VFO_STEPSIZE,
@@ -132,14 +135,15 @@ enum _header_type_enum {
   INFO_RADIO,
   INFO_RECEIVER,
   INFO_RXAUDIO,
-  INFO_SPECTRUM,
+  INFO_RX_SPECTRUM,
+  INFO_TX_SPECTRUM,
   INFO_TRANSMITTER,
   INFO_TXAUDIO,
   INFO_VFO,
   CLIENT_SERVER_COMMANDS,
 };
 
-#define CLIENT_SERVER_VERSION 0x01000003 // 32-bit version number
+#define CLIENT_SERVER_VERSION 0x01000004 // 32-bit version number
 #define SPECTRUM_DATA_SIZE 4096          // Maximum width of a panadapter
 #define AUDIO_DATA_SIZE 1024             // 1024 stereo samples
 
@@ -150,7 +154,8 @@ typedef struct _remote_client {
   socklen_t address_length;
   struct sockaddr_in address;
   guint timer_id;
-  int send_spectrum[10];  // slot #8 is for the transmitter
+  int send_rx_spectrum[8];
+  int send_tx_spectrum;
 } REMOTE_CLIENT;
 
 typedef struct __attribute__((__packed__)) _header {
@@ -197,11 +202,11 @@ typedef struct __attribute__((__packed__)) _radiomenu_data {
   uint8_t  OCtune;
   uint8_t  full_tune;
   uint8_t  memory_tune;
-//
+  //
   uint16_t rx_gain_calibration;
   uint16_t OCfull_tune_time;
   uint16_t OCmemory_tune_time;
-//
+  //
   uint64_t frequency_calibration;
 } RADIOMENU_DATA;
 
@@ -298,10 +303,10 @@ typedef struct __attribute__((__packed__)) _memory_data {
   uint8_t alt_bd;
   uint8_t ctcss_enabled;
   uint8_t ctcss;
-//
+  //
   uint16_t deviation;
   uint16_t alt_deviation;
-//
+  //
   uint64_t frequency;
   uint64_t ctun_frequency;
   uint64_t alt_frequency;
@@ -315,7 +320,7 @@ typedef struct __attribute__((__packed__)) _memory_data {
 typedef struct __attribute__((__packed__)) _radio_data {
   HEADER header;
   char name[32];
-//
+  //
   uint8_t  locked;
   uint8_t  protocol;
   uint8_t  supported_receivers;
@@ -366,14 +371,14 @@ typedef struct __attribute__((__packed__)) _radio_data {
   uint8_t  soapy_tx_gains;
   uint8_t  soapy_tx_channels;
   uint8_t  soapy_rx_has_automatic_gain;
-//
+  //
   char     soapy_hardware_key[64];
   char     soapy_driver_key[64];
   char     soapy_rx_antenna[64][8];
   char     soapy_tx_antenna[64][8];
   char     soapy_rx_gain[64][8];
   char     soapy_tx_gain[64][8];
-//
+  //
   uint16_t pa_power;
   uint16_t OCfull_tune_time;
   uint16_t OCmemory_tune_time;
@@ -383,7 +388,7 @@ typedef struct __attribute__((__packed__)) _radio_data {
   uint16_t tx_filter_low;
   uint16_t tx_filter_high;
   uint16_t display_width;
-//
+  //
   mydouble drive_max;
   mydouble drive_digi_max;
   mydouble pa_trim[11];
@@ -395,7 +400,7 @@ typedef struct __attribute__((__packed__)) _radio_data {
   mydouble soapy_tx_range_step[8];
   mydouble soapy_tx_range_min[8];
   mydouble soapy_tx_range_max[8];
-//
+  //
   uint64_t frequency_calibration;
   uint64_t soapy_radio_sample_rate;
   uint64_t radio_frequency_min;
@@ -445,10 +450,10 @@ typedef struct __attribute__((__packed__)) _dac_data {
 typedef struct __attribute__((__packed__)) _adc_data {
   HEADER header;
   uint8_t adc;
-//
+  //
   uint16_t antenna;
   uint16_t attenuation;
-//
+  //
   mydouble gain;
   mydouble min_gain;
   mydouble max_gain;
@@ -484,7 +489,7 @@ typedef struct __attribute__((__packed__)) _transmitter_data {
   uint8_t  dexp_filter;
   uint8_t  eq_enable;
   uint8_t  alcmode;
-//
+  //
   uint16_t fps;
   uint16_t dexp_filter_low;
   uint16_t dexp_filter_high;
@@ -496,9 +501,9 @@ typedef struct __attribute__((__packed__)) _transmitter_data {
   uint16_t width;
   uint16_t height;
   uint16_t attenuation;
-//
+  //
   uint64_t fft_size;
-//
+  //
   mydouble eq_freq[11];
   mydouble eq_gain[11];
   mydouble dexp_tau;
@@ -550,14 +555,14 @@ typedef struct __attribute__((__packed__)) _receiver_data {
   uint8_t eq_enable;
   uint8_t smetermode;
   uint8_t low_latency;
-//
+  //
   uint16_t fps;
   uint16_t filter_low;
   uint16_t filter_high;
   uint16_t deviation;
   uint16_t pan;
   uint16_t width;
-//
+  //
   mydouble hz_per_pixel;
   mydouble squelch;
   mydouble display_average_time;
@@ -579,7 +584,7 @@ typedef struct __attribute__((__packed__)) _receiver_data {
   mydouble nr4_post_threshold;
   mydouble eq_freq[11];
   mydouble eq_gain[11];
-//
+  //
   uint64_t fft_size;
   uint64_t sample_rate;
 } RECEIVER_DATA;
@@ -600,10 +605,10 @@ typedef struct __attribute__((__packed__)) _vfo_data {
   uint8_t  rit_enabled;
   uint8_t  xit_enabled;
   uint8_t  cwAudioPeakFilter;
-//
+  //
   uint16_t rit_step;
   uint16_t deviation;
-//
+  //
   uint64_t frequency;
   uint64_t ctun_frequency;
   uint64_t rit;
@@ -627,19 +632,19 @@ typedef struct __attribute__((__packed__)) _spectrum_data {
   uint8_t zoom;
   uint16_t width;
   uint16_t pan;
-//
+  //
   uint64_t vfo_a_freq;
   uint64_t vfo_b_freq;
   uint64_t vfo_a_ctun_freq;
   uint64_t vfo_b_ctun_freq;
   uint64_t vfo_a_offset;
   uint64_t vfo_b_offset;
-//
+  //
   mydouble meter;
   mydouble alc;
   mydouble fwd;
   mydouble swr;
-//
+  //
   uint16_t sample[SPECTRUM_DATA_SIZE];
 } SPECTRUM_DATA;
 
@@ -799,7 +804,8 @@ extern int radio_connect_remote(char *host, int port, const char *pwd);
 extern void remote_rxaudio(const RECEIVER *rx, short left_sample, short right_sample);
 extern void server_tx_audio(short sample);
 extern short remote_get_mic_sample();
-extern void  remote_send_spectrum(int id);
+extern void  remote_send_rxspectrum(int id);
+extern void  remote_send_txspectrum(void);
 
 extern void send_adc(int s, int id, int adc);
 extern void send_adc_data(int sock, int i);
@@ -827,10 +833,12 @@ extern void send_drive(int s, double value);
 extern void send_duplex(int s, int state);
 extern void send_eq(int s, int id);
 extern void send_filter_board(int s, int filter_board);
-extern void send_filter_cut(int s, int rx);
+extern void send_rx_filter_cut(int s, int rx);
+extern void send_tx_filter_cut(int s);
 extern void send_filter_sel(int s, int vfo, int filter);
 extern void send_filter_var(int s, int mode, int filter);
-extern void send_fps(int s, int rx, int fps);
+extern void send_rxfps(int s, int rx, int fps);
+extern void send_txfps(int s, int fps);
 extern void send_heartbeat(int s);
 extern void send_lock(int s, int lock);
 extern void send_memory_data(int sock, int index);
@@ -869,7 +877,8 @@ extern void send_soapy_txant(int s);
 extern void send_soapy_agc(int s, int id);
 extern void send_split(int s, int state);
 extern void send_squelch(int s, int rx, int enable, double squelch);
-extern void send_startstop_spectrum(int s, int id, int state);
+extern void send_startstop_rxspectrum(int s, int id, int state);
+extern void send_startstop_txspectrum(int s, int state);
 extern void send_store(int s, int index);
 extern void send_swap_iq(int s, int swap_iq);
 extern void send_toggle_mox(int s);

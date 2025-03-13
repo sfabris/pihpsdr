@@ -421,6 +421,7 @@ static void* keyer_thread(void *arg) {
       if (cwvox > 0 && key_state != EXITLOOP && key_state != CHECK) { cwvox = (int) cw_keyer_hang_time; }
 
       clock_gettime(CLOCK_MONOTONIC, &loop_delay);
+
       switch (key_state) {
       case EXITLOOP:
         // If we arrive here, cwvox is greater than zero, since key_state==EXITLOOP
@@ -444,6 +445,7 @@ static void* keyer_thread(void *arg) {
         } else {
           key_state = CHECK;
         }
+
         // wait 1 msec
         loop_delay.tv_nsec += 1000000;
         break;
@@ -483,6 +485,7 @@ static void* keyer_thread(void *arg) {
           // wait 1 msec
           loop_delay.tv_nsec += 1000000;
         }
+
         break;
 
       case STRAIGHT:
@@ -518,6 +521,7 @@ static void* keyer_thread(void *arg) {
         break;
 
       case AFTERDOT:
+
         //
         // This is executed at the end of the inter-element dot-following pause
         //
@@ -550,6 +554,7 @@ static void* keyer_thread(void *arg) {
           } else {
             key_state = EXITLOOP;
           }
+
           // end of iambic case, key_state has been set
         }
 
@@ -570,6 +575,7 @@ static void* keyer_thread(void *arg) {
         break;
 
       case AFTERDASH:
+
         //
         // This is executed at the end of the inter-element dot-following pause
         //
@@ -593,6 +599,7 @@ static void* keyer_thread(void *arg) {
         } else {
           key_state = EXITLOOP;
         }
+
         break;
 
       case LETTERSPACE:

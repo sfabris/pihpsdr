@@ -547,6 +547,7 @@ void new_menu() {
     }
 
 #endif
+
     if (!radio_is_remote) {
       GtkWidget *server_b = gtk_button_new_with_label("Server");
       g_signal_connect (server_b, "button-press-event", G_CALLBACK(server_cb), NULL);

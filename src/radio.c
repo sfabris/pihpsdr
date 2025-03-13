@@ -348,6 +348,7 @@ static void radio_restore_state();
 
 void radio_stop() {
   ASSERT_SERVER();
+
   if (can_transmit) {
     t_print("radio_stop: TX: stop display update\n");
     transmitter->displaying = 0;
@@ -618,6 +619,7 @@ void radio_reconfigure() {
       rx->y = y;
       x = x + my_width / receivers;
     }
+
     y = y + rx_height;
   } else {
     for (i = 0; i < receivers; i++) {
@@ -635,6 +637,7 @@ void radio_reconfigure() {
       y += rx_height / receivers;
     }
   }
+
   if (display_zoompan) {
     if (zoompan == NULL) {
       zoompan = zoompan_init(my_width, ZOOMPAN_HEIGHT);
@@ -799,8 +802,8 @@ static void radio_create_visual() {
     receiver[i]->x = 0;
     receiver[i]->y = y;
     // Upon startup, if RIT or CTUN is active, tell WDSP.
-
     receiver[i]->displaying = 1;
+
     if (!radio_is_remote) {
       rx_set_displaying(receiver[i]);
       rx_set_offset(receiver[i], vfo[i].offset);
@@ -824,7 +827,6 @@ static void radio_create_visual() {
     //
     receiver[PS_RX_FEEDBACK] = NULL;
     receiver[PS_TX_FEEDBACK] = NULL;
-
     //t_print("Create transmitter\n");
     transmitter = NULL;
     can_transmit = 0;
@@ -905,16 +907,17 @@ static void radio_create_visual() {
 
         default:
           // NOTREACHED
-            transmitter->ps_setpk = 1.000;
+          transmitter->ps_setpk = 1.000;
           break;
         }
+
         tx_ps_setparams(transmitter);
       }
     }
   } else {
     if (duplex) {
       transmitter->width = tx_dialog_width;
-      transmitter->pixels = 4 *tx_dialog_width;
+      transmitter->pixels = 4 * tx_dialog_width;
     } else {
       transmitter->width = my_width;
       transmitter->pixels = my_width;
@@ -990,6 +993,7 @@ static void radio_create_visual() {
     int r = receivers;
     receivers = RECEIVERS;
     t_print("radio_create_visual: calling radio_change_receivers: receivers=%d r=%d\n", receivers, r);
+
     if (radio_is_remote) {
       radio_remote_change_receivers(r);
     } else {
@@ -1042,6 +1046,7 @@ void radio_start_radio() {
       // This is a RadioBerry.
       //
       controller = NO_CONTROLLER;
+
       if (radio->software_version < 732) {
         have_radioberry1 = 1;
       } else {
@@ -1051,6 +1056,7 @@ void radio_start_radio() {
   }
 
 #ifdef GPIO
+
   //
   // Post-pone GPIO initialization until here since
   // we must first set the RadioBerry flags
@@ -1369,9 +1375,7 @@ void radio_start_radio() {
   }
 
   for (unsigned int i = 0; i < strlen(property_path); i++) {
-
     if (property_path[i] == '/') { property_path[i] = '.'; }
-
   }
 
   //
@@ -1582,6 +1586,7 @@ void radio_start_radio() {
     soapy_protocol_set_automatic_gain(rx, adc[0].agc);
 
     if (!adc[0].agc) { soapy_protocol_set_gain(rx); }
+
 #endif
 
     if (vfo[0].ctun) {
@@ -1640,13 +1645,13 @@ void radio_remote_change_receivers(int r) {
     receiver[1]->displaying = 0;
     gtk_container_remove(GTK_CONTAINER(fixed), receiver[1]->panel);
     receivers = 1;
-    send_startstop_spectrum(client_socket, 1, 0);
+    send_startstop_rxspectrum(client_socket, 1, 0);
     break;
 
   case 2:
     gtk_fixed_put(GTK_FIXED(fixed), receiver[1]->panel, 0, 0);
     receivers = 2;
-    send_startstop_spectrum(client_socket, 1, 1);
+    send_startstop_rxspectrum(client_socket, 1, 1);
     receiver[1]->displaying = 1;
     break;
   }
@@ -1686,6 +1691,7 @@ void radio_change_receivers(int r) {
     receiver[1]->displaying = 1;
     rx_set_displaying(receiver[1]);
     receivers = 2;
+
     //
     // Make sure RX2 shares the sample rate  with RX1 when running P1.
     //
@@ -1709,8 +1715,6 @@ void radio_change_receivers(int r) {
 }
 
 void radio_change_sample_rate(int rate) {
-  int i;
-
   //
   // The radio menu calls this function even if the sample rate
   // has not changed. Do nothing in this case.
@@ -1720,7 +1724,7 @@ void radio_change_sample_rate(int rate) {
     if (receiver[0]->sample_rate != rate) {
       radio_protocol_stop();
 
-      for (i = 0; i < receivers; i++) {
+      for (int i = 0; i < receivers; i++) {
         rx_change_sample_rate(receiver[i], rate);
       }
 
@@ -1782,7 +1786,7 @@ static void rxtx(int state) {
           rx_off(receiver[i]);
           rx_set_displaying(receiver[i]);
         } else {
-          send_startstop_spectrum(client_socket, i, 0);
+          send_startstop_rxspectrum(client_socket, i, 0);
         }
 
         g_object_ref((gpointer)receiver[i]->panel);
@@ -1821,12 +1825,12 @@ static void rxtx(int state) {
 
       if (protocol == SOAPYSDR_PROTOCOL) {
 #ifdef SOAPYSDR
-      soapy_protocol_set_tx_frequency(transmitter);
-      //soapy_protocol_start_transmitter(transmitter);
+        soapy_protocol_set_tx_frequency(transmitter);
+        //soapy_protocol_start_transmitter(transmitter);
 #endif
       }
     } else {
-      send_startstop_spectrum(client_socket, 8, 1);
+      send_startstop_txspectrum(client_socket, 1);
     }
 
 #ifdef DUMP_TX_DATA
@@ -1837,6 +1841,7 @@ static void rxtx(int state) {
     // Make a TX->RX transition
     //
     transmitter->displaying = 0;
+
     if (!radio_is_remote) {
 #ifdef DUMP_TX_DATA
       static int snapshot = 0;
@@ -1868,7 +1873,7 @@ static void rxtx(int state) {
       tx_off(transmitter);
       tx_set_displaying(transmitter);
     } else {
-      send_startstop_spectrum(client_socket, 8, 0);
+      send_startstop_txspectrum(client_socket, 0);
     }
 
     if (transmitter->dialog) {
@@ -1880,6 +1885,7 @@ static void rxtx(int state) {
 
     if (!duplex) {
       int do_silence = 0;
+
       if (!radio_is_remote) {
         //
         // Set parameters for the "silence first RXIQ samples after TX/RX transition" feature
@@ -1888,7 +1894,6 @@ static void rxtx(int state) {
         // for RedPitayas (the identify themself as STEMlab or HERMES) and HermesLite2 devices,
         // we also include the original HermesLite in this list (which can be enlarged if necessary).
         //
-
         if (device == DEVICE_HERMES_LITE2 || device == DEVICE_HERMES_LITE ||
             device == DEVICE_HERMES || device == DEVICE_STEMLAB || device == DEVICE_STEMLAB_Z20) {
           //
@@ -1905,17 +1910,17 @@ static void rxtx(int state) {
           case modeCWL:
             do_silence = 0; // no "silence"
             break;
-  
+
           case modeAM:
           case modeFMN:
             do_silence = 5; // leads to 31 ms "silence"
             break;
-  
+
           default:
             do_silence = 6; // leads to 16 ms "silence"
             break;
           }
-  
+
           if (tune) { do_silence = 5; } // 31 ms "silence" for TUNEing in any mode
         }
       }
@@ -1923,11 +1928,11 @@ static void rxtx(int state) {
       for (i = 0; i < receivers; i++) {
         gtk_fixed_put(GTK_FIXED(fixed), receiver[i]->panel, receiver[i]->x, receiver[i]->y);
         receiver[i]->displaying = 1;
- 
+
         if (!radio_is_remote) {
           rx_on(receiver[i]);
           rx_set_displaying(receiver[i]);
-            //
+          //
           // There might be some left-over samples in the RX buffer that were filled in
           // *before* going TX, delete them
           //
@@ -1941,7 +1946,7 @@ static void rxtx(int state) {
 
           receiver[i]->txrxcount = 0;
         } else {
-          send_startstop_spectrum(client_socket, i, 1);
+          send_startstop_rxspectrum(client_socket, i, 1);
         }
       }
     }
@@ -1955,6 +1960,7 @@ void radio_toggle_mox() {
     send_toggle_mox(client_socket);
     return;
   }
+
   radio_set_mox(!mox);
 }
 
@@ -1962,15 +1968,18 @@ void radio_remote_set_vox(int state) {
   if (state != radio_is_transmitting()) {
     rxtx(state);
   }
+
   mox = 0;
   tune = 0;
   vox = state;
   g_idle_add(ext_vfo_update, NULL);
 }
+
 void radio_remote_set_mox(int state) {
   if (state != radio_is_transmitting()) {
     rxtx(state);
   }
+
   vox_cancel();  // remove time-out
   mox = state;
   tune = 0;
@@ -1982,6 +1991,7 @@ void radio_remote_set_twotone(int state) {
   if (can_transmit) {
     transmitter->twotone = state;
   }
+
   g_idle_add(ext_vfo_update, NULL);
 }
 
@@ -1991,17 +2001,18 @@ void radio_remote_set_tune(int state) {
 
     if (vox || mox) {
       rxtx(0);
-      vox=0;
-      mox=0;
+      vox = 0;
+      mox = 0;
     }
+
     rxtx(state);
-    tune=state;
+    tune = state;
   }
+
   g_idle_add(ext_vfo_update, NULL);
 }
 
 void radio_set_mox(int state) {
-
   if (!can_transmit) { return; }
 
   if (radio_is_remote) {
@@ -2040,7 +2051,6 @@ void radio_set_mox(int state) {
   mox  = state;
   tune = 0;
   vox  = 0;
-
   schedule_high_priority();
   schedule_receive_specific();
   g_idle_add(ext_vfo_update, NULL);
@@ -2069,6 +2079,7 @@ void radio_set_vox(int state) {
     schedule_high_priority();
     schedule_receive_specific();
   }
+
   g_idle_add(ext_vfo_update, NULL);
 }
 
@@ -2077,6 +2088,7 @@ void radio_set_twotone(TRANSMITTER *tx, int state) {
     send_twotone(client_socket, state);
     return;
   }
+
   tx_set_twotone(tx, state);
   g_idle_add(ext_vfo_update, NULL);
 }
@@ -2086,6 +2098,7 @@ void radio_toggle_tune() {
     send_toggle_tune(client_socket);
     return;
   }
+
   radio_set_tune(!tune);
   g_idle_add(ext_vfo_update, NULL);
 }
@@ -2536,12 +2549,14 @@ void radio_set_split(int val) {
   //
   if (can_transmit) {
     split = val;
+
     if (radio_is_remote) {
       send_split(client_socket, val);
     } else {
       radio_tx_vfo_changed();
       radio_set_alex_antennas();
     }
+
     g_idle_add(ext_vfo_update, NULL);
   }
 }
@@ -2655,9 +2670,9 @@ static void radio_restore_state() {
       GetPropF1("radio.adc[%d].max_gain", i,                 adc[i].max_gain);
       GetPropI1("radio.adc[%d].agc", i,                      adc[i].agc);
     }
+
     GetPropI0("radio.dac.antenna",                           dac.antenna);
     GetPropF0("radio.dac.gain",                              dac.gain);
-
     filterRestoreState();
     bandRestoreState();
     memRestoreState();
@@ -2687,6 +2702,7 @@ static void radio_restore_state() {
   if ((window_x_pos < screen_width - 100) && (window_y_pos < screen_height - 100)) {
     gtk_window_move(GTK_WINDOW(top_window), window_x_pos, window_y_pos);
   }
+
   //
   if (!radio_is_remote) {
     //
@@ -2695,7 +2711,6 @@ static void radio_restore_state() {
     if (display_width  > screen_width  ) { display_width  = screen_width; }
 
     if (display_height > screen_height ) { display_height = screen_height; }
-
   }
 
   //
@@ -2707,6 +2722,7 @@ static void radio_restore_state() {
   if ((window_x_pos < screen_width - 100) && (window_y_pos < screen_height - 100)) {
     gtk_window_move(GTK_WINDOW(top_window), window_x_pos, window_y_pos);
   }
+
   //
   // If the radio does not have 2 ADCs, there is no DIVERSITY
   //
@@ -2754,7 +2770,6 @@ void radio_save_state() {
   // Obtain window position and save in props file
   //
   gtk_window_get_position(GTK_WINDOW(top_window), &window_x_pos, &window_y_pos);
-
   SetPropI0("WindowPositionX",                               window_x_pos);
   SetPropI0("WindowPositionY",                               window_y_pos);
   SetPropI0("display_zoompan",                               hide_status ? old_zoom : display_zoompan);
@@ -2856,14 +2871,15 @@ void radio_save_state() {
       SetPropF1("radio.adc[%d].max_gain", i,                 adc[i].max_gain);
       SetPropI1("radio.adc[%d].agc", i,                      adc[i].agc);
     }
+
     SetPropI0("radio.dac.antenna",                           dac.antenna);
     SetPropF0("radio.dac.gain",                              dac.gain);
-
     filterSaveState();
     bandSaveState();
     memSaveState();
     vfo_save_state();
   }
+
   gpioSaveActions();
   rigctlSaveState();
 #ifdef MIDI
@@ -2879,9 +2895,7 @@ int radio_remote_start(void *data) {
   snprintf(property_path, sizeof(property_path), "%s@%s.props", radio->name, server);
 
   for (unsigned int i = 0; i < strlen(property_path); i++) {
-
     if (property_path[i] == '/') { property_path[i] = '.'; }
-
   }
 
   radio_is_remote = TRUE;
@@ -2910,7 +2924,6 @@ int radio_remote_start(void *data) {
   // for MIDI this  is the complete data set
   //
   radio_restore_state();
-
   radio_create_visual();
   radio_reconfigure_screen();
 
@@ -2933,6 +2946,7 @@ int radio_remote_start(void *data) {
 
   if (can_transmit) {
     tx_restore_state(transmitter);
+
     if (transmitter->local_microphone) {
       if (audio_open_input() != 0) {
         t_print("audio_open_input failed\n");
@@ -2954,7 +2968,6 @@ int radio_remote_start(void *data) {
   radio_reconfigure();
   g_idle_add(ext_vfo_update, NULL);
   gdk_window_set_cursor(gtk_widget_get_window(top_window), gdk_cursor_new(GDK_ARROW));
-
 #ifdef MIDI
 
   for (int i = 0; i < n_midi_devices; i++) {
@@ -2974,7 +2987,7 @@ int radio_remote_start(void *data) {
 
   for (int i = 0; i < receivers; i++) {
     //(void) gdk_threads_add_timeout_full(G_PRIORITY_DEFAULT_IDLE, 100, start_spectrum, receiver[i], NULL);
-    send_startstop_spectrum(client_socket, i, 1);
+    send_startstop_rxspectrum(client_socket, i, 1);
   }
 
   if (open_test_menu) {
@@ -2989,16 +3002,16 @@ int radio_remote_start(void *data) {
 //int start_spectrum(void *data) {
 //  const RECEIVER *rx = (RECEIVER *)data;
 //  static int delay = 0;
-//  
+//
 //  if (delay != 3) {
 //    delay++;
 //    t_print("start_spectrum: delay %d\n", delay);
 //    return TRUE;
 //  }
-// 
-//  send_startstop_spectrum(client_socket, rx->id, 1);
+//
+//  send_startstop_rxspectrum(client_socket, rx->id, 1);
 //  return FALSE;
-//} 
+//}
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -3289,11 +3302,13 @@ void radio_end_playback() {
 // utility function needed e.g. for qsort
 //
 int compare_doubles(const void *a, const void *b) {
-    double arg1 = *(const double *)a;
-    double arg2 = *(const double *)b;
+  double arg1 = *(const double *)a;
+  double arg2 = *(const double *)b;
 
-    if (arg1 < arg2) return -1;
-    if (arg1 > arg2) return 1;
-    return 0;
+  if (arg1 < arg2) { return -1; }
+
+  if (arg1 > arg2) { return 1; }
+
+  return 0;
 }
 

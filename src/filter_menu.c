@@ -170,6 +170,7 @@ static gboolean deviation_select_cb (GtkWidget *widget, gpointer data) {
   if (current != choice) {
     int id = myrx->id;
     current = choice;
+
     if (radio_is_remote) {
       send_deviation(client_socket, id, choice->info);
     } else {
@@ -179,9 +180,9 @@ static gboolean deviation_select_cb (GtkWidget *widget, gpointer data) {
       if (can_transmit) {
         tx_set_filter(transmitter);
       }
+
       g_idle_add(ext_vfo_update, NULL);
     }
-
   }
 
   return FALSE;

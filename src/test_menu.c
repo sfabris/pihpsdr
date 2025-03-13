@@ -60,36 +60,41 @@ static gboolean repeat_cb(gpointer data) {
     repeat_timer = 0;
     retval = G_SOURCE_REMOVE;
     break;
+
   case 1:
-     schedule_action(test_action, PRESSED, 1);
-     break;
+    schedule_action(test_action, PRESSED, 1);
+    break;
+
   case 2:
     schedule_action(test_action, RELATIVE, -1);
     break;
+
   case 3:
     schedule_action(test_action, RELATIVE, 1);
     break;
   }
+
   return retval;
 }
 
 static void test_action_changed_cb(GtkWidget *widget, gpointer data) {
   test_action = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
   gtk_label_set_label(GTK_LABEL(test_name), ActionTable[test_action].str);
-
   gtk_widget_set_sensitive(test_press, FALSE);
   gtk_widget_set_sensitive(test_ccw, FALSE);
   gtk_widget_set_sensitive(test_cw, FALSE);
 
   if (ActionTable[test_action].type & (MIDI_KEY | CONTROLLER_SWITCH)) {
-     gtk_widget_set_sensitive(test_press, TRUE);
+    gtk_widget_set_sensitive(test_press, TRUE);
   } else {
-     gtk_widget_set_sensitive(test_ccw, TRUE);
-     gtk_widget_set_sensitive(test_cw, TRUE);
+    gtk_widget_set_sensitive(test_ccw, TRUE);
+    gtk_widget_set_sensitive(test_cw, TRUE);
   }
+
   if (repeat_timer != 0) {
     g_source_remove(repeat_timer);
   }
+
   repeat_timer = 0;
   repeat_state = 0;
 }
@@ -97,20 +102,25 @@ static void test_action_changed_cb(GtkWidget *widget, gpointer data) {
 // cppcheck-suppress constParameterCallback
 static void test_press_cb(GtkWidget *widget, GdkEventButton *event, gpointer data) {
   if (event->type != GDK_BUTTON_PRESS) { return; }
+
   repeat_state = 1;
   schedule_action(test_action, PRESSED, 1);
+
   if (repeat_timer != 0) {
     g_source_remove(repeat_timer);
   }
+
   repeat_timer = g_timeout_add(500, repeat_cb, NULL);
 }
 
 // cppcheck-suppress constParameterCallback
 static void test_release_cb(GtkWidget *widget, GdkEventButton *event, gpointer data) {
   repeat_state = 0;
+
   if (repeat_timer != 0) {
     g_source_remove(repeat_timer);
   }
+
   repeat_timer = 0;
   schedule_action(test_action, RELEASED, 1);
 }
@@ -118,22 +128,28 @@ static void test_release_cb(GtkWidget *widget, GdkEventButton *event, gpointer d
 // cppcheck-suppress constParameterCallback
 static void test_ccw_cb(GtkWidget *widget, GdkEventButton *event, gpointer data) {
   if (event->type != GDK_BUTTON_PRESS) { return; }
+
   repeat_state = 2;
   schedule_action(test_action, RELATIVE, -1);
+
   if (repeat_timer != 0) {
     g_source_remove(repeat_timer);
   }
+
   repeat_timer = g_timeout_add(250, repeat_cb, NULL);
 }
 
 // cppcheck-suppress constParameterCallback
 static void test_cw_cb(GtkWidget *widget, GdkEventButton *event, gpointer data) {
   if (event->type != GDK_BUTTON_PRESS) { return; }
+
   repeat_state = 3;
   schedule_action(test_action, RELATIVE, 1);
+
   if (repeat_timer != 0) {
     g_source_remove(repeat_timer);
   }
+
   repeat_timer = g_timeout_add(250, repeat_cb, NULL);
 }
 
@@ -142,6 +158,7 @@ static void cancel_repeat_cb(GtkWidget *widget, GdkEventButton *event, gpointer 
   if (repeat_timer != 0) {
     g_source_remove(repeat_timer);
   }
+
   repeat_timer = 0;
   repeat_state = 0;
 }
@@ -162,7 +179,6 @@ void test_menu(GtkWidget *parent) {
   gtk_grid_set_row_homogeneous(GTK_GRID(grid), FALSE);
   gtk_grid_set_row_spacing (GTK_GRID(grid), 10);
   gtk_grid_set_column_spacing (GTK_GRID(grid), 10);
-
   lbl = gtk_label_new("Choose Action: ");
   gtk_widget_set_name(lbl, "medium_button");
   gtk_grid_attach(GTK_GRID(grid), lbl, 0, 0, 1, 2);
@@ -171,12 +187,10 @@ void test_menu(GtkWidget *parent) {
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), test_action);
   gtk_grid_attach(GTK_GRID(grid), btn, 1, 0, 1, 2);
   g_signal_connect(btn, "value_changed", G_CALLBACK(test_action_changed_cb), NULL);
-
   test_name = gtk_label_new(ActionTable[test_action].str);
   gtk_widget_set_name(test_name, "medium_button");
   gtk_widget_set_valign(test_name, GTK_ALIGN_START);
   gtk_grid_attach(GTK_GRID(grid), test_name, 2, 0, 1, 2);
-
   test_press = gtk_button_new_with_label("PushButton\nPress/Release");
   gtk_widget_set_name(test_press, "medium_button");
   gtk_widget_set_size_request(test_press, 150, 50);
@@ -184,25 +198,21 @@ void test_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(grid), test_press, 0, 2, 1, 2);
   g_signal_connect(G_OBJECT(test_press), "button-press-event", G_CALLBACK(test_press_cb), NULL);
   g_signal_connect(G_OBJECT(test_press), "button-release-event", G_CALLBACK(test_release_cb), NULL);
-
   test_ccw = gtk_button_new_with_label("Encoder\nCounterClockWise");
   gtk_widget_set_name(test_ccw, "medium_button");
   gtk_widget_set_halign(test_ccw, GTK_ALIGN_CENTER);
   gtk_grid_attach(GTK_GRID(grid), test_ccw, 1, 2, 1, 2);
   g_signal_connect(G_OBJECT(test_ccw), "button-press-event", G_CALLBACK(test_ccw_cb), NULL);
   g_signal_connect(G_OBJECT(test_ccw), "button-release-event", G_CALLBACK(cancel_repeat_cb), NULL);
-
   test_cw = gtk_button_new_with_label("Encoder\nClockWise");
   gtk_widget_set_name(test_cw, "medium_button");
   gtk_widget_set_halign(test_cw, GTK_ALIGN_CENTER);
   gtk_grid_attach(GTK_GRID(grid), test_cw, 2, 2, 1, 2);
   g_signal_connect(G_OBJECT(test_cw), "button-press-event", G_CALLBACK(test_cw_cb), NULL);
   g_signal_connect(G_OBJECT(test_cw), "button-release-event", G_CALLBACK(cancel_repeat_cb), NULL);
-
   gtk_widget_set_sensitive(test_press, FALSE);
   gtk_widget_set_sensitive(test_ccw, FALSE);
   gtk_widget_set_sensitive(test_cw, FALSE);
-
   gtk_container_add(GTK_CONTAINER(content), grid);
   gtk_widget_show_all(dialog);
 }

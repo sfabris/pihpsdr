@@ -205,13 +205,12 @@ static void *mic_read_thread(gpointer arg) {
       t_print("%s: simple_read returned %d error=%d (%s)\n", __FUNCTION__, rc, err, pa_strerror(err));
     } else {
       for (int i = 0; i < mic_buffer_size; i++) {
-
         //
         // If we are a client, simply collect and transfer data
         // to the server without any buffering
         //
         if (radio_is_remote) {
-          short s = local_microphone_buffer[i]*32767.0;
+          short s = local_microphone_buffer[i] * 32767.0;
           server_tx_audio(s);
           continue;
         }

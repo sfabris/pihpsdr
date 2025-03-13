@@ -57,8 +57,9 @@ static gboolean close_cb () {
   return TRUE;
 }
 
-void update_noise(RECEIVER *rx) {
+void update_noise(const RECEIVER *rx) {
   int id = rx->id;
+
   //
   // Update the mode settings
   //

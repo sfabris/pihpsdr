@@ -266,9 +266,9 @@ int audio_open_input() {
 // PortAudio call-back function for Audio output
 //
 static int pa_out_cb(const void *inputBuffer, void *outputBuffer, unsigned long framesPerBuffer,
-              const PaStreamCallbackTimeInfo* timeInfo,
-              PaStreamCallbackFlags statusFlags,
-              void *userdata) {
+                     const PaStreamCallbackTimeInfo* timeInfo,
+                     PaStreamCallbackFlags statusFlags,
+                     void *userdata) {
   float *out = (float *)outputBuffer;
   RECEIVER *rx = (RECEIVER *)userdata;
 
@@ -312,9 +312,9 @@ static int pa_out_cb(const void *inputBuffer, void *outputBuffer, unsigned long 
 // PortAudio call-back function for Audio input
 //
 static int pa_mic_cb(const void *inputBuffer, void *outputBuffer, unsigned long framesPerBuffer,
-              const PaStreamCallbackTimeInfo* timeInfo,
-              PaStreamCallbackFlags statusFlags,
-              void *userdata) {
+                     const PaStreamCallbackTimeInfo* timeInfo,
+                     PaStreamCallbackFlags statusFlags,
+                     void *userdata) {
   const float *in = (float *)inputBuffer;
 
   if (in == NULL) {
@@ -329,12 +329,13 @@ static int pa_mic_cb(const void *inputBuffer, void *outputBuffer, unsigned long 
   //
   if (radio_is_remote) {
     for (unsigned int i = 0; i < framesPerBuffer; i++) {
-      short sample = in[i]*32768.0;
+      short sample = in[i] * 32768.0;
       server_tx_audio(sample);
     }
+
     return paContinue;
   }
-  
+
   g_mutex_lock(&audio_mutex);
 
   if (mic_ring_buffer != NULL) {

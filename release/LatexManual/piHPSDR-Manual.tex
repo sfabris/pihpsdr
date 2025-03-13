@@ -4039,7 +4039,7 @@ another value should the port 50000 be in use on your computer. Other ports used
 port for CAT-over-TCP) and 40000 (the default port for the TCI server).
 
 In the text entry field to the left of   the \rett{Server Password} label, you must enter a password for
-client-server operation. If it is a really long password, only the first 50 characters are used, and if it
+client-server operation. If it is a really long password, only the first 64 characters are used, and if it
 is shorter than 5 characters, no client is allowed to connect. No particular security measure is taken
 to protect the password on the server side: it is  shown while you type it into the  text field, and it is
 stored in the local preferences file without encryption. The idea here is that you set up the server
@@ -4082,40 +4082,53 @@ might have guessed that clicking the \rett{Hide} button then conceals the passwo
 label reads \rett{Show} again.
 
 \clearpage
-\textbf{A note on network security:} \\
-The password you enter is \textbf{not} transmitted ``as is'' over the line. Instead, the server sends a random
-64-byte \textit{challenge} which is different for each connection.
+\textbf{A note on network security:}
+
+The password you enter is \textbf{never ever} transmitted ``as is'' over the line. Instead, the server sends a random
+512 bit (64 byte) \textit{challenge} which is different for each connection.
 On the client side, a four-byte version number and the password is added
-to the challenge and a SHA256 key is built from the result and then sent back to the server. The server
+to the challenge and a SHA512 key is built from the result.  Using the last result as the new challenge,
+this process is repeated 99999 times to make brute-force attacks compute intensive,
+and the last hash generated is then sent back to the server. The server
 does the same with its version number and the password entered in the \bltt{Server} menu and then asserts
-that the two SHA256 keys are identical. This is most likely not top-notch cyber security, but should provide
-a decent level to fulfil your  obligations as a radio amateur to prevent your gear from unlawful use.
-If you feel you must go beyond, your option is to set up a VPN \textit{virtual private network} in which
-you can have cyber security provided by your network infrastructure rather than by an application such
+that the two SHA512 keys are identical.
+On a RaspberryPi5, generation of the hash takes about 120 msec, and about 3 times less on powerful desktop
+computers. Once a hacker has ``sniffed'' a valid challenge/hash pair, trying to guess the password
+from generating all possible hashes
+from the challenge for, say, passwords of length 8 and consisting of lower-case letters and numbers only
+(2.8 * 10$^{12}$ possibilities) will take about 10$^{11}$ seconds (3500 years) of CPU time, and better
+passwords which also include upper-case letters are even better.
+Although this still  not  top-notch cyber security, it should be good enough
+to fulfil your  (legal) obligations as a radio amateur to prevent your gear from unlawful use.
+If you feel you must go beyond, one option is to set up a VPN \textit{virtual private network} in which
+you can have expert-level cyber security provided by your network infrastructure rather than by an application such
 as \pH.
 
-\textbf{Auto disconnect feature:}\\
+\textbf{Auto disconnect feature:}
+
 Equally important is to prevent that your radio stops transmitting if
 the connection to the client breaks down. To this end, the server closes the connection and goes RX if
 it has not received any command from the client for about 30 seconds, or if the attempt to read the
-next command from the client failed (the client will send and empty
-``heartbeat'' command every 15 seconds).
+next command from the client failed (the client will send a
+``heartbeat'' message every 15 seconds).
 
-\textbf{Network bandwidth required for client/server operation:}\\
+\textbf{Network bandwidth required for client/server operation:}
+
  The user commands and even the spectrum
 data to be displayed in the panadapters and waterfalls are the smallest part of the data flowing between the client
-and the server. The (by far!) largest part is the audio data. Audio data is transferred as signed 16-bit integers
+and the server. The (by far) largest part is the audio data. Audio data is transferred as signed 16-bit integers
 at a sample rate of 48 kHz, in stereo for the RX audio (Server $\to$ Client) and in mono for the TX
 microphone data (Client $\to$ server). During RX, and also during TX when doing CW, no TX microphone data
-is transferred. If not using duplex, no RX audio data is transferred when TXing.
+is transferred. If not using duplex, no RX audio data is transferred when TXing because the receivers are shut down.
 
 This means that during RX, about 96 kByte/sec (768 kbit/sec) are transferred from the Server to the Client
 (twice as much if running two receivers), while only half of this is transferred from the Client to the Server during
-TX if doing SSB. When TXing in CW, very little data (the CW key-down/up time stamps) is actually sent.
+TX if doing SSB. When TXing in CW, very little data (the CW key-down/up time stamps) is actually sent from the client
+to the server.
 My first tests indicate that client/server operation works very well even
 if parts of the connection between Client and Server
 is using a WLAN. I mention this because my attempts using WLAN for connection to the \textit{radio}
-(that is, for the baseband IQ data) were not entirely successful.
+(that is, for the baseband IQ data) were not entirely satisfactory.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter{Miscellaneous Topics}
@@ -4328,7 +4341,7 @@ on the built-in RaspberryPico micro controller,
 
 \textbf{``TX latency'' and ``PTT hang time''}
 
-There has been much discussion about which are the optimal values for these parameters. \pH has not 
+There has been much discussion about which are the optimal values for these parameters. \pH has not
 user interface for there but sets the TX-latency to 40 msec and the PTT hang time to 20 msec.
 
 After a RX/TX transition, the HL2 does not start transmitting until the internal buffer (within the FPGA)

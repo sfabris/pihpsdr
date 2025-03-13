@@ -323,7 +323,6 @@ static gpointer discover_receive_thread(gpointer data) {
   len = sizeof(addr);
 
   while (1) {
-
     if (flag != 1 && devices > oldnumdev) {
       //
       // For a 'directed' (UDP or TCP) discovery packet, return as soon as there
@@ -385,7 +384,6 @@ static gpointer discover_receive_thread(gpointer data) {
             break;
 
           case DEVICE_HERMES_LITE:
-
             //
             // HermesLite V2 boards use
             // DEVICE_HERMES_LITE as the ID and a software version
@@ -394,7 +392,8 @@ static gpointer discover_receive_thread(gpointer data) {
             // Furthermode, HL2 uses a minor version in buffer[21]
             // so the official version number e.g. 73.2 stems from buf9=73 and buf21=2
             //
-            discovered[devices].software_version = 10*(buffer[9] & 0xFF) + (buffer[21] & 0xFF);
+            discovered[devices].software_version = 10 * (buffer[9] & 0xFF) + (buffer[21] & 0xFF);
+
             if (discovered[devices].software_version < 400) {
               STRLCPY(discovered[devices].name, "HermesLite V1", sizeof(discovered[devices].name));
             } else {
@@ -488,15 +487,16 @@ static gpointer discover_receive_thread(gpointer data) {
 void old_discovery() {
   struct ifaddrs *addrs,*ifa;
   t_print("old_discovery\n");
-
   //
   // Start with discovering from a fixed ip address
   //
   int previous_devices = devices;
   discover(NULL, 2);
+
   if (tcp_enable) {
     discover(NULL, 3);
   }
+
   //
   // If we have been successful with the fixed IP address,
   // assume that we want that radio, and do not discover any

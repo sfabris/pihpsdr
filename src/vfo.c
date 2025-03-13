@@ -103,6 +103,7 @@ static void vfo_save_bandstack() {
 
 static void modesettingsSaveState() {
   ASSERT_SERVER();
+
   for (int i = 0; i < MODES; i++) {
     SetPropI1("modeset.%d.filter", i,                mode_settings[i].filter);
     SetPropI1("modeset.%d.cwPeak", i,                mode_settings[i].cwPeak);
@@ -164,6 +165,7 @@ static void modesettingsSaveState() {
 
 static void modesettingsRestoreState() {
   ASSERT_SERVER();
+
   for (int i = 0; i < MODES; i++) {
     //
     // set defaults that depend on  the mode: filter, agc, step
@@ -351,6 +353,7 @@ static void modesettingsRestoreState() {
 
 void copy_mode_settings(int mode) {
   ASSERT_SERVER();
+
   //
   // If mode is USB or LSB or DSB, copy settings of that mode to USB and LSB and DSB
   // If mode is CWU or CWL       , copy settings of that mode to CWL and CWU
@@ -407,6 +410,7 @@ void vfo_save_state() {
 
 void vfo_restore_state() {
   ASSERT_SERVER();
+
   for (int i = 0; i < MAX_VFOS; i++) {
     //
     // Set defaults, using a simple heuristics to get a
@@ -517,6 +521,7 @@ static inline void vfo_id_adjust_band(int v, long long f) {
 
 void vfo_xvtr_changed() {
   ASSERT_SERVER();
+
   //
   // It may happen that the XVTR band is messed up in the sense
   // that the resulting radio frequency exceeds the limits.
@@ -604,6 +609,10 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
     rx->eq_freq[i] = mode_settings[m].rx_eq_freq[i];
   }
 
+  rx_set_agc(rx);
+  rx_set_equalizer(rx);
+  rx_set_noise(rx);
+
   //
   // Transmitter-specific settings: TXEQ, CMRP, DEXP, CFC
   // only changed if this VFO controls the TX
@@ -636,17 +645,12 @@ void vfo_apply_mode_settings(RECEIVER *rx) {
 
     tx_set_compressor(transmitter);
     tx_set_dexp(transmitter);
+    tx_set_equalizer(transmitter);
     suppress_popup_sliders = 1;
     set_mic_gain(mode_settings[m].mic_gain);
     suppress_popup_sliders = 0;
   }
 
-  //
-  // defer update_eq() until here since it also applies TX EQ settings
-  //
-  rx_set_agc(rx);
-  update_noise(rx);
-  update_eq();
   g_idle_add(ext_vfo_update, NULL);
 }
 
@@ -788,10 +792,12 @@ void vfo_id_bandstack_changed(int id, int b) {
 
 void vfo_mode_changed(int m) {
   int id = active_receiver->id;
+
   if (radio_is_remote) {
     send_mode(client_socket, id, m);
     return;
   }
+
   vfo_id_mode_changed(id, m);
 }
 
@@ -844,6 +850,7 @@ void vfo_filter_changed(int f) {
 
 void vfo_id_filter_changed(int id, int f) {
   vfo[id].filter = f;
+
   if (radio_is_remote) {
     send_filter_sel(client_socket, id, f);
     return;
@@ -855,7 +862,6 @@ void vfo_id_filter_changed(int id, int f) {
     mode_settings[mode].filter = f;
     copy_mode_settings(mode);
   }
-
 
   //
   // If f is either Var1 or Var2, then the changed filter edges
@@ -902,6 +908,7 @@ void vfo_a_to_b() {
     send_vfo_atob(client_socket);
     return;
   }
+
   int oldmode = vfo[VFO_B].mode;
   vfo[VFO_B] = vfo[VFO_A];
 
@@ -917,6 +924,7 @@ void vfo_b_to_a() {
     send_vfo_btoa(client_socket);
     return;
   }
+
   int oldmode = vfo[VFO_A].mode;
   vfo[VFO_A] = vfo[VFO_B];
 
@@ -932,7 +940,9 @@ void vfo_a_swap_b() {
     send_vfo_swap(client_socket);
     return;
   }
+
   struct  _vfo temp = vfo[VFO_A];
+
   vfo[VFO_A]        = vfo[VFO_B];
   vfo[VFO_B]        = temp;
 
@@ -1009,10 +1019,12 @@ void vfo_id_set_step_from_index(int id, int index) {
 
 void vfo_step(int steps) {
   int id = active_receiver->id;
+
   if (radio_is_remote) {
     update_vfo_step(id, steps);
     return;
   }
+
   vfo_id_step(id, steps);
 }
 
@@ -1108,11 +1120,13 @@ void vfo_id_step(int id, int steps) {
 
 void vfo_set_rit_step(int step) {
   int id = active_receiver->id;
+
   if (radio_is_remote) {
     send_rit_step(client_socket, id, step);
     return;
   }
-  vfo_id_set_rit_step(id,step);
+
+  vfo_id_set_rit_step(id, step);
 }
 
 void vfo_id_set_rit_step(int id, int step) {
@@ -1120,6 +1134,7 @@ void vfo_id_set_rit_step(int id, int step) {
     send_rit_step(client_socket, id, step);
     return;
   }
+
   vfo[id].rit_step = step;
 
   if (id == 0) {
@@ -1146,9 +1161,9 @@ void vfo_id_set_rit_step(int id, int step) {
 // *increases* the RX frequency.
 //
 void vfo_id_move(int id, long long hz, int round) {
-
   if (!locked) {
     long long delta;
+
     if (radio_is_remote) {
       update_vfo_move(id, hz, round);
       return;
@@ -2245,7 +2260,9 @@ void vfo_xit_value(long long value ) {
 
 void vfo_id_xit_value(int id, long long value ) {
   if (value > 9999.0) { value = 9999; }
+
   if (value < -9999.0) { value = -9999; }
+
   vfo[id].xit = value;
   vfo[id].xit_enabled = value ? 1 : 0;
 
@@ -2275,7 +2292,9 @@ void vfo_id_rit_toggle(int id) {
 
 void vfo_id_rit_value(int id, long long value) {
   if (value > 9999) { value = 9999; }
+
   if (value < -9999) { value = -9999; }
+
   vfo[id].rit = value;
   vfo[id].rit_enabled = value ? 1 : 0;
 
@@ -2291,6 +2310,7 @@ void vfo_id_rit_value(int id, long long value) {
 
 void vfo_id_rit_onoff(int id, int enable) {
   vfo[id].rit_enabled = SET(enable);
+
   if (radio_is_remote) {
     send_rit(client_socket, id);
   } else if (id < receivers) {
@@ -2307,11 +2327,13 @@ void vfo_xit_onoff(int enable) {
 
 void vfo_id_xit_onoff(int id, int enable) {
   vfo[id].xit_enabled = SET(enable);
+
   if (radio_is_remote) {
     send_xit(client_socket, id);
   } else {
     schedule_high_priority();
   }
+
   g_idle_add(ext_vfo_update, NULL);
 }
 
@@ -2341,9 +2363,10 @@ void vfo_id_rit_incr(int id, int incr) {
 //
 void vfo_id_set_frequency(int v, long long f) {
   if (radio_is_remote) {
-     send_vfo_frequency(client_socket, v, f);
-     return;
+    send_vfo_frequency(client_socket, v, f);
+    return;
   }
+
   //
   // Here we used to have call vfo_id_band_changed() for
   // frequency jumps from one band to another.

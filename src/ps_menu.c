@@ -85,10 +85,10 @@ static gboolean close_cb () {
   return TRUE;
 }
 
-//  
+//
 // Restart PS:
 // PS reset, wait 100 msec, PS resume
-//  
+//
 static void ps_off_on() {
   if (transmitter->puresignal) {
     tx_ps_reset(transmitter);
@@ -99,6 +99,7 @@ static void ps_off_on() {
 
 static void att_spin_cb(GtkWidget *widget, gpointer data) {
   transmitter->attenuation = gtk_spin_button_get_value_as_int(GTK_SPIN_BUTTON(widget));
+
   if (radio_is_remote) {
     send_psatt(client_socket); // this sends auto, attenuation, feedback, and ps antenna
   } else {
@@ -115,6 +116,7 @@ static void setpk_cb(GtkWidget *widget, gpointer data) {
   if (newpk > 0.01 && newpk < 1.01 && fabs(newpk - transmitter->ps_getpk) > 0.001) {
     transmitter->ps_setpk = newpk;
     transmitter->ps_getpk = newpk;
+
     if (radio_is_remote) {
       send_psparams(client_socket, transmitter);
     } else {
@@ -284,7 +286,6 @@ int ps_calibration_timer(gpointer arg) {
 // active, then no menu elements are accessed.
 //
 static int info_thread(gpointer arg) {
-
   if (!running) {
     return G_SOURCE_REMOVE;
   }
@@ -293,10 +294,12 @@ static int info_thread(gpointer arg) {
     gchar label[20];
     static int old5 = 0;  // used to detect an increase of the calibration count
     static int old14 = 0; // used to detect change of "Correcting" status
+
     if (!radio_is_remote) {
       tx_ps_getinfo(transmitter);
       tx_ps_getmx(transmitter);
     }
+
     //
     // Set newcal if there is a new calibration
     // Set newcorr if "Correcting" status changed
@@ -457,6 +460,7 @@ static void enable_cb(GtkWidget *widget, gpointer data) {
 
 static void tol_cb(GtkWidget *widget, gpointer data) {
   transmitter->ps_ptol = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
+
   if (radio_is_remote) {
     send_psparams(client_socket, transmitter);
   } else {
@@ -467,6 +471,7 @@ static void tol_cb(GtkWidget *widget, gpointer data) {
 
 static void oneshot_cb(GtkWidget *widget, gpointer data) {
   transmitter->ps_oneshot = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
+
   if (radio_is_remote) {
     send_psparams(client_socket, transmitter);
   } else {
@@ -477,6 +482,7 @@ static void oneshot_cb(GtkWidget *widget, gpointer data) {
 
 static void map_cb(GtkWidget *widget, gpointer data) {
   transmitter->ps_map = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
+
   if (radio_is_remote) {
     send_psparams(client_socket, transmitter);
   } else {
@@ -487,6 +493,7 @@ static void map_cb(GtkWidget *widget, gpointer data) {
 
 static void auto_cb(GtkWidget *widget, gpointer data) {
   transmitter->auto_on = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (widget));
+
   if (radio_is_remote) {
     send_psatt(client_socket);
   }
@@ -531,6 +538,7 @@ static void resume_cb(GtkWidget *widget, gpointer data) {
   if (transmitter->puresignal) {
     if (transmitter->auto_on) {
       transmitter->attenuation = 0;
+
       if (radio_is_remote) {
         send_psatt(client_socket);
       }
@@ -542,6 +550,7 @@ static void resume_cb(GtkWidget *widget, gpointer data) {
 
 static void feedback_cb(GtkWidget *widget, gpointer data) {
   transmitter->feedback = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+
   if (radio_is_remote) {
     send_psatt(client_socket);
   }
@@ -752,9 +761,11 @@ void ps_menu(GtkWidget *parent) {
   gtk_widget_set_name(lbl, "boldlabel");
   gtk_grid_attach(GTK_GRID(grid), lbl, col, row, 1, 1);
   col++;
+
   if (!radio_is_remote) {
     tx_ps_getpk(transmitter);
   }
+
   snprintf(pk_text, 16, "%6.3f", transmitter->ps_getpk);
   set_pk = gtk_entry_new();
   gtk_entry_set_text(GTK_ENTRY(set_pk), pk_text);

@@ -177,6 +177,7 @@ static void init_audio_ramp(double *ramp, int width) {
 
 static void init_dl1ycf_ramp(double *ramp, int width) {
   ASSERT_SERVER();
+
   //
   // ========================================================================
   //
@@ -228,6 +229,7 @@ static void init_dl1ycf_ramp(double *ramp, int width) {
 #if 0
 static void init_ve3nea_ramp(double *ramp, int width) {
   ASSERT_SERVER();
+
   //
   // Calculate a "VE3NEA" ramp (integrated Blackman-Harris-Window)
   // Output: ramp[0] ... ramp[width] contain numbers
@@ -504,7 +506,6 @@ static gboolean tx_update_display(gpointer data) {
   int rc;
 
   if (tx->displaying) {
-
     if (tx->puresignal) {
       tx_ps_getinfo(tx);
     }
@@ -775,13 +776,13 @@ static gboolean tx_update_display(gpointer data) {
 
     if (rc) {
       if (remoteclient.running) {
-        remote_send_spectrum(tx->id);
+        remote_send_txspectrum();
       }
+
       tx_panadapter_update(tx);
     }
 
     g_mutex_unlock(&tx->display_mutex);
-
     return TRUE; // keep going
   }
 
@@ -914,14 +915,12 @@ TRANSMITTER *tx_create_transmitter(int id, int pixels, int width, int height) {
   tx->panadapter_high = 0;
   tx->panadapter_low = -70;
   tx->panadapter_step = 10;
-
   tx->panadapter_peaks_on = 0;
   tx->panadapter_num_peaks = 4;  // if the typical application is a two-tone test we need four
   tx->panadapter_ignore_range_divider = 24;
   tx->panadapter_ignore_noise_percentile = 50;
   tx->panadapter_hide_noise_filled = 1;
   tx->panadapter_peaks_in_passband_filled = 0;
-
   tx->displaying = 0;
   tx->alex_antenna = 0; // default: ANT1
   t_print("%s: id=%d buffer_size=%d mic_sample_rate=%d mic_dsp_rate=%d iq_output_rate=%d output_samples=%d width=%d height=%d\n",
@@ -1236,10 +1235,11 @@ static void tx_full_buffer(TRANSMITTER *tx) {
     for (int i = 0; i < tx->buffer_size; i++) {
       double sample = tx->mic_input_buffer[2 * i];
 
-       if (sample > mypeak) { mypeak = sample; }
+      if (sample > mypeak) { mypeak = sample; }
 
-       if (-sample > mypeak) { mypeak = -sample; }
+      if (-sample > mypeak) { mypeak = -sample; }
     }
+
     vox_update(mypeak);
 
     //
@@ -1374,6 +1374,7 @@ static void tx_full_buffer(TRANSMITTER *tx) {
         break;
 
       case SOAPYSDR_PROTOCOL:
+
         //
         // No scaling, no audio.
         // generate audio samples to be sent to the radio
@@ -1439,13 +1440,14 @@ void tx_queue_cw_event(int down, int wait) {
     send_cw(client_socket, down, wait);
     return;
   }
+
   //
   // Put a CW event into the ring buffer
   // If buffer is nearly full, only queue key-up events
   //
   int num, newpt;
 
-  if ((num = cw_ring_inpt - cw_ring_outpt) < 0) num += CW_RING_SIZE;
+  if ((num = cw_ring_inpt - cw_ring_outpt) < 0) { num += CW_RING_SIZE; }
 
   //
   // If buffer is nearly full, make all events key-up
@@ -1472,7 +1474,6 @@ void tx_add_mic_sample(TRANSMITTER *tx, short next_mic_sample) {
   double mic_sample_double;
   static int keydown = 0;   // 1: key-down, 0: key-up
   int i, j;
-
   mic_sample_double = (double)next_mic_sample * 0.00003051;  // divide by 32768
 
   //
@@ -1539,6 +1540,7 @@ void tx_add_mic_sample(TRANSMITTER *tx, short next_mic_sample) {
   //
   if ((txmode == modeCWL || txmode == modeCWU) && radio_is_transmitting()) {
     float cwsample;
+
     //
     //  We HAVE TO shape the signal to avoid hard clicks to be
     //  heard way beside our frequency. The envelope (ramp function)
@@ -1560,6 +1562,7 @@ void tx_add_mic_sample(TRANSMITTER *tx, short next_mic_sample) {
     if (keydown && cw_delay_time > 960000) {
       keydown = 0;
     }
+
     if (cw_ring_inpt != cw_ring_outpt) {
       //
       // There is data in the ring buffer
@@ -1571,7 +1574,9 @@ void tx_add_mic_sample(TRANSMITTER *tx, short next_mic_sample) {
         cw_delay_time = 0;
         keydown = cw_ring_state[cw_ring_outpt];
         int newpt = cw_ring_outpt + 1;
+
         if (newpt >= CW_RING_SIZE) { newpt -= CW_RING_SIZE; }
+
         MEMORY_BARRIER;
         cw_ring_outpt = newpt;
       }
@@ -1686,7 +1691,6 @@ void tx_add_mic_sample(TRANSMITTER *tx, short next_mic_sample) {
     //
     keydown = 0;
     cw_ring_inpt = cw_ring_outpt = 0;
-
     tx->cw_ramp_audio_ptr = 0;
     tx->cw_ramp_rf_ptr = 0;
     // insert "silence" in CW audio and TX IQ buffers
@@ -1798,6 +1802,7 @@ void tx_create_remote(TRANSMITTER *tx) {
 
 void tx_set_displaying(TRANSMITTER *tx) {
   ASSERT_SERVER();
+
   if (tx->displaying) {
     if (tx->update_timer_id > 0) {
       g_source_remove(tx->update_timer_id);
@@ -1818,6 +1823,7 @@ void tx_set_filter(TRANSMITTER *tx) {
     send_txfilter(client_socket);
     return;
   }
+
   int txmode = vfo_get_tx_mode();
   // load default values
   int low  = tx_filter_low;
@@ -2119,6 +2125,7 @@ void tx_ps_onoff(TRANSMITTER *tx, int state) {
 #ifdef WDSPTXDEBUG
   t_print("TX id=%d PS OnOff=%d\n", tx->id, state);
 #endif
+
   if (radio_is_remote) {
     tx->puresignal = state;
     send_psonoff(client_socket, state);
@@ -2189,6 +2196,7 @@ void tx_ps_reset(const TRANSMITTER *tx) {
       send_psreset(client_socket);
       return;
     }
+
 #ifdef WDSPTXDEBUG
     t_print("TX id=%d PS Reset\n", tx->id);
 #endif
@@ -2202,6 +2210,7 @@ void tx_ps_resume(const TRANSMITTER *tx) {
       send_psresume(client_socket);
       return;
     }
+
 #ifdef WDSPTXDEBUG
     t_print("TX id=%d PS Resume OneShot=%d\n", tx->id, tx->ps_oneshot);
 #endif
@@ -2227,6 +2236,7 @@ void tx_ps_setparams(const TRANSMITTER *tx) {
     send_psparams(client_socket, tx);
     return;
   }
+
   SetPSHWPeak(tx->id, tx->ps_setpk);
   SetPSMapMode(tx->id, tx->ps_map);
   SetPSPtol(tx->id, tx->ps_ptol ? 0.4 : 0.8);
@@ -2311,6 +2321,7 @@ void tx_set_compressor(TRANSMITTER *tx) {
     send_tx_compressor(client_socket);
     return;
   }
+
   //
   // - Although I see not much juice therein, the
   //   usage of CFC alongside with the speech processor
@@ -2434,6 +2445,7 @@ void tx_set_equalizer(TRANSMITTER *tx) {
     send_eq(client_socket, tx->id);
     return;
   }
+
   SetTXAEQProfile(tx->id, 10, tx->eq_freq, tx->eq_gain);
   SetTXAEQRun(tx->id, tx->eq_enable);
 #ifdef WDSPTXDEBUG
@@ -2451,6 +2463,7 @@ void tx_set_fft_size(const TRANSMITTER *tx) {
     send_tx_fft(client_socket, tx);
     return;
   }
+
   TXASetNC(tx->id, tx->fft_size);
 #ifdef WDSPTXDEBUG
   t_print("TX id=%d FFT size=%d\n", tx->id, tx->fft_size);
@@ -2462,6 +2475,7 @@ void tx_set_mic_gain(const TRANSMITTER *tx) {
     send_micgain(client_socket, tx->mic_gain);
     return;
   }
+
   SetTXAPanelGain1(tx->id, pow(10.0, tx->mic_gain * 0.05));
 #ifdef WDSPTXDEBUG
   t_print("TX id=%d MicGain(dB)=%g\n", tx->id, tx->mic_gain);
@@ -2470,6 +2484,7 @@ void tx_set_mic_gain(const TRANSMITTER *tx) {
 
 void tx_set_mode(TRANSMITTER* tx, int mode) {
   ASSERT_SERVER();
+
   if (tx != NULL) {
     if (mode == modeDIGU || mode == modeDIGL) {
       if (tx->drive > drive_digi_max + 0.5) {

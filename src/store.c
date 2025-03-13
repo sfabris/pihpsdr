@@ -106,6 +106,7 @@ void recall_memory_slot(int index) {
     send_recall(client_socket, index);
     return;
   }
+
   //
   // Recalling a memory slot is essentially the same as recalling a bandstack entry
   // so we just make use of code in vfo_bandstack_changed()
@@ -162,7 +163,6 @@ void recall_memory_slot(int index) {
     vfo[VFO_A].filter         = mem[index].filter;
     vfo[VFO_A].deviation      = mem[index].deviation;
     vfo[VFO_A].lo             = band->frequencyLO + band->errorLO;
-
     b                         = mem[index].alt_bd;
     oldmode                   = vfo[VFO_B].mode;
     vfo[VFO_B].mode           = mem[index].alt_mode;
@@ -173,7 +173,6 @@ void recall_memory_slot(int index) {
 
     band = band_get_band(b);
     bandstack = bandstack_get_bandstack(b);
-
     vfo[VFO_B].band           = b;
     vfo[VFO_B].bandstack      = bandstack->current_entry;
     vfo[VFO_B].frequency      = mem[index].alt_frequency;
@@ -182,9 +181,7 @@ void recall_memory_slot(int index) {
     vfo[VFO_B].filter         = mem[index].alt_filter;
     vfo[VFO_B].deviation      = mem[index].alt_deviation;
     vfo[VFO_B].lo             = band->frequencyLO + band->errorLO;
-
     // When recalling a SAT/RSAT memory slot, also apply the split and duplex setting
-
     radio_set_split(mem[index].split);
 
     if (!radio_is_transmitting()) {
@@ -219,7 +216,7 @@ void store_memory_slot(int index) {
     mem[index].filter             = vfo[id].filter;
     mem[index].deviation          = vfo[id].deviation;
     mem[index].bd                 = vfo[id].band;
- } else {
+  } else {
     mem[index].frequency          = vfo[VFO_A].frequency;
     mem[index].ctun_frequency     = vfo[VFO_A].ctun_frequency;
     mem[index].ctun               = vfo[VFO_A].ctun;
@@ -240,6 +237,7 @@ void store_memory_slot(int index) {
     mem[index].ctcss_enabled = transmitter->ctcss_enabled;
     mem[index].ctcss = transmitter->ctcss;
   }
+
   if (radio_is_remote) {
     //
     // Do what has been done above even on the client, to ensure

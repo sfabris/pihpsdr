@@ -208,6 +208,7 @@ static mybuffer *get_my_buffer(int numlist) {
 
   for (i = 0; i < j; i++) {
     bp = malloc(sizeof(mybuffer));
+
     if (bp) {
       bp->free = 1;
       bp->next = buflist[numlist];
@@ -245,6 +246,7 @@ static bool CreateDynamicMemory(void) {                     // return true if er
   //
   for (DDC = 0; DDC < VNUMDDC; DDC++) {
     DDCSampleBuffer[DDC] = malloc(DMABufferSize);
+
     if (DDCSampleBuffer[DDC]) {
       IQReadPtr[DDC] = DDCSampleBuffer[DDC] + VBASE;          // offset 4096 bytes into buffer
       IQHeadPtr[DDC] = DDCSampleBuffer[DDC] + VBASE;

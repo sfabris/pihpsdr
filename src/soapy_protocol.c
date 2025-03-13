@@ -131,8 +131,8 @@ void soapy_protocol_change_sample_rate(RECEIVER *rx) {
 
     rx->resample_buffer_size = 2 * max_samples / (soapy_radio_sample_rate / rx->sample_rate);
     rx->resample_buffer = g_new(double, rx->resample_buffer_size);
-    rx->resampler = create_resample (1, max_samples, rx->buffer, rx->resample_buffer, soapy_radio_sample_rate, rx->sample_rate,
-                                     0.0, 0, 1.0);
+    rx->resampler = create_resample (1, max_samples, rx->buffer, rx->resample_buffer, soapy_radio_sample_rate,
+                                     rx->sample_rate, 0.0, 0, 1.0);
   }
 }
 
@@ -147,7 +147,8 @@ void soapy_protocol_create_receiver(RECEIVER *rx) {
     t_print("%s: SoapySDRDevice_setBandwidth(%f) failed: %s\n", __FUNCTION__, (double)bandwidth, SoapySDR_errToStr(rc));
   }
 
-  t_print("%s: setting samplerate=%f device=%p adc=%d mic_sample_divisor=%d\n", __FUNCTION__, (double)soapy_radio_sample_rate,
+  t_print("%s: setting samplerate=%f device=%p adc=%d mic_sample_divisor=%d\n", __FUNCTION__,
+          (double)soapy_radio_sample_rate,
           soapy_device, rx->adc, mic_sample_divisor);
   rc = SoapySDRDevice_setSampleRate(soapy_device, SOAPY_SDR_RX, rx->adc, (double)soapy_radio_sample_rate);
 
@@ -193,8 +194,8 @@ void soapy_protocol_create_receiver(RECEIVER *rx) {
   } else {
     rx->resample_buffer_size = 2 * max_samples / (soapy_radio_sample_rate / rx->sample_rate);
     rx->resample_buffer = g_new(double, rx->resample_buffer_size);
-    rx->resampler = create_resample (1, max_samples, rx->buffer, rx->resample_buffer, soapy_radio_sample_rate, rx->sample_rate,
-                                     0.0, 0, 1.0);
+    rx->resampler = create_resample (1, max_samples, rx->buffer, rx->resample_buffer, soapy_radio_sample_rate,
+                                     rx->sample_rate, 0.0, 0, 1.0);
   }
 
   t_print("%s: max_samples=%d buffer=%p\n", __FUNCTION__, max_samples, rx->buffer);
@@ -480,6 +481,7 @@ void soapy_protocol_stop() {
 
 void soapy_protocol_set_rx_frequency(RECEIVER *rx, int v) {
   ASSERT_SERVER();
+
   if (soapy_device != NULL) {
     double f = (double)(vfo[v].frequency - vfo[v].lo);
     int rc = SoapySDRDevice_setFrequency(soapy_device, SOAPY_SDR_RX, rx->adc, f, NULL);
@@ -519,6 +521,7 @@ void soapy_protocol_set_tx_frequency(TRANSMITTER *tx) {
 
 void soapy_protocol_set_rx_antenna(RECEIVER *rx, int ant) {
   ASSERT_SERVER();
+
   if (soapy_device != NULL) {
     if (ant >= (int) radio->info.soapy.rx_antennas) { ant = (int) radio->info.soapy.rx_antennas - 1; }
 
@@ -533,6 +536,7 @@ void soapy_protocol_set_rx_antenna(RECEIVER *rx, int ant) {
 
 void soapy_protocol_set_tx_antenna(TRANSMITTER *tx, int ant) {
   ASSERT_SERVER();
+
   if (soapy_device != NULL) {
     if (ant >= (int) radio->info.soapy.tx_antennas) { ant = (int) radio->info.soapy.tx_antennas - 1; }
 

@@ -81,37 +81,37 @@ void server_menu(GtkWidget *parent) {
   gtk_grid_set_column_homogeneous (GTK_GRID(grid), TRUE);
   gtk_grid_set_column_spacing (GTK_GRID(grid), 10);
   gtk_grid_set_row_spacing (GTK_GRID(grid), 10);
-//
+  //
   btn = gtk_button_new_with_label("Close");
   g_signal_connect (btn, "button-press-event", G_CALLBACK(close_cb), NULL);
   gtk_grid_attach(GTK_GRID(grid), btn, 0, 0, 1, 1);
-//
+  //
   btn = gtk_check_button_new_with_label("Server Enable");
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (btn), hpsdr_server);
   gtk_widget_set_halign(btn, GTK_ALIGN_END);
   gtk_grid_attach(GTK_GRID(grid), btn, 0, 1, 1, 1);
   g_signal_connect(btn, "toggled", G_CALLBACK(server_enable_cb), NULL);
-//
+  //
   lbl = gtk_label_new("Server Port");
   gtk_widget_set_name(lbl, "boldlabel");
   gtk_widget_set_halign(lbl, GTK_ALIGN_END);
   gtk_grid_attach(GTK_GRID(grid), lbl, 0, 2, 1, 1);
-//
+  //
   btn = gtk_spin_button_new_with_range(45000, 55000, 1);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), (double)listen_port);
   gtk_grid_attach(GTK_GRID(grid), btn, 1, 2, 1, 1);
   g_signal_connect(btn, "value_changed", G_CALLBACK(port_value_changed_cb), NULL);
-//
+  //
   lbl = gtk_label_new("Server Password");
   gtk_widget_set_name(lbl, "boldlabel");
   gtk_widget_set_halign(lbl, GTK_ALIGN_END);
   gtk_grid_attach(GTK_GRID(grid), lbl, 0, 3, 1, 1);
-//
+  //
   btn = gtk_entry_new();
   gtk_entry_set_text(GTK_ENTRY(btn), hpsdr_pwd);
   gtk_grid_attach(GTK_GRID(grid), btn, 1, 3, 2, 1);
   g_signal_connect(btn, "changed", G_CALLBACK(pwd_cb), NULL);
-//
+  //
   gtk_container_add(GTK_CONTAINER(content), grid);
   sub_menu = dialog;
   gtk_widget_show_all(dialog);

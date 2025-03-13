@@ -55,12 +55,15 @@ static int apply(gpointer data) {
   apply_timeout = 0;
   display_width       = my_display_width;
   display_height      = my_display_height;
+
   if (!radio_is_remote) {
     full_screen         = my_full_screen;
   }
+
   vfo_layout          = my_vfo_layout;
   rx_stack_horizontal = my_rx_stack_horizontal;
   radio_reconfigure_screen();
+
   if (radio_is_remote) {
     send_screen(client_socket, rx_stack_horizontal, display_width);
   }
@@ -264,6 +267,7 @@ void screen_menu(GtkWidget *parent) {
     gtk_grid_attach(GTK_GRID(grid), full_b, 2, row, 1, 1);
     g_signal_connect(full_b, "toggled", G_CALLBACK(full_cb), NULL);
   }
+
   row++;
   GtkWidget *b_display_zoompan = gtk_check_button_new_with_label("Display Zoom/Pan");
   gtk_widget_set_name (b_display_zoompan, "boldlabel");

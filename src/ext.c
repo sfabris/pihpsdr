@@ -119,12 +119,6 @@ int ext_start_tx(void *data) {
 }
 
 // cppcheck-suppress constParameterPointer
-int ext_update_eq(void *data) {
-  update_eq();
-  return G_SOURCE_REMOVE;
-}
-
-// cppcheck-suppress constParameterPointer
 int ext_set_duplex(void *data) {
   setDuplex();
   return G_SOURCE_REMOVE;
@@ -143,19 +137,19 @@ int ext_rx_remote_update_display(void *data) {
 }
 
 int ext_radio_remote_set_tune(void *data) {
-  int val= GPOINTER_TO_INT(data);
+  int val = GPOINTER_TO_INT(data);
   radio_remote_set_tune(val);
   return G_SOURCE_REMOVE;
 }
 
 int ext_radio_remote_set_mox(void *data) {
-  int val= GPOINTER_TO_INT(data);
+  int val = GPOINTER_TO_INT(data);
   radio_remote_set_mox(val);
   return G_SOURCE_REMOVE;
 }
 
 int ext_radio_remote_set_vox(void *data) {
-  int val= GPOINTER_TO_INT(data);
+  int val = GPOINTER_TO_INT(data);
   radio_remote_set_vox(val);
   return G_SOURCE_REMOVE;
 }

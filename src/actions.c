@@ -379,7 +379,6 @@ void schedule_action(enum ACTION action, enum ACTION_MODE mode, int val) {
     double now;
     int wait;
     struct timespec ts;
-
     //
     // hard "key-up/down" action WITHOUT break-in
     // intended for external keyers (MIDI or GPIO connected)
@@ -387,11 +386,12 @@ void schedule_action(enum ACTION action, enum ACTION_MODE mode, int val) {
     //
     clock_gettime(CLOCK_MONOTONIC, &ts);
     now = ts.tv_sec + 1.0E-9 * ts.tv_nsec;
-    wait = (int) (48000.0 * (now -last) + 0.5);
+    wait = (int) (48000.0 * (now - last) + 0.5);
     last = now;
 
     if (mode == PRESSED && (!cw_keyer_internal || MIDI_cw_is_active)) {
       gpio_set_cw(1);
+
       if (wait > 48000) {
         //
         // first key-down after a pause: queue without delay if local,
@@ -405,6 +405,7 @@ void schedule_action(enum ACTION action, enum ACTION_MODE mode, int val) {
           wait = 0;
         }
       }
+
       tx_queue_cw_event(1, wait);
       cw_key_hit = 1;
     } else {
@@ -808,11 +809,13 @@ int process_action(void *data) {
     if (can_transmit && a->mode == PRESSED) {
       TOGGLE(transmitter->compressor);
       tx_set_compressor(transmitter);
+
       if (!radio_is_remote) {
         int mode = vfo_get_tx_mode();
         mode_settings[mode].compressor = transmitter->compressor;
         copy_mode_settings(mode);
       }
+
       g_idle_add(ext_vfo_update, NULL);
     }
 
@@ -825,11 +828,13 @@ int process_action(void *data) {
       transmitter->compressor = SET(value > 0.5);
       transmitter->compressor_level = value;
       tx_set_compressor(transmitter);
+
       if (!radio_is_remote) {
         mode_settings[mode].compressor = transmitter->compressor;
         mode_settings[mode].compressor_level = transmitter->compressor_level;
         copy_mode_settings(mode);
       }
+
       g_idle_add(ext_vfo_update, NULL);
     }
 
@@ -848,6 +853,7 @@ int process_action(void *data) {
       int id = active_receiver->id;
       filter_set_cwpeak(id, NOT(vfo[id].cwAudioPeakFilter));
     }
+
     break;
 
   case CW_FREQUENCY:
@@ -1474,6 +1480,7 @@ int process_action(void *data) {
       int id = active_receiver->id;
       vfo_id_rit_incr(id, vfo[id].rit_step * a->val);
     }
+
     break;
 
   case RIT_CLEAR:
@@ -1549,6 +1556,7 @@ int process_action(void *data) {
     //
     if (a->mode == RELATIVE) {
       int id = active_receiver->id;
+
       if ((vfo[id].rit_enabled == 0) && (vfo[vfo_get_tx_vfo()].xit_enabled == 1)) {
         vfo_xit_incr(vfo[id].rit_step * a->val);
       } else {
@@ -1633,7 +1641,6 @@ int process_action(void *data) {
   case SNB:
     if (a->mode == PRESSED) {
       int id = active_receiver->id;
-
       TOGGLE(active_receiver->snb);
 
       if (id == 0 && !radio_is_remote) {
@@ -1732,9 +1739,11 @@ int process_action(void *data) {
       value = KnobOrWheel(a, (double) transmitter->tune_drive, 0.0, 100.0, 1.0);
       transmitter->tune_drive = (int) value;
       transmitter->tune_use_drive = 1;
+
       if (radio_is_remote) {
         send_txmenu(client_socket);
       }
+
       show_popup_slider(TUNE_DRIVE, 0, 0.0, 100.0, 1.0, value, "TUNE DRIVE");
     }
 
@@ -1941,16 +1950,19 @@ int process_action(void *data) {
     case PRESSED:
       MIDI_cw_is_active = 1;         // disable "CW handled in radio"
       cw_key_hit = 1;                // this tells rigctl to abort CAT CW
+
       if (radio_is_remote) {
         send_mox(client_socket, 1);
       } else {
         schedule_transmit_specific();
         radio_set_mox(1);
       }
+
       break;
 
     case RELEASED:
       MIDI_cw_is_active = 0;         // enable "CW handled in radio", if it was selected
+
       if (radio_is_remote) {
         usleep(100000);              // since we delayed the start of the first CW, increase hang time
         send_mox(client_socket, 0);
@@ -1958,8 +1970,8 @@ int process_action(void *data) {
         schedule_transmit_specific();
 
         if (!radio_ptt) { radio_set_mox(0); }
-
       }
+
       break;
 
     default:

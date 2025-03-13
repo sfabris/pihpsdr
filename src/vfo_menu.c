@@ -343,7 +343,7 @@ void vfo_num_pad(int action, int id) {
     // by hitting the "NUMPAD enter" button.
     //
     if (fl >= 10000ll) {
-        vfo_id_set_frequency(id, fl);
+      vfo_id_set_frequency(id, fl);
     }
 
     break;

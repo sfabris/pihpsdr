@@ -379,7 +379,6 @@ void rigctl_menu(GtkWidget *parent) {
   gtk_widget_show(w);
   gtk_grid_attach(GTK_GRID(grid), w, 5, row, 3, 1);
   g_signal_connect(w, "toggled", G_CALLBACK(tci_txonly_changed_cb), NULL);
-
   gtk_container_add(GTK_CONTAINER(content), grid);
   sub_menu = dialog;
   gtk_widget_show_all(dialog);

@@ -678,15 +678,17 @@ static void *mic_read_thread(gpointer arg) {
           sample = 0.0;
           break;
         }
+
         //
         // If we are a client, simply collect and transfer data
         // to the server without any buffering
         //
         if (radio_is_remote) {
-          short s = sample*32767.0;
+          short s = sample * 32767.0;
           server_tx_audio(s);
           continue;
         }
+
         //
         // put sample into ring buffer
         // Note check on the mic ring buffer is not necessary

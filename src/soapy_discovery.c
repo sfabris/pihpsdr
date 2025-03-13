@@ -44,8 +44,6 @@ static void get_info(char *driver) {
   char gw_version[16];
   char hw_version[16];
   char p_version[16];
-  char** tx_antennas;
-  char** tx_gains;
   t_print("soapy_discovery: get_info: %s\n", driver);
   STRLCPY(fw_version, "", 16);
   STRLCPY(gw_version, "", 16);
@@ -184,7 +182,6 @@ static void get_info(char *driver) {
   t_print("has_automaic_gain=%d\n", has_automatic_gain);
   gboolean has_automatic_dc_offset_correction = SoapySDRDevice_hasDCOffsetMode(sdr, SOAPY_SDR_RX, 0);
   t_print("has_automaic_dc_offset_correction=%d\n", has_automatic_dc_offset_correction);
-
   size_t formats_length;
   char **formats = SoapySDRDevice_getStreamFormats(sdr, SOAPY_SDR_RX, 0, &formats_length);
 
@@ -247,6 +244,7 @@ static void get_info(char *driver) {
     // where we have up to 8 strings of max length (including trailing zero) of 64
     //
     if (rx_gains_length > 8) { rx_gains_length = 8; }
+
     if (rx_antennas_length > 8) { rx_antennas_length = 8; }
 
     discovered[devices].info.soapy.rx_channels = rx_channels;
@@ -271,7 +269,7 @@ static void get_info(char *driver) {
     }
 
     if (tx_channels > 0) {
-      tx_gains = SoapySDRDevice_listGains(sdr, SOAPY_SDR_TX, 0, &tx_gains_length);
+      char **tx_gains = SoapySDRDevice_listGains(sdr, SOAPY_SDR_TX, 0, &tx_gains_length);
 
       if (tx_gains_length > 8) { tx_gains_length = 8; }
 
@@ -286,8 +284,10 @@ static void get_info(char *driver) {
         discovered[devices].info.soapy.tx_range_max[i] = tx_range.maximum;
       }
 
-      tx_antennas = SoapySDRDevice_listAntennas(sdr, SOAPY_SDR_TX, 0, &tx_antennas_length);
+      char **tx_antennas = SoapySDRDevice_listAntennas(sdr, SOAPY_SDR_TX, 0, &tx_antennas_length);
+
       if (tx_antennas_length > 8) { tx_antennas_length = 8; }
+
       discovered[devices].info.soapy.tx_antennas = tx_antennas_length;
 
       for (size_t i = 0; i < tx_antennas_length; i++) {

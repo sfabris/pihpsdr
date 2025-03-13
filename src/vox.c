@@ -54,7 +54,7 @@ void vox_update(double lvl) {
 
   //
   // As long as a client controls us, VOX is done there
-  // 
+  //
   if (remoteclient.running) { return; }
 
   if (vox_enabled && !mox && !tune && !TxInhibit) {

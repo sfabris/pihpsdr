@@ -193,7 +193,6 @@ void set_attenuation_value(double value) {
   if (!have_rx_att) { return; }
 
   int id = active_receiver->adc;
-
   adc[id].attenuation = (int)value;
 
   if (radio_is_remote) {
@@ -249,7 +248,6 @@ void att_type_changed() {
     if (c25_container != NULL) { gtk_widget_show(c25_container); }
 
     if (c25_att_label != NULL) { gtk_widget_show(c25_att_label); }
-
   } else {
     if (attenuation_label != NULL) { gtk_widget_show(attenuation_label); }
 
@@ -382,8 +380,8 @@ static void afgain_value_changed_cb(GtkWidget *widget, gpointer data) {
 
 void set_af_gain(int id, double value) {
   if (id >= receivers) { return; }
-  RECEIVER *rx = receiver[id];
 
+  RECEIVER *rx = receiver[id];
   rx->volume = value;
   rx_set_af_gain(rx);
 
@@ -405,7 +403,6 @@ static void rf_gain_value_changed_cb(GtkWidget *widget, gpointer data) {
   }
 
   switch (protocol) {
-
   case SOAPYSDR_PROTOCOL:
 #ifdef SOAPYSDR
     soapy_protocol_set_gain(active_receiver);
@@ -479,6 +476,7 @@ static void micgain_value_changed_cb(GtkWidget *widget, gpointer data) {
     double gain = gtk_range_get_value(GTK_RANGE(widget));
     transmitter->mic_gain = gain;
     tx_set_mic_gain(transmitter);
+
     if (!radio_is_remote) {
       int mode = vfo_get_tx_mode();
       mode_settings[mode].mic_gain = transmitter->mic_gain;
@@ -490,11 +488,13 @@ static void micgain_value_changed_cb(GtkWidget *widget, gpointer data) {
 void set_linein_gain(double value) {
   //t_print("%s value=%f\n",__FUNCTION__, value);
   linein_gain = value;
+
   if (radio_is_remote) {
     send_txmenu(client_socket);
   } else {
     schedule_high_priority();
   }
+
   show_popup_slider(LINEIN_GAIN, 0, -34.0, 12.0, 1.0, linein_gain, "LineIn Gain");
 }
 
@@ -508,6 +508,7 @@ void set_mic_gain(double value) {
   if (can_transmit) {
     transmitter->mic_gain = value;
     tx_set_mic_gain(transmitter);
+
     if (!radio_is_remote) {
       int mode = vfo_get_tx_mode();
       mode_settings[mode].mic_gain = transmitter->mic_gain;
@@ -534,7 +535,6 @@ void set_drive(double value) {
 
 static void drive_value_changed_cb(GtkWidget *widget, gpointer data) {
   double value = gtk_range_get_value(GTK_RANGE(drive_scale));
-
   //t_print("%s: value=%f\n", __FUNCTION__, value);
   int txmode = vfo_get_tx_mode();
 

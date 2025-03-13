@@ -93,6 +93,7 @@ void rx_set_active(RECEIVER *rx) {
   if (radio_is_remote) {
     send_rx_select(client_socket, rx->id);
   }
+
   //
   // Abort any frequency entering in the current receiver
   //
@@ -105,6 +106,7 @@ void rx_set_active(RECEIVER *rx) {
   g_idle_add(ext_vfo_update, NULL);
   g_idle_add(zoompan_active_receiver_changed, NULL);
   g_idle_add(sliders_active_receiver_changed, NULL);
+
   //
   // Changing the active receiver flips the TX vfo
   //
@@ -224,6 +226,7 @@ void rx_save_state(const RECEIVER *rx) {
   //
   SetPropI1("receiver.%d.alex_antenna", rx->id,               rx->alex_antenna);
   SetPropI1("receiver.%d.adc", rx->id,                        rx->adc);
+
   if (rx->id == PS_RX_FEEDBACK) { return; }
 
   //
@@ -240,10 +243,10 @@ void rx_save_state(const RECEIVER *rx) {
   SetPropI1("receiver.%d.panadapter_step", rx->id,              rx->panadapter_step);
   SetPropI1("receiver.%d.panadapter_peaks_on", rx->id,          rx->panadapter_peaks_on);
   SetPropI1("receiver.%d.panadapter_num_peaks", rx->id,         rx->panadapter_num_peaks);
-  SetPropI1("receiver.%d.panadapter_ignore_range_divider", rx->id,rx->panadapter_ignore_range_divider);
-  SetPropI1("receiver.%d.panadapter_ignore_noise_percentile", rx->id,rx->panadapter_ignore_noise_percentile);
+  SetPropI1("receiver.%d.panadapter_ignore_range_divider", rx->id, rx->panadapter_ignore_range_divider);
+  SetPropI1("receiver.%d.panadapter_ignore_noise_percentile", rx->id, rx->panadapter_ignore_noise_percentile);
   SetPropI1("receiver.%d.panadapter_hide_noise_filled", rx->id, rx->panadapter_hide_noise_filled);
-  SetPropI1("receiver.%d.panadapter_peaks_in_passband_filled", rx->id,rx->panadapter_peaks_in_passband_filled);
+  SetPropI1("receiver.%d.panadapter_peaks_in_passband_filled", rx->id, rx->panadapter_peaks_in_passband_filled);
   SetPropI1("receiver.%d.display_waterfall", rx->id,            rx->display_waterfall);
   SetPropI1("receiver.%d.display_panadapter", rx->id,           rx->display_panadapter);
   SetPropI1("receiver.%d.display_filled", rx->id,               rx->display_filled);
@@ -341,10 +344,10 @@ void rx_restore_state(RECEIVER *rx) {
   GetPropI1("receiver.%d.panadapter_step", rx->id,              rx->panadapter_step);
   GetPropI1("receiver.%d.panadapter_peaks_on", rx->id,          rx->panadapter_peaks_on);
   GetPropI1("receiver.%d.panadapter_num_peaks", rx->id,         rx->panadapter_num_peaks);
-  GetPropI1("receiver.%d.panadapter_ignore_range_divider", rx->id,rx->panadapter_ignore_range_divider);
-  GetPropI1("receiver.%d.panadapter_ignore_noise_percentile", rx->id,rx->panadapter_ignore_noise_percentile);
+  GetPropI1("receiver.%d.panadapter_ignore_range_divider", rx->id, rx->panadapter_ignore_range_divider);
+  GetPropI1("receiver.%d.panadapter_ignore_noise_percentile", rx->id, rx->panadapter_ignore_noise_percentile);
   GetPropI1("receiver.%d.panadapter_hide_noise_filled", rx->id, rx->panadapter_hide_noise_filled);
-  GetPropI1("receiver.%d.panadapter_peaks_in_passband_filled", rx->id,rx->panadapter_peaks_in_passband_filled);
+  GetPropI1("receiver.%d.panadapter_peaks_in_passband_filled", rx->id, rx->panadapter_peaks_in_passband_filled);
   GetPropI1("receiver.%d.display_waterfall", rx->id,            rx->display_waterfall);
   GetPropI1("receiver.%d.display_panadapter", rx->id,           rx->display_panadapter);
   GetPropI1("receiver.%d.display_filled", rx->id,               rx->display_filled);
@@ -417,8 +420,8 @@ void rx_restore_state(RECEIVER *rx) {
     GetPropI1("receiver.%d.eq_enable", rx->id,                  rx->eq_enable);
 
     for (int i = 0; i < 11; i++) {
-     GetPropF2("receiver.%d.eq_freq[%d]", rx->id, i,            rx->eq_freq[i]);
-     GetPropF2("receiver.%d.eq_gain[%d]", rx->id, i,            rx->eq_gain[i]);
+      GetPropF2("receiver.%d.eq_freq[%d]", rx->id, i,            rx->eq_freq[i]);
+      GetPropF2("receiver.%d.eq_gain[%d]", rx->id, i,            rx->eq_gain[i]);
     }
   }
 
@@ -440,6 +443,7 @@ void rx_reconfigure(RECEIVER *rx, int height) {
     wheight = (rx->waterfall_percent * height) / 100;
     pheight = height - wheight;
   }
+
   t_print("%s: rx=%d width=%d height=%d\n", __FUNCTION__, rx->id, rx->width, rx->height);
   g_mutex_lock(&rx->display_mutex);
   rx->height = height; // total height
@@ -525,8 +529,9 @@ static int rx_update_display(gpointer data) {
 
     if (rc) {
       if (remoteclient.running) {
-        remote_send_spectrum(rx->id);
+        remote_send_rxspectrum(rx->id);
       }
+
       if (rx->display_panadapter) {
         rx_panadapter_update(rx);
       }
@@ -535,9 +540,11 @@ static int rx_update_display(gpointer data) {
         waterfall_update(rx);
       }
     }
+
     g_mutex_unlock(&rx->display_mutex);
     return TRUE;
   }
+
   return FALSE;
 }
 
@@ -595,10 +602,12 @@ RECEIVER *rx_create_pure_signal_receiver(int id, int sample_rate, int width, int
   // so we fill the entire data with zeroes
   //
   RECEIVER *rx = malloc(sizeof(RECEIVER));
+
   if (!rx) {
     fatal_error("FATAL: cannot allocate PS-rx");
     return NULL;
   }
+
   memset (rx, 0, sizeof(RECEIVER));
   //
   // Setting the non-zero parameters.
@@ -674,10 +683,12 @@ RECEIVER *rx_create_receiver(int id, int pixels, int width, int height) {
   ASSERT_SERVER(NULL);
   t_print("%s: RXid=%d pixels=%d width=%d height=%d\n", __FUNCTION__, id, pixels, width, height);
   RECEIVER *rx = malloc(sizeof(RECEIVER));
+
   if (!rx) {
     fatal_error("FATAL: cannot allocate rx");
     return NULL;
   }
+
   //
   // This is to guard against programming errors
   // (missing initializations)
@@ -744,14 +755,12 @@ RECEIVER *rx_create_receiver(int id, int pixels, int width, int height) {
   rx->panadapter_high = -40;
   rx->panadapter_low = -140;
   rx->panadapter_step = 20;
-
   rx->panadapter_peaks_on = 0;
   rx->panadapter_num_peaks = 3;
   rx->panadapter_ignore_range_divider = 20;
   rx->panadapter_ignore_noise_percentile = 80;
   rx->panadapter_hide_noise_filled = 1;
   rx->panadapter_peaks_in_passband_filled = 0;
-
   rx->waterfall_high = -40;
   rx->waterfall_low = -140;
   rx->waterfall_automatic = 1;
@@ -1094,6 +1103,7 @@ static void rx_process_buffer(RECEIVER *rx) {
   for (int i = 0; i < rx->output_samples; i++) {
     double left_sample = rx->audio_output_buffer[i * 2];
     double right_sample = rx->audio_output_buffer[(i * 2) + 1];
+
     //
     // If CAPTURing, record the audio samples *before*
     // manipulating them
@@ -1211,6 +1221,7 @@ static void rx_full_buffer(RECEIVER *rx) {
 
 void rx_add_iq_samples(RECEIVER *rx, double i_sample, double q_sample) {
   ASSERT_SERVER();
+
   //
   // At the end of a TX/RX transition, txrxcount is set to zero,
   // and txrxmax to some suitable value.
@@ -1342,6 +1353,7 @@ void rx_set_filter(RECEIVER *rx) {
 
 void rx_set_framerate(RECEIVER *rx) {
   ASSERT_SERVER();
+
   //
   // When changing the frame rate, the RX display update timer needs
   // be restarted, the averaging re-calculated, and the analyzer
@@ -1387,53 +1399,55 @@ void rx_change_sample_rate(RECEIVER *rx, int sample_rate) {
           rx->buffer_size, rx->output_samples);
 
   if (!radio_is_remote) {
-  schedule_receive_specific();
-  //
-  // In the old protocol, the RX_FEEDBACK sample rate is tied
-  // to the radio's sample rate and therefore may vary.
-  // Since there is no downstream WDSP receiver her, the only thing
-  // we have to do here is to adapt the spectrum display of the
-  // feedback and *must* then return (rx->id is not a WDSP channel!)
-  //
-  if (rx->id == PS_RX_FEEDBACK && protocol == ORIGINAL_PROTOCOL) {
-    rx->pixels = duplex ? 4 * tx_dialog_width : rx->width;
-    g_free(rx->pixel_samples);
-    rx->pixel_samples = g_new(float, rx->pixels);
+    schedule_receive_specific();
+
+    //
+    // In the old protocol, the RX_FEEDBACK sample rate is tied
+    // to the radio's sample rate and therefore may vary.
+    // Since there is no downstream WDSP receiver her, the only thing
+    // we have to do here is to adapt the spectrum display of the
+    // feedback and *must* then return (rx->id is not a WDSP channel!)
+    //
+    if (rx->id == PS_RX_FEEDBACK && protocol == ORIGINAL_PROTOCOL) {
+      rx->pixels = duplex ? 4 * tx_dialog_width : rx->width;
+      g_free(rx->pixel_samples);
+      rx->pixel_samples = g_new(float, rx->pixels);
+      rx_set_analyzer(rx);
+      t_print("%s: PS RX FEEDBACK: id=%d rate=%d buffer_size=%d output_samples=%d\n",
+              __FUNCTION__, rx->id, rx->sample_rate, rx->buffer_size, rx->output_samples);
+      g_mutex_unlock(&rx->mutex);
+      return;
+    }
+
+    //
+    // re-calculate AGC line for panadapter since it depends on sample rate
+    //
+    GetRXAAGCThresh(rx->id, &rx->agc_thresh, 4096.0, (double)rx->sample_rate);
+
+    //
+    // If the sample rate is reduced, the size of the audio output buffer must ber increased
+    //
+    if (rx->audio_output_buffer != NULL) {
+      g_free(rx->audio_output_buffer);
+    }
+
+    rx->audio_output_buffer = g_new(double, 2 * rx->output_samples);
+    rx_off(rx);
     rx_set_analyzer(rx);
-    t_print("%s: PS RX FEEDBACK: id=%d rate=%d buffer_size=%d output_samples=%d\n",
-            __FUNCTION__, rx->id, rx->sample_rate, rx->buffer_size, rx->output_samples);
-    g_mutex_unlock(&rx->mutex);
-    return;
-  }
+    SetInputSamplerate(rx->id, sample_rate);
+    SetEXTANBSamplerate (rx->id, sample_rate);
+    SetEXTNOBSamplerate (rx->id, sample_rate);
 
-  //
-  // re-calculate AGC line for panadapter since it depends on sample rate
-  //
-  GetRXAAGCThresh(rx->id, &rx->agc_thresh, 4096.0, (double)rx->sample_rate);
-
-  //
-  // If the sample rate is reduced, the size of the audio output buffer must ber increased
-  //
-  if (rx->audio_output_buffer != NULL) {
-    g_free(rx->audio_output_buffer);
-  }
-
-  rx->audio_output_buffer = g_new(double, 2 * rx->output_samples);
-  rx_off(rx);
-  rx_set_analyzer(rx);
-  SetInputSamplerate(rx->id, sample_rate);
-  SetEXTANBSamplerate (rx->id, sample_rate);
-  SetEXTNOBSamplerate (rx->id, sample_rate);
-
-  if (protocol == SOAPYSDR_PROTOCOL) {
+    if (protocol == SOAPYSDR_PROTOCOL) {
 #ifdef SOAPYSDR
-    soapy_protocol_change_sample_rate(rx);
-    soapy_protocol_set_mic_sample_rate(rx->sample_rate);
+      soapy_protocol_change_sample_rate(rx);
+      soapy_protocol_set_mic_sample_rate(rx->sample_rate);
 #endif
+    }
+
+    rx_on(rx);
   }
 
-  rx_on(rx);
-  }
   //
   // for a non-PS receiver, adjust pixels and hz_per_pixel depending on the zoom value
   //
@@ -1537,7 +1551,6 @@ void rx_set_analyzer(const RECEIVER *rx) {
   }
 
   t_print("RX SetAnalyzer id=%d input_samples=%d overlap=%d pixels=%d\n", rx->id, rx->buffer_size, overlap, rx->pixels);
-
   SetAnalyzer(rx->id,
               n_pixout,
               spur_elimination_ffts,                // number of LO frequencies = number of ffts used in elimination
@@ -1580,7 +1593,8 @@ void rx_set_af_binaural(const RECEIVER *rx) {
   if (radio_is_remote) {
     send_afbinaural(client_socket, rx);
     return;
-   }
+  }
+
   SetRXAPanelBinaural(rx->id, rx->binaural);
 }
 
@@ -1589,6 +1603,7 @@ void rx_set_af_gain(const RECEIVER *rx) {
     send_volume(client_socket, rx->id, rx->volume);
     return;
   }
+
 #ifdef WDSPRXDEBUG
 #endif
   //
@@ -1617,6 +1632,7 @@ void rx_set_agc(RECEIVER *rx) {
     send_agc_gain(client_socket, rx);
     return;
   }
+
 #ifdef WDSPRXDEBUG
 #endif
   //
@@ -1792,6 +1808,7 @@ void rx_set_equalizer(RECEIVER *rx) {
     send_eq(client_socket, rx->id);
     return;
   }
+
   //
   // Apply the equalizer parameters stored in rx
   //
@@ -1812,6 +1829,7 @@ void rx_set_fft_latency(const RECEIVER *rx) {
     send_rx_fft(client_socket, rx);
     return;
   }
+
   RXASetMP(rx->id, rx->low_latency);
 }
 
@@ -1820,6 +1838,7 @@ void rx_set_fft_size(const RECEIVER *rx) {
     send_rx_fft(client_socket, rx);
     return;
   }
+
   RXASetNC(rx->id, rx->fft_size);
 }
 
@@ -1840,6 +1859,7 @@ void rx_set_noise(const RECEIVER *rx) {
     send_noise(client_socket, rx);
     return;
   }
+
   //
   // Set/Update all parameters stored  in rx
   // that areassociated with the "QRM fighters"
@@ -1908,6 +1928,7 @@ void rx_set_noise(const RECEIVER *rx) {
 
 void rx_set_offset(const RECEIVER *rx, long long offset) {
   ASSERT_SERVER();
+
   if (offset == 0) {
     SetRXAShiftFreq(rx->id, (double)offset);
     RXANBPSetShiftFrequency(rx->id, (double)offset);
@@ -1927,6 +1948,7 @@ void rx_set_squelch(const RECEIVER *rx) {
     send_squelch(client_socket, rx->id, rx->squelch_enable, rx->squelch);
     return;
   }
+
   //
   // This applies the squelch mode stored in rx
   //

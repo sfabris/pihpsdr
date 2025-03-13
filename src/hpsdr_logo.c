@@ -367,7 +367,6 @@ GtkWidget *hpsdr_logo() {
   GInputStream *mem_stream;
   GdkPixbuf *pixbuf;
   GError *error = NULL;
- 
   mem_stream = g_memory_input_stream_new_from_data(hpsdr_png, hpsdr_png_len, NULL);
   pixbuf = gdk_pixbuf_new_from_stream(mem_stream, NULL, &error);
   g_object_unref(mem_stream);

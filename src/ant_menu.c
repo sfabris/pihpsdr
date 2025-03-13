@@ -62,6 +62,7 @@ static void rx_ant_cb(GtkToggleButton *widget, gpointer data) {
   int ant = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
   BAND *band = band_get_band(b);
   band->alexRxAntenna = ant;
+
   if (radio_is_remote) {
     send_band_data(client_socket, b);
   } else {
@@ -74,6 +75,7 @@ static void tx_ant_cb(GtkToggleButton *widget, gpointer data) {
   int ant = gtk_combo_box_get_active (GTK_COMBO_BOX(widget));
   BAND *band = band_get_band(b);
   band->alexTxAntenna = ant;
+
   if (radio_is_remote) {
     send_band_data(client_socket, b);
   } else {
@@ -89,7 +91,7 @@ static void adc_antenna_cb(GtkComboBox *widget, gpointer data) {
       send_soapy_rxant(client_socket);
     } else {
 #ifdef SOAPYSDR
-    soapy_protocol_set_rx_antenna(receiver[0], adc[0].antenna);
+      soapy_protocol_set_rx_antenna(receiver[0], adc[0].antenna);
 #endif
     }
   }

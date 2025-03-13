@@ -164,7 +164,7 @@ static void sel_cb(GtkWidget *widget, gpointer data) {
   case DEXP_CONTAINER:
     my_container = dexp_container;
     break;
-  
+
   case PEAKS_CONTAINER:
     my_container = peaks_container;
     break;
@@ -198,29 +198,35 @@ static void spinbtn_cb(GtkWidget *widget, gpointer data) {
     switch (c) {
     case TX_LINEIN:
       linein_gain = v;
+
       if (radio_is_remote) {
         send_txmenu(client_socket);
       } else {
         schedule_transmit_specific();
       }
+
       break;
 
     case TX_FPS:
       transmitter->fps = vi;
+
       if (radio_is_remote) {
-        send_fps(client_socket, transmitter->id, transmitter->fps);
+        send_txfps(client_socket, transmitter->fps);
       } else {
         tx_set_framerate(transmitter);
       }
+
       break;
 
     case TX_COMP:
       transmitter->compressor_level = vi;
       tx_set_compressor(transmitter);
+
       if (!radio_is_remote) {
         mode_settings[mode].compressor_level = vi;
         copy_mode_settings(mode);
       }
+
       g_idle_add(ext_vfo_update, NULL);
       break;
 
@@ -248,18 +254,22 @@ static void spinbtn_cb(GtkWidget *widget, gpointer data) {
 
     case TX_AM_CARRIER:
       transmitter->am_carrier_level = v;
+
       if (radio_is_remote) {
         send_am_carrier(client_socket);
       } else {
         tx_set_am_carrier_level(transmitter);
       }
+
       break;
 
     case TX_TUNE_DRIVE:
       transmitter->tune_drive = vi;
+
       if (radio_is_remote) {
         send_txmenu(client_socket);
       }
+
       break;
 
     case TX_DIGI_DRIVE:
@@ -275,15 +285,18 @@ static void spinbtn_cb(GtkWidget *widget, gpointer data) {
 
     case TX_SWR_ALARM:
       transmitter->swr_alarm = v;
+
       if (radio_is_remote) {
         send_txmenu(client_socket);
       }
+
       break;
     }
   } else if (d == CFCFREQ) {
     // The CFC frequency spin buttons
     transmitter->cfc_freq[e] = v;
     tx_set_compressor(transmitter);
+
     if (!radio_is_remote) {
       mode_settings[mode].cfc_freq[e] = v;
       copy_mode_settings(mode);
@@ -292,6 +305,7 @@ static void spinbtn_cb(GtkWidget *widget, gpointer data) {
     // The CFC compression-level spin buttons
     transmitter->cfc_lvl[e] = v;
     tx_set_compressor(transmitter);
+
     if (!radio_is_remote) {
       mode_settings[mode].cfc_lvl[e] = v;
       copy_mode_settings(mode);
@@ -300,6 +314,7 @@ static void spinbtn_cb(GtkWidget *widget, gpointer data) {
     // The CFC Post-equalizer gain spin buttons
     transmitter->cfc_post[e] = v;
     tx_set_compressor(transmitter);
+
     if (!radio_is_remote) {
       mode_settings[mode].cfc_post[e] = v;
       copy_mode_settings(mode);
@@ -383,35 +398,43 @@ static void chkbtn_cb(GtkWidget *widget, gpointer data) {
     case TX_COMP_ENABLE:
       transmitter->compressor = v;
       tx_set_compressor(transmitter);
+
       if (!radio_is_remote) {
         mode_settings[mode].compressor = transmitter->compressor;
         copy_mode_settings(mode);
       }
+
       g_idle_add(ext_vfo_update, NULL);
       break;
 
     case TX_CTCSS_ENABLE:
       transmitter->ctcss_enabled = v;
+
       if (radio_is_remote) {
         send_ctcss(client_socket);
       } else {
         tx_set_ctcss(transmitter);
       }
+
       g_idle_add(ext_vfo_update, NULL);
       break;
 
     case TX_TUNE_USE_DRIVE:
       transmitter->tune_use_drive = v;
+
       if (radio_is_remote) {
         send_txmenu(client_socket);
       }
+
       break;
 
     case TX_SWR_PROTECTION:
       transmitter->swr_protection = v;
+
       if (radio_is_remote) {
         send_txmenu(client_socket);
       }
+
       break;
 
     case TX_USE_RX_FILTER:
@@ -447,11 +470,13 @@ static void chkbtn_cb(GtkWidget *widget, gpointer data) {
 
     case TX_FM_EMP:
       transmitter->pre_emphasize = !v;
+
       if (radio_is_remote) {
         send_preemp(client_socket);
       } else {
         tx_set_pre_emphasize(transmitter);
       }
+
       break;
     }
   } else if (d == CFC) {
@@ -469,11 +494,12 @@ static void chkbtn_cb(GtkWidget *widget, gpointer data) {
     }
 
     tx_set_compressor(transmitter);
+
     if (!radio_is_remote) {
       copy_mode_settings(mode);
     }
-    g_idle_add(ext_vfo_update, NULL);
 
+    g_idle_add(ext_vfo_update, NULL);
   } else if (d == DEXP) {
     // DEXP menu check buttons
     switch (c) {
@@ -494,6 +520,7 @@ static void chkbtn_cb(GtkWidget *widget, gpointer data) {
       copy_mode_settings(mode);
       tx_set_dexp(transmitter);
     }
+
     g_idle_add(ext_vfo_update, NULL);
   }
 }
@@ -530,11 +557,13 @@ static void mic_in_cb(GtkWidget *widget, gpointer data) {
 
 static void ctcss_frequency_cb(GtkWidget *widget, gpointer data) {
   transmitter->ctcss = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
+
   if (radio_is_remote) {
     send_ctcss(client_socket);
   } else {
     tx_set_ctcss(transmitter);
   }
+
   g_idle_add(ext_vfo_update, NULL);
 }
 
@@ -1059,9 +1088,7 @@ void tx_menu(GtkWidget *parent) {
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), 1000.0 * transmitter->dexp_hold);
   gtk_grid_attach(GTK_GRID(dexp_grid), btn, 1, row, 1, 1);
   g_signal_connect(btn, "value-changed", G_CALLBACK(spinbtn_cb), GINT_TO_POINTER(DEXP_HOLD));
-
-
-   //
+  //
   // Peaks container and controls therein
   //
   gtk_grid_attach(GTK_GRID(grid), peaks_container, 0, 1, 5, 1);
@@ -1069,7 +1096,6 @@ void tx_menu(GtkWidget *parent) {
   gtk_grid_set_column_spacing (GTK_GRID(peaks_grid), 5);
   gtk_grid_set_row_spacing (GTK_GRID(peaks_grid), 5);
   gtk_container_add(GTK_CONTAINER(peaks_container), peaks_grid);
-
   col = 0;
   row = 0;
   GtkWidget *b_panadapter_peaks_on = gtk_check_button_new_with_label("Label Strongest Peaks");
@@ -1079,21 +1105,19 @@ void tx_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(peaks_grid), b_panadapter_peaks_on, col, row, 1, 1);
   g_signal_connect(b_panadapter_peaks_on, "toggled", G_CALLBACK(tx_panadapter_peaks_on_cb), NULL);
   row++;
-
   GtkWidget *b_pan_peaks_in_passband = gtk_check_button_new_with_label("Label in Passband Only");
   gtk_widget_set_name(b_pan_peaks_in_passband, "boldlabel");
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(b_pan_peaks_in_passband), transmitter->panadapter_peaks_in_passband_filled);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(b_pan_peaks_in_passband),
+                               transmitter->panadapter_peaks_in_passband_filled);
   gtk_widget_show(b_pan_peaks_in_passband);
   gtk_grid_attach(GTK_GRID(peaks_grid), b_pan_peaks_in_passband, col, row, 1, 1);
   g_signal_connect(b_pan_peaks_in_passband, "toggled", G_CALLBACK(tx_panadapter_peaks_in_passband_filled_cb), NULL);
-
   GtkWidget *b_pan_hide_noise = gtk_check_button_new_with_label("No Labels Below Noise Floor");
   gtk_widget_set_name(b_pan_hide_noise, "boldlabel");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(b_pan_hide_noise), transmitter->panadapter_hide_noise_filled);
   gtk_widget_show(b_pan_hide_noise);
   gtk_grid_attach(GTK_GRID(peaks_grid), b_pan_hide_noise, col, ++row, 1, 1);
   g_signal_connect(b_pan_hide_noise, "toggled", G_CALLBACK(tx_panadapter_hide_noise_filled_cb), NULL);
-
   label = gtk_label_new("Number of Peaks to Label:");
   gtk_widget_set_name(label, "boldlabel");
   gtk_widget_set_halign(label, GTK_ALIGN_END);
@@ -1105,7 +1129,6 @@ void tx_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(peaks_grid), panadapter_num_peaks_r, col, row, 1, 1);
   g_signal_connect(panadapter_num_peaks_r, "value_changed", G_CALLBACK(tx_panadapter_num_peaks_value_changed_cb), NULL);
   row++;
-
   col = 0;
   label = gtk_label_new("Ignore Adjacent Peaks:");
   gtk_widget_set_name(label, "boldlabel");
@@ -1113,12 +1136,13 @@ void tx_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(peaks_grid), label, col, row, 1, 1);
   col++;
   GtkWidget *panadapter_ignore_range_divider_r = gtk_spin_button_new_with_range(1.0, 150.0, 1.0);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(panadapter_ignore_range_divider_r), (double)transmitter->panadapter_ignore_range_divider);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(panadapter_ignore_range_divider_r),
+                            (double)transmitter->panadapter_ignore_range_divider);
   gtk_widget_show(panadapter_ignore_range_divider_r);
   gtk_grid_attach(GTK_GRID(peaks_grid), panadapter_ignore_range_divider_r, col, row, 1, 1);
-  g_signal_connect(panadapter_ignore_range_divider_r, "value_changed", G_CALLBACK(tx_panadapter_ignore_range_divider_value_changed_cb), NULL);
+  g_signal_connect(panadapter_ignore_range_divider_r, "value_changed",
+                   G_CALLBACK(tx_panadapter_ignore_range_divider_value_changed_cb), NULL);
   row++;
-
   col = 0;
   label = gtk_label_new("Noise Floor Percentile:");
   gtk_widget_set_name(label, "boldlabel");
@@ -1126,13 +1150,13 @@ void tx_menu(GtkWidget *parent) {
   gtk_grid_attach(GTK_GRID(peaks_grid), label, col, row, 1, 1);
   col++;
   GtkWidget *panadapter_ignore_noise_percentile_r = gtk_spin_button_new_with_range(1.0, 100.0, 1.0);
-  gtk_spin_button_set_value(GTK_SPIN_BUTTON(panadapter_ignore_noise_percentile_r), (double)transmitter->panadapter_ignore_noise_percentile);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(panadapter_ignore_noise_percentile_r),
+                            (double)transmitter->panadapter_ignore_noise_percentile);
   gtk_widget_show(panadapter_ignore_noise_percentile_r);
   gtk_grid_attach(GTK_GRID(peaks_grid), panadapter_ignore_noise_percentile_r, col, row, 1, 1);
-  g_signal_connect(panadapter_ignore_noise_percentile_r, "value_changed", G_CALLBACK(tx_panadapter_ignore_noise_percentile_value_changed_cb), NULL);
+  g_signal_connect(panadapter_ignore_noise_percentile_r, "value_changed",
+                   G_CALLBACK(tx_panadapter_ignore_noise_percentile_value_changed_cb), NULL);
   row++;
-
-
   sub_menu = dialog;
   gtk_widget_show_all(dialog);
 

@@ -82,6 +82,7 @@ static void set_gain_phase() {
 static void gain_coarse_changed_cb(GtkWidget *widget, gpointer data) {
   gain_coarse = gtk_range_get_value(GTK_RANGE(widget));
   div_gain = gain_coarse + gain_fine;
+
   if (radio_is_remote) {
     send_diversity(client_socket, diversity_enabled, div_gain, div_phase);
   } else {
@@ -92,6 +93,7 @@ static void gain_coarse_changed_cb(GtkWidget *widget, gpointer data) {
 static void gain_fine_changed_cb(GtkWidget *widget, gpointer data) {
   gain_fine = gtk_range_get_value(GTK_RANGE(widget));
   div_gain = gain_coarse + gain_fine;
+
   if (radio_is_remote) {
     send_diversity(client_socket, diversity_enabled, div_gain, div_phase);
   } else {
@@ -102,6 +104,7 @@ static void gain_fine_changed_cb(GtkWidget *widget, gpointer data) {
 static void phase_coarse_changed_cb(GtkWidget *widget, gpointer data) {
   phase_coarse = gtk_range_get_value(GTK_RANGE(widget));
   div_phase = phase_coarse + phase_fine;
+
   if (radio_is_remote) {
     send_diversity(client_socket, diversity_enabled, div_gain, div_phase);
   } else {
@@ -112,6 +115,7 @@ static void phase_coarse_changed_cb(GtkWidget *widget, gpointer data) {
 static void phase_fine_changed_cb(GtkWidget *widget, gpointer data) {
   phase_fine = gtk_range_get_value(GTK_RANGE(widget));
   div_phase = phase_coarse + phase_fine;
+
   if (radio_is_remote) {
     send_diversity(client_socket, diversity_enabled, div_gain, div_phase);
   } else {
@@ -130,6 +134,7 @@ void set_diversity_gain(double val) {
     send_diversity(client_socket, diversity_enabled, div_gain, div_phase);
     return;
   }
+
   //
   // calculate coarse and fine value.
   // if gain is 27, we can only use coarse=25 and fine=2,
@@ -164,6 +169,7 @@ void set_diversity_phase(double value) {
     send_diversity(client_socket, diversity_enabled, div_gain, div_phase);
     return;
   }
+
   //
   // calculate coarse and fine
   //
@@ -181,7 +187,6 @@ void set_diversity_phase(double value) {
 }
 
 void set_diversity(int state) {
-
   if (radio_is_remote) {
     send_diversity(client_socket, state, div_gain, div_phase);
     diversity_enabled = state;
@@ -204,6 +209,7 @@ void set_diversity(int state) {
     schedule_high_priority();
     schedule_receive_specific();
   }
+
   g_idle_add(ext_vfo_update, NULL);
 }
 
