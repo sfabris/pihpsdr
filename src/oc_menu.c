@@ -146,7 +146,7 @@ void oc_menu(GtkWidget *parent) {
   g_signal_connect (dialog, "destroy", G_CALLBACK (close_cb), NULL);
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
   GtkWidget *sw = gtk_scrolled_window_new (NULL, NULL);
-  gtk_widget_set_size_request(sw, 600, 400);
+  //gtk_widget_set_size_request(sw, 600, 400);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   GtkWidget *viewport = gtk_viewport_new(NULL, NULL);
   GtkWidget *grid = gtk_grid_new();
@@ -165,11 +165,11 @@ void oc_menu(GtkWidget *parent) {
   gtk_widget_set_name(lbl, "boldlabel");
   gtk_grid_attach(GTK_GRID(grid), lbl, 11, 1, 1, 1);
   lbl = gtk_label_new("TuneBits");
-  gtk_grid_attach(GTK_GRID(grid), lbl, 18, 1, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), lbl, 15, 1, 1, 1);
   gtk_widget_set_name(lbl, "boldlabel");
   gtk_widget_set_halign(lbl, GTK_ALIGN_CENTER);
   lbl = gtk_label_new("(ORed with TX)");
-  gtk_grid_attach(GTK_GRID(grid), lbl, 18, 2, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), lbl, 15, 2, 1, 1);
   gtk_widget_set_name(lbl, "boldlabel");
   gtk_widget_set_halign(lbl, GTK_ALIGN_CENTER);
 
@@ -239,7 +239,7 @@ void oc_menu(GtkWidget *parent) {
     GtkWidget *oc_tune_b = gtk_check_button_new_with_label(oc_id);
     gtk_widget_set_name(oc_tune_b, "boldlabel");
     gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (oc_tune_b), (OCtune & mask) == mask);
-    gtk_grid_attach(GTK_GRID(grid), oc_tune_b, 18, j + 2, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), oc_tune_b, 15, j + 2, 1, 1);
     gtk_widget_set_halign(oc_tune_b, GTK_ALIGN_CENTER);
     g_signal_connect(oc_tune_b, "toggled", G_CALLBACK(oc_tune_cb), GINT_TO_POINTER(j));
   }
@@ -247,21 +247,21 @@ void oc_menu(GtkWidget *parent) {
   j = 10;
   lbl = gtk_label_new("Full Tune(ms):");
   gtk_widget_set_name(lbl, "boldlabel");
-  gtk_grid_attach(GTK_GRID(grid), lbl, 18, j, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), lbl, 15, j, 1, 1);
   j++;
   GtkWidget *oc_full_tune_time_b = gtk_spin_button_new_with_range(750.0, 9950.0, 50.0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(oc_full_tune_time_b), (double)OCfull_tune_time);
-  gtk_grid_attach(GTK_GRID(grid), oc_full_tune_time_b, 18, j, 1, 2);
+  gtk_grid_attach(GTK_GRID(grid), oc_full_tune_time_b, 15, j, 1, 2);
   g_signal_connect(oc_full_tune_time_b, "value_changed", G_CALLBACK(oc_full_tune_time_cb), NULL);
   j++;
   j++;
   lbl = gtk_label_new("Memory Tune(ms):");
   gtk_widget_set_name(lbl, "boldlabel");
-  gtk_grid_attach(GTK_GRID(grid), lbl, 18, j, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), lbl, 15, j, 1, 1);
   j++;
   GtkWidget *oc_memory_tune_time_b = gtk_spin_button_new_with_range(250.0, 9950.0, 50.0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(oc_memory_tune_time_b), (double)OCmemory_tune_time);
-  gtk_grid_attach(GTK_GRID(grid), oc_memory_tune_time_b, 18, j, 1, 2);
+  gtk_grid_attach(GTK_GRID(grid), oc_memory_tune_time_b, 15, j, 1, 2);
   g_signal_connect(oc_memory_tune_time_b, "value_changed", G_CALLBACK(oc_memory_tune_time_cb), NULL);
   gtk_container_add(GTK_CONTAINER(viewport), grid);
   gtk_container_add(GTK_CONTAINER(sw), viewport);
@@ -277,11 +277,12 @@ void oc_menu(GtkWidget *parent) {
   width  = nat.width;
   height = nat.height;
 
-  if (nat.width  > display_width - 150) { width  = display_width - 150; }
+  if (nat.height > display_height) {
+     height = display_height - 50;
+     width += 25;  // This accounts for the scroll bar
+  }
 
-  if (nat.height > display_height - 80) { height = display_height - 80; }
-
-  gtk_widget_set_size_request(viewport, width, height);
+  gtk_widget_set_size_request(viewport, nat.width, height);
   gtk_widget_set_size_request(sw, width, height);
 }
 
