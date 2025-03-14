@@ -1738,7 +1738,7 @@ int process_action(void *data) {
     if (can_transmit) {
       value = KnobOrWheel(a, (double) transmitter->tune_drive, 0.0, 100.0, 1.0);
       transmitter->tune_drive = (int) value;
-      transmitter->tune_use_drive = 1;
+      transmitter->tune_use_drive = 0;
 
       if (radio_is_remote) {
         send_txmenu(client_socket);
