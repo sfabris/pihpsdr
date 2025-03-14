@@ -121,7 +121,7 @@ int sat_mode = SAT_NONE;
 int region = REGION_OTHER;
 
 int soapy_radio_sample_rate;   // alias for radio->info.soapy.sample_rate
-gboolean soapy_iqswap;
+int soapy_iqswap;
 
 DISCOVERED *radio = NULL;
 int radio_is_remote = FALSE;
@@ -256,8 +256,6 @@ int pre_mox = 0;
 int ptt = 0;
 int mox = 0;
 int tune = 0;
-int memory_tune = 0;
-int full_tune = 0;
 int have_rx_gain = 0;
 int have_rx_att = 0;
 int have_alex_att = 0;
@@ -270,9 +268,11 @@ int rx_gain_calibration = 0;
 
 int split = 0;
 
-unsigned char OCtune = 0;
-int OCfull_tune_time = 2800; // ms
-int OCmemory_tune_time = 550; // ms
+int memory_tune = 0;
+int full_tune = 0;
+unsigned char OCtune = 0;     // Mask to be ORed with OC outputs during Ftune/Mtune
+int OCfull_tune_time = 3000;  // ms
+int OCmemory_tune_time = 500; // ms
 long long tune_timeout;
 
 int analog_meter = 0;
@@ -309,17 +309,17 @@ int capture_record_pointer;
 int capture_replay_pointer;
 double *capture_data = NULL;
 
-int can_transmit = 0;
+int can_transmit = 0;  // This indicates whether "transmitter" exists
 int optimize_for_touchscreen = 0;
 
-gboolean duplex = FALSE;
-gboolean mute_rx_while_transmitting = FALSE;
+int duplex = FALSE;
+int mute_rx_while_transmitting = FALSE;
 
 double drive_max = 100.0;
 double drive_digi_max = 100.0; // maximum drive in DIGU/DIGL
 
-gboolean display_warnings = TRUE;
-gboolean display_pacurr = TRUE;
+int display_warnings = TRUE;
+int display_pacurr = TRUE;
 
 gint window_x_pos = 0;
 gint window_y_pos = 0;

@@ -708,8 +708,6 @@ void send_radiomenu(int sock) {
   data.new_pa_board = new_pa_board;
   data.tx_out_of_band_allowed = tx_out_of_band_allowed;
   data.OCtune = OCtune;
-  data.full_tune = full_tune;
-  data.memory_tune = memory_tune;
   //
   data.rx_gain_calibration = to_short(rx_gain_calibration);
   data.OCfull_tune_time = to_short(OCfull_tune_time);
@@ -826,8 +824,6 @@ void send_radio_data(int sock) {
   data.mic_input_xlr = mic_input_xlr;
   data.cw_keyer_sidetone_volume = cw_keyer_sidetone_volume;
   data.OCtune = OCtune;
-  data.full_tune = full_tune;
-  data.memory_tune = memory_tune;
   data.mute_rx_while_transmitting = mute_rx_while_transmitting;
   data.mute_spkr_amp = mute_spkr_amp;
   data.adc0_filter_bypass = adc0_filter_bypass;
@@ -1901,6 +1897,8 @@ void send_tune(int s, int state) {
   SYNC(header.sync);
   header.data_type = to_short(CMD_TUNE);
   header.b1 = state;
+  header.s1 = to_short(full_tune);
+  header.s2 = to_short(memory_tune);
   send_bytes(s, (char *)&header, sizeof(header));
 }
 
@@ -1923,6 +1921,8 @@ void send_toggle_tune(int s) {
   HEADER header;
   SYNC(header.sync);
   header.data_type = to_short(CMD_TOGGLE_TUNE);
+  header.s1 = to_short(full_tune);
+  header.s2 = to_short(memory_tune);
   send_bytes(s, (char *)&header, sizeof(header));
 }
 
@@ -3949,6 +3949,8 @@ static int remote_command(void *data) {
   break;
 
   case CMD_TOGGLE_TUNE: {
+    full_tune = from_short(header->s1);
+    memory_tune = from_short(header->s2);
     radio_toggle_tune();
     g_idle_add(ext_vfo_update, NULL);
     send_tune(remoteclient.socket, tune);
@@ -3983,6 +3985,8 @@ static int remote_command(void *data) {
   break;
 
   case CMD_TUNE: {
+    full_tune = from_short(header->s1);
+    memory_tune = from_short(header->s2);
     radio_set_tune(header->b1);
     g_idle_add(ext_vfo_update, NULL);
     send_tune(remoteclient.socket, tune);
@@ -4545,8 +4549,6 @@ static int remote_command(void *data) {
     new_pa_board = command->new_pa_board;
     tx_out_of_band_allowed = command->tx_out_of_band_allowed;
     OCtune = command->OCtune;
-    full_tune = command->full_tune;
-    memory_tune = command->memory_tune;
     //
     rx_gain_calibration = from_short(command->rx_gain_calibration);
     OCfull_tune_time = from_short(command->OCfull_tune_time);

@@ -3362,25 +3362,33 @@ and many more things, since it is
 your external hardware which in the end has to make sense of the output
 bit pattern.
 
-For non-HPSDR radios, the \bltt{OC} menu does not appear in the main menu.
+For non-HPSDR radios, the \bltt{OC} menu does not appear in the main menu. Since
+transverter bands are also shown at the bottom of the list, the \bltt{OC}
+menu may become rather high, in this case its height is restricted to the
+screen size and a vertical scroll bar is added.
 
-To facilitate control of an automatic tuner, there are seven \rett{TUNE}
-bits which are OR-ed with the bit pattern chosen for TX on the actual band,
-as long as you are TUNE-ing with \pH. Besides the \bltt{TUNE} command,
-there are the \bltt{Full TUNE} and \bltt{Memory Tune} commands which are
+To facilitate control of an automatic tuner, there are seven \rett{TuneBits}
+which are OR-ed with the bit pattern chosen for TX on the actual band,
+as long as you are TUNE-ing with \pH. Besides the \bltt{Tune} command,
+there are the \bltt{Tune Full} and \bltt{Tune Mem} commands which are
 functionally equivalent, except that the open collector tuning pattern
-is removed for \bltt{Full Tune} after the full tune delay, and for \bltt{Memory Tune}
+is removed for \bltt{Tune Full} after the full tune delay, and for \bltt{Tune Mem}
 after the memory tune delay, which can also be specified in this menu.
-This can be used to send short tuning pulsed of varying length to the
-external automatic tuner at the beginning of the tuning.
+This can be used to send tuning pulsed of varying length to the
+external automatic tuner at the beginning of the tuning. If the open collector
+outputs are not used, or if the \rett{TuneBits}  are all unchecked, there is
+no functional difference between the \bltt{Tune}, \bltt{Tune Full} and
+\bltt{Tune Mem} commands.
 
-
-
-Note that if you have chosen the \texttt{N2ADR} filter board (see the \bltt{Radio} menu,
-this is usually the
-case if you are working with a HermesLite-II radio), then the necessary \bltt{OC}
-settings for this filter board are enforced upon program start. The same applies if
-you enable the \texttt{N2ADR} filter board in the \bltt{Radio} menu.
+The \bltt{OC} bit pattern you see in Fig. \ref{fig:OCMenu} is what you automatically
+get when selecting the 
+\texttt{N2ADR} filter board in the \bltt{Radio} menu
+(this is usually the
+case if you are working with a HermesLite-II radio). This means that
+you \textit{can} change the \bltt{OC} patterns when using the \texttt{N2ADR} filter board
+(e.g. for experimental purposes), but
+these changes are lost once you select another filter board and then select \texttt{N2ADR} again,
+and also upon the next program start.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -5078,23 +5086,23 @@ assignments. Note that this toolbar button is always
 and constantly mapped to the \bltt{FUNCTION} command.}
 
 
-\phcommand{Tune}{TUNE}{B}{Toggle (on/off) TUNE. If selected in the OC menu, an OC output will become active
-(low). This can then be used
-to start an external automatic tuner.}
+\phcommand{Tune}{TUNE}{B}{Toggle (on/off) TUNE. If \texttt{TuneBits} are checked in the \bltt{OC} menu,
+the corresponding open collector outputs will become active
+(low) during TUNEing. This can then be used to start an external automatic tuner.}
 
 \phcommand{Tune Drv}{TUNDRV}{E}{Change the drive  level (0-100) used for TUNE-ing. This is equivalent to
 changing the "Tune drive level"
 spin button in the \texttt{TX} menu \textbf{and} to check the "Tune use drive" box.}
 
-\phcommand{Tune Full}{TUNF}{B}{Set the "full tune" flag and clear the "memory tune" flag. If an OC output is
-assigned to the TUNE state,
-it will be cleared (go  high again)  2800 msec after starting TUNE (this  time can also be adjusted  in the
-OC menu).}
+\phcommand{Tune Full}{TUNF}{B}{This command is largely equivalent to the \bltt{Tune} command, except that
+open collector bits which became active at the beginning of the TUNE cycle will become inactive again
+after the "full tune delay" (to be specified in the \bltt{OC} menu). Note the TUNEing itself will continue
+after that.}
 
-\phcommand{Tune Mem}{TUNM}{B}{Set the "memory tune" flag and clear the "full tune" flag. If an OC output is
-assigned to the TUNE state,
-it will be cleared (go  high again)  550 msec after starting TUNE (this  time can also be adjusted  in the
-OC menu).}
+\phcommand{Tune Mem}{TUNM}{B}{This command is largely equivalent to the \bltt{Tune} command, except that
+open collector bits which became active at the beginning of the TUNE cycle will become inactive again
+after the "memory tune" delay (to be specified in the \bltt{OC} menu). Note the TUNEing itself will continue
+after that.}
 
 \phcommand{TX Drive}{TXDRV}{PE}{
 {\color{red} This command is connected to the \texttt{TX Drv} slider in the slider area.}

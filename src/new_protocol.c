@@ -886,7 +886,7 @@ static void new_protocol_high_priority() {
     high_priority_buffer_to_radio[1401] = txband->OCtx << 1;
 
     if (tune) {
-      if (OCmemory_tune_time != 0) {
+      if (full_tune || memory_tune) {
         struct timeval te;
         gettimeofday(&te, NULL);
         long long now = te.tv_sec * 1000LL + te.tv_usec / 1000;

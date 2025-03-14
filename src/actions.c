@@ -1729,6 +1729,8 @@ int process_action(void *data) {
 
   case TUNE:
     if (a->mode == PRESSED) {
+      full_tune = 0;
+      memory_tune = 0;
       radio_toggle_tune();
     }
 
@@ -1751,22 +1753,18 @@ int process_action(void *data) {
 
   case TUNE_FULL:
     if (a->mode == PRESSED) {
-      if (can_transmit) {
-        TOGGLE(full_tune);
-        memory_tune = FALSE;
-        send_radiomenu(client_socket);
-      }
+      full_tune = 1;
+      memory_tune = 0;
+      radio_toggle_tune();
     }
 
     break;
 
   case TUNE_MEMORY:
     if (a->mode == PRESSED) {
-      if (can_transmit) {
-        TOGGLE(memory_tune);
-        full_tune = FALSE;
-        send_radiomenu(client_socket);
-      }
+      full_tune = 0;
+      memory_tune = 1;
+      radio_toggle_tune();
     }
 
     break;

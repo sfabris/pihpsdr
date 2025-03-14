@@ -132,7 +132,7 @@ enum _sat_mode_enum {
 extern int sat_mode;
 
 extern int soapy_radio_sample_rate;
-extern gboolean soapy_iqswap;
+extern int soapy_iqswap;
 
 extern int atlas_penelope;
 extern int atlas_clock_source_10mhz;
@@ -167,8 +167,8 @@ extern DAC dac;
 
 extern int locked;
 
-extern gboolean duplex;
-extern gboolean mute_rx_while_transmitting;
+extern int duplex;
+extern int mute_rx_while_transmitting;
 extern int rx_height;
 
 extern int cw_keys_reversed;
@@ -268,8 +268,8 @@ extern int rx_gain_calibration;  // used to calibrate the input signal
 extern double drive_max;         // maximum value of the drive slider
 extern double drive_digi_max;    // maximum value allowed in DIGU/DIGL
 
-extern gboolean display_warnings;
-extern gboolean display_pacurr;
+extern int display_warnings;
+extern int display_pacurr;
 
 extern int hl2_audio_codec;
 extern int hl2_cl1_input;
