@@ -44,7 +44,6 @@ extern void show_filter_shift(int rx, int value);
 extern void set_attenuation_value(double attenuation);
 extern GtkWidget *sliders_init(int my_width, int my_height);
 
-extern void sliders_update(void);
 
 extern void set_squelch(RECEIVER *rx);
 
