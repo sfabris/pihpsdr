@@ -320,21 +320,22 @@ can only reach
 radios on the same network segment. With a known IP address (and if supported by the radio),  one can
 connect to radios which are not on the same sub-net as the computer, in principle you can connect to any
 radio on the world
-provided it is on the internet. However, the original HPSDR standard states that a broadcast packet must be
-used, so radios strictly adhering to that standard
-won't reply. On the other hand, there are some radios such as a RedPitaya or a HermesLite-II which
-allow being discovered by such ``routed'' (non-broadcast) packets.
+provided it is on the internet. I have been told that the original HPSDR standard states that a broadcast packet
+\textit{must} be used, so radios strictly adhering to that standard
+won't reply to ``routed'' discovery packets. The radios I have tested (ANAN-7000, RedPitya StemLab, HermesLite-II) all
+allow being discovered by such non-broadcast packets, so using the IP addr might become a
+preferred option in your shack if the radio is configured to have a fixed IP address, since this
+speeds up the start of the radio considerably.
 
-In rare cases (the STEMLAB case is the only one I know of) it is even possible to use the TCP protocol
-rather than the standard UDP one for communicating with the radio. A ``TCP discovery'' will take three
-seconds if there is just no response, which should be the case for most radios. Therefore, trying to
+In rare cases (the RedPitaya StemLab case is the only one I know of) it is  possible to use the TCP protocol
+rather than the standard UDP one for communicating with the radio. A ``TCP discovery'' will wait for three
+seconds if there is no response (this is the case for most radios). Therefore, trying to
 connect via TCP is only done if the \rett{Enable TCP} box is checked.
 
 Note that if a radio IP address is specified, the discovery process skips sending broadcast discovery
 packets if a radio could be detected on the specified IP address. So if you specify a radio IP address
 and such a radio exists, \pH will not discover any other radio that might also be connected to the same
-network segment. This behaviour enables very fast program startup e.g. for HermesLite-II radios, but
-make sure the \rett{Enable TCP} box is \textit{not} checked.
+network segment.
 
 The \rett{Discover} button re-starts the discovery process. This is useful if the radio has been powered up
 too late and
@@ -3967,13 +3968,13 @@ As long as this menu is open, the front panel seems inoperative. The reason is, 
 encoder event are ``digested'' by the menu itself. As soon as a button is pressed or an encoder is
 turned in either direction, the menu records which controller was last used, and reports the last
 recorded action (either a button press or turning an encoder knob). For example, after pressing
-the TUNE button, the menu changes to the following (Fig. \ref{fig2:g2panelmenu-recorded}):
+the TUNE button, the menu changes to the following (Fig. \ref{fig:g2panelmenu-recorded}):
 
 \begin{figure}[ht]
 \center
 \includegraphics[scale=0.45]{g2panelmenu-2.png}
 \caption{The \bltt{G2panel} menu, reporting the last ``panel action''.}
-\label{fig:g2panelmenu-initial}
+\label{fig:g2panelmenu-recorded}
 \end{figure}
 
 So the menu states that the last ``panel action'' recorded was a button press (the internal code number
