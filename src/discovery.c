@@ -301,7 +301,7 @@ static gboolean connect_cb(GtkWidget *widget, GdkEventButton *event, gpointer us
 
   g_strfreev(splitstr);
   mypwd = gtk_entry_get_text(GTK_ENTRY(host_pwd));
-  t_print("connect_cb: host=%s port=%d pw=%s\n", myhost, myport, mypwd);
+  t_print("connect_cb: host=%s port=%d\n", myhost, myport);
 
   if (*myhost == 0 || myport == 0) {
     g_idle_add(fatal_error, "NOTICE: invalid host:port string.");
