@@ -278,8 +278,8 @@ void oc_menu(GtkWidget *parent) {
   height = nat.height;
 
   if (nat.height > display_height) {
-     height = display_height - 50;
-     width += 25;  // This accounts for the scroll bar
+    height = display_height - 50;
+    width += 25;  // This accounts for the scroll bar
   }
 
   gtk_widget_set_size_request(viewport, nat.width, height);

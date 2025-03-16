@@ -485,6 +485,7 @@ typedef struct __attribute__((__packed__)) _transmitter_data {
   uint8_t  dexp_filter;
   uint8_t  eq_enable;
   uint8_t  alcmode;
+  uint8_t  swr_protection;
   //
   uint16_t fps;
   uint16_t dexp_filter_low;
@@ -500,6 +501,7 @@ typedef struct __attribute__((__packed__)) _transmitter_data {
   //
   uint64_t fft_size;
   //
+  mydouble swr_alarm;
   mydouble eq_freq[11];
   mydouble eq_gain[11];
   mydouble dexp_tau;
@@ -683,6 +685,7 @@ typedef struct __attribute__((__packed__)) _display_data {
   uint8_t tx_fifo_overrun;
   uint8_t tx_fifo_underrun;
   uint8_t TxInhibit;
+  uint8_t txzero;
   uint16_t exciter_power;
   uint16_t ADC0;
   uint16_t ADC1;

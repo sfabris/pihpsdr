@@ -646,7 +646,9 @@ static int send_periodic_data(gpointer arg) {
 
   //
   // Use this to periodically transfer data that is usually displayed
-  // as "warning" message on the panadapter
+  // as "warning" message on the panadapter. The "txzero" is included
+  // here to inform the client when the server has moved the drive slider
+  // to zero (SWR protection measure)
   //
   DISPLAY_DATA disp_data;
   SYNC(disp_data.header.sync);
@@ -657,6 +659,7 @@ static int send_periodic_data(gpointer arg) {
   disp_data.tx_fifo_overrun = tx_fifo_overrun;
   disp_data.tx_fifo_underrun = tx_fifo_underrun;
   disp_data.TxInhibit = TxInhibit;
+  disp_data.txzero = can_transmit ? (transmitter->drive < 0.5) : 0;
   disp_data.exciter_power = to_short(exciter_power);
   disp_data.ADC0 = to_short(ADC0);
   disp_data.ADC1 = to_short(ADC1);
@@ -959,6 +962,7 @@ static void send_tx_data(int sock) {
     data.dexp_filter = tx->dexp_filter;
     data.eq_enable = tx->eq_enable;
     data.alcmode = tx->alcmode;
+    data.swr_protection = tx->swr_protection;
     //
     data.fps = to_short(tx->fps);
     data.dexp_filter_low = to_short(tx->dexp_filter_low);
@@ -982,6 +986,7 @@ static void send_tx_data(int sock) {
       data.cfc_post[i] =  to_double(tx->cfc_post[i]);
     }
 
+    data.swr_alarm = to_double(tx->swr_alarm);
     data.dexp_tau =  to_double(tx->dexp_tau);
     data.dexp_attack =  to_double(tx->dexp_attack);
     data.dexp_release =  to_double(tx->dexp_release);
@@ -2818,6 +2823,16 @@ static void *client_thread(void* arg) {
       ADC0 = from_short(data.ADC0);
       ADC1 = from_short(data.ADC1);
       sequence_errors = from_short(data.sequence_errors);
+
+      //
+      // This will only happen after a "SWR protection event" on
+      // the server side
+      //
+      if (can_transmit) {
+        if (data.txzero && transmitter->drive > 0.4) {
+          set_drive(0.0);
+        }
+      }
     }
     break;
 
@@ -3186,6 +3201,7 @@ static void *client_thread(void* arg) {
       transmitter->dexp_filter               = data.dexp_filter;
       transmitter->eq_enable                 = data.eq_enable;
       transmitter->alcmode                   = data.alcmode;
+      transmitter->swr_protection            = data.swr_protection;
       //
       transmitter->fps                       = from_short(data.fps);
       transmitter->dexp_filter_low           = from_short(data.dexp_filter_low);
@@ -3201,6 +3217,7 @@ static void *client_thread(void* arg) {
       //
       transmitter->fft_size                  = from_ll(data.fft_size);
       //
+      transmitter->swr_alarm                 = from_double(data.swr_alarm);
       transmitter->dexp_tau                  = from_double(data.dexp_tau);
       transmitter->dexp_attack               = from_double(data.dexp_attack);
       transmitter->dexp_release              = from_double(data.dexp_release);
