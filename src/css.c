@@ -35,6 +35,7 @@
 // slider1             Used for slider and zoompan areas for small  screen width
 // slider2             Used for slider and zoompan areas for medium screen width
 // slider3             Used for slider and zoompan areas for large  screen width
+// slider4             Used for slider and zoompan areas for huge   screen width
 //
 // big_txt             This is a large bold text. Used for the "pi label" on the
 //                     discovery screen, and the "Start" button there
@@ -117,12 +118,18 @@ char *css =
   "    font-weight: normal;\n"
   "    font-size: 22px;\n"
   "  }\n"
+  "  #slider4   {\n"
+  "    padding: 3px;\n"
+  "    font-weight: normal;\n"
+  "    font-size: 26px;\n"
+  "  }\n"
   "  #big_txt {\n"
   "    font-size: 22px;\n"
   "    font-weight: bold;\n"
   "    }\n"
   "  #med_txt {\n"
   "    font-size: 18px;\n"
+  "    font-weight: normal;\n"
   "    }\n"
   "  #small_txt {\n"
   "    font-weight: bold;\n"

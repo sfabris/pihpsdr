@@ -683,9 +683,12 @@ GtkWidget *sliders_init(int my_width, int my_height) {
     csslabel = "slider1";
   } else if (tpix < 85) {
     csslabel = "slider2";
-  } else {
+  } else if (tpix < 100) {
     csslabel = "slider3";
+  } else {
+    csslabel = "slider4";
   }
+  t_print("PIX=%d label=%s\n", tpix, csslabel);
 
   t1pos  =  0;
   s1pos  =  t1pos + twidth;
