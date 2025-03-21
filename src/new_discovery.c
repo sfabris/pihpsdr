@@ -158,7 +158,6 @@ static void new_discover(struct ifaddrs* iface, int discflag) {
     //
     // prepeare socket for sending an UPD packet to ipaddr_radio
     //
-
     interface_addr.sin_family = AF_INET;
     interface_addr.sin_addr.s_addr = INADDR_ANY;
     memset(&to_addr, 0, sizeof(to_addr));
@@ -357,7 +356,8 @@ static gpointer new_discover_receive_thread(gpointer data) {
             memcpy((void*)&discovered[devices].info.network.interface_netmask, (void*)&interface_netmask,
                    sizeof(interface_netmask));
             discovered[devices].info.network.interface_length = sizeof(interface_addr);
-            snprintf(discovered[devices].info.network.interface_name, sizeof(discovered[devices].info.network.interface_name), "%s", interface_name);
+            snprintf(discovered[devices].info.network.interface_name, sizeof(discovered[devices].info.network.interface_name), "%s",
+                     interface_name);
             discovered[devices].supported_receivers = 2;
             //
             // Info not yet made use of:

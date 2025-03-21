@@ -416,7 +416,8 @@ static void discovery() {
       discovered[devices].status = STATE_AVAILABLE;
       discovered[devices].info.network.address_length = 0;
       discovered[devices].info.network.interface_length = 0;
-      snprintf(discovered[devices].info.network.interface_name, sizeof(discovered[devices].info.network.interface_name), "USB");
+      snprintf(discovered[devices].info.network.interface_name, sizeof(discovered[devices].info.network.interface_name),
+               "USB");
       discovered[devices].use_tcp = 0;
       discovered[devices].use_routing = 0;
       discovered[devices].supported_receivers = 2;

@@ -317,7 +317,7 @@ typedef struct __attribute__((__packed__)) _memory_data {
 //
 typedef struct __attribute__((__packed__)) _radio_data {
   HEADER header;
-  char name[32];
+  char name[64];
   //
   uint8_t  locked;
   uint8_t  protocol;

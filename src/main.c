@@ -275,7 +275,7 @@ static gboolean main_delete (GtkWidget *widget) {
 }
 
 static int init(void *data) {
-  char wisdom_directory[1024];
+  char wisdom_directory[1025];
   char text[1024];
   t_print("%s\n", __FUNCTION__);
   audio_get_cards();

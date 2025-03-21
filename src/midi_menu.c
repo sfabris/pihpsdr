@@ -1140,7 +1140,7 @@ void midiSaveState() {
     }
 
     if (entry != -1) {
-      SetPropI1("midi[%d].entries", i, entry+1);
+      SetPropI1("midi[%d].entries", i, entry + 1);
     }
   }
 }

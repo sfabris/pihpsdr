@@ -439,7 +439,8 @@ void saturn_discovery() {
 
     discovered[devices].info.network.address_length = 0;
     discovered[devices].info.network.interface_length = 0;
-    snprintf(discovered[devices].info.network.interface_name, sizeof(discovered[devices].info.network.interface_name), "XDMA");
+    snprintf(discovered[devices].info.network.interface_name, sizeof(discovered[devices].info.network.interface_name),
+             "XDMA");
     discovered[devices].use_tcp = 0;
     discovered[devices].use_routing = 0;
     discovered[devices].supported_receivers = 2;

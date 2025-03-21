@@ -324,21 +324,21 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
       //
       // Analog TX display
       //
-      int  units;          // 1: x.y W, 2: xxx W
-      double interval;     // 1/10 of full reflection
-      int i;
-      double x;
-      double y;
-      double angle;
-      double radians;
       double cx = (double)METER_WIDTH / 2.0;
       double radius = cx - 25.0;
-      double min_angle, max_angle;
 
       if (protocol == ORIGINAL_PROTOCOL || protocol == NEW_PROTOCOL) {
         //
         // There is now Fwd/SWR data for Soapy radios
         //
+        int  units;          // 1: x.y W, 2: xxx W
+        double interval;     // 1/10 of full reflection
+        double angle;
+        double radians;
+        double min_angle, max_angle;
+        double x;
+        double y;
+
         if (band->disablePA || !pa_enabled) {
           units = 1;
           interval = 0.1;
@@ -366,7 +366,7 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
         cairo_set_line_width(cr, PAN_LINE_THICK);
         cairo_set_source_rgba(cr, COLOUR_METER);
 
-        for (i = 0; i <= 100; i++) {
+        for (int i = 0; i <= 100; i++) {
           angle = (double)i * 0.01 * max_angle + (double)(100 - i) * 0.01 * min_angle;
           radians = angle * M_PI / 180.0;
 

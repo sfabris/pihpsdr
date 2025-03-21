@@ -44,10 +44,10 @@ static void get_info(char *driver) {
   char hw_version[16];
   char p_version[16];
   t_print("soapy_discovery: get_info: %s\n", driver);
-  snprintf(fw_version, sizeof(fw_version), "");
-  snprintf(gw_version, sizeof(gw_version), "");
-  snprintf(hw_version, sizeof(hw_version), "");
-  snprintf( p_version, sizeof( p_version), "");
+  snprintf(fw_version, sizeof(fw_version), "%s", "");
+  snprintf(gw_version, sizeof(gw_version), "%s", "");
+  snprintf(hw_version, sizeof(hw_version), "%s", "");
+  snprintf( p_version, sizeof( p_version), "%s", "");
   SoapySDRKwargs_set(&args, "driver", driver);
 
   if (strcmp(driver, "rtlsdr") == 0) {
@@ -236,7 +236,7 @@ static void get_info(char *driver) {
       snprintf(discovered[devices].info.soapy.version, sizeof(discovered[devices].info.soapy.version),
                "fw=%s gw=%s", fw_version, gw_version);
     } else {
-      snprintf(discovered[devices].info.soapy.version, sizeof(discovered[devices].info.soapy.version), "");
+      snprintf(discovered[devices].info.soapy.version, sizeof(discovered[devices].info.soapy.version), "%s", "");
     }
 
     //

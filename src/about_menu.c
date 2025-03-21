@@ -79,35 +79,32 @@ void about_menu(GtkWidget *parent) {
   gtk_widget_set_name(label, "boldlabel");
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_grid_attach(GTK_GRID(grid), label, 1, row, 19, 1);
-
   row++;
   snprintf(text, sizeof(text), "With help from:\n"
-                       "  Steve Wilson, KA6S: RIGCTL (CAT over TCP)\n"
-                       "  Laurence Barker, G8NJJ: USB OZY Support\n"
-                       "  Ken Hopper, N9VV: Testing and Documentation");
-
+                               "  Steve Wilson, KA6S: RIGCTL (CAT over TCP)\n"
+                               "  Laurence Barker, G8NJJ: USB OZY Support\n"
+                               "  Ken Hopper, N9VV: Testing and Documentation");
   label = gtk_label_new(text);
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_widget_set_name(label, "small_button");
   gtk_grid_attach(GTK_GRID(grid), label, 1, row, 19, 1);
-
   row++;
   snprintf(text, sizeof(text), "Build date: %s (commit %s)\n"
                                "Build version: %s\n"
                                "WDSP version: %d.%02d",
-                                build_date, build_commit, build_version, GetWDSPVersion() / 100, GetWDSPVersion() % 100);
-
+           build_date, build_commit, build_version, GetWDSPVersion() / 100, GetWDSPVersion() % 100);
   label = gtk_label_new(text);
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_widget_set_name(label, "small_button");
   gtk_grid_attach(GTK_GRID(grid), label, 1, row, 19, 1);
-
   row++;
+
   switch (radio->protocol) {
   case ORIGINAL_PROTOCOL:
   case NEW_PROTOCOL:
     if (device == DEVICE_OZY) {
-      snprintf(text, sizeof(text), "Device:  OZY (via USB)  Protocol %s v%d.%d", radio->protocol == ORIGINAL_PROTOCOL ? "1" : "2",
+      snprintf(text, sizeof(text), "Device:  OZY (via USB)  Protocol %s v%d.%d",
+               radio->protocol == ORIGINAL_PROTOCOL ? "1" : "2",
                radio->software_version / 10, radio->software_version % 10);
     } else {
       char interface_addr[128];
@@ -121,8 +118,8 @@ void about_menu(GtkWidget *parent) {
                  radio->software_version / 10, radio->software_version % 10);
       } else {
         snprintf(text, sizeof(text), "Device: %s, Protocol %s, v%d.%d\n"
-                            "Mac Address: %02X:%02X:%02X:%02X:%02X:%02X\n"
-                            "IP Address: %s on %s (%s)",
+                                     "Mac Address: %02X:%02X:%02X:%02X:%02X:%02X\n"
+                                     "IP Address: %s on %s (%s)",
                  radio->name, radio->protocol == ORIGINAL_PROTOCOL ? "1" : "2",
                  radio->software_version / 10, radio->software_version % 10,
                  radio->info.network.mac_address[0],
@@ -135,7 +132,6 @@ void about_menu(GtkWidget *parent) {
                  radio->info.network.interface_name,
                  interface_addr);
       }
-
     }
 
     break;
@@ -143,7 +139,7 @@ void about_menu(GtkWidget *parent) {
 
   case SOAPYSDR_PROTOCOL:
     snprintf(text, sizeof(text), "Device: %s (via SoapySDR)\n"
-                        "    %s (%s)",
+                                 "    %s (%s)",
              radio->name, radio->info.soapy.hardware_key, radio->info.soapy.driver_key);
     break;
 #endif
