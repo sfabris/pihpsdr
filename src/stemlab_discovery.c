@@ -38,7 +38,6 @@
 #include "discovered.h"
 #include "discovery.h"
 #include "message.h"
-#include "mystring.h"
 #include "radio.h"
 
 // As we only run in the GTK+ main event loop, which is single-threaded and
@@ -274,7 +273,7 @@ void stemlab_cleanup() {
 //
 
 void stemlab_discovery() {
-  char txt[150];
+  char txt[256];
   CURL *curl_handle;
   CURLcode curl_error;
   int app_list;
@@ -303,7 +302,7 @@ void stemlab_discovery() {
   }
 
   app_list = 0;
-  snprintf(txt, 150, "http://%s", ipaddr_radio);
+  snprintf(txt, sizeof(txt), "http://%s", ipaddr_radio);
   curl_easy_setopt(curl_handle, CURLOPT_URL, txt);
   curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT, (long) 5);
   curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, get_list_cb);
@@ -312,7 +311,7 @@ void stemlab_discovery() {
   curl_easy_cleanup(curl_handle);
 
   if (curl_error ==  CURLE_OPERATION_TIMEDOUT) {
-    snprintf(txt, 150, "No response from web server at %s", ipaddr_radio);
+    snprintf(txt, sizeof(txt), "No response from web server at %s", ipaddr_radio);
     status_text(txt);
     t_print("%s\n", txt);
   }
@@ -333,7 +332,7 @@ void stemlab_discovery() {
       return;
     }
 
-    snprintf(txt, 150, "http://%s/bazaar?apps=", ipaddr_radio);
+    snprintf(txt, sizeof(txt), "http://%s/bazaar?apps=", ipaddr_radio);
     curl_easy_setopt(curl_handle, CURLOPT_URL, txt);
     curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT, (long) 20);
     curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, app_list_cb);
@@ -369,7 +368,7 @@ void stemlab_discovery() {
   DISCOVERED *dev = &discovered[devices++];
   dev->protocol = STEMLAB_PROTOCOL;
   dev->device = DEVICE_METIS;                                     // not used
-  STRLCPY(dev->name, "STEMlab", sizeof(dev->name));
+  snprintf(dev->name, sizeof(dev->name), "STEMlab");
   dev->software_version = app_list;                               // encodes list of SDR apps present
   dev->status = STATE_AVAILABLE;
   memset(dev->info.network.mac_address, 0, 6);                    // not used
@@ -380,5 +379,5 @@ void stemlab_discovery() {
   dev->info.network.interface_length = sizeof(struct sockaddr_in);
   dev->info.network.interface_address = ip_address;                // same as RedPitaya address
   dev->info.network.interface_netmask = netmask;                   // does not matter
-  STRLCPY(dev->info.network.interface_name, "", sizeof(dev->info.network.interface_name));
+  snprintf(dev->info.network.interface_name, sizeof(dev->info.network.interface_name), "%s", "");
 }

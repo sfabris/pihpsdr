@@ -131,7 +131,6 @@ void fft_menu(GtkWidget *parent) {
     // i == receivers means "TX"
     int chan;
     int j, s, dsize, fsize, ftype;
-    char text[32];
 
     if ((i == receivers) && !can_transmit) { break; }
 
@@ -189,7 +188,8 @@ void fft_menu(GtkWidget *parent) {
       s = 2 * s;
 
       if (s >= dsize) {
-        snprintf(text, 32, "%d", s);
+        char text[32];
+        snprintf(text, sizeof(text), "%d", s);
         gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(w), NULL, text);
 
         if (s == fsize) { gtk_combo_box_set_active(GTK_COMBO_BOX(w), j); }

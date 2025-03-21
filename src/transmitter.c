@@ -32,7 +32,6 @@
 #include "main.h"
 #include "meter.h"
 #include "message.h"
-#include "mystring.h"
 #include "mode.h"
 #include "new_protocol.h"
 #include "old_protocol.h"
@@ -1011,7 +1010,7 @@ TRANSMITTER *tx_create_transmitter(int id, int pixels, int width, int height) {
   tx->dexp_filter_low  =    1000;
   tx->dexp_filter_high =    2000;
   tx->local_microphone = 0;
-  STRLCPY(tx->microphone_name, "NO MIC", 128);
+  snprintf(tx->microphone_name, sizeof(transmitter->microphone_name), "%s", "NO MIC");
   tx->dialog_x = -1;
   tx->dialog_y = -1;
   tx->dialog = NULL;

@@ -160,7 +160,7 @@ int audio_open_output(RECEIVER *rx) {
   sample_spec.channels = 2;
   sample_spec.format = PA_SAMPLE_FLOAT32NE;
   char stream_id[16];
-  snprintf(stream_id, 16, "RX-%d", rx->id);
+  snprintf(stream_id, sizeof(stream_id), "RX-%d", rx->id);
   rx->playstream = pa_simple_new(NULL, // Use the default server.
                                  "piHPSDR",          // Our application's name.
                                  PA_STREAM_PLAYBACK,

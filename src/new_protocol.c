@@ -506,7 +506,7 @@ void new_protocol_init() {
 
   for (i = 0; i < MAX_DDC; i++) {
     char text[16];
-    snprintf(text, 16, "P2 DDC%d", i);
+    snprintf(text, sizeof(text), "P2 DDC%d", i);
     iq_thread_id[i] = g_thread_new(text, iq_thread, GINT_TO_POINTER(i));
   }
 

@@ -49,8 +49,6 @@ extern void saveProperties(const char* filename);
 //  n   = 0, 1, 2, 3  for scalars or quantities with 1...3 indices
 //
 
-#include "mystring.h"
-
 #define GetPropI0(a,b)  { \
   const char *value=getProperty(a); \
   if (value) { b = atoll(value); } \
@@ -63,7 +61,7 @@ extern void saveProperties(const char* filename);
 
 #define GetPropS0(a,b)  { \
   const char *value=getProperty(a); \
-  if (value) { STRLCPY(b, value, sizeof(b)); } \
+  if (value) { snprintf(b, sizeof(b), "%s", value); } \
 }
 
 #define GetPropA0(a,b)  { \
@@ -89,7 +87,7 @@ extern void saveProperties(const char* filename);
   char name[128]; \
   snprintf(name, sizeof(name), a, b); \
   const char *value=getProperty(name); \
-  if (value) { STRLCPY(c, value, sizeof(c)); } \
+  if (value) { snprintf(c, sizeof(c), "%s", value); } \
 }
 
 #define GetPropA1(a,b,c) { \
@@ -117,7 +115,7 @@ extern void saveProperties(const char* filename);
   char name[128]; \
   snprintf(name, sizeof(name), a, b, c); \
   const char *value=getProperty(name); \
-  if (value) { STRLCPY(d, value, sizeof(d)); } \
+  if (value) { snprintf(d, sizeof(d), "%s", value); } \
 }
 
 #define GetPropA2(a,b,c,d) { \
@@ -138,7 +136,7 @@ extern void saveProperties(const char* filename);
   char name[128]; \
   snprintf(name, sizeof(name), a, b, c, d); \
   const char *value=getProperty(name); \
-  if (value) { STRLCPY(e, value, sizeof(e)); } \
+  if (value) { snprintf(e, sizeof(e), "%s", value); } \
 }
 
 #define GetPropA3(a,b,c,d,e) { \

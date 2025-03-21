@@ -96,23 +96,23 @@ void encoder_menu(GtkWidget *parent) {
 
   switch (controller) {
   case NO_CONTROLLER:
-    snprintf(title, 64, "piHPSDR - No Encoders");
+    snprintf(title, sizeof(title), "piHPSDR - No Encoders");
     break;
 
   case CONTROLLER1:
-    snprintf(title, 64, "piHPSDR - Controller 1 Encoder Actions");
+    snprintf(title, sizeof(title), "piHPSDR - Controller 1 Encoder Actions");
     break;
 
   case CONTROLLER2_V1:
-    snprintf(title, 64, "piHPSDR - Controller 2 V1 Encoder Actions");
+    snprintf(title, sizeof(title), "piHPSDR - Controller 2 V1 Encoder Actions");
     break;
 
   case CONTROLLER2_V2:
-    snprintf(title, 64, "piHPSDR - Controller 2 V2 Encoder Actions");
+    snprintf(title, sizeof(title), "piHPSDR - Controller 2 V2 Encoder Actions");
     break;
 
   case G2_FRONTPANEL:
-    snprintf(title, 64, "piHPSDR - G2 FrontPanel Encoder Actions");
+    snprintf(title, sizeof(title), "piHPSDR - G2 FrontPanel Encoder Actions");
     break;
   }
 

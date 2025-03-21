@@ -95,7 +95,7 @@ static gboolean bandstack_select_cb (GtkWidget *widget, gpointer data) {
       f = (double) vfo[0].frequency * 1E-6;
     }
 
-    snprintf(label, 32, "%8.3f %s", f, mode_string[vfo[0].mode]);
+    snprintf(label, sizeof(label), "%8.3f %s", f, mode_string[vfo[0].mode]);
     gtk_button_set_label(GTK_BUTTON(current->button), label);
   }
 
@@ -110,7 +110,7 @@ void bandstack_menu(GtkWidget *parent) {
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(parent));
   char title[64];
   myvfo = active_receiver->id;
-  snprintf(title, 64, "piHPSDR - Band Stack (VFO-%s)", myvfo == 0 ? "A" : "B");
+  snprintf(title, sizeof(title), "piHPSDR - Band Stack (VFO-%s)", myvfo == 0 ? "A" : "B");
   GtkWidget *headerbar = gtk_header_bar_new();
   gtk_window_set_titlebar(GTK_WINDOW(dialog), headerbar);
   gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(headerbar), TRUE);
@@ -143,7 +143,7 @@ void bandstack_menu(GtkWidget *parent) {
       f = (double) entry->frequency * 1E-6;
     }
 
-    snprintf(label, 32, "%8.3f MHz %s", f, mode_string[entry->mode]);
+    snprintf(label, sizeof(label), "%8.3f MHz %s", f, mode_string[entry->mode]);
     GtkWidget *w = gtk_toggle_button_new_with_label(label);
     gtk_widget_set_name(w, "small_toggle_button");
     gtk_widget_show(w);

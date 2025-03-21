@@ -747,7 +747,6 @@ void audio_get_cards() {
   snd_pcm_info_t *pcminfo;
   snd_ctl_card_info_alloca(&info);
   snd_pcm_info_alloca(&pcminfo);
-  char *device_id;
   int card = -1;
   t_print("%s\n", __FUNCTION__);
   g_mutex_init(&audio_mutex);
@@ -779,38 +778,34 @@ void audio_get_cards() {
       snd_pcm_info_set_stream(pcminfo, SND_PCM_STREAM_CAPTURE);
 
       if (snd_ctl_pcm_info(handle, pcminfo) == 0) {
-        device_id = g_new(char, 128);
-        snprintf(device_id, 128, "plughw:%d,%d %s", card, dev, snd_ctl_card_info_get_name(info));
+        char device_id[128];
+        snprintf(device_id, sizeof(device_id), "plughw:%d,%d %s", card, dev, snd_ctl_card_info_get_name(info));
 
         if (n_input_devices < MAX_AUDIO_DEVICES) {
           // the two allocated strings will never be free'd
-          input_devices[n_input_devices].name = g_strdup(device_id);
-          input_devices[n_input_devices].description = g_strdup(device_id);
+          input_devices[n_input_devices].name = strdup(device_id);
+          input_devices[n_input_devices].description = strdup(device_id);
           input_devices[n_input_devices].index = 0; // not used
           n_input_devices++;
           t_print("input_device: %s\n", device_id);
         }
-
-        g_free(device_id);
       }
 
       // ouput devices
       snd_pcm_info_set_stream(pcminfo, SND_PCM_STREAM_PLAYBACK);
 
       if (snd_ctl_pcm_info(handle, pcminfo) == 0) {
-        device_id = g_new(char, 128);
-        snprintf(device_id, 128, "plughw:%d,%d %s", card, dev, snd_ctl_card_info_get_name(info));
+        char device_id[128];
+        snprintf(device_id, sizeof(device_id), "plughw:%d,%d %s", card, dev, snd_ctl_card_info_get_name(info));
 
         if (n_output_devices < MAX_AUDIO_DEVICES) {
           // the two allocated strings will never be free'd
-          output_devices[n_output_devices].name = g_strdup(device_id);
-          output_devices[n_output_devices].description = g_strdup(device_id);
+          output_devices[n_output_devices].name = strdup(device_id);
+          output_devices[n_output_devices].description = strdup(device_id);
           input_devices[n_output_devices].index = 0; // not used
           n_output_devices++;
           t_print("output_device: %s\n", device_id);
         }
-
-        g_free(device_id);
       }
     }
 

@@ -26,7 +26,6 @@
 
 #include "band.h"
 #include "message.h"
-#include "mystring.h"
 #include "new_menu.h"
 #include "radio.h"
 #include "rigctl_menu.h"

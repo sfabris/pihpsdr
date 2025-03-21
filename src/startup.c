@@ -58,7 +58,6 @@
 #endif
 
 #include "message.h"
-#include "mystring.h"
 
 void startup(const char *path) {
   struct stat statbuf;
@@ -86,7 +85,7 @@ void startup(const char *path) {
   //
   // try to create a file with an unique file name
   //
-  snprintf(filename, PATH_MAX, "piHPSDR.myFile.%ld", (long) getpid());
+  snprintf(filename, sizeof(filename), "piHPSDR.myFile.%ld", (long) getpid());
   rc = open(filename, O_CREAT | O_WRONLY | O_TRUNC, 0700);
 
   if (rc >= 0) {
@@ -137,7 +136,7 @@ void startup(const char *path) {
   }
 
 #ifdef __APPLE__
-  snprintf(workdir, PATH_MAX, "%s/Library/Application Support/piHPSDR", homedir);
+  snprintf(workdir, sizeof(workdir), "%s/Library/Application Support/piHPSDR", homedir);
 
   if (stat(workdir, &statbuf) < 0) {
     mkdir (workdir, 0700);
@@ -146,17 +145,17 @@ void startup(const char *path) {
   rc = stat(workdir, &statbuf);
 
   if (rc < 0 || !S_ISDIR(statbuf.st_mode)) {
-    STRLCPY(workdir, homedir, PATH_MAX);
+    snprintf(workdir, sizeof(workdir), "%s", homedir);
   }
 
 #else
-  snprintf(workdir, PATH_MAX, "%s/.config", homedir);
+  snprintf(workdir, sizeof(workdir), "%s/.config", homedir);
 
   if (stat(workdir, &statbuf) < 0) {
     mkdir (workdir, 0700);
   }
 
-  snprintf(workdir, PATH_MAX, "%s/.config/pihpsdr", homedir);
+  snprintf(workdir, sizeof(workdir), "%s/.config/pihpsdr", homedir);
 
   if (stat(workdir, &statbuf) < 0) {
     mkdir (workdir, 0700);
@@ -169,7 +168,7 @@ void startup(const char *path) {
   rc = stat(workdir, &statbuf);
 
   if (rc < 0 || !S_ISDIR(statbuf.st_mode)) {
-    STRLCPY(workdir, homedir, PATH_MAX);
+    snprintf(workdir, sizeof(workdir), "%s", homedir);
   }
 
   //

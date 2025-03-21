@@ -322,7 +322,7 @@ void filter_menu(GtkWidget *parent) {
   myrx = active_receiver;
   int f = vfo[myrx->id].filter;
   int m = vfo[myrx->id].mode;
-  snprintf(title, 64, "piHPSDR - Filter (RX%d VFO-%s)", myrx->id + 1, myrx->id == 0 ? "A" : "B");
+  snprintf(title, sizeof(title), "piHPSDR - Filter (RX%d VFO-%s)", myrx->id + 1, myrx->id == 0 ? "A" : "B");
   GtkWidget *headerbar = gtk_header_bar_new();
   gtk_window_set_titlebar(GTK_WINDOW(dialog), headerbar);
   gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(headerbar), TRUE);

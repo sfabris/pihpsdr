@@ -24,7 +24,6 @@
 
 #include "ext.h"
 #include "message.h"
-#include "mystring.h"
 #include "new_menu.h"
 #include "new_protocol.h"
 #include "radio.h"
@@ -126,7 +125,7 @@ static void setpk_cb(GtkWidget *widget, gpointer data) {
   }
 
   // Display new value
-  snprintf(pk_text, 16, "%6.3f", transmitter->ps_getpk);
+  snprintf(pk_text, sizeof(pk_text), "%6.3f", transmitter->ps_getpk);
   gtk_entry_set_text(GTK_ENTRY(set_pk), pk_text);
 }
 
@@ -343,7 +342,7 @@ static int info_thread(gpointer arg) {
     for (int i = 0; i < INFO_SIZE; i++) {
       if (entry[i] == NULL) { continue; }
 
-      snprintf(label, 20, "%d", transmitter->psinfo[i]);
+      snprintf(label, sizeof(label), "%d", transmitter->psinfo[i]);
 
       //
       // Translate PS state variable into human-readable string
@@ -351,43 +350,43 @@ static int info_thread(gpointer arg) {
       if (i == 15) {
         switch (transmitter->psinfo[15]) {
         case 0:
-          STRLCPY(label, "RESET", 20);
+          snprintf(label, sizeof(label), "Reset");
           break;
 
         case 1:
-          STRLCPY(label, "WAIT", 20);
+          snprintf(label, sizeof(label), "Wait");
           break;
 
         case 2:
-          STRLCPY(label, "MOXDELAY", 20);
+          snprintf(label, sizeof(label), "MoxDelay");
           break;
 
         case 3:
-          STRLCPY(label, "SETUP", 20);
+          snprintf(label, sizeof(label), "Setup");
           break;
 
         case 4:
-          STRLCPY(label, "COLLECT", 20);
+          snprintf(label, sizeof(label), "Collect");
           break;
 
         case 5:
-          STRLCPY(label, "MOXCHECK", 20);
+          snprintf(label, sizeof(label), "MoxCheck");
           break;
 
         case 6:
-          STRLCPY(label, "CALC", 20);
+          snprintf(label, sizeof(label), "Calculate");
           break;
 
         case 7:
-          STRLCPY(label, "DELAY", 20);
+          snprintf(label, sizeof(label), "Delay");
           break;
 
         case 8:
-          STRLCPY(label, "STAYON", 20);
+          snprintf(label, sizeof(label), "StayOn");
           break;
 
         case 9:
-          STRLCPY(label, "TURNON", 20);
+          snprintf(label, sizeof(label), "TurnOn");
           break;
         }
       }
@@ -395,10 +394,10 @@ static int info_thread(gpointer arg) {
       gtk_entry_set_text(GTK_ENTRY(entry[i]), label);
     }
 
-    snprintf(label, 20, "%d", transmitter->attenuation);
+    snprintf(label, sizeof(label), "%d", transmitter->attenuation);
     gtk_entry_set_text(GTK_ENTRY(tx_att), label);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(tx_att_spin), (double) transmitter->attenuation);
-    snprintf(label, 20, "%6.3f", transmitter->ps_getmx);
+    snprintf(label, sizeof(label), "%6.3f", transmitter->ps_getmx);
     gtk_entry_set_text(GTK_ENTRY(get_pk), label);
   }
 
@@ -441,7 +440,7 @@ static void enable_cb(GtkWidget *widget, gpointer data) {
     if (val) {
       if ( transmitter->auto_on) {
         char label[16];
-        snprintf(label, 16, "%d", transmitter->attenuation);
+        snprintf(label, sizeof(label), "%d", transmitter->attenuation);
         gtk_entry_set_text(GTK_ENTRY(tx_att), label);
         gtk_widget_show(tx_att);
         gtk_widget_hide(tx_att_spin);
@@ -506,7 +505,7 @@ static void auto_cb(GtkWidget *widget, gpointer data) {
       // show text field for automatic attenuation
       //
       char label[16];
-      snprintf(label, 16, "%d", transmitter->attenuation);
+      snprintf(label, sizeof(label), "%d", transmitter->attenuation);
       gtk_entry_set_text(GTK_ENTRY(tx_att), label);
       gtk_widget_show(tx_att);
       gtk_widget_hide(tx_att_spin);
@@ -703,23 +702,23 @@ void ps_menu(GtkWidget *parent) {
 
     switch (i) {
     case 4:
-      STRLCPY(text, "feedbk", 16);
+      snprintf(text, sizeof(text), "feedbk");
       break;
 
     case 5:
-      STRLCPY(text, "cor.cnt", 16);
+      snprintf(text, sizeof(text), "cor.cnt");
       break;
 
     case 6:
-      STRLCPY(text, "sln.chk", 16);
+      snprintf(text, sizeof(text), "sln.chk");
       break;
 
     case 13:
-      STRLCPY(text, "dg.cnt", 16);
+      snprintf(text, sizeof(text), "db.cnt");
       break;
 
     case 15:
-      STRLCPY(text, "status", 16);
+      snprintf(text, sizeof(text), "status");
       break;
 
     default:
@@ -766,7 +765,7 @@ void ps_menu(GtkWidget *parent) {
     tx_ps_getpk(transmitter);
   }
 
-  snprintf(pk_text, 16, "%6.3f", transmitter->ps_getpk);
+  snprintf(pk_text, sizeof(pk_text), "%6.3f", transmitter->ps_getpk);
   set_pk = gtk_entry_new();
   gtk_entry_set_text(GTK_ENTRY(set_pk), pk_text);
   gtk_grid_attach(GTK_GRID(grid), set_pk, col, row, 1, 1);
@@ -779,7 +778,7 @@ void ps_menu(GtkWidget *parent) {
   col++;
   tx_att = gtk_entry_new();
   gtk_grid_attach(GTK_GRID(grid), tx_att, col, row, 1, 1);
-  snprintf(text, 16, "%d", transmitter->attenuation);
+  snprintf(text, sizeof(text), "%d", transmitter->attenuation);
   gtk_entry_set_text(GTK_ENTRY(tx_att), text);
   gtk_entry_set_width_chars(GTK_ENTRY(tx_att), 10);
 

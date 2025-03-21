@@ -1918,7 +1918,7 @@ void t_print(const char *format, ...) {
   // We have to use vsnt_print to handle the varargs stuff
   // g_print() seems to be thread-safe but call it only ONCE.
   //
-  vsnprintf(line, 1024, format, args);
+  vsnprintf(line, sizeof(line), format, args);
   printf("%10.6f %s", now - starttime, line);
 }
 

@@ -46,7 +46,6 @@
 #include "hpsdr_logo.h"
 #include "main.h"
 #include "message.h"
-#include "mystring.h"
 #include "new_menu.h"
 #include "new_protocol.h"
 #include "old_protocol.h"
@@ -277,6 +276,7 @@ static gboolean main_delete (GtkWidget *widget) {
 
 static int init(void *data) {
   char wisdom_directory[1024];
+  char text[1024];
   t_print("%s\n", __FUNCTION__);
   audio_get_cards();
   cursor_arrow = gdk_cursor_new(GDK_ARROW);
@@ -287,8 +287,8 @@ static int init(void *data) {
   // If there is one, the "wisdom thread" takes no time
   // Depending on the WDSP version, the file is wdspWisdom or wdspWisdom00.
   //
-  (void) getcwd(wisdom_directory, sizeof(wisdom_directory));
-  STRLCAT(wisdom_directory, "/", 1024);
+  (void) getcwd(text, sizeof(text));
+  snprintf(wisdom_directory, sizeof(wisdom_directory), "%s/", text);
   t_print("Securing wisdom file in directory: %s\n", wisdom_directory);
   status_text("Checking FFTW Wisdom file ...");
   wisdom_running = 1;
@@ -303,8 +303,7 @@ static int init(void *data) {
       gtk_main_iteration ();
     }
 
-    char text[1024];
-    snprintf(text, 1024, "Do not close window until wisdom plans are completed ...\n\n... %s",
+    snprintf(text, sizeof(text), "Do not close window until wisdom plans are completed ...\n\n... %s",
              wisdom_get_status());
     status_text(text);
   }
@@ -429,7 +428,7 @@ static void activate_pihpsdr(GtkApplication *app, gpointer data) {
   gtk_widget_set_name(pi_label, "big_txt");
   gtk_widget_set_halign(pi_label, GTK_ALIGN_START);
   gtk_grid_attach(GTK_GRID(topgrid), pi_label, 1, 0, 3, 1);
-  snprintf(text, 256, "Built %s, Version %s\nOptions: %s\nAudio module: %s",
+  snprintf(text, sizeof(text), "Built %s, Version %s\nOptions: %s\nAudio module: %s",
            build_date, build_version, build_options, build_audio);
   GtkWidget *build_date_label = gtk_label_new(text);
   gtk_widget_set_name(build_date_label, "med_txt");
@@ -490,7 +489,7 @@ int main(int argc, char **argv) {
   rc = getpriority(PRIO_PROCESS, 0);
   t_print("Base priority after adjustment: %d\n", rc);
   startup(argv[0]);
-  snprintf(name, 1024, "org.g0orx.pihpsdr.pid%d", getpid());
+  snprintf(name, sizeof(name), "org.g0orx.pihpsdr.pid%d", getpid());
   //t_print("gtk_application_new: %s\n",name);
   pihpsdr = gtk_application_new(name, G_APPLICATION_FLAGS_NONE);
   g_signal_connect(pihpsdr, "activate", G_CALLBACK(activate_pihpsdr), NULL);

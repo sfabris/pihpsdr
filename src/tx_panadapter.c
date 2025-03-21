@@ -141,7 +141,7 @@ void tx_panadapter_update(TRANSMITTER *tx) {
           cairo_set_source_rgba(cr, COLOUR_PAN_LINE_WEAK);
           cairo_move_to(cr, 0.0, y);
           cairo_line_to(cr, (double)mywidth, y);
-          snprintf(v, 32, "%d dBm", i);
+          snprintf(v, sizeof(v), "%d dBm", i);
           cairo_move_to(cr, 1, y);
           cairo_show_text(cr, v);
           cairo_stroke(cr);
@@ -208,9 +208,9 @@ void tx_panadapter_update(TRANSMITTER *tx) {
           // display all digits here
           //
           if (f > 10000000000LL) {
-            snprintf(v, 32, "...%03lld.%03lld", (f / 1000000) % 1000, (f % 1000000) / 1000);
+            snprintf(v, sizeof(v), "...%03lld.%03lld", (f / 1000000) % 1000, (f % 1000000) / 1000);
           } else {
-            snprintf(v, 32, "%0lld.%03lld", f / 1000000, (f % 1000000) / 1000);
+            snprintf(v, sizeof(v), "%0lld.%03lld", f / 1000000, (f % 1000000) / 1000);
           }
 
           cairo_text_extents(cr, v, &extents);
@@ -331,7 +331,7 @@ void tx_panadapter_update(TRANSMITTER *tx) {
         //
         // Power values not available for SoapySDR
         //
-        snprintf(text, 64, "FWD %0.1f W", transmitter->fwd);
+        snprintf(text, sizeof(text), "FWD %0.1f W", transmitter->fwd);
         row += 15;
         cairo_move_to(cr, 10, row);
         cairo_show_text(cr, text);
@@ -339,7 +339,7 @@ void tx_panadapter_update(TRANSMITTER *tx) {
         // Since colour is already red, no special
         // action for "high SWR" warning
         //
-        snprintf(text, 64, "SWR 1:%1.1f", transmitter->swr);
+        snprintf(text, sizeof(text), "SWR 1:%1.1f", transmitter->swr);
         row += 15;
         cairo_move_to(cr, 10, row);
         cairo_show_text(cr, text);
@@ -347,7 +347,7 @@ void tx_panadapter_update(TRANSMITTER *tx) {
 
       if (!cwmode) {
         row += 15;
-        snprintf(text, 64, "ALC %2.1f dB", transmitter->alc);
+        snprintf(text, sizeof(text), "ALC %2.1f dB", transmitter->alc);
         cairo_move_to(cr, 10, row);
         cairo_show_text(cr, text);
       }

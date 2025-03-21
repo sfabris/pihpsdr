@@ -28,7 +28,6 @@
 #include "discovered.h"
 #include "filter.h"
 #include "message.h"
-#include "mystring.h"
 #include "new_menu.h"
 #include "new_protocol.h"
 #include "radio.h"
@@ -186,7 +185,7 @@ static void local_output_changed_cb(GtkWidget *widget, gpointer data) {
 
   if (i >= 0) {
     t_print("local_output_changed rx=%d %s\n", myrx->id, output_devices[i].name);
-    STRLCPY(myrx->audio_name, output_devices[i].name, sizeof(myrx->audio_name));
+    snprintf(myrx->audio_name, sizeof(myrx->audio_name), "%s", output_devices[i].name);
   }
 
   if (myrx->local_audio) {
@@ -226,7 +225,7 @@ void rx_menu(GtkWidget *parent) {
   // This guards against changing the active receivere while the menu is open
   //
   myrx = active_receiver;
-  snprintf(title, 64, "piHPSDR - Receive (RX%d VFO-%s)", myrx->id + 1, myrx->id == 0 ? "A" : "B");
+  snprintf(title, sizeof(title), "piHPSDR - Receive (RX%d VFO-%s)", myrx->id + 1, myrx->id == 0 ? "A" : "B");
   GtkWidget *headerbar = gtk_header_bar_new();
   gtk_window_set_titlebar(GTK_WINDOW(dialog), headerbar);
   gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(headerbar), TRUE);
@@ -325,7 +324,7 @@ void rx_menu(GtkWidget *parent) {
 
       for (i = 0; i < n_adc; i++) {
         char label[32];
-        snprintf(label, 32, "ADC-%d", i);
+        snprintf(label, sizeof(label), "ADC-%d", i);
         gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(adc_combo_box), NULL, label);
       }
 
@@ -421,7 +420,7 @@ void rx_menu(GtkWidget *parent) {
 
     if (i < 0) {
       gtk_combo_box_set_active(GTK_COMBO_BOX(output), 0);
-      STRLCPY(myrx->audio_name, output_devices[0].name, sizeof(myrx->audio_name));
+      snprintf(myrx->audio_name, sizeof(myrx->audio_name), "%s", output_devices[0].name);
     }
 
     my_combo_attach(GTK_GRID(grid), output, 2, 2, 1, 1);

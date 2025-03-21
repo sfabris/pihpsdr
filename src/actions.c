@@ -37,7 +37,6 @@
 #include "main.h"
 #include "message.h"
 #include "mode.h"
-#include "mystring.h"
 #include "new_menu.h"
 #include "new_protocol.h"
 #include "noise_menu.h"
@@ -2016,9 +2015,9 @@ int process_action(void *data) {
 //
 void Action2String(int id, char *str, size_t len) {
   if (id < 0 || id >= ACTIONS) {
-    STRLCPY(str, "NONE", len);
+    snprintf(str, len, "NONE");
   } else {
-    STRLCPY(str, ActionTable[id].button_str, len);
+    snprintf(str, len, "%s", ActionTable[id].button_str);
   }
 }
 
@@ -2054,6 +2053,5 @@ int  GetMultifunctionStatus() {
 // function to get string for multifunction encoder
 //
 void GetMultifunctionString(char* str, size_t len) {
-  STRLCPY(str, "M=", len);
-  STRLCAT(str, multi_action_table[multi_action].descr, len);
+  snprintf(str, len, "M=%s", multi_action_table[multi_action].descr);
 }

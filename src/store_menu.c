@@ -59,19 +59,19 @@ static gboolean store_select_cb (GtkWidget *widget, GdkEventButton *event, gpoin
   int mode = mem[ind].mode;
 
   if (mode == modeFMN) {
-    snprintf(fw, 16, "%s", mem[ind].deviation == 2500 ? "11k" : "16k");
+    snprintf(fw, sizeof(fw), "%s", mem[ind].deviation == 2500 ? "11k" : "16k");
   } else {
     int filter = mem[ind].filter;
-    snprintf(fw, 16, "%s", filters[mode][filter].title);
+    snprintf(fw, sizeof(fw), "%s", filters[mode][filter].title);
   }
 
   switch (mem[ind].sat_mode) {
   case SAT_MODE:
-    snprintf(sm, 16, "%s", "SAT, ");
+    snprintf(sm, sizeof(sm), "%s", "SAT, ");
     break;
 
   case RSAT_MODE:
-    snprintf(sm, 16, "%s", "RSAT, ");
+    snprintf(sm, sizeof(sm), "%s", "RSAT, ");
     break;
 
   default:
@@ -79,7 +79,7 @@ static gboolean store_select_cb (GtkWidget *widget, GdkEventButton *event, gpoin
     break;
   }
 
-  snprintf(label_str, 40, "M%d=%8.3f MHz (%s%s, %s)", ind,
+  snprintf(label_str, sizeof(label_str), "M%d=%8.3f MHz (%s%s, %s)", ind,
            mem[ind].ctun ? (double) mem[ind].ctun_frequency * 1E-6 : (double) mem[ind].frequency * 1E-6,
            sm, mode_string[mode], fw);
   gtk_button_set_label(GTK_BUTTON(store_button[ind]), label_str);
@@ -118,26 +118,26 @@ void store_menu(GtkWidget *parent) {
     char label_str[50];
     char fw[16];
     char sm[16];
-    snprintf(label_str, 50, "Store M%d", ind);
+    snprintf(label_str, sizeof(label_str), "Store M%d", ind);
     int mode = mem[ind].mode;
     b = gtk_button_new_with_label(label_str);
     g_signal_connect(b, "button-press-event", G_CALLBACK(store_select_cb), GINT_TO_POINTER(ind));
     gtk_grid_attach(GTK_GRID(grid), b, 0, ind + 1, 1, 1);
 
     if (mode == modeFMN) {
-      snprintf(fw, 16, "%s", mem[ind].deviation == 2500 ? "11k" : "16k");
+      snprintf(fw, sizeof(fw), "%s", mem[ind].deviation == 2500 ? "11k" : "16k");
     } else {
       int filter = mem[ind].filter;
-      snprintf(fw, 16, "%s", filters[mode][filter].title);
+      snprintf(fw, sizeof(fw), "%s", filters[mode][filter].title);
     }
 
     switch (mem[ind].sat_mode) {
     case SAT_MODE:
-      snprintf(sm, 16, "%s", "SAT, ");
+      snprintf(sm, sizeof(sm), "%s", "SAT, ");
       break;
 
     case RSAT_MODE:
-      snprintf(sm, 16, "%s", "RSAT, ");
+      snprintf(sm, sizeof(sm), "%s", "RSAT, ");
       break;
 
     default:
@@ -145,7 +145,7 @@ void store_menu(GtkWidget *parent) {
       break;
     }
 
-    snprintf(label_str, 50, "M%d=%8.3f MHz (%s%s, %s)", ind,
+    snprintf(label_str, sizeof(label_str), "M%d=%8.3f MHz (%s%s, %s)", ind,
              mem[ind].ctun ? (double) mem[ind].ctun_frequency * 1E-6 : (double) mem[ind].frequency * 1E-6,
              sm, mode_string[mode], fw);
     b = gtk_button_new_with_label(label_str);

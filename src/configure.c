@@ -152,7 +152,7 @@ void configure_gpio(GtkWidget *parent) {
     for (int i = 0; i < max_encoders; i++) {
       widget = gtk_label_new(NULL);
       char id[16];
-      snprintf(id, 16, "<b>%d</b>", i);
+      snprintf(id, sizeof(id), "<b>%d</b>", i);
       gtk_label_set_markup (GTK_LABEL(widget), id);
       gtk_grid_attach(GTK_GRID(grid), widget, col, row, 1, 1);
       col++;
@@ -241,7 +241,7 @@ void configure_gpio(GtkWidget *parent) {
     for (int i = 0; i < max_switches; i++) {
       widget = gtk_label_new(NULL);
       char id[16];
-      snprintf(id, 16, "<b>%d</b>", i);
+      snprintf(id, sizeof(id), "<b>%d</b>", i);
       gtk_label_set_markup (GTK_LABEL(widget), id);
       gtk_grid_attach(GTK_GRID(grid), widget, (i / 8) * 2, (row + (i % 8)), 1, 1);
       widget = gtk_spin_button_new_with_range (0.0, 28.0, 1.0);
@@ -275,26 +275,26 @@ void configure_gpio(GtkWidget *parent) {
     gtk_grid_attach(GTK_GRID(grid), widget, col, row, 1, 1);
     col++;
     widget = gtk_entry_new();
-    snprintf(text, 16, "0x%02X", i2c_address_1);
+    snprintf(text, sizeof(text), "0x%02X", i2c_address_1);
     gtk_entry_set_text(GTK_ENTRY(widget), text);
     gtk_grid_attach(GTK_GRID(grid), widget, col, row, 1, 1);
     row++;
 
     for (int i = 0; i < 8; i++) {
       widget = gtk_label_new(NULL);
-      snprintf(text, 16, "<b>SW_%d</b>", i + 2);
+      snprintf(text, sizeof(text), "<b>SW_%d</b>", i + 2);
       gtk_label_set_markup(GTK_LABEL(widget), text);
       gtk_grid_attach(GTK_GRID(grid), widget, 0, row, 1, 1);
       i2c_sw_text[i] = gtk_entry_new();
-      snprintf(text, 16, "0x%04X", i2c_sw[i]);
+      snprintf(text, sizeof(text), "0x%04X", i2c_sw[i]);
       gtk_entry_set_text (GTK_ENTRY(i2c_sw_text[i]), text);
       gtk_grid_attach(GTK_GRID(grid), i2c_sw_text[i], 1, row, 1, 1);
       widget = gtk_label_new(NULL);
-      snprintf(text, 16, "<b>SW_%d</b>", i + 10);
+      snprintf(text, sizeof(text), "<b>SW_%d</b>", i + 10);
       gtk_label_set_markup(GTK_LABEL(widget), text);
       gtk_grid_attach(GTK_GRID(grid), widget, 2, row, 1, 1);
       i2c_sw_text[i + 8] = gtk_entry_new();
-      snprintf(text, 16, "0x%04X", i2c_sw[i + 8]);
+      snprintf(text, sizeof(text), "0x%04X", i2c_sw[i + 8]);
       gtk_entry_set_text (GTK_ENTRY(i2c_sw_text[i + 8]), text);
       gtk_grid_attach(GTK_GRID(grid), i2c_sw_text[i + 8], 3, row, 1, 1);
       row++;

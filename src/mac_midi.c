@@ -325,7 +325,7 @@ void get_midi_devices() {
       // for some MIDI devices. In this case, we replace the name by
       // "NoPort<n>"
       //
-      if (strlen(name) == 0) { snprintf(name, 128, "NoPort%d", n_midi_devices); }
+      if (strlen(name) == 0) { snprintf(name, sizeof(name), "NoPort%d", n_midi_devices); }
 
       t_print("%s: %s\n", __FUNCTION__, name);
 

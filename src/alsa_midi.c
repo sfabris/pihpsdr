@@ -319,7 +319,7 @@ void get_midi_devices() {
 
   while (card >= 0) {
     //t_print("%s: Found Sound Card=%d\n", __FUNCTION__, card);
-    snprintf(portname, 64, "hw:%d", card);
+    snprintf(portname, sizeof(portname), "hw:%d", card);
 
     if ((ret = snd_ctl_open(&ctl, portname, 0)) < 0) {
       t_print("%s: cannot open control for card %d: %s\n", __FUNCTION__, card, snd_strerror(ret));
@@ -372,9 +372,9 @@ void get_midi_devices() {
         // devnam for comparison and make a portname of form "hw:x,y",
         // else we use subnam for comparison and make a portname of form "hw:x,y,z".
         if (sub == 0 && subnam[0] == '\0') {
-          snprintf(portname, 64, "hw:%d,%d", card, device);
+          snprintf(portname, sizeof(portname), "hw:%d,%d", card, device);
         } else {
-          snprintf(portname, 64, "hw:%d,%d,%d", card, device, sub);
+          snprintf(portname, sizeof(portname), "hw:%d,%d,%d", card, device, sub);
           devnam = subnam;
         }
 
@@ -398,12 +398,12 @@ void get_midi_devices() {
         }
 
         if (midi_port[n_midi_devices] == NULL) {
-          midi_port[n_midi_devices] = g_strdup(portname);
+          midi_port[n_midi_devices] = strdup(portname);
           match = 0;
         } else {
           if (strcmp(midi_port[n_midi_devices], portname)) {
             g_free(midi_port[n_midi_devices]);
-            midi_port[n_midi_devices] = g_strdup(portname);
+            midi_port[n_midi_devices] = strdup(portname);
             match = 0;
           }
         }

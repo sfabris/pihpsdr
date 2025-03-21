@@ -130,19 +130,19 @@ void loadProperties(const char* filename) {
 void saveProperties(const char* filename) {
   PROPERTY* property;
   FILE* f = fopen(filename, "w+");
-  char line[512];
+  char line[1024];
 
   if (!f) {
     t_print("can't open %s\n", filename);
     return;
   }
 
-  snprintf(line, 512, "%0.2f", PROPERTY_VERSION);
+  snprintf(line, sizeof(line), "%0.2f", PROPERTY_VERSION);
   setProperty("property_version", line);
   property = properties;
 
   while (property) {
-    snprintf(line, 512, "%s=%s\n", property->name, property->value);
+    snprintf(line, sizeof(line), "%s=%s\n", property->name, property->value);
     fwrite(line, 1, strlen(line), f);
     property = property->next_property;
   }

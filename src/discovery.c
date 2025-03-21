@@ -38,7 +38,6 @@
 #include "gpio.h"
 #include "main.h"
 #include "message.h"
-#include "mystring.h"
 #include "new_discovery.h"
 #include "old_discovery.h"
 #ifdef USBOZY
@@ -199,7 +198,7 @@ static gboolean radio_ip_cb (GtkWidget *widget, GdkEventButton *event, gpointer 
   cp = gtk_entry_get_text(GTK_ENTRY(tcpaddr));
 
   if (cp && (strlen(cp) > 0)) {
-    STRLCPY(ipaddr_radio, cp, sizeof(ipaddr_radio));
+    snprintf(ipaddr_radio, sizeof(ipaddr_radio), "%s", cp);
   } else {
     ipaddr_radio[0] = 0;
   }
@@ -406,7 +405,7 @@ static void discovery() {
       discovered[devices].protocol = ORIGINAL_PROTOCOL;
       discovered[devices].device = DEVICE_OZY;
       discovered[devices].software_version = 10;              // we can't know yet so this isn't a real response
-      STRLCPY(discovered[devices].name, "Ozy on USB", sizeof(discovered[devices].name));
+      snprintf(discovered[devices].name, sizeof(discovered[devices].name), "Ozy on USB");
       discovered[devices].frequency_min = 0.0;
       discovered[devices].frequency_max = 61440000.0;
 
@@ -417,8 +416,7 @@ static void discovery() {
       discovered[devices].status = STATE_AVAILABLE;
       discovered[devices].info.network.address_length = 0;
       discovered[devices].info.network.interface_length = 0;
-      STRLCPY(discovered[devices].info.network.interface_name, "USB",
-              sizeof(discovered[devices].info.network.interface_name));
+      snprintf(discovered[devices].info.network.interface_name, sizeof(discovered[devices].info.network.interface_name), "USB");
       discovered[devices].use_tcp = 0;
       discovered[devices].use_routing = 0;
       discovered[devices].supported_receivers = 2;

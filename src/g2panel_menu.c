@@ -173,7 +173,7 @@ void g2panel_change_command(int andromeda_type, int type, int *buttonvec, int *e
 
   switch (type) {
   case CONTROLLER_SWITCH:
-    snprintf(str, 128, "Button #%d", last_pos);
+    snprintf(str, sizeof(str), "Button #%d", last_pos);
 
     if (last_pos > 99) { last_pos = 0; }
 
@@ -181,7 +181,7 @@ void g2panel_change_command(int andromeda_type, int type, int *buttonvec, int *e
     break;
 
   case CONTROLLER_ENCODER:
-    snprintf(str, 128, "Encoder #%d", last_pos);
+    snprintf(str, sizeof(str), "Encoder #%d", last_pos);
 
     if (last_pos > 49) { last_pos = 0; }
 
@@ -189,7 +189,7 @@ void g2panel_change_command(int andromeda_type, int type, int *buttonvec, int *e
     break;
 
   default:
-    snprintf(str, 128, "UNKNOWN #%d", last_pos);
+    snprintf(str, sizeof(str), "UNKNOWN #%d", last_pos);
     break;
   }
 

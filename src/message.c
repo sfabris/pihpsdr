@@ -62,7 +62,7 @@ void t_print(const gchar *format, ...) {
   // We have to use vsnprintf to handle the varargs stuff
   // g_print() seems to be thread-safe but call it only ONCE.
   //
-  vsnprintf(line, 1024, format, args);
+  vsnprintf(line, sizeof(line), format, args);
   g_print("%10.3f %s", now - starttime, line);
 }
 

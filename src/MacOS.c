@@ -47,10 +47,10 @@
 sem_t *apple_sem(int initial_value) {
   sem_t *sem;
   static long semcount = 0;
-  char sname[20];
+  char sname[32];
 
   for (;;) {
-    snprintf(sname, 20, "PI_%08ld", semcount++);
+    snprintf(sname, sizeof(sname), "PI_%08ld", semcount++);
     sem = sem_open(sname, O_CREAT | O_EXCL, 0700, initial_value);
 
     //

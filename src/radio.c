@@ -54,7 +54,6 @@
   #include "midi.h"
 #endif
 #include "mode.h"
-#include "mystring.h"
 #include "new_menu.h"
 #include "new_protocol.h"
 #include "old_protocol.h"
@@ -1265,26 +1264,26 @@ void radio_start_radio() {
 
   switch (protocol) {
   case ORIGINAL_PROTOCOL:
-    STRLCPY(p, "Protocol 1", 32);
-    snprintf(version, 32, "v%d.%d",
+    snprintf(p, sizeof(p), "Protocol 1");
+    snprintf(version, sizeof(version), "v%d.%d",
              radio->software_version / 10,
              radio->software_version % 10);
-    snprintf(ip, 32, "%s", inet_ntoa(radio->info.network.address.sin_addr));
-    snprintf(iface, 64, "%s", radio->info.network.interface_name);
+    snprintf(ip, sizeof(ip), "%s", inet_ntoa(radio->info.network.address.sin_addr));
+    snprintf(iface, sizeof(iface), "%s", radio->info.network.interface_name);
     break;
 
   case NEW_PROTOCOL:
-    STRLCPY(p, "Protocol 2", 32);
-    snprintf(version, 32, "v%d.%d",
+    snprintf(p, sizeof(p), "Protocol 2");
+    snprintf(version, sizeof(version), "v%d.%d",
              radio->software_version / 10,
              radio->software_version % 10);
-    snprintf(ip, 32, "%s", inet_ntoa(radio->info.network.address.sin_addr));
-    snprintf(iface, 64, "%s", radio->info.network.interface_name);
+    snprintf(ip, sizeof(ip), "%s", inet_ntoa(radio->info.network.address.sin_addr));
+    snprintf(iface, sizeof(iface), "%s", radio->info.network.interface_name);
     break;
 
   case SOAPYSDR_PROTOCOL:
-    STRLCPY(p, "SoapySDR", 32);
-    snprintf(version, 32, "%4.20s v%d.%d.%d",
+    snprintf(p, sizeof(p), "SoapySDR");
+    snprintf(version, sizeof(version), "%4.20s v%d.%d.%d",
              radio->info.soapy.driver_key,
              (radio->software_version % 10000) / 100,
              (radio->software_version % 100) / 10,
@@ -1296,7 +1295,7 @@ void radio_start_radio() {
   // "Starting" message in status text
   // Note for OZY devices, the name is "Ozy USB"
   //
-  snprintf(text, 1024, "Starting %s (%s %s)",
+  snprintf(text, sizeof(text), "Starting %s (%s %s)",
            radio->name,
            p,
            version);
@@ -1310,14 +1309,14 @@ void radio_start_radio() {
   case NEW_PROTOCOL:
     if (have_saturn_xdma) {
       // radio has no ip and MAC
-      snprintf(text, 1024, "piHPSDR: %s (%s v%d) on %s",
+      snprintf(text, sizeof(text), "piHPSDR: %s (%s v%d) on %s",
                radio->name,
                p,
                radio->software_version,
                iface);
     } else if (device == DEVICE_OZY) {
       // radio has no ip, and name is "Ozy USB"
-      snprintf(text, 1024, "piHPSDR: %s (%s %s)",
+      snprintf(text, sizeof(text), "piHPSDR: %s (%s %s)",
                radio->name,
                p,
                version);
@@ -1326,7 +1325,7 @@ void radio_start_radio() {
       // it does not fit  in windows 640 pixels wide.
       // if needed, the MAC address of the radio can be
       // found in the ABOUT menu.
-      snprintf(text, 1024, "piHPSDR: %s (%s %s) %s on %s",
+      snprintf(text, sizeof(text), "piHPSDR: %s (%s %s) %s on %s",
                radio->name,
                p,
                version,
@@ -1337,7 +1336,7 @@ void radio_start_radio() {
     break;
 
   case SOAPYSDR_PROTOCOL:
-    snprintf(text, 1024, "piHPSDR: %s (%s %s)",
+    snprintf(text, sizeof(text), "piHPSDR: %s (%s %s)",
              radio->name,
              p,
              version);
@@ -1847,7 +1846,7 @@ static void rxtx(int state) {
       static int snapshot = 0;
       snapshot++;
       char fname[32];
-      snprintf(fname, 32, "TXDUMP%d.iqdata", snapshot);
+      snprintf(fname, sizeof(fname), "TXDUMP%d.iqdata", snapshot);
       FILE *fp = fopen(fname, "w");
 
       if (fp) {

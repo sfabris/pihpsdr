@@ -273,7 +273,7 @@ static void tci_send_dds(CLIENT *client, int v) {
   if (v < 0 || v > 1) { return; }
 
   f = vfo[v].ctun ? vfo[v].ctun_frequency : vfo[v].frequency;
-  snprintf(msg, MAXMSGSIZE, "dds:%d,%lld;", v, f);
+  snprintf(msg, sizeof(msg), "dds:%d,%lld;", v, f);
   tci_send_text(client, msg);
 }
 
@@ -310,7 +310,7 @@ static void tci_send_vfo(CLIENT *client, int v, int c) {
     client->last_fb = f;
   }
 
-  snprintf(msg, MAXMSGSIZE, "vfo:%d,%d,%lld;", v, c, f);
+  snprintf(msg, sizeof(msg), "vfo:%d,%d,%lld;", v, c, f);
   tci_send_text(client, msg);
 }
 
@@ -330,7 +330,7 @@ static void tci_send_split(CLIENT *client) {
 static void tci_send_txfreq(CLIENT *client) {
   char msg[MAXMSGSIZE];
   long long f = vfo_get_tx_freq();
-  snprintf(msg, MAXMSGSIZE, "tx_frequency:%lld;", f);
+  snprintf(msg, sizeof(msg), "tx_frequency:%lld;", f);
   tci_send_text(client, msg);
   client->last_fx = f;
 }
@@ -395,7 +395,7 @@ static void tci_send_mode(CLIENT *client, int v) {
     break;
   }
 
-  snprintf(msg, MAXMSGSIZE, "modulation:%d,%s;", v, mode);
+  snprintf(msg, sizeof(msg), "modulation:%d,%s;", v, mode);
   tci_send_text(client, msg);
 
   if (v == 0) {
@@ -411,7 +411,7 @@ static void tci_send_trx_count(CLIENT *client) {
 
 static void tci_send_cwspeed(CLIENT *client) {
   char msg[MAXMSGSIZE];
-  snprintf(msg, MAXMSGSIZE, "cw_macros_speed:%d;", cw_keyer_speed);
+  snprintf(msg, sizeof(msg), "cw_macros_speed:%d;", cw_keyer_speed);
   tci_send_text(client, msg);
 }
 
@@ -430,9 +430,9 @@ static void tci_send_smeter(CLIENT *client, int v) {
   if (v == 1 && receivers == 1) { return; }
 
   lvl = (int) (receiver[v]->meter - 0.5);
-  snprintf(msg, MAXMSGSIZE, "rx_smeter:%d,0,%d.0;", v, lvl);
+  snprintf(msg, sizeof(msg), "rx_smeter:%d,0,%d.0;", v, lvl);
   tci_send_text(client, msg);
-  snprintf(msg, MAXMSGSIZE, "rx_smeter:%d,1,%d.0;", v, lvl);
+  snprintf(msg, sizeof(msg), "rx_smeter:%d,1,%d.0;", v, lvl);
   tci_send_text(client, msg);
 }
 
@@ -451,9 +451,9 @@ static void tci_send_rx(CLIENT *client, int v) {
   if (v == 1 && receivers == 1) { return; }
 
   lvl = (int) (receiver[v]->meter - 0.5);
-  snprintf(msg, MAXMSGSIZE, "rx_channel_sensors:%d,0,%d.0;", v, lvl);
+  snprintf(msg, sizeof(msg), "rx_channel_sensors:%d,0,%d.0;", v, lvl);
   tci_send_text(client, msg);
-  snprintf(msg, MAXMSGSIZE, "rx_channel_sensors:%d,1,%d.0;", v, lvl);
+  snprintf(msg, sizeof(msg), "rx_channel_sensors:%d,1,%d.0;", v, lvl);
   tci_send_text(client, msg);
 }
 

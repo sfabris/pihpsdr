@@ -36,7 +36,6 @@
 #include "meter.h"
 #include "message.h"
 #include "mode.h"
-#include "mystring.h"
 #include "new_menu.h"
 #include "new_protocol.h"
 #include "old_protocol.h"
@@ -823,7 +822,7 @@ RECEIVER *rx_create_receiver(int id, int pixels, int width, int height) {
   rx->local_audio = 0;
   g_mutex_init(&rx->local_audio_mutex);
   rx->local_audio_buffer = NULL;
-  STRLCPY(rx->audio_name, "NO AUDIO", sizeof(rx->audio_name));
+  snprintf(rx->audio_name, sizeof(rx->audio_name), "NO AUDIO");
   rx->mute_when_not_active = 0;
   rx->audio_channel = STEREO;
   rx->audio_device = -1;

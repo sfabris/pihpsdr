@@ -217,7 +217,7 @@ void rx_panadapter_update(RECEIVER *rx) {
       double y = (double)(rx->panadapter_high - i) * dbm_per_line;
       cairo_move_to(cr, 0.0, y);
       cairo_line_to(cr, mywidth, y);
-      snprintf(v, 32, "%d dBm", i);
+      snprintf(v, sizeof(v), "%d dBm", i);
       cairo_move_to(cr, 1, y);
       cairo_show_text(cr, v);
     }
@@ -274,9 +274,9 @@ void rx_panadapter_update(RECEIVER *rx) {
       // and three "MHz" digits
       //
       if (f > 10000000000LL && marker_distance < 80) {
-        snprintf(v, 32, "...%03lld.%03lld", (f / 1000000) % 1000, (f % 1000000) / 1000);
+        snprintf(v, sizeof(v), "...%03lld.%03lld", (f / 1000000) % 1000, (f % 1000000) / 1000);
       } else {
-        snprintf(v, 32, "%0lld.%03lld", f / 1000000, (f % 1000000) / 1000);
+        snprintf(v, sizeof(v), "%0lld.%03lld", f / 1000000, (f % 1000000) / 1000);
       }
 
       // center text at "x" position
@@ -592,7 +592,6 @@ void rx_panadapter_update(RECEIVER *rx) {
     for (int j = 0; j < num_peaks; j++) {
       if (peak_positions[j] > 0) {
         char peak_label[32];
-        //snprintf(peak_label, sizeof(peak_label), "%.1f dBm", peaks[j]);
         snprintf(peak_label, sizeof(peak_label), "%.1f", peaks[j]);
         cairo_text_extents(cr, peak_label, &extents);
         // Calculate initial text position: slightly above the peak
@@ -761,7 +760,7 @@ void display_panadapter_messages(cairo_t *cr, int width, unsigned int fps) {
     if (high_swr_seen) {
       static unsigned int swr_protection_count = 0;
       cairo_move_to(cr, 100.0, 90.0);
-      snprintf(text, 64, "! High SWR");
+      snprintf(text, sizeof(text), "! High SWR");
       cairo_show_text(cr, text);
       swr_protection_count++;
 
@@ -824,7 +823,7 @@ void display_panadapter_messages(cairo_t *cr, int width, unsigned int fps) {
 
       if (count == 0) { max1 = v; }
 
-      snprintf(text, 64, "%0.0f°C", max1);
+      snprintf(text, sizeof(text), "%0.0f°C", max1);
       flag = 1;
       break;
 
@@ -838,7 +837,7 @@ void display_panadapter_messages(cairo_t *cr, int width, unsigned int fps) {
 
       if (count == 0) { max1 = v; }
 
-      snprintf(text, 64, "%0.1fV", max1);
+      snprintf(text, sizeof(text), "%0.1fV", max1);
       flag = 1;
       break;
 
@@ -864,7 +863,7 @@ void display_panadapter_messages(cairo_t *cr, int width, unsigned int fps) {
 
       if (count == 0) { max2 = v; }
 
-      snprintf(text, 64, "%0.0fmA", max2);
+      snprintf(text, sizeof(text), "%0.0fmA", max2);
       flag = 1;
       break;
 
@@ -877,7 +876,7 @@ void display_panadapter_messages(cairo_t *cr, int width, unsigned int fps) {
 
       if (count == 0) { max2 = v; }
 
-      snprintf(text, 64, "%0.1fA", max2);
+      snprintf(text, sizeof(text), "%0.1fA", max2);
       flag = 1;
       break;
 
@@ -889,7 +888,7 @@ void display_panadapter_messages(cairo_t *cr, int width, unsigned int fps) {
 
       if (count == 0) { max2 = v; }
 
-      snprintf(text, 64, "%0.1fA", max2);
+      snprintf(text, sizeof(text), "%0.1fA", max2);
       flag = 1;
       break;
 

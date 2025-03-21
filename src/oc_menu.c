@@ -175,7 +175,7 @@ void oc_menu(GtkWidget *parent) {
 
   for (i = 1; i < 8; i++) {
     char oc_id[16];
-    snprintf(oc_id, 16, "%d", i);
+    snprintf(oc_id, sizeof(oc_id), "%d", i);
     lbl = gtk_label_new(oc_id);
     gtk_widget_set_name(lbl, "boldlabel");
     gtk_grid_attach(GTK_GRID(grid), lbl, i, 2, 1, 1);
@@ -233,8 +233,8 @@ void oc_menu(GtkWidget *parent) {
   int mask;
 
   for (j = 1; j < 8; j++) {
-    char oc_id[8];
-    snprintf(oc_id, 8, "%d", j);
+    char oc_id[16];
+    snprintf(oc_id, sizeof(oc_id), "%d", j);
     mask = 0x01 << (j - 1);
     GtkWidget *oc_tune_b = gtk_check_button_new_with_label(oc_id);
     gtk_widget_set_name(oc_tune_b, "boldlabel");

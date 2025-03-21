@@ -26,7 +26,6 @@
 #include "client_server.h"
 #include "filter.h"
 #include "message.h"
-#include "mystring.h"
 #include "mode.h"
 #include "new_menu.h"
 #include "radio.h"
@@ -49,7 +48,7 @@ static void save_xvtr () {
     BAND *xvtr = band_get_band(i);
     BANDSTACK *bandstack = xvtr->bandstack;
     txt = gtk_entry_get_text(GTK_ENTRY(title[i]));
-    STRLCPY(xvtr->title, txt, sizeof(xvtr->title));
+    snprintf(xvtr->title, sizeof(xvtr->title), "%s", txt);
 
     if (strlen(txt) != 0) {
       txt = gtk_entry_get_text(GTK_ENTRY(min_frequency[i]));
@@ -113,15 +112,15 @@ static void save_xvtr () {
     // Update all the text fields
     //
     gtk_entry_set_text(GTK_ENTRY(title[i]), xvtr->title);
-    snprintf(f, 16, "%5.3f", (double)xvtr->frequencyMin / 1000000.0);
+    snprintf(f, sizeof(f), "%5.3f", (double)xvtr->frequencyMin / 1000000.0);
     gtk_entry_set_text(GTK_ENTRY(min_frequency[i]), f);
-    snprintf(f, 16, "%5.3f", (double)xvtr->frequencyMax / 1000000.0);
+    snprintf(f, sizeof(f), "%5.3f", (double)xvtr->frequencyMax / 1000000.0);
     gtk_entry_set_text(GTK_ENTRY(max_frequency[i]), f);
-    snprintf(f, 16, "%5.3f", (double)xvtr->frequencyLO / 1000000.0);
+    snprintf(f, sizeof(f), "%5.3f", (double)xvtr->frequencyLO / 1000000.0);
     gtk_entry_set_text(GTK_ENTRY(lo_frequency[i]), f);
-    snprintf(f, 16, "%lld", xvtr->errorLO);
+    snprintf(f, sizeof(f), "%lld", xvtr->errorLO);
     gtk_entry_set_text(GTK_ENTRY(lo_error[i]), f);
-    snprintf(f, 16, "%d", xvtr->gain);
+    snprintf(f, sizeof(f), "%d", xvtr->gain);
     gtk_entry_set_text(GTK_ENTRY(gain[i]), f);
 
     if (protocol == ORIGINAL_PROTOCOL || protocol == NEW_PROTOCOL) {
@@ -235,27 +234,27 @@ void xvtr_menu(GtkWidget *parent) {
     gtk_grid_attach(GTK_GRID(grid), title[i], 0, i + 2, 1, 1);
     min_frequency[i] = gtk_entry_new();
     gtk_entry_set_width_chars(GTK_ENTRY(min_frequency[i]), 7);
-    snprintf(f, 16, "%5.3f", (double)xvtr->frequencyMin / 1000000.0);
+    snprintf(f, sizeof(f), "%5.3f", (double)xvtr->frequencyMin / 1000000.0);
     gtk_entry_set_text(GTK_ENTRY(min_frequency[i]), f);
     gtk_grid_attach(GTK_GRID(grid), min_frequency[i], 1, i + 2, 1, 1);
     max_frequency[i] = gtk_entry_new();
     gtk_entry_set_width_chars(GTK_ENTRY(max_frequency[i]), 7);
-    snprintf(f, 16, "%5.3f", (double)xvtr->frequencyMax / 1000000.0);
+    snprintf(f, sizeof(f), "%5.3f", (double)xvtr->frequencyMax / 1000000.0);
     gtk_entry_set_text(GTK_ENTRY(max_frequency[i]), f);
     gtk_grid_attach(GTK_GRID(grid), max_frequency[i], 2, i + 2, 1, 1);
     lo_frequency[i] = gtk_entry_new();
     gtk_entry_set_width_chars(GTK_ENTRY(lo_frequency[i]), 7);
-    snprintf(f, 16, "%5.3f", (double)xvtr->frequencyLO / 1000000.0);
+    snprintf(f, sizeof(f), "%5.3f", (double)xvtr->frequencyLO / 1000000.0);
     gtk_entry_set_text(GTK_ENTRY(lo_frequency[i]), f);
     gtk_grid_attach(GTK_GRID(grid), lo_frequency[i], 3, i + 2, 1, 1);
     lo_error[i] = gtk_entry_new();
     gtk_entry_set_width_chars(GTK_ENTRY(lo_error[i]), 9);
-    snprintf(f, 16, "%lld", xvtr->errorLO);
+    snprintf(f, sizeof(f), "%lld", xvtr->errorLO);
     gtk_entry_set_text(GTK_ENTRY(lo_error[i]), f);
     gtk_grid_attach(GTK_GRID(grid), lo_error[i], 4, i + 2, 1, 1);
     gain[i] = gtk_entry_new();
     gtk_entry_set_width_chars(GTK_ENTRY(gain[i]), 3);
-    snprintf(f, 16, "%d", xvtr->gain);
+    snprintf(f, sizeof(f), "%d", xvtr->gain);
     gtk_entry_set_text(GTK_ENTRY(gain[i]), f);
     gtk_grid_attach(GTK_GRID(grid), gain[i], 5, i + 2, 1, 1);
 

@@ -85,7 +85,6 @@
 #include "iambic.h"
 #include "main.h"
 #include "message.h"
-#include "mystring.h"
 #include "new_protocol.h"
 #include "noise_menu.h"
 #include "radio.h"
@@ -117,7 +116,7 @@ REMOTE_CLIENT remoteclient = { 0 };
 
 GMutex client_mutex;
 
-static char title[128];
+static char title[256];
 
 int hpsdr_server = FALSE;
 char hpsdr_pwd[HPSDR_PWD_LEN] = { 0 };
@@ -752,7 +751,7 @@ void send_band_data(int sock, int b) {
   SYNC(data.header.sync);
   data.header.data_type = to_short(INFO_BAND);
   BAND *band = band_get_band(b);
-  snprintf(data.title, 16, "%s", band->title);
+  snprintf(data.title, sizeof(data.title), "%s", band->title);
   data.band = b;
   data.OCrx = band->OCrx;
   data.OCtx = band->OCtx;
@@ -801,7 +800,7 @@ void send_radio_data(int sock) {
   RADIO_DATA data;
   SYNC(data.header.sync);
   data.header.data_type = to_short(INFO_RADIO);
-  STRLCPY(data.name, radio->name, sizeof(data.name));
+  snprintf(data.name, sizeof(data.name), "%s", radio->name);
   data.locked = locked;
   data.protocol = protocol;
   data.supported_receivers = radio->supported_receivers;
@@ -2731,7 +2730,7 @@ static void *client_thread(void* arg) {
     rx->display_gradient = 1;
     rx->local_audio_buffer = NULL;
     rx->local_audio = 0;
-    STRLCPY(rx->audio_name, "NO AUDIO", sizeof(rx->audio_name));
+    snprintf(rx->audio_name, sizeof(rx->audio_name), "NO AUDIO");
     rx->mute_when_not_active = 0;
     rx->mute_radio = 0;
     rx->audio_channel = STEREO;
@@ -2900,7 +2899,7 @@ static void *client_thread(void* arg) {
         break;
       }
 
-      snprintf(band->title, 16, "%s", data.title);
+      snprintf(band->title, sizeof(band->title), "%s", data.title);
       band->OCrx = data.OCrx;
       band->OCtx = data.OCtx;
       band->alexRxAntenna = data.alexRxAntenna;
@@ -2952,7 +2951,7 @@ static void *client_thread(void* arg) {
 
       if (recv_bytes(client_socket, (char *)&data + sizeof(HEADER), sizeof(data) - sizeof(HEADER)) < 0) { return NULL; }
 
-      STRLCPY(radio->name, data.name, sizeof(radio->name));
+      snprintf(radio->name, sizeof(radio->name), "%s", data.name);
       locked = data.locked;
       have_rx_gain = data.have_rx_gain;
       protocol = radio->protocol = data.protocol;
@@ -3065,7 +3064,7 @@ static void *client_thread(void* arg) {
       }
 
       g_idle_add(ext_att_type_changed, NULL);
-      snprintf(title, 128, "piHPSDR: %s remote at %s", radio->name, server);
+      snprintf(title, sizeof(title), "piHPSDR: %s remote at %s", radio->name, server);
       g_idle_add(ext_set_title, (void *)title);
     }
     break;
@@ -3694,7 +3693,7 @@ int radio_connect_remote(char *host, int port, const char *pwd) {
     return -4;
   }
 
-  snprintf(server_host, 128, "%s:%d", host, port);
+  snprintf(server_host, sizeof(server_host), "%s:%d", host, port);
   client_thread_id = g_thread_new("remote_client", client_thread, &server_host);
   return 0;
 }
@@ -3729,7 +3728,7 @@ static int remote_command(void *data) {
       break;
     }
 
-    snprintf(band->title, 16, "%s", band_data->title);
+    snprintf(band->title, sizeof(band->title), "%s", band_data->title);
     band->OCrx = band_data->OCrx;
     band->OCtx = band_data->OCtx;
     band->alexRxAntenna = band_data->alexRxAntenna;

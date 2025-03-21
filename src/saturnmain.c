@@ -53,7 +53,6 @@
 
 #include "discovered.h"
 #include "message.h"
-#include "mystring.h"
 #include "new_protocol.h"
 #include "saturndrivers.h"                      // version I/O for Saturn
 #include "saturnmain.h"
@@ -410,7 +409,7 @@ void saturn_discovery() {
     discovered[devices].device = NEW_DEVICE_SATURN;
     discovered[devices].software_version = (RegisterRead(VADDRSWVERSIONREG) >> 4) & 0xFFFF;
     discovered[devices].fpga_version = RegisterRead(VADDRUSERVERSIONREG);
-    STRLCPY(discovered[devices].name, "saturn",  sizeof(discovered[devices].name));
+    snprintf(discovered[devices].name, sizeof(discovered[devices].name), "saturn");
     discovered[devices].frequency_min = 0.0;
     discovered[devices].frequency_max = 61440000.0;
     //
@@ -440,8 +439,7 @@ void saturn_discovery() {
 
     discovered[devices].info.network.address_length = 0;
     discovered[devices].info.network.interface_length = 0;
-    STRLCPY(discovered[devices].info.network.interface_name, "XDMA",
-            sizeof(discovered[devices].info.network.interface_name));
+    snprintf(discovered[devices].info.network.interface_name, sizeof(discovered[devices].info.network.interface_name), "XDMA");
     discovered[devices].use_tcp = 0;
     discovered[devices].use_routing = 0;
     discovered[devices].supported_receivers = 2;

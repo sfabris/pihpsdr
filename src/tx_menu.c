@@ -24,7 +24,6 @@
 #include "ext.h"
 #include "filter.h"
 #include "message.h"
-#include "mystring.h"
 #include "mode.h"
 #include "new_menu.h"
 #include "new_protocol.h"
@@ -576,7 +575,7 @@ static void local_input_changed_cb(GtkWidget *widget, gpointer data) {
     audio_close_input();
   }
 
-  STRLCPY(transmitter->microphone_name, input_devices[i].name, sizeof(transmitter->microphone_name));
+  snprintf(transmitter->microphone_name, sizeof(transmitter->microphone_name), "%s", input_devices[i].name);
 
   if (transmitter->local_microphone) {
     if (audio_open_input() < 0) {
@@ -586,7 +585,6 @@ static void local_input_changed_cb(GtkWidget *widget, gpointer data) {
 }
 
 void tx_menu(GtkWidget *parent) {
-  char temp[32];
   GtkWidget *btn;
   GtkWidget *mbtn;  // main button for radio buttons
   GtkWidget *label;
@@ -680,7 +678,7 @@ void tx_menu(GtkWidget *parent) {
 
     if (gtk_combo_box_get_active(GTK_COMBO_BOX(input))  < 0) {
       gtk_combo_box_set_active(GTK_COMBO_BOX(input), 0);
-      STRLCPY(transmitter->microphone_name, input_devices[0].name, sizeof(transmitter->microphone_name));
+      snprintf(transmitter->microphone_name, sizeof(transmitter->microphone_name), "%s", input_devices[0].name);
     }
 
     my_combo_attach(GTK_GRID(tx_grid), input, col, row, 4, 1);
@@ -840,7 +838,8 @@ void tx_menu(GtkWidget *parent) {
   btn = gtk_combo_box_text_new();
 
   for (int i = 0; i < CTCSS_FREQUENCIES; i++) {
-    snprintf(temp, 32, "%0.1f", ctcss_frequencies[i]);
+    char temp[32];
+    snprintf(temp, sizeof(temp), "%0.1f", ctcss_frequencies[i]);
     gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(btn), NULL, temp);
   }
 

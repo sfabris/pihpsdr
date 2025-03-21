@@ -373,11 +373,11 @@ static void add_store(int key, const struct desc *cmd) {
   char str_note[64];
   char str_action[64];
   char *cp;
-  snprintf(str_channel, 64, "%d", cmd->channel);
-  snprintf(str_note, 64, "%d", key);
+  snprintf(str_channel, sizeof(str_channel), "%d", cmd->channel);
+  snprintf(str_note, sizeof(str_note), "%d", key);
   gtk_list_store_prepend(store, &iter);
   // convert line breaks to spaces for window
-  STRLCPY(str_action, ActionTable[cmd->action].str, 64);
+  snprintf(str_action, sizeof(str_action), "%s", ActionTable[cmd->action].str);
   cp = str_action;
 
   while (*cp) {
@@ -463,8 +463,8 @@ static void updateDescription() {
   current_cmd->fr2   = thisFr2;
   current_cmd->vfr1  = thisVfr1;
   current_cmd->vfr2  = thisVfr2;
-  snprintf(str_channel, 64, "%d", thisChannel);
-  snprintf(str_note, 64, "%d", thisNote);
+  snprintf(str_channel, sizeof(str_channel), "%d", thisChannel);
+  snprintf(str_note, sizeof(str_note), "%d", thisNote);
 
   if (addFlag) {
     MidiAddCommand(thisNote, current_cmd);
@@ -473,7 +473,7 @@ static void updateDescription() {
     char str_action[64];
     char *cp;
     // convert line breaks to spaces for window
-    STRLCPY(str_action, ActionTable[thisAction].str, 64);
+    snprintf(str_action, sizeof(str_action), "%s", ActionTable[thisAction].str);
     cp = str_action;
 
     while (*cp) {
@@ -837,9 +837,9 @@ static int updatePanel(int state) {
   switch (state) {
   case UPDATE_NEW:
     gtk_label_set_text(GTK_LABEL(newEvent), Event2String(thisEvent));
-    snprintf(text, 32, "%d", thisChannel);
+    snprintf(text, sizeof(text), "%d", thisChannel);
     gtk_label_set_text(GTK_LABEL(newChannel), text);
-    snprintf(text, 32, "%d", thisNote);
+    snprintf(text, sizeof(text), "%d", thisNote);
     gtk_label_set_text(GTK_LABEL(newNote), text);
     gtk_combo_box_text_remove_all(GTK_COMBO_BOX_TEXT(newType));
 
@@ -867,28 +867,28 @@ static int updatePanel(int state) {
 
     gtk_combo_box_set_active (GTK_COMBO_BOX(newType), 0);
     gtk_button_set_label(GTK_BUTTON(newAction), ActionTable[thisAction].str);
-    snprintf(text, 32, "%d", thisVal);
+    snprintf(text, sizeof(text), "%d", thisVal);
     gtk_label_set_text(GTK_LABEL(newVal), text);
-    snprintf(text, 32, "%d", thisMin);
+    snprintf(text, sizeof(text), "%d", thisMin);
     gtk_label_set_text(GTK_LABEL(newMin), text);
-    snprintf(text, 32, "%d", thisMax);
+    snprintf(text, sizeof(text), "%d", thisMax);
     gtk_label_set_text(GTK_LABEL(newMax), text);
     break;
 
   case UPDATE_CURRENT:
-    snprintf(text, 32, "%d", thisVal);
+    snprintf(text, sizeof(text), "%d", thisVal);
     gtk_label_set_text(GTK_LABEL(newVal), text);
-    snprintf(text, 32, "%d", thisMin);
+    snprintf(text, sizeof(text), "%d", thisMin);
     gtk_label_set_text(GTK_LABEL(newMin), text);
-    snprintf(text, 32, "%d", thisMax);
+    snprintf(text, sizeof(text), "%d", thisMax);
     gtk_label_set_text(GTK_LABEL(newMax), text);
     break;
 
   case UPDATE_EXISTING:
     gtk_label_set_text(GTK_LABEL(newEvent), Event2String(thisEvent));
-    snprintf(text, 32, "%d", thisChannel);
+    snprintf(text, sizeof(text), "%d", thisChannel);
     gtk_label_set_text(GTK_LABEL(newChannel), text);
-    snprintf(text, 32, "%d", thisNote);
+    snprintf(text, sizeof(text), "%d", thisNote);
     gtk_label_set_text(GTK_LABEL(newNote), text);
     gtk_combo_box_text_remove_all(GTK_COMBO_BOX_TEXT(newType));
 
@@ -927,11 +927,11 @@ static int updatePanel(int state) {
       break;
     }
 
-    snprintf(text, 32, "%d", thisVal);
+    snprintf(text, sizeof(text), "%d", thisVal);
     gtk_label_set_text(GTK_LABEL(newVal), text);
-    snprintf(text, 32, "%d", thisMin);
+    snprintf(text, sizeof(text), "%d", thisMin);
     gtk_label_set_text(GTK_LABEL(newMin), text);
-    snprintf(text, 32, "%d", thisMax);
+    snprintf(text, sizeof(text), "%d", thisMax);
     gtk_label_set_text(GTK_LABEL(newMax), text);
     find_current_cmd();
 
@@ -1091,8 +1091,6 @@ void NewMidiConfigureEvent(enum MIDIevent event, int channel, int note, int val)
 }
 
 void midiSaveState() {
-  char name[128];
-  char value[128];
   struct desc *cmd;
   int entry;
   int i;
@@ -1142,9 +1140,7 @@ void midiSaveState() {
     }
 
     if (entry != -1) {
-      snprintf(name, 128, "midi[%d].entries", i);
-      snprintf(value, 128, "%d", entry + 1);
-      setProperty(name, value);
+      SetPropI1("midi[%d].entries", i, entry+1);
     }
   }
 }
@@ -1174,7 +1170,7 @@ void midiRestoreState() {
   // radio.c when it is appropriate
   //
   for (i = 0; i < MAX_MIDI_DEVICES; i++) {
-    STRLCPY(str, "NO_MIDI_DEVICE_FOUND", 128);
+    snprintf(str, sizeof(str), "NO_MIDI_DEVICE_FOUND");
     GetPropS1("mididevice[%d].name", i,  str);
 
     for (j = 0; j < n_midi_devices; j++) {
@@ -1196,10 +1192,10 @@ void midiRestoreState() {
 
       if (channel < 0) { continue; }
 
-      STRLCPY(str, "NONE", 128);
+      snprintf(str, sizeof(str), "NONE");
       GetPropS3("midi[%d].entry[%d].channel[%d].event", i, entry, channel, str);
       event = String2Event(str);
-      STRLCPY(str, "NONE", 128);
+      snprintf(str, sizeof(str), "NONE");
       GetPropS3("midi[%d].entry[%d].channel[%d].type", i, entry, channel, str);
       type  = String2Type(str);
       action = NO_ACTION;
