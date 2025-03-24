@@ -466,13 +466,19 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
     // Both analog and digital, VOX status
     // The mic level meter is not shown in CW modes,
     // otherwise it is always shown while TX, and shown
-    // during RX only if VOX is enabled
+    // during RX only if VOX is enabled.
+    //
+    // The MicLvl is now in dB, the scale going from -40 to 0 dB.
     //
     if (((meter_type == POWER) || vox_enabled) && !cwmode) {
       double offset = ((double)METER_WIDTH - 100.0) / 2.0;
       double peak = vox_get_peak();
 
       if (peak > 1.0) { peak = 1.0; }
+
+      peak = 50.0*log(peak) + 100.0;  // 0-100 maps to -40...0 dB
+
+      if (peak < 0.0) { peak = 0.0; }
 
       peak = peak * 100.0;
       cairo_set_source_rgba(cr, COLOUR_OK);
