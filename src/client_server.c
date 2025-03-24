@@ -224,10 +224,10 @@ static void generate_pwd_hash(unsigned char *s, unsigned char *hash, const char 
   //
   // Add version number to the challenge
   //
-  s[SHA512_DIGEST_LENGTH + 1] = (CLIENT_SERVER_VERSION >> 24) & 0xFF;
-  s[SHA512_DIGEST_LENGTH + 2] = (CLIENT_SERVER_VERSION >> 16) & 0xFF;
-  s[SHA512_DIGEST_LENGTH + 3] = (CLIENT_SERVER_VERSION >>  8) & 0xFF;
-  s[SHA512_DIGEST_LENGTH + 4] = (CLIENT_SERVER_VERSION >>  0) & 0xFF;
+  s[SHA512_DIGEST_LENGTH]     = (CLIENT_SERVER_VERSION >> 24) & 0xFF;
+  s[SHA512_DIGEST_LENGTH + 1] = (CLIENT_SERVER_VERSION >> 16) & 0xFF;
+  s[SHA512_DIGEST_LENGTH + 2] = (CLIENT_SERVER_VERSION >>  8) & 0xFF;
+  s[SHA512_DIGEST_LENGTH + 3] = (CLIENT_SERVER_VERSION >>  0) & 0xFF;
   int pwdlen = strlen(pwd);
 
   if (pwdlen > SHA512_DIGEST_LENGTH) { pwdlen = SHA512_DIGEST_LENGTH; }
@@ -236,7 +236,7 @@ static void generate_pwd_hash(unsigned char *s, unsigned char *hash, const char 
   // Add password to the challenge
   //
   for  (int i = 0; i < pwdlen; i++) {
-    s[SHA512_DIGEST_LENGTH + 5 + i] = pwd[i];
+    s[SHA512_DIGEST_LENGTH + 4 + i] = pwd[i];
   }
 
   //
@@ -253,13 +253,13 @@ static void generate_pwd_hash(unsigned char *s, unsigned char *hash, const char 
       s[j] = hash[j];
     }
 
-    s[SHA512_DIGEST_LENGTH + 1] = (CLIENT_SERVER_VERSION >> 24) & 0xFF;
-    s[SHA512_DIGEST_LENGTH + 2] = (CLIENT_SERVER_VERSION >> 16) & 0xFF;
-    s[SHA512_DIGEST_LENGTH + 3] = (CLIENT_SERVER_VERSION >>  8) & 0xFF;
-    s[SHA512_DIGEST_LENGTH + 4] = (CLIENT_SERVER_VERSION >>  0) & 0xFF;
+    s[SHA512_DIGEST_LENGTH]     = (CLIENT_SERVER_VERSION >> 24) & 0xFF;
+    s[SHA512_DIGEST_LENGTH + 1] = (CLIENT_SERVER_VERSION >> 16) & 0xFF;
+    s[SHA512_DIGEST_LENGTH + 2] = (CLIENT_SERVER_VERSION >>  8) & 0xFF;
+    s[SHA512_DIGEST_LENGTH + 3] = (CLIENT_SERVER_VERSION >>  0) & 0xFF;
 
     for  (int j = 0; j < pwdlen; j++) {
-      s[SHA512_DIGEST_LENGTH + 5 + j] = pwd[j];
+      s[SHA512_DIGEST_LENGTH + 4 + j] = pwd[j];
     }
 
     //
