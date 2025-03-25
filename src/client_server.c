@@ -854,19 +854,19 @@ void send_radio_data(int sock) {
   memcpy(data.soapy_driver_key, radio->info.soapy.driver_key, 64);
 
   for (int i = 0; i < radio->info.soapy.rx_antennas; i++) {
-    memcpy(&data.soapy_rx_antenna[0][i], &radio->info.soapy.rx_antenna[0][i], 64);
+    memcpy(data.soapy_rx_antenna[i], radio->info.soapy.rx_antenna[i], 64);
   }
 
   for (int i = 0; i < radio->info.soapy.tx_antennas; i++) {
-    memcpy(&data.soapy_tx_antenna[0][i], &radio->info.soapy.tx_antenna[0][i], 64);
+    memcpy(data.soapy_tx_antenna[i], radio->info.soapy.tx_antenna[i], 64);
   }
 
   for (int i = 0; i < radio->info.soapy.rx_gains; i++) {
-    memcpy(&data.soapy_rx_gain[0][i], &radio->info.soapy.rx_gain[0][i], 64);
+    memcpy(data.soapy_rx_gain[i], radio->info.soapy.rx_gain[i], 64);
   }
 
   for (int i = 0; i < radio->info.soapy.tx_gains; i++) {
-    memcpy(&data.soapy_tx_gain[0][i], &radio->info.soapy.tx_gain[0][i], 64);
+    memcpy(data.soapy_tx_gain[i], radio->info.soapy.tx_gain[i], 64);
   }
 
   //
@@ -3006,19 +3006,19 @@ static void *client_thread(void* arg) {
       memcpy(radio->info.soapy.driver_key, data.soapy_driver_key, 64);
 
       for (int i = 0; i < radio->info.soapy.rx_antennas; i++) {
-        memcpy(&radio->info.soapy.rx_antenna[0][i], &data.soapy_rx_antenna[0][i], 64);
+        memcpy(radio->info.soapy.rx_antenna[i], data.soapy_rx_antenna[i], 64);
       }
 
       for (int i = 0; i < radio->info.soapy.tx_antennas; i++) {
-        memcpy(&radio->info.soapy.tx_antenna[0][i], &data.soapy_tx_antenna[0][i], 64);
+        memcpy(radio->info.soapy.tx_antenna[i], data.soapy_tx_antenna[i], 64);
       }
 
       for (int i = 0; i < radio->info.soapy.rx_gains; i++) {
-        memcpy(&radio->info.soapy.rx_gain[0][i], &data.soapy_rx_gain[0][i], 64);
+        memcpy(radio->info.soapy.rx_gain[i], data.soapy_rx_gain[i], 64);
       }
 
       for (int i = 0; i < radio->info.soapy.tx_gains; i++) {
-        memcpy(&radio->info.soapy.tx_gain[0][i], &data.soapy_tx_gain[0][i], 64);
+        memcpy(radio->info.soapy.tx_gain[i], data.soapy_tx_gain[i], 64);
       }
 
       //

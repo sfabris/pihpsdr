@@ -254,7 +254,7 @@ static void get_info(char *driver) {
     for (size_t i = 0; i < rx_gains_length; i++) {
       SoapySDRRange rx_range = SoapySDRDevice_getGainElementRange(sdr, SOAPY_SDR_RX, 0, rx_gains[i]);
       t_print("RX gain available: %s, %f -> %f step=%f\n", rx_gains[i], rx_range.minimum, rx_range.maximum, rx_range.step);
-      snprintf(&discovered[devices].info.soapy.rx_gain[0][i], 64, "%s", rx_gains[i]);
+      snprintf(discovered[devices].info.soapy.rx_gain[i], 64, "%s", rx_gains[i]);
       discovered[devices].info.soapy.rx_range_step[i] = rx_range.step;
       discovered[devices].info.soapy.rx_range_min[i] = rx_range.minimum;
       discovered[devices].info.soapy.rx_range_max[i] = rx_range.maximum;
@@ -266,7 +266,7 @@ static void get_info(char *driver) {
     discovered[devices].info.soapy.tx_channels = tx_channels;
 
     for (size_t i = 0; i < rx_antennas_length; i++) {
-      snprintf(&discovered[devices].info.soapy.rx_antenna[0][i], 64, "%s", rx_antennas[i]);
+      snprintf(discovered[devices].info.soapy.rx_antenna[i], 64, "%s", rx_antennas[i]);
     }
 
     if (tx_channels > 0) {
@@ -279,7 +279,7 @@ static void get_info(char *driver) {
       for (size_t i = 0; i < tx_gains_length; i++) {
         SoapySDRRange tx_range = SoapySDRDevice_getGainElementRange(sdr, SOAPY_SDR_TX, 0, tx_gains[i]);
         t_print("TX gain %s, %f -> %f step=%f\n", tx_gains[i], tx_range.minimum, tx_range.maximum, tx_range.step);
-        snprintf(&discovered[devices].info.soapy.tx_gain[0][i], 64, "%s", tx_gains[i]);
+        snprintf(discovered[devices].info.soapy.tx_gain[i], 64, "%s", tx_gains[i]);
         discovered[devices].info.soapy.tx_range_step[i] = tx_range.step;
         discovered[devices].info.soapy.tx_range_min[i] = tx_range.minimum;
         discovered[devices].info.soapy.tx_range_max[i] = tx_range.maximum;
@@ -293,7 +293,7 @@ static void get_info(char *driver) {
 
       for (size_t i = 0; i < tx_antennas_length; i++) {
         t_print( "TX antenna: %s\n", tx_antennas[i]);
-        snprintf(&discovered[devices].info.soapy.tx_antenna[0][i], 64, "%s", tx_antennas[i]);
+        snprintf(discovered[devices].info.soapy.tx_antenna[i], 64, "%s", tx_antennas[i]);
       }
     }
 

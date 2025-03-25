@@ -370,10 +370,10 @@ typedef struct __attribute__((__packed__)) _radio_data {
   //
   char     soapy_hardware_key[64];
   char     soapy_driver_key[64];
-  char     soapy_rx_antenna[64][8];
-  char     soapy_tx_antenna[64][8];
-  char     soapy_rx_gain[64][8];
-  char     soapy_tx_gain[64][8];
+  char     soapy_rx_antenna[8][64];
+  char     soapy_tx_antenna[8][64];
+  char     soapy_rx_gain[8][64];
+  char     soapy_tx_gain[8][64];
   //
   uint16_t pa_power;
   uint16_t OCfull_tune_time;

@@ -123,13 +123,13 @@ struct _DISCOVERED {
       double tx_range_max[8];
       int    rx_antennas;
       int    tx_antennas;
-      char rx_antenna[64][8];
-      char tx_antenna[64][8];
+      char rx_antenna[8][64];
+      char tx_antenna[8][64];
       int sample_rate;
       int    rx_gains;
       int    tx_gains;
-      char rx_gain[64][8];
-      char tx_gain[64][8];
+      char rx_gain[8][64];
+      char tx_gain[8][64];
       int rx_has_automatic_gain;
       int    tx_channels;
 #ifdef SOAPYSDR
