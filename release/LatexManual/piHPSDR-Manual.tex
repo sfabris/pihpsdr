@@ -569,7 +569,14 @@ sliders. Although they are largely self-explanatory, I take the occasion to desc
 The \rett{AF} slider controls the audio volume of the active receiver, from -40 to 0 dB. If moved to the
 far left (at -40 dB) the audio is muted completely.
 
-The \rett{AGC} slider controls the AGC of the currently active receiver, it goes from 0 to 120 dB.
+The \rett{AGC} slider controls the AGC of the currently active receiver, it goes from 0 to 120 dB. There
+is a green horizontal line (with a letter G at the left edge) in the RX panadapter, and the \rett{AGC}
+slider should be positioned such that the green line is at the level (or slightly above) the noise
+floor. Note that the AGC value does not only depend on the attenuation/gain in the RF front end
+(e. g. the position of the \rett{ATT} slider) but also on the current filter bandwidth (for a filter
+10 times narrower the \rett{AGC} value can be increased by 10 dB). Note that if the green line
+is higher up than the signals you want to receive, they will probably not be heard in the
+RX audio.
 
 The \rett{ATT} slider controls a programmable attenuator in the RF front end of the active receiver. For
 HPSDR hardware, it goes from 0 to 31 dB. The HermesLite-II has a slider named \rett{RF} at this place,
@@ -578,7 +585,17 @@ since this radio has a programmable preamplifier/attenuator that goes from -12 t
 
 The \rett{Mic} slider adds an amplification from -12 to +50 dB to the audio signal fed to the transmitter.
 This amplification is purely done numerically (no effect on any hardware) and applies to the audio signal
-no matter where it comes from, let it be real microphones or virtual audio cable.
+no matter where it comes from, let it be real microphones or virtual audio cable. For digital modes using
+virtual audio cables, one normally uses no compression, no TX equaliser etc. and the \rett{Mic} slider
+should stay at +0 dB. For most setups, this also applies if one uses the TX compressor since this will
+automatically activate an auto-leveler. However, if no compression etc. is used in the TX chain, then
+it is usually required to advance the \rett{Mic} slider to about +10 dB. The reason is simply, that
+for most audio gear one takes care that one stays below -10 dBFS (FS stands for full scale). The best
+way to level the microphone in SSB modes, is to display the TX peak ALC value in the meter. Then one
+decreases the \rett{Mic} gain if the value if close to zero, and one increases the \rett{Mic} gain if
+the peak ALC value is substantially below zero during normal speech. Not only your transmission will
+sount ``thin'' if the \rett{Mic} gain is too low, adaptive predistortion (PURESIGNAL) also requires
+that TX ALC values peak close to zero.
 
 The \rett{TX Drv} slider controls the RF output power. It goes from 0 to 100 and is meant in percent. That is,
 a 5-Watt radio such as the HermesLite-II should transmit 5 Watts if this slider is at position 100. See the
@@ -977,7 +994,11 @@ in addition, SWR protection is enabled in the \bltt{TX} menu, the output
 drive  will be reduced to zero if the SWR exceed that threshold.
 Furthermore, the ALC (automatic level control) value of the transmitter is
 shown. Negative ALC values (at least in peak mode) indicate that the volume of the TX input audio
-could be increased to get full output  power.
+could be increased to get full output  power. During TX (and also during RX when using
+voice control (VOX), the actual level of the TX audio  signal is shown through
+the small \rett{MicLvl} bar. The audio level is in dB from $-40\ldots0$ dB. Note that
+this refers to the peak level of the  incoming ``TX microphone'' audio data, there can
+be further amplification in the TX  chain through the \bltt{Mic} slider.
 
 Further info on the meters (e.g. switching between ,,peak'' and ,,average'' reporting)
 is described in the \bltt{Meter} menu.
@@ -3382,7 +3403,7 @@ no functional difference between the \bltt{Tune}, \bltt{Tune Full} and
 \bltt{Tune Mem} commands.
 
 The \bltt{OC} bit pattern you see in Fig. \ref{fig:OCMenu} is what you automatically
-get when selecting the 
+get when selecting the
 \texttt{N2ADR} filter board in the \bltt{Radio} menu
 (this is usually the
 case if you are working with a HermesLite-II radio). This means that
