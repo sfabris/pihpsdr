@@ -2337,7 +2337,7 @@ void tx_set_compressor(TRANSMITTER *tx) {
   SetTXALevelerSt(tx->id, tx->compressor || tx->cfc);
   SetTXALevelerAttack(tx->id, 1);
   SetTXALevelerDecay(tx->id, 500);
-  SetTXALevelerTop(tx->id, 6.0);
+  SetTXALevelerTop(tx->id, 8.0);
   SetTXACFCOMPprofile(tx->id, 10, tx->cfc_freq + 1, tx->cfc_lvl + 1, tx->cfc_post + 1);
   SetTXACFCOMPPrecomp(tx->id, tx->cfc_lvl[0]);
   SetTXACFCOMPPrePeq(tx->id, tx->cfc_post[0]);

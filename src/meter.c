@@ -463,7 +463,6 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
     }
 
     //
-    // Both analog and digital, VOX status
     // The mic level meter is not shown in CW modes,
     // otherwise it is always shown while TX, and shown
     // during RX only if VOX is enabled.
@@ -474,13 +473,18 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
       double offset = ((double)METER_WIDTH - 100.0) / 2.0;
       double peak = vox_get_peak();
 
-      if (peak > 1.0) { peak = 1.0; }
+      //
+      // Map peak value to a scale -40 ... 0 dB.
+      // 21.714 = 50 / ln(10)
+      //
+      if (peak > 1.0) {
+        peak = 100.0;
+      } else if (peak < 0.01) {
+        peak = 0.0;
+      } else {
+        peak = 21.714*log(peak) + 100.0;  //  mapped to 0 .. 100
+      }
 
-      peak = 50.0*log(peak) + 100.0;  // 0-100 maps to -40...0 dB
-
-      if (peak < 0.0) { peak = 0.0; }
-
-      peak = peak * 100.0;
       cairo_set_source_rgba(cr, COLOUR_OK);
       cairo_rectangle(cr, offset, 0.0, peak, 5.0);
       cairo_fill(cr);
@@ -541,9 +545,14 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
       cairo_stroke(cr);
       double peak = vox_get_peak();
 
-      if (peak > 1.0) { peak = 1.0; }
+      if (peak > 1.0) {
+        peak = 100.0;
+      } else if (peak < 0.01) {
+        peak = 0.0;
+      } else {
+        peak = 21.714*log(peak) + 100.0;  //  mapped to 0 .. 100
+      }
 
-      peak = peak * 100.0;
       cairo_set_source_rgba(cr, COLOUR_OK);
       cairo_rectangle(cr, 5.0, Y1 - 10, peak, 5);
       cairo_fill(cr);
