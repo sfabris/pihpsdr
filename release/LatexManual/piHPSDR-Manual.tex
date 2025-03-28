@@ -7617,7 +7617,7 @@ execute \grtt{sudo} commands without being asked a password.
 }
 \end{center}
 
-\textbf{Install \pH from the internet.}
+\section{Fresh install from the internet}
 To install from the sources, open a terminal window. If you do so, you get
 a prompt and are in your home directory. It is assumed that no directory named \texttt{pihpsdr}
 exists. If it does, then this is likely a left-over from some previous
@@ -7851,6 +7851,119 @@ is hard-wired into \pH, so if the Pluto shows up with some other name, it is pos
 to a SoapySDR device that has not been recognised by the SoapySDR library. If such a problem arises, this
 stems from missing, corrupt, or outdated SoapySDR libraries which are not part of \pH.
 
+\section{Upgrading an installation}
+\pH is a ``living'' program, which means that regularly  error corrections are made, and new features are
+introduced. After the internet repository has been updated, your installation will (of course) not change
+until you perform specific actions as described in this section. But before documention how to do this,
+some general principles should be made clear:
+
+\begin{itemize}
+\item{If an error is found, it will be corrected both in the master branch (the current version) and in the
+most recent release branch.}
+\item{New features will only be included in the master branch, while the release branch is ``feature frozen''.}
+\item{In the following, it will both be explained how to upgrade your current branch, or how to
+switch to the lastest version of  another branch (e.g. to move from a release version to the current version).}
+\end{itemize}
+
+\textbf{Which branches do exist?}
+
+The following commands simply show which branches do exist.
+
+\grtt{cd \$HOME/pihpsdr} \\
+\grtt{git pull} \\
+\grtt{git branch -a}
+
+On my computer the output is
+
+\begin{verbatim}
+  RELEASE-2.2-DL1YCF
+  Rel-2.3
+  Rel-2.4
+* master
+  remotes/origin/HEAD -> origin/master
+  remotes/origin/RELEASE-2.2-DL1YCF
+  remotes/origin/Rel-2.3
+  remotes/origin/Rel-2.4
+  remotes/origin/master
+\end{verbatim}
+
+You can ignore the  lines starting with \texttt{remotes}. The other lines display the names of all
+existing branches, and the line starting with a star indicates the branch you are currently on.
+The branches \texttt{RELEASE-2.2-DL1YCF} and {Rel-2.3} are meanwhile outdated, the actual release branch
+at the time of  this writing is \texttt{Rel-2.4}.
+
+\medskip
+\textbf{Which version do I have?}
+
+To be sure which version/branch is actually installed on your compute, open a terminal  window and
+type in the commands
+
+\grtt{cd \$HOME/pihpsdr} \\
+\grtt{git status}
+
+The output of the last commands tells you which branch your are using. If the output starts
+with
+
+\begin{verbatim}
+On branch master
+Your branch is up to date with 'origin/master'.
+\end{verbatim}
+
+then you are using the ``current version'' (that is, the master branch). If you are using a release
+version, then the output reads (for the v2.4 release)
+
+\begin{verbatim}
+On branch Rel-2.4
+Your branch is up to date with 'origin/Rel-2.4'.
+\end{verbatim}
+
+which tells you you are on the Rel-2.4 branch. Note that if you committed local modifications,
+your branch will not be up to date with the repository as indicated in the outputs shown above,
+and in this case this whole section does  not apply  to you. But if you have committed  local
+modifications, this usually means you are an expert and know what to do.
+
+\medskip
+\textbf{Standard update procedure}
+
+The standard update procedure will bring \pH on your computer to the latest version of
+that specic branch (either the master ``current'' branch or a release branch).
+Just use the following commands in a terminal window
+
+\grtt{cd \$HOME/pihpsdr} \\
+\grtt{git pull} \\
+\grtt{make clean} \\
+\grtt{LINUX/libinstall.sh} \\
+\grtt{make}
+
+Note the command \texttt{libinstall.sh} will take some time and is not necessary in most cases. But occasionally,
+\pH upgrades require new libraries to be installed and \texttt{libinstall.sh} takes care of that.
+
+\medskip
+\textbf{Switching to the master branch}
+
+No matter what your starting point is, the following commands will bring you to the
+lastest ``current'' version, that is, the lastest version of the master branch:
+
+\grtt{cd \$HOME/pihpsdr} \\
+\grtt{git checkout master} \\
+\grtt{git pull} \\
+\grtt{make clean} \\
+\grtt{LINUX/libinstall.sh} \\
+\grtt{make}
+
+\medskip
+\textbf{Switching to a release branch}
+
+No matter whether your starting point is the master branch or another release branch, the following
+commmands will bring you to  the v2.4 release branch:
+
+\grtt{cd \$HOME/pihpsdr} \\
+\grtt{git checkout Rel-2.4} \\
+\grtt{git pull} \\
+\grtt{make clean} \\
+\grtt{LINUX/libinstall.sh} \\
+\grtt{make}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter[MacOS: \pH install from sources]{Installation of \pH from the sources (MacOS)}
@@ -7883,6 +7996,8 @@ to install the ,,HomeBrew'' universe which is the prerequisite for compiling \pH
 }
 }
 \end{center}
+
+\section{Fresh install from the internet}
 
 Some users have reported that it seems to be necessary to first install the X Window manager on the Macintosh.
 While I cannot confirm this, it also does no harm if you install X-Windows on your Mac.
@@ -8093,6 +8208,123 @@ and this shows that the SoapySDR library has recognised the Pluto.
 There is no way for \pH to connect
 to a SoapySDR device that has not been recognised by the SoapySDR library. If such a problem arises, this
 stems from missing, corrupt, or outdated SoapySDR libraries which are not part of \pH.
+
+\section{Upgrading an installation}
+\pH is a ``living'' program, which means that regularly  error corrections are made, and new features are
+introduced. After the internet repository has been updated, your installation will (of course) not change
+until you perform specific actions as described in this section. But before documention how to do this,
+some general principles should be made clear:
+
+\begin{itemize}
+\item{If an error is found, it will be corrected both in the master branch (the current version) and in the
+most recent release branch.}
+\item{New features will only be included in the master branch, while the release branch is ``feature frozen''.}
+\item{In the following, it will both be explained how to upgrade your current branch, or how to
+switch to the lastest version of  another branch (e.g. to move from a release version to the current version).}
+\end{itemize}
+
+\textbf{Which branches do exist?}
+
+The following commands simply show which branches do exist.
+
+\grtt{cd \$HOME/pihpsdr} \\
+\grtt{git pull} \\
+\grtt{git branch -a}
+
+On my computer the output is
+
+\begin{verbatim}
+  RELEASE-2.2-DL1YCF
+  Rel-2.3
+  Rel-2.4
+* master
+  remotes/origin/HEAD -> origin/master
+  remotes/origin/RELEASE-2.2-DL1YCF
+  remotes/origin/Rel-2.3
+  remotes/origin/Rel-2.4
+  remotes/origin/master
+\end{verbatim}
+
+You can ignore the  lines starting with \texttt{remotes}. The other lines display the names of all
+existing branches, and the line starting with a star indicates the branch you are currently on.
+The branches \texttt{RELEASE-2.2-DL1YCF} and {Rel-2.3} are meanwhile outdated, the actual release branch
+at the time of  this writing is \texttt{Rel-2.4}.
+
+\medskip
+\textbf{Which version do I have?}
+
+To be sure which version/branch is actually installed on your compute, open a terminal  window and
+type in the commands
+
+\grtt{cd \$HOME/pihpsdr} \\
+\grtt{git status}
+
+The output of the last commands tells you which branch your are using. If the output starts
+with
+
+\begin{verbatim}
+On branch master
+Your branch is up to date with 'origin/master'.
+\end{verbatim}
+
+then you are using the ``current version'' (that is, the master branch). If you are using a release
+version, then the output reads (for the v2.4 release)
+
+\begin{verbatim}
+On branch Rel-2.4
+Your branch is up to date with 'origin/Rel-2.4'.
+\end{verbatim}
+
+which tells you you are on the Rel-2.4 branch. Note that if you committed local modifications,
+your branch will not be up to date with the repository as indicated in the outputs shown above,
+and in this case this whole section does  not apply  to you. But if you have committed  local
+modifications, this usually means you are an expert and know what to do.
+
+\medskip
+\textbf{Standard update procedure}
+
+The standard update procedure will bring \pH on your computer to the latest version of
+that specic branch (either the master ``current'' branch or a release branch).
+Just use the following commands in a terminal window
+
+\grtt{cd \$HOME/pihpsdr} \\
+\grtt{git pull} \\
+\grtt{make clean} \\
+\grtt{MacOS/libinstall.sh} \\
+\grtt{make}
+
+Note the command \textit{libinstall.sh} will take some time and is not necessary in most cases. But occasionally,
+\pH upgrades require additional libraries to be installed and the commands shown here take care of that.
+
+\medskip
+\textbf{Switching to the master branch}
+
+No matter what your starting point is, the following commands will bring you to the
+lastest ``current'' version, that is, the lastest version of the master branch:
+
+\grtt{cd \$HOME/pihpsdr} \\
+\grtt{git checkout master} \\
+\grtt{git pull} \\
+\grtt{make clean} \\
+\grtt{MacOS/libinstall.sh} \\
+\grtt{make}
+
+Note the command \texttt{libinstall.sh} will take some time and is not necessary in most cases. But occasionally,
+\pH upgrades require new libraries to be installed and \texttt{libinstall.sh} takes care of that.
+
+\medskip
+\textbf{Switching to a release branch}
+
+No matter whether your starting point is the master branch or another release branch, the following
+commmands will bring you to  the v2.4 release branch:
+
+\grtt{cd \$HOME/pihpsdr} \\
+\grtt{git checkout Rel-2.4} \\
+\grtt{git pull} \\
+\grtt{make clean} \\
+\grtt{MacOS/libinstall.sh} \\
+\grtt{make}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \chapter[Connecting the Computer and the Radio]{Connecting Computer and Radio}
