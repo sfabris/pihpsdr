@@ -2326,14 +2326,13 @@ void tx_set_compressor(TRANSMITTER *tx) {
   //   usage of CFC alongside with the speech processor
   //   is allowed.
   //
-  // - with COMP or CFC (or both) automatically (dis)engage
-  //   the auto-leveler and the phase rotator
+  // - with COMP or CFC (or both) automatically engage
+  //   the auto-leveler with 8 dB
+  // - if using COMP: engage CESSB overshoot control if compression level > 5
+  // - do not use the phase rotator
   //
-  // - if using COMP: engage CESSB overshoot control
+  // So using the compressor with 0dB makes sense, you get the auto leveler
   //
-  // Run phase rotator and auto-leveler with both COMP and CRC
-  //
-  SetTXAPHROTRun(tx->id, tx->compressor || tx->cfc);
   SetTXALevelerSt(tx->id, tx->compressor || tx->cfc);
   SetTXALevelerAttack(tx->id, 1);
   SetTXALevelerDecay(tx->id, 500);
@@ -2343,8 +2342,7 @@ void tx_set_compressor(TRANSMITTER *tx) {
   SetTXACFCOMPPrePeq(tx->id, tx->cfc_post[0]);
   SetTXACFCOMPRun(tx->id, tx->cfc);
   SetTXACFCOMPPeqRun(tx->id, tx->cfc_eq);
-  // CESSB overshoot control used only with COMP
-  SetTXAosctrlRun(tx->id, tx->compressor);
+  SetTXAosctrlRun(tx->id, tx->compressor && (tx->compressor_level > 5.5));
   SetTXACompressorGain(tx->id, tx->compressor_level);
   SetTXACompressorRun(tx->id, tx->compressor);
 #ifdef WDSPTXDEBUG
