@@ -1972,21 +1972,24 @@ void tx_create_analyzer(const TRANSMITTER *tx) {
 
 double tx_get_alc(const TRANSMITTER *tx) {
   ASSERT_SERVER(0.0);
-  double alc;
+  double alc, gain;
 
   switch (tx->alcmode) {
   case ALC_PEAK:
   default:
     alc = GetTXAMeter(tx->id, TXA_ALC_PK);
+    gain = GetTXAMeter(tx->id, TXA_ALC_GAIN);
+    //
+    // If the signal is below full-scale, alc will be negative and gain will be zero.
+    // If the signal is above full-scale, alc will be zero and gain will be positive
+    //
+    if (gain > 0.0) { alc = gain; }
     break;
 
   case ALC_AVERAGE:
     alc = GetTXAMeter(tx->id, TXA_ALC_AV);
     break;
 
-  case ALC_GAIN:
-    alc = GetTXAMeter(tx->id, TXA_ALC_GAIN);
-    break;
   }
 
   return alc;

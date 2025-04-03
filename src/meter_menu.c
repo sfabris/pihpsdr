@@ -86,10 +86,6 @@ static void alc_select_cb(GtkToggleButton *widget, gpointer data) {
   case 1:
     transmitter->alcmode = ALC_AVERAGE;
     break;
-
-  case 2:
-    transmitter->alcmode = ALC_GAIN;
-    break;
   }
 
   if (radio_is_remote) {
@@ -155,7 +151,6 @@ void meter_menu (GtkWidget *parent) {
     my_combo_attach(GTK_GRID(grid), w, 1, 3, 1, 1);
     gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(w), NULL, "Peak");
     gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(w), NULL, "Average");
-    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(w), NULL, "Gain");
 
     switch (transmitter->alcmode) {
     case ALC_PEAK:
@@ -164,10 +159,6 @@ void meter_menu (GtkWidget *parent) {
 
     case ALC_AVERAGE:
       gtk_combo_box_set_active(GTK_COMBO_BOX(w), 1);
-      break;
-
-    case ALC_GAIN:
-      gtk_combo_box_set_active(GTK_COMBO_BOX(w), 2);
       break;
     }
 
