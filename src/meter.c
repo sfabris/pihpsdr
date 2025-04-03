@@ -482,7 +482,7 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
       } else if (peak < 0.01) {
         peak = 0.0;
       } else {
-        peak = 21.714*log(peak) + 100.0;  //  mapped to 0 .. 100
+        peak = 21.714 * log(peak) + 100.0; //  mapped to 0 .. 100
       }
 
       cairo_set_source_rgba(cr, COLOUR_OK);
@@ -550,7 +550,7 @@ void meter_update(RECEIVER *rx, int meter_type, double value, double alc, double
       } else if (peak < 0.01) {
         peak = 0.0;
       } else {
-        peak = 21.714*log(peak) + 100.0;  //  mapped to 0 .. 100
+        peak = 21.714 * log(peak) + 100.0; //  mapped to 0 .. 100
       }
 
       cairo_set_source_rgba(cr, COLOUR_OK);

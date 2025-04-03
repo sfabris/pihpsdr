@@ -1081,6 +1081,7 @@ void NewMidiConfigureEvent(enum MIDIevent event, int channel, int note, int val)
   if (ignore_incoming_events) {
     return;
   }
+
   //
   // Sometimes a "heart beat" from a device might be useful. Therefore, we resert
   // channel=16 note=0 for this purpose and filter this out here

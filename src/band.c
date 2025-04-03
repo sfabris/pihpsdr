@@ -475,12 +475,13 @@ void bandRestoreState() {
     // results in a no-show, because the calibrated value (39-40 dB) is
     // so much less than the default value (53 dB). So for HermesLite-II,
     // we change the default to 40.5 dB. This will be overwritten from
-    // the props file, but for a first-time start, one gets something 
+    // the props file, but for a first-time start, one gets something
     // reasonable here.
     //
     if (device == DEVICE_HERMES_LITE2) {
       bands[b].pa_calibration = 40.5;
     }
+
     //
     // For the "normal" (non-XVTR) bands, do not change the title,
     // and do not fill in XVTR-specific data. There is no GUI for these bands
