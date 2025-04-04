@@ -588,14 +588,7 @@ This amplification is purely done numerically (no effect on any hardware) and ap
 no matter where it comes from, let it be real microphones or virtual audio cable. For digital modes using
 virtual audio cables, one normally uses no compression, no TX equaliser etc. and the \rett{Mic} slider
 should stay at +0 dB. For many microphones, it might be useful to advance the \rett{Mic} slider
-to about +10 dB. The reason is simply, that
-for most audio gear one takes care that one stays below -10 dBFS (FS stands for full scale). On the
-other hand, the audio input to the TX chain should scratch at the FS limit such that TX compression
-or adaptive predistortion (PURESIGNAL) works best. Part of this gap may be closed when using
-a compressor since this automatically involves an auto-leveler.  The best
-way to level the microphone in SSB modes, is to display the TX peak ALC value in the meter. Then one
-decreases the \rett{Mic} gain if the value if close to zero, and one increases the \rett{Mic} gain if
-the peak ALC value is substantially below zero during normal speech.
+to positive values. For more information, see chapter \ref{sec:txchain} on the TX audio chain.
 
 The \rett{TX Drv} slider controls the RF output power. It goes from 0 to 100 and is meant in percent. That is,
 a 5-Watt radio such as the HermesLite-II should transmit 5 Watts if this slider is at position 100. See the
@@ -984,7 +977,9 @@ that -73 dBm corresponds to S9 for frequencies up to 30 MHz, while above
 30 MHz, S9 corresponds to -93 dBm. Since the S meter is in steps of
 6 dB, a signal level of S1 (below 30 MHz) corresponds to -121 dBm. In the
 meter menu, one can also choose if the S-meter reading corresponds to a peak
-or  an average value.
+or  an average value. Further info on the meters (e.g. switching between
+,,peak'' and ,,average'' reporting)
+is described in the \bltt{Meter} menu.
 
 During TX, the output power is displayed, provided that the radio actually
 reports this power. The output power meter can be calibrated (see the \bltt{PA}
@@ -993,15 +988,15 @@ this can be changed in the \bltt{TX} menu), the SWR indicator turns red. If,
 in addition, SWR protection is enabled in the \bltt{TX} menu, the output
 drive  will be reduced to zero if the SWR exceed that threshold.
 Furthermore, the ALC (automatic level control) value of the transmitter is
-shown. Negative ALC values (at least in peak mode) indicate that the volume of the TX input audio
+shown. Negative ALC values (in peak mode) indicate that the volume of the TX input audio
 could be increased to get full output  power. During TX (and also during RX when using
 voice control (VOX), the actual level of the TX audio  signal is shown through
 the small \rett{MicLvl} bar. The audio level is in dB from $-40\ldots0$ dB. Note that
 this refers to the peak level of the  incoming ``TX microphone'' audio data, there can
-be further amplification in the TX  chain through the \bltt{Mic} slider.
+be further amplification in the TX  chain through the \bltt{Mic} slider. All this
+is explained in detail in chapter \ref{sec:txchain} on the TX audio chain.
 
-Further info on the meters (e.g. switching between ,,peak'' and ,,average'' reporting)
-is described in the \bltt{Meter} menu.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1750,19 +1745,21 @@ display less ,,nervous'' a moving average with a rather long time constant
 S-meter readings.
 
 
-\rett{TX ALC reading:} Here, the possible values are Peak, Average, and
-ALC gain. Normally one uses the peak ALC value. If it is negative, the level
+\rett{TX ALC reading:} Here, the possible values are again Peak and Average.
+ Normally one uses the peak ALC value. If it is negative, the level
 of the TX audio signal or the Mic gain slider should be increased.
 This is very important since, for example,
 PureSignal only works if the TX audio input has maximum amplitude,
 so you can put the drive slider to zero, then put the radio into TX mode,
-whistle into the microphone and slowly increase the Mic gain until the
-ALC value shown is only slightly less than zero. The average TX ALC
+speak into the microphone and slowly increase the Mic gain until the
+ALC value shown is about zero (if the ALC value is positive, you
+have to reduce the Mic gain). The average TX ALC
 value only is of interest if  you search for settings for the speech processor
 or the continuous frequency compressor. For normal speaking into the microphone,
 the average ALC value will be negative even if the Mic gain slider is adjusted
 for zero peak ALC value. A compressor will distort the TX audio such that this
-gap gets smaller.
+gap gets smaller. More details can be found in chapter \ref{sec:txchain}
+discussing the entire TX audio chain.
 
 For RX-only radios, the TX ALC setting will not be shown in the menu.
 
@@ -2489,8 +2486,9 @@ and \rett{TX Filter High} check boxes will be inactive in this case.
 
 \rett{Compression} With this box the TX compressor can be enabled/disabled.
 The compression level (0-20 dB) can be chosen in the spin button to the right.
-Setting TX compression on/off automatically engages/disengages the CESSB overshoot
-correction, the TX auto leveller and the TX phase rotator.
+Setting TX compression on/off automatically engages/disengages the auto leveller
+(with a maximum amplification of 8 dB), and using the compressor with a compression
+level $> 5$  automatically activates the CESSB overshoot control.
 
 \textbf{Note:} The compressor on/off flag, as well as the compression level, is
 ,,stored with the mode''. So it is possible to have the compressor enabled for SSB
@@ -2567,6 +2565,7 @@ PA protection,
 since many digital modes (unlike SSB voice) are constantly transmitting at full power.
 
 \subsection{TX Menu: CFC Settings}
+\label{sec:cfc}
 
 \begin{figure}[ht]
 \center
@@ -2585,7 +2584,8 @@ can be chosen between -20 and +20 dB, compression levels are also in dB and can 
 between 0 dB (no compression) and +20 dB.
 
 \rett{Use Continuous Frequency Compressor}. This checkbox is used to enable/disable the CFC. As with
-the speech processor, using the CFC automatically enables the TX auto-leveller and phase rotator.
+the speech processor, using the CFC automatically enables the TX auto-leveller but note CESSB
+overshoot control is \textit{not} enabled automatically.
 
 \rett{Use Post-Compression Equalizer}. This checkbox is used  to enable/disable the post-compression
 equaliser.
@@ -2601,6 +2601,7 @@ triple. The compression level and gain given (if the post-compression equaliser 
 corner frequency while linear interpolation is used between corner frequencies.
 
 \subsection{TX Menu: DEXP Settings}
+\label{sec:dexp}
 
 \begin{figure}[ht]
 \center
@@ -3220,6 +3221,7 @@ transmitter.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{The \texttt{Equaliser} Menu}
+\label{sec:eqmenu}
 
 In the \bltt{Equalizer} menu, you can modify the frequency response of
 the RX and TX audio. You can adjust the RX equaliser to your personal
@@ -4220,8 +4222,166 @@ $\bullet$ TX mic gain slider position \cr
 \bottomrule
 \end{tabular}
 \end{center}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\section{The TX audio chain}
+\label{sec:txchain}
+It seems that how the TX audio chain works is a field where myths and facts are equally dominant, therefore
+this section tries to shed some light on this. We will discuss the most relevant parts of the TX
+chain which process the input signal in the following order
+
+\begin{itemize}
+\item{The downward expander (DEXP)}
+\item{The Mic gain slider (MicGain)}
+\item{The equalizer (TXEQ)}
+\item{The auto-leveller (AUTOLVL)}
+\item{The continous frequency compressor (CFC)}
+\item{The speech processor (CMPR)}
+\item{The controlled envelope SSB overshoot control (CESSB)}
+\item{The automatic level control (ALC)}
+\end{itemize}
+
+In \pH, there are no user-accessible controls for AUTOLVL and CESSB as they are activated
+automatically when appropriate (see below).
+
+For digital modes, the input audio level is fairly constant and can be set to be just below full scale
+clipping. In this case, the Mic gain slider can stay at 0 dB and CMPR, CRC, DEXP, and TXEQ should
+all be switched off. If the audio level is constant but below full scale, the input signal can be
+amplified via MicGain until the TX ALC value is just below or at 0 dB.
+All what follows is concerned with the potential problems of human speech
+that comes from a microphone. Note that for FM mode, things are slightly more complicated
+because of the FM preemphasis, this is explained in chapter \ref{sec:txmenu}, set the
+explanation of the \rett{FM PreEmp/ALC} button.
+
+\textbf{Start of the TX audio chain}
+
+At the beginning of the signal chain, there invariably is an analog-to-digital converter (ADC)
+in the sound card (or the codec) the microphone is connected to via an analog wire (the ADC may
+be built into the microphone in the case of USB microphones). The ADC has a maximum input amplitude
+beyond which clipping sets on, and the digitised microphone signal at the beginning of the chain
+is usually represented by a finite range of integers (usually a signed 16 bit number). This input signal
+may or may not be processed by the computer's operating system and eventually arrives in \pH, where it
+is converted to a floating point number in the range $\-1.0\ldots+1.0$. Here we shall denote a signal
+whose peak amplitudes are $\pm 1.0$ a \textit{full scale} (FS) signal. Due to the clipping of the ADC,
+the signal cannot exceed FS. The adjustment should be such that you reach FS if you violently
+whistle into the microphone, you reach FS but since clipping leads to extreme distortion, most audio
+gear is leveled such that you stay significantly below FS during normal speech. Note that once you
+represent the signal as a floating point number, you can apply virtually any amplification without
+introducing distortion, so from here on until close to the end of the TX chain, clipping is not an issue.
+
+It is clearly of interest how the peak input levels are, and this is displayed in the \texttt{MicLvl}
+meter that shows up at the top of the meter (to the right of the VFO bar) during TX. This is the input
+level that \pH ``sees'' before any processing takes place. The scale of this meter is $-40\ldots 0$ dBFS,
+so at normal speech it should show more than half-deflection. If it stays below, this can be
+compensated by advancing MicGain to positive values. But in this case you may want to first check
+whether  the operating system applies extra attenuation (Pulseaudio/Pipewire: \texttt{pavucontrol} program,
+ MacOS: Audio/MIDI setup utility). Dynamic microphones have rather low  output levels, so 
+adding a battery powered preamplifier (I have built a small one that could be fitted inside
+the microphone stand) could also be useful.
+
+\textbf{The downward expander (DEXP), a flexible noise gate}
+
+The first processor in the TX chain is the downward expander (DEXP). This is best simply viewed as
+a noise gate. Well, it is a fancy noise gate. It only opens if there is input signal of sufficient
+strength in a certain frequency window (see chapter \ref{sec:dexp}, the default is 1000 $\ldots$ 2000 Hz),
+so even strong low-frequency noise (such as the noise from a heavy PA fan transported to the microphone stand
+through the desktop) won't open it. Furthermore, when the gate is closed, it does not just block the input
+signal but applies a non-linear amplification. Usually you will have the DEXP activated with default
+settings for phone operation and it is not discussed further here.
+
+\textbf{MicGain and peak TX ALC value}
+
+The problem is now that the TX chain needs data that is about 0 dBFS. If it is below, you have not only
+low output power (in SSB) or thin modulation (AM, FM) but also parts of the machine, e.g. the speech
+processor (CMPR) or the adaptive predistortion (PURESIGNAL) won't work.
+So on one hand we should stay
+well below FS do avoid clipping in the ADC, but on the other hand we need amplification to reach FS.
+At the very end of the TX chain, the baseband signal is converted again from a floating point
+to an integer representation (in the range $\pm 2^{23}$) so it is critical to ensure that the baseband
+signal (in floating point representation) does not exceed $\pm 1.0$. This is where the ALC (automatic
+level control) at the end of the TX chain sets in: it attenuates the baseband signal such that it
+``fits''. The optimum level is reached when the ALC (peak) value is about zero, since this means
+the signal is about FS (negative ALC peak reading indicate a signal below FS, while positive readings
+indicate it is above FS).
+This is why the TX meter shows ALC info. The TX ALC peak value is most useful here.  The operator should then adjust
+the TX signal chain (e.g. slowly increasing or decreasing  MicGain) until the TX ALC peak value is about 0.
+
+Note that the TX meter can both show the TX ALC peak and average values, at this place the peak value
+is important. So in the simplest case, the recipe for adjusting the TX input chain is:
+{\color{red} Slowly adjust MicGain until the TX ALC peak is about zero when applying normal speech to the
+microphone.}
+
+\textbf{The TX equaliser}
+
+Then comes the TX equaliser which is less important (in my view, I personally do not
+use it). It is described in chapter \ref{sec:eqmenu} and I guess any reader knows what
+an equaliser is. What is relevant here is, that the filtering
+involved in the equaliser changes the peak signal amplitude. While this could be compensated
+by changing the MicGain slider, but the preferred way is to adjust the frequency independent gain
+of the equaliser such that the peak amplitude remains unchanged when switching on/off the equaliser.
+
+\textbf{The auto leveller}
+
+The next important part is the auto leveller (AUTOLVL). It solves the problem that the input
+signal may vary in amplitude, for example because the distance between your mouth and the microphone is
+not really constant. So if the signal is below FS, the auto leveller applies an extra amplification (up
+to 8 dB, this is hard coded in \pH) so it ``levels out'' the signal if the input has varying strength.
+In \pH, there is user-accessible control for the auto leveller, it is automatically engaged if you
+use the speech processor (CMPR) or the continuous frequency compressor (CFC).  So if you want the auto
+leveller but no compression just activate CMPR with a compression value of 0 dB.
+
+\textbf{The continuous frequency compressor (CFC)}
+
+This is again a part that is not of prime importance. It is a generalised version of the speech processor
+that applies a frequency-dependent compression value. The CFC settings are part of the \bltt{TX} menu
+and are described in chapter \ref{sec:cfc}.
+
+\textbf{The speech processor (CMPR)}
+
+Normal speech is very different from a constant sine signal. The amplitudes are greatly varying, and
+the average power emitted by your transmitter will be considerably below its PEP rating even if the
+peak amplitude of your TX signal reaches FS. The bad news is, there is nothing you can do to increase
+average TX power without distorting your audio signal. The good news is, you can increase average TX
+power if you accept that your audio signal is distorted. While it is a little more involved, imagine
+that the input signal is amplified beyond FS and then clipped at FS. This increases the average power
+but introduces a lot of distortions. If the input signal is already filtered such that it is confined,
+say, in a frequency window from 150 to 2850 Hz, then the compressed signal will contain components outside
+of these limits. This is taken care of by introducing additional filtering after compression.
+
+Having said this, it should be clear that one probably does \textit{not} want compression in a rag-chew
+local QSO and in all situations where the transmitted signal should be as natural as possible, while
+compression is often activated in contests of when working a DX station with a pile-up. The
+speech processor can be switched on/off in the \bltt{TX} menu, and a compression level between 0 dB
+(no compression) and 20 dB (very strong compression) can be chosen. In my  experience, a compression
+level of 8 dB is usually enough and still tolerable, but this is a very personal notion.
+
+Since the speech processor implicitly assumes that the input signal peaks at FS, the auto leveller is
+always used if the speech processor is activated. It therefore seems a good idea to always use the
+compressor when operating phone, but to select 0 dB compression level when you do not want compression.
+
+The additional filtering that has to be applied after clipping may introduce some artifacts, namely
+that the signal after filtering exceeds FS. This overshooting can be eliminated by the
+\textit{controlled envelope SSB} (CESSB) correction, and \pH automatically activates CESSB if the
+speech processor is on and the compression level larger than 5 dB.
+
+\textbf{The automatic level control (ALC)}
+
+At the very end of the TX audio signal chain, it has to be \textit{guaranteed} that the baseband
+signal does not exeed FS. The ALC does nothing if the signal at the end of the chain stays below FS,
+and it attenuates the signal to not exceed FS in the other case. The TX ALC peak meter shows the
+peak amplitude \textit{before} ALC, so it is positive (negative) if the input signal is too strong
+(weak).
+
+\pH also offers the possibility to show the average TX ALC value. This is the average output power
+w.r.t. to a FS single-tone signal, so for a correctly chosen PA calibration value this is the
+average output power w.r.t. to the PEP rating of your PA. It reads zero if you feed a FS single-tone
+sine signal to the TX chain, it reads -3 dB if you feed a two-tone signal consisting of two sines
+with the same (half of FS) amplitude and different frequencies. Choose this reading to assess
+the efficiency of the speech processor: narrowing the gap between the peak and average value is
+what the speech processor is supposed to do. Note that the average TX ALC value can never be larger
+than zero.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
 \section{Audio recording and replay}
 \label{sec:capture}
 Audio recording and replay is typically used in QSOs to let your QSO partner listen to its own transmission,
