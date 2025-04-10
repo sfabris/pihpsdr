@@ -325,10 +325,15 @@ static gboolean connect_cb(GtkWidget *widget, GdkEventButton *event, gpointer us
     break;
 
   case -4:
-    g_idle_add(fatal_error, "NOTICE: invalid  password.");
+    g_idle_add(fatal_error, "NOTICE: wrong client/server version number.");
+    break;
+
+  case -5:
+    g_idle_add(fatal_error, "NOTICE: wrong or invalid password.");
     break;
 
   default:
+    //NOTREACHED
     g_idle_add(fatal_error, "NOTICE: unknown error in connect.");
     break;
   }

@@ -221,13 +221,6 @@ static inline int from_short(uint16_t y) {
 //
 static void generate_pwd_hash(unsigned char *s, unsigned char *hash, const char *pwd) {
   t_print("Start generating pwd hash\n");
-  //
-  // Add version number to the challenge
-  //
-  s[SHA512_DIGEST_LENGTH]     = (CLIENT_SERVER_VERSION >> 24) & 0xFF;
-  s[SHA512_DIGEST_LENGTH + 1] = (CLIENT_SERVER_VERSION >> 16) & 0xFF;
-  s[SHA512_DIGEST_LENGTH + 2] = (CLIENT_SERVER_VERSION >>  8) & 0xFF;
-  s[SHA512_DIGEST_LENGTH + 3] = (CLIENT_SERVER_VERSION >>  0) & 0xFF;
   int pwdlen = strlen(pwd);
 
   if (pwdlen > SHA512_DIGEST_LENGTH) { pwdlen = SHA512_DIGEST_LENGTH; }
@@ -236,36 +229,31 @@ static void generate_pwd_hash(unsigned char *s, unsigned char *hash, const char 
   // Add password to the challenge
   //
   for  (int i = 0; i < pwdlen; i++) {
-    s[SHA512_DIGEST_LENGTH + 4 + i] = pwd[i];
+    s[SHA512_DIGEST_LENGTH + i] = pwd[i];
   }
 
   //
   // Initial hash
   //
-  SHA512(s, SHA512_DIGEST_LENGTH + 4 + pwdlen, hash);
+  SHA512(s, SHA512_DIGEST_LENGTH + pwdlen, hash);
 
   //
   // Looping: repeatedly, generate a new string of the form
-  // hash + version + pwd and re-calculate the hash
+  // hash + pwd and re-calculate the hash
   //
   for (int i = 0; i < 99999; i++) {
     for (int j = 0; j < SHA512_DIGEST_LENGTH; j++) {
       s[j] = hash[j];
     }
 
-    s[SHA512_DIGEST_LENGTH]     = (CLIENT_SERVER_VERSION >> 24) & 0xFF;
-    s[SHA512_DIGEST_LENGTH + 1] = (CLIENT_SERVER_VERSION >> 16) & 0xFF;
-    s[SHA512_DIGEST_LENGTH + 2] = (CLIENT_SERVER_VERSION >>  8) & 0xFF;
-    s[SHA512_DIGEST_LENGTH + 3] = (CLIENT_SERVER_VERSION >>  0) & 0xFF;
-
     for  (int j = 0; j < pwdlen; j++) {
-      s[SHA512_DIGEST_LENGTH + 4 + j] = pwd[j];
+      s[SHA512_DIGEST_LENGTH + j] = pwd[j];
     }
 
     //
     // New hash
     //
-    SHA512(s, SHA512_DIGEST_LENGTH + 4 + pwdlen, hash);
+    SHA512(s, SHA512_DIGEST_LENGTH + pwdlen, hash);
   }
 
   t_print("End generating pwd hash\n");
@@ -2530,10 +2518,19 @@ static void *listen_thread(void *arg) {
     timeout.tv_sec = 30;
     timeout.tv_usec = 0;
     setsockopt(remoteclient.socket, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
-    unsigned char s[2 * SHA512_DIGEST_LENGTH + 4];
+    unsigned char s[2 * SHA512_DIGEST_LENGTH];
     unsigned char sha[SHA512_DIGEST_LENGTH];
     inet_ntop(AF_INET, &(((struct sockaddr_in *)&remoteclient.address)->sin_addr), (char *)s, 2 * SHA512_DIGEST_LENGTH);
     t_print("Client_connected from %s\n", s);
+
+    //
+    // send version number to the client
+    //
+    s[0] = (CLIENT_SERVER_VERSION >> 24) & 0xFF;
+    s[1] = (CLIENT_SERVER_VERSION >> 16) & 0xFF;
+    s[2] = (CLIENT_SERVER_VERSION >>  8) & 0xFF;
+    s[3] = (CLIENT_SERVER_VERSION      ) & 0xFF;
+    send_bytes(remoteclient.socket, (char *)s, 4);
 
     if (RAND_bytes(s, SHA512_DIGEST_LENGTH) != 1) {
       remoteclient.running = FALSE;
@@ -3628,8 +3625,11 @@ static void *client_thread(void* arg) {
 //
 // Return values:
 //  0  successfully connected
-// -1  error or timeout in connect()
-// -2  wrong password
+// -1  general error
+// -2  timeout upon connecting
+// -3  host name could not be resolved
+// -4  wrong version number
+// -5  wrong password
 //
 int radio_connect_remote(char *host, int port, const char *pwd) {
   struct sockaddr_in server_address;
@@ -3669,13 +3669,28 @@ int radio_connect_remote(char *host, int port, const char *pwd) {
   }
 
   t_print("radio_connect_remote: socket %d bound to %s:%d\n", client_socket, host, port);
-  unsigned char s[2 * SHA512_DIGEST_LENGTH + 4];
+  unsigned char s[2 * SHA512_DIGEST_LENGTH];
   unsigned char sha[SHA512_DIGEST_LENGTH];
+
+  if (recv_bytes(client_socket, (char *)s, 4) < 0) {
+    t_print("Could not receive Version number\n");
+    close(client_socket);
+    return -1;
+  }
+
+  if (((CLIENT_SERVER_VERSION >> 24) & 0xFF) != s[0] ||
+      ((CLIENT_SERVER_VERSION >> 16) & 0xFF) != s[1] ||
+      ((CLIENT_SERVER_VERSION >>  8) & 0xFF) != s[2] ||
+      ((CLIENT_SERVER_VERSION      ) & 0xFF) != s[3]) {
+    t_print("Wrong Client/Server version number\n");
+    close(client_socket);
+    return -4;
+  }
 
   if (recv_bytes(client_socket, (char *)s, SHA512_DIGEST_LENGTH) < 0) {
     t_print("Could not receive Challenge\n");
     close(client_socket);
-    return -4;
+    return -1;
   }
 
   generate_pwd_hash(s, sha, pwd);
@@ -3684,13 +3699,13 @@ int radio_connect_remote(char *host, int port, const char *pwd) {
   if (recv_bytes(client_socket, (char *)s, 1) < 0) {
     t_print("Could not receive Pwd Receipt\n");
     close(client_socket);
-    return -4;
+    return -1;
   }
 
   if (*s != 0x7F) {
     t_print("Server did not accept password\n");
     close(client_socket);
-    return -4;
+    return -5;
   }
 
   snprintf(server_host, sizeof(server_host), "%s:%d", host, port);
