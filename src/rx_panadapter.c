@@ -700,7 +700,7 @@ void rx_panadapter_init(RECEIVER *rx, int width, int height) {
 void display_panadapter_messages(cairo_t *cr, int width, unsigned int fps) {
   char text[64];
 
-  if (display_warnings) {
+  if (display_warnings || remoteclient.running) {
     //
     // Sequence errors
     // ADC overloads
@@ -709,9 +709,10 @@ void display_panadapter_messages(cairo_t *cr, int width, unsigned int fps) {
     //
     // Are shown on display for 2 seconds
     //
-    // For the time being, most of this data
-    // (which needs high-frequency update) is
-    // not available on the client side
+    // If we are the server and there is a client, we must
+    // do the display otherwise the indicators will not be
+    // cleared after two seconds (remoteclient.running
+    // will be FALSE if we are the client)
     //
     cairo_set_source_rgba(cr, COLOUR_ALARM);
     cairo_set_font_size(cr, DISPLAY_FONT_SIZE2);

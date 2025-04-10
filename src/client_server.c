@@ -3989,10 +3989,8 @@ static int remote_command(void *data) {
   break;
 
   case CMD_TOGGLE_MOX: {
-    t_print("MOX b4:%d\n", mox);
     radio_toggle_mox();
     g_idle_add(ext_vfo_update, NULL);
-    t_print("MOX after:%d\n", mox);
     send_mox(remoteclient.socket, mox);
   }
   break;
