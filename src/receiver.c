@@ -763,7 +763,7 @@ RECEIVER *rx_create_receiver(int id, int pixels, int width, int height) {
   rx->waterfall_high = -40;
   rx->waterfall_low = -140;
   rx->waterfall_automatic = 1;
-  rx->waterfall_percent = 50;
+  rx->waterfall_percent = 25;
   rx->display_filled = 1;
   rx->display_gradient = 1;
   rx->display_detector_mode = DET_AVERAGE;
