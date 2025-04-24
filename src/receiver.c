@@ -1307,9 +1307,6 @@ void rx_set_filter(RECEIVER *rx) {
 
   switch (m) {
   case modeCWL:
-    //
-    // translate CW filter edges to the CW pitch frequency
-    //
     rx->filter_low = -cw_keyer_sidetone_frequency + filter->low;
     rx->filter_high = -cw_keyer_sidetone_frequency + filter->high;
     have_peak = vfo[id].cwAudioPeakFilter;
@@ -1323,19 +1320,12 @@ void rx_set_filter(RECEIVER *rx) {
 
   case  modeFMN:
     //
-    // FM filter settings are ignored, instead, the filter
-    // size is calculated from the deviation
+    // for FM filter edges are calculated from the deviation,
+    // Using Carson's rule and assuming max. audio  freq  of 3000 Hz
     //
     rx->deviation = vfo[id].deviation;
-
-    if (rx->deviation == 2500) {
-      rx->filter_low = -5500;
-      rx->filter_high = 5500;
-    } else {
-      rx->filter_low = -8000;
-      rx->filter_high = 8000;
-    }
-
+    rx->filter_low = -(3000 + rx->deviation);
+    rx->filter_high = (3000 + rx->deviation);
     break;
 
   default:
@@ -1375,20 +1365,11 @@ void rx_set_framerate(RECEIVER *rx) {
 // function should only occur *once* in the program,
 // at best in a wrapper.
 //
-// WDSPRXDEBUG should only be activated for debugging
-//
-// TODO: If the radio is remote, make them a no-op.
-//
 ////////////////////////////////////////////////////////
-
-//#define WDSPRXDEBUG
 
 void rx_change_sample_rate(RECEIVER *rx, int sample_rate) {
   // ToDo: move this outside of the WDSP wrappers and encapsulate WDSP calls
   //       in this function
-#ifdef WDSPRXDEBUG
-  t_print("RX id=%d SampleRate=%d\n", rx->id, sample_rate);
-#endif
   g_mutex_lock(&rx->mutex);
   rx->sample_rate = sample_rate;
   int scale = rx->sample_rate / 48000;
@@ -1459,8 +1440,6 @@ void rx_change_sample_rate(RECEIVER *rx, int sample_rate) {
 
 void rx_close(const RECEIVER *rx) {
   ASSERT_SERVER();
-#ifdef WDSPRXDEBUG
-#endif
   CloseChannel(rx->id);
 }
 
@@ -1491,8 +1470,6 @@ double rx_get_smeter(const RECEIVER *rx) {
 
 void rx_create_analyzer(const RECEIVER *rx) {
   ASSERT_SERVER();
-#ifdef WDSPRXDEBUG
-#endif
   //
   // After the analyzer has been created, its parameters
   // are set via rx_set_analyzer
@@ -1509,8 +1486,6 @@ void rx_create_analyzer(const RECEIVER *rx) {
 
 void rx_set_analyzer(const RECEIVER *rx) {
   ASSERT_SERVER();
-#ifdef WDSPRXDEBUG
-#endif
   //
   // The analyzer depends on the framerate (fps), the
   // number of pixels, and the sample rate, as well as the
@@ -1574,16 +1549,12 @@ void rx_set_analyzer(const RECEIVER *rx) {
 
 void rx_off(const RECEIVER *rx) {
   ASSERT_SERVER();
-#ifdef WDSPRXDEBUG
-#endif
   // switch receiver OFF, wait until slew-down completet
   SetChannelState(rx->id, 0, 1);
 }
 
 void rx_on(const RECEIVER *rx) {
   ASSERT_SERVER();
-#ifdef WDSPRXDEBUG
-#endif
   // switch receiver ON
   SetChannelState(rx->id, 1, 0);
 }
@@ -1603,8 +1574,6 @@ void rx_set_af_gain(const RECEIVER *rx) {
     return;
   }
 
-#ifdef WDSPRXDEBUG
-#endif
   //
   // volume is in dB from 0 ... -40 and this is
   // converted to  an amplitude from 0 ... 1.
@@ -1632,8 +1601,6 @@ void rx_set_agc(RECEIVER *rx) {
     return;
   }
 
-#ifdef WDSPRXDEBUG
-#endif
   //
   // Apply the AGC settings stored in rx.
   // Calculate new AGC and "hang" line levels
@@ -1725,8 +1692,6 @@ void rx_set_average(const RECEIVER *rx) {
     break;
   }
 
-#ifdef WDSPRXDEBUG
-#endif
   //
   // I observed artifacts when changing the mode from "Log Recursive"
   // to "Time Window", so I generally switch to NONE first, and then
@@ -1740,14 +1705,10 @@ void rx_set_average(const RECEIVER *rx) {
 void rx_set_bandpass(const RECEIVER *rx) {
   ASSERT_SERVER();
   RXASetPassband(rx->id, (double)rx->filter_low, (double)rx->filter_high);
-#ifdef WDSPRXDEBUG
-#endif
 }
 
 void rx_set_cw_peak(const RECEIVER *rx, int state, double freq) {
   ASSERT_SERVER();
-#ifdef WDSPRXDEBUG
-#endif
 
   if (state) {
     double w = 0.25 * (rx->filter_high - rx->filter_low);
@@ -1790,16 +1751,12 @@ void rx_set_detector(const RECEIVER *rx) {
     break;
   }
 
-#ifdef WDSPRXDEBUG
-#endif
   SetDisplayDetectorMode(rx->id, 0, wdspmode);
 }
 
 void rx_set_deviation(const RECEIVER *rx) {
   ASSERT_SERVER();
   SetRXAFMDeviation(rx->id, (double)rx->deviation);
-#ifdef WDSPRXDEBUG
-#endif
 }
 
 void rx_set_equalizer(RECEIVER *rx) {
@@ -1813,14 +1770,6 @@ void rx_set_equalizer(RECEIVER *rx) {
   //
   SetRXAEQProfile(rx->id, 10, rx->eq_freq, rx->eq_gain);
   SetRXAEQRun(rx->id, rx->eq_enable);
-#ifdef WDSPRXDEBUG
-  t_print("WDSP:RX id=%d Equalizer enable=%d allgain=%g\n", rx->id, rx->eq_enable, rx->eq_gain[0]);
-
-  for (int i = 1; i < 11; i++) {
-    t_print("... Chan=%2d Freq=%6g Gain=%4g\n", i, rx->eq_freq[i], rx->eq_gain[i]);
-  }
-
-#endif
 }
 
 void rx_set_fft_latency(const RECEIVER *rx) {
@@ -1849,8 +1798,6 @@ void rx_set_mode(const RECEIVER *rx) {
   //
   SetRXAMode(rx->id, vfo[rx->id].mode);
   rx_set_squelch(rx);
-#ifdef WDSPRXDEBUG
-#endif
 }
 
 void rx_set_noise(const RECEIVER *rx) {
@@ -1921,8 +1868,6 @@ void rx_set_noise(const RECEIVER *rx) {
   SetRXASBNRpostFilterThreshold(rx->id, rx->nr4_post_threshold);
   SetRXASBNRRun(rx->id, (rx->nr == 4));
 #endif
-#ifdef WDSPRXDEBUG
-#endif
 }
 
 void rx_set_offset(const RECEIVER *rx, long long offset) {
@@ -1938,8 +1883,6 @@ void rx_set_offset(const RECEIVER *rx, long long offset) {
     SetRXAShiftRun(rx->id, 1);
   }
 
-#ifdef WDSPRXDEBUG
-#endif
 }
 
 void rx_set_squelch(const RECEIVER *rx) {
@@ -1978,8 +1921,6 @@ void rx_set_squelch(const RECEIVER *rx) {
     value = ((rx->squelch / 100.0) * 160.0) - 160.0;
     SetRXAAMSQThreshold(rx->id, value);
     am_squelch = rx->squelch_enable;
-#ifdef WDSPRXDEBUG
-#endif
     break;
 
   case modeLSB:
@@ -1993,8 +1934,6 @@ void rx_set_squelch(const RECEIVER *rx) {
     SetRXASSQLThreshold(rx->id, value);
     SetRXASSQLTauMute(rx->id, 0.1);
     SetRXASSQLTauUnMute(rx->id, 0.1);
-#ifdef WDSPRXDEBUG
-#endif
     break;
 
   case modeFMN:
@@ -2004,8 +1943,6 @@ void rx_set_squelch(const RECEIVER *rx) {
     value = pow(10.0, -2.0 * rx->squelch / 100.0);
     SetRXAFMSQThreshold(rx->id, value);
     fm_squelch = rx->squelch_enable;
-#ifdef WDSPRXDEBUG
-#endif
     break;
 
   default:
