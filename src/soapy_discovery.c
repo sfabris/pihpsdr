@@ -113,6 +113,14 @@ static void get_info(char *driver) {
     t_print("Tx channel full duplex: channel=%d fullduplex=%d\n", i, SoapySDRDevice_getFullDuplex(sdr, SOAPY_SDR_TX, i));
   }
 
+  //
+  // IMPORTANT: the sample rate must be a power-of-two multiple of 48k, so the
+  //            allowed sample rates are 48k, 96k, 192k, 384k, 768k, 1536k, ...
+  //            (higher sample rates are possible too much for little CPUs)
+  //
+  // This code selects 768k nearly always, with the exception of radioberry (48k) and rtlsdr (15367k),
+  // but the list of "exceptions" can be extended.
+  //
   int sample_rate = 768000;
   SoapySDRRange *rx_rates = SoapySDRDevice_getSampleRateRange(sdr, SOAPY_SDR_RX, 0, &rx_rates_length);
 
