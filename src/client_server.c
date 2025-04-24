@@ -2548,7 +2548,8 @@ static void *listen_thread(void *arg) {
     // Handle too-short server passwords as if the passwords did not match
     //
     if (memcmp(sha, s, SHA512_DIGEST_LENGTH)  != 0 || strlen(hpsdr_pwd) < 5) {
-      t_print("Wrong password!\n");
+      t_print("ATTENTION: Wrong Password from Client.\n");
+      sleep(1);
       *s = 0xF7;
     } else {
       *s = 0x7F;
