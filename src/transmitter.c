@@ -921,7 +921,7 @@ TRANSMITTER *tx_create_transmitter(int id, int pixels, int width, int height) {
     tx->ratio = 16;
     break;
 
-  case 1536000: // 48k:92k:1536k
+  case 1536000: // 48k:96k:1536k
     tx->buffer_size = 128;
     tx->dsp_rate = 96000;
     tx->ratio = 32;
