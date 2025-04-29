@@ -896,7 +896,7 @@ void tx_menu(GtkWidget *parent) {
   gtk_widget_set_halign(label, GTK_ALIGN_END);
   gtk_grid_attach(GTK_GRID(tx_grid), label, col, row, 1, 1);
   col++;
-  btn = gtk_spin_button_new_with_range(1.0, drive_max, 1.0);
+  btn = gtk_spin_button_new_with_range(drive_min, drive_max, 1.0);
   gtk_spin_button_set_value(GTK_SPIN_BUTTON(btn), drive_digi_max);
   gtk_grid_attach(GTK_GRID(tx_grid), btn, col, row, 1, 1);
   g_signal_connect(btn, "value-changed", G_CALLBACK(spinbtn_cb), GINT_TO_POINTER(TX_DIGI_DRIVE));

@@ -265,6 +265,7 @@ extern int have_radioberry1;     // RadioBerry with first-generation  firmware
 extern int have_radioberry2;     // RadioBerry with second-generation firmware
 extern int rx_gain_calibration;  // used to calibrate the input signal
 
+extern double drive_min;         // minimum value of the drive slider
 extern double drive_max;         // maximum value of the drive slider
 extern double drive_digi_max;    // maximum value allowed in DIGU/DIGL
 

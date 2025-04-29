@@ -1004,22 +1004,22 @@ void radio_menu(GtkWidget *parent) {
       // Draw a spin-button for each range
       //
       for (int i = 0; i < radio->info.soapy.rx_gains; i++) {
-        label = gtk_label_new(radio->info.soapy.rx_gain[i]);
+        label = gtk_label_new(radio->info.soapy.rx_gain_elem_name[i]);
         gtk_grid_attach(GTK_GRID(grid), label, 0, row, 1, 1);
         col++;
-        double range_step = radio->info.soapy.rx_range_step[i];
-        double range_min  = radio->info.soapy.rx_range_min[i];
-        double range_max  = radio->info.soapy.rx_range_max[i];
+        double range_step = radio->info.soapy.rx_gain_elem_step[i];
+        double range_min  = radio->info.soapy.rx_gain_elem_min[i];
+        double range_max  = radio->info.soapy.rx_gain_elem_max[i];
 
         if (range_step == 0.0) {
           range_step = 1.0;
         }
 
         GtkWidget *rx_gain = gtk_spin_button_new_with_range(range_min, range_max, range_step);
-        gtk_widget_set_name (rx_gain, radio->info.soapy.rx_gain[i]);
+        gtk_widget_set_name (rx_gain, radio->info.soapy.rx_gain_elem_name[i]);
 #ifdef SOAPYSDR
         // TODO: request gain from server
-        int value = soapy_protocol_get_gain_element(active_receiver, radio->info.soapy.rx_gain[i]);
+        int value = soapy_protocol_get_gain_element(active_receiver, radio->info.soapy.rx_gain_elem_name[i]);
         gtk_spin_button_set_value(GTK_SPIN_BUTTON(rx_gain), (double)value);
 #endif
         gtk_grid_attach(GTK_GRID(grid), rx_gain, 1, row, 1, 1);
@@ -1035,20 +1035,20 @@ void radio_menu(GtkWidget *parent) {
       // Select TX gain out of a list of discrete ranges
       //
       for (int i = 0; i < radio->info.soapy.tx_gains; i++) {
-        label = gtk_label_new(radio->info.soapy.tx_gain[i]);
+        label = gtk_label_new(radio->info.soapy.tx_gain_elem_name[i]);
         gtk_grid_attach(GTK_GRID(grid), label, 2, row, 1, 1);
-        double range_step = radio->info.soapy.tx_range_step[i];
-        double range_min  = radio->info.soapy.tx_range_min[i];
-        double range_max  = radio->info.soapy.tx_range_max[i];
+        double range_step = radio->info.soapy.tx_gain_elem_step[i];
+        double range_min  = radio->info.soapy.tx_gain_elem_min[i];
+        double range_max  = radio->info.soapy.tx_gain_elem_max[i];
 
         if (range_step == 0.0) {
           range_step = 1.0;
         }
 
         GtkWidget *tx_gain = gtk_spin_button_new_with_range(range_min, range_max, range_step);
-        gtk_widget_set_name (tx_gain, radio->info.soapy.tx_gain[i]);
+        gtk_widget_set_name (tx_gain, radio->info.soapy.tx_gain_elem_name[i]);
 #ifdef SOAPYSDR
-        int value = soapy_protocol_get_tx_gain_element(transmitter, radio->info.soapy.tx_gain[i]);
+        int value = soapy_protocol_get_tx_gain_element(transmitter, radio->info.soapy.tx_gain_elem_name[i]);
         gtk_spin_button_set_value(GTK_SPIN_BUTTON(tx_gain), (double)value);
 #endif
         gtk_grid_attach(GTK_GRID(grid), tx_gain, 3, row, 1, 1);

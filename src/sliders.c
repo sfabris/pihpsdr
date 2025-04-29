@@ -527,7 +527,7 @@ void set_drive(double value) {
   if (display_sliders) {
     gtk_range_set_value (GTK_RANGE(drive_scale), value);
   } else {
-    show_popup_slider(DRIVE, 0, 0.0, drive_max, 1.0, value, "TX Drive");
+    show_popup_slider(DRIVE, 0, drive_min, drive_max, 1.0, value, "TX Drive");
   }
 
   radio_set_drive(value);
@@ -811,7 +811,7 @@ GtkWidget *sliders_init(int my_width, int my_height) {
     gtk_widget_set_name(drive_label, csslabel);
     gtk_widget_set_halign(drive_label, GTK_ALIGN_END);
     gtk_grid_attach(GTK_GRID(sliders), drive_label, t2pos, 1, twidth, 1);
-    drive_scale = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0.0, drive_max, 1.00);
+    drive_scale = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, drive_min, drive_max, 1.00);
     gtk_widget_set_size_request(drive_scale, 0, height / 2);
     gtk_widget_set_valign(drive_scale, GTK_ALIGN_CENTER);
     gtk_range_set_increments (GTK_RANGE(drive_scale), 1.0, 1.0);

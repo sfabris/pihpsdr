@@ -850,11 +850,11 @@ void send_radio_data(int sock) {
   }
 
   for (int i = 0; i < radio->info.soapy.rx_gains; i++) {
-    memcpy(data.soapy_rx_gain[i], radio->info.soapy.rx_gain[i], 64);
+    memcpy(data.soapy_rx_gain_elem_name[i], radio->info.soapy.rx_gain_elem_name[i], 64);
   }
 
   for (int i = 0; i < radio->info.soapy.tx_gains; i++) {
-    memcpy(data.soapy_tx_gain[i], radio->info.soapy.tx_gain[i], 64);
+    memcpy(data.soapy_tx_gain_elem_name[i], radio->info.soapy.tx_gain_elem_name[i], 64);
   }
 
   //
@@ -868,6 +868,7 @@ void send_radio_data(int sock) {
   data.tx_filter_high = to_short(tx_filter_high);
   data.display_width = to_short(display_width);
   //
+  data.drive_min = to_double(drive_min);
   data.drive_max = to_double(drive_max);
   data.drive_digi_max = to_double(drive_digi_max);
   data.div_gain = to_double(div_gain);
@@ -877,16 +878,23 @@ void send_radio_data(int sock) {
     data.pa_trim[i] = to_double(pa_trim[i]);
   }
 
+  data.soapy_rx_gain_step = to_double(radio->info.soapy.rx_gain_step);
+  data.soapy_rx_gain_min  = to_double(radio->info.soapy.rx_gain_min );
+  data.soapy_rx_gain_max  = to_double(radio->info.soapy.rx_gain_max );
+  data.soapy_tx_gain_step = to_double(radio->info.soapy.tx_gain_step);
+  data.soapy_tx_gain_min  = to_double(radio->info.soapy.tx_gain_min );
+  data.soapy_tx_gain_max  = to_double(radio->info.soapy.tx_gain_max );
+
   for (int i = 0; i < radio->info.soapy.rx_gains; i++) {
-    data.soapy_rx_range_step[i] = to_double(radio->info.soapy.rx_range_step[i]);
-    data.soapy_rx_range_min[i] = to_double(radio->info.soapy.rx_range_min[i]);
-    data.soapy_rx_range_max[i] = to_double(radio->info.soapy.rx_range_max[i]);
+    data.soapy_rx_gain_elem_step[i] = to_double(radio->info.soapy.rx_gain_elem_step[i]);
+    data.soapy_rx_gain_elem_min[i] = to_double(radio->info.soapy.rx_gain_elem_min[i]);
+    data.soapy_rx_gain_elem_max[i] = to_double(radio->info.soapy.rx_gain_elem_max[i]);
   }
 
   for (int i = 0; i < radio->info.soapy.tx_gains; i++) {
-    data.soapy_tx_range_step[i] = to_double(radio->info.soapy.tx_range_step[i]);
-    data.soapy_tx_range_min[i] = to_double(radio->info.soapy.tx_range_min[i]);
-    data.soapy_tx_range_max[i] = to_double(radio->info.soapy.tx_range_max[i]);
+    data.soapy_tx_gain_elem_step[i] = to_double(radio->info.soapy.tx_gain_elem_step[i]);
+    data.soapy_tx_gain_elem_min[i] = to_double(radio->info.soapy.tx_gain_elem_min[i]);
+    data.soapy_tx_gain_elem_max[i] = to_double(radio->info.soapy.tx_gain_elem_max[i]);
   }
 
   //
@@ -3012,11 +3020,11 @@ static void *client_thread(void* arg) {
       }
 
       for (int i = 0; i < radio->info.soapy.rx_gains; i++) {
-        memcpy(radio->info.soapy.rx_gain[i], data.soapy_rx_gain[i], 64);
+        memcpy(radio->info.soapy.rx_gain_elem_name[i], data.soapy_rx_gain_elem_name[i], 64);
       }
 
       for (int i = 0; i < radio->info.soapy.tx_gains; i++) {
-        memcpy(radio->info.soapy.tx_gain[i], data.soapy_tx_gain[i], 64);
+        memcpy(radio->info.soapy.tx_gain_elem_name[i], data.soapy_tx_gain_elem_name[i], 64);
       }
 
       //
@@ -3030,6 +3038,7 @@ static void *client_thread(void* arg) {
       tx_filter_high = from_short(data.tx_filter_high);
       display_width = from_short(data.display_width);
       //
+      drive_min = from_double(data.drive_min);
       drive_max = from_double(data.drive_max);
       drive_digi_max = from_double(data.drive_digi_max);
       div_gain = from_double(data.div_gain);
@@ -3039,16 +3048,23 @@ static void *client_thread(void* arg) {
         pa_trim[i] = from_double(data.pa_trim[i]);
       }
 
+      radio->info.soapy.rx_gain_step = from_double(data.soapy_rx_gain_step);
+      radio->info.soapy.rx_gain_min  = from_double(data.soapy_rx_gain_min );
+      radio->info.soapy.rx_gain_max  = from_double(data.soapy_rx_gain_max );
+      radio->info.soapy.tx_gain_step = from_double(data.soapy_tx_gain_step);
+      radio->info.soapy.tx_gain_min  = from_double(data.soapy_tx_gain_min );
+      radio->info.soapy.tx_gain_max  = from_double(data.soapy_tx_gain_max );
+
       for (int i = 0; i < radio->info.soapy.rx_gains; i++) {
-        radio->info.soapy.rx_range_step[i] = from_double(data.soapy_rx_range_step[i]);
-        radio->info.soapy.rx_range_min [i] = from_double(data.soapy_rx_range_min [i]);
-        radio->info.soapy.rx_range_max [i] = from_double(data.soapy_rx_range_max [i]);
+        radio->info.soapy.rx_gain_elem_step[i] = from_double(data.soapy_rx_gain_elem_step[i]);
+        radio->info.soapy.rx_gain_elem_min [i] = from_double(data.soapy_rx_gain_elem_min [i]);
+        radio->info.soapy.rx_gain_elem_max [i] = from_double(data.soapy_rx_gain_elem_max [i]);
       }
 
       for (int i = 0; i < radio->info.soapy.tx_gains; i++) {
-        radio->info.soapy.tx_range_step[i] = from_double(data.soapy_tx_range_step[i]);
-        radio->info.soapy.tx_range_min [i] = from_double(data.soapy_tx_range_min [i]);
-        radio->info.soapy.tx_range_max [i] = from_double(data.soapy_tx_range_max [i]);
+        radio->info.soapy.tx_gain_elem_step[i] = from_double(data.soapy_tx_gain_elem_step[i]);
+        radio->info.soapy.tx_gain_elem_min [i] = from_double(data.soapy_tx_gain_elem_min [i]);
+        radio->info.soapy.tx_gain_elem_max [i] = from_double(data.soapy_tx_gain_elem_max [i]);
       }
 
       //

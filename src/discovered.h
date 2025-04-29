@@ -115,12 +115,18 @@ struct _DISCOVERED {
     struct soapy {
       char hardware_key[64];
       char driver_key[64];
-      double rx_range_step[8];
-      double rx_range_min[8];
-      double rx_range_max[8];
-      double tx_range_step[8];
-      double tx_range_min[8];
-      double tx_range_max[8];
+      double rx_gain_step;
+      double rx_gain_min;
+      double rx_gain_max;
+      double tx_gain_step;
+      double tx_gain_min;
+      double tx_gain_max;
+      double rx_gain_elem_step[8];
+      double rx_gain_elem_min[8];
+      double rx_gain_elem_max[8];
+      double tx_gain_elem_step[8];
+      double tx_gain_elem_min[8];
+      double tx_gain_elem_max[8];
       int    rx_antennas;
       int    tx_antennas;
       char rx_antenna[8][64];
@@ -128,8 +134,8 @@ struct _DISCOVERED {
       int sample_rate;
       int    rx_gains;
       int    tx_gains;
-      char rx_gain[8][64];
-      char tx_gain[8][64];
+      char rx_gain_elem_name[8][64];
+      char tx_gain_elem_name[8][64];
       int rx_has_automatic_gain;
       int    tx_channels;
 #ifdef SOAPYSDR

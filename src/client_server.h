@@ -372,8 +372,8 @@ typedef struct __attribute__((__packed__)) _radio_data {
   char     soapy_driver_key[64];
   char     soapy_rx_antenna[8][64];
   char     soapy_tx_antenna[8][64];
-  char     soapy_rx_gain[8][64];
-  char     soapy_tx_gain[8][64];
+  char     soapy_rx_gain_elem_name[8][64];
+  char     soapy_tx_gain_elem_name[8][64];
   //
   uint16_t pa_power;
   uint16_t OCfull_tune_time;
@@ -385,17 +385,24 @@ typedef struct __attribute__((__packed__)) _radio_data {
   uint16_t tx_filter_high;
   uint16_t display_width;
   //
+  mydouble drive_min;
   mydouble drive_max;
   mydouble drive_digi_max;
   mydouble pa_trim[11];
   mydouble div_gain;
   mydouble div_phase;
-  mydouble soapy_rx_range_step[8];
-  mydouble soapy_rx_range_min[8];
-  mydouble soapy_rx_range_max[8];
-  mydouble soapy_tx_range_step[8];
-  mydouble soapy_tx_range_min[8];
-  mydouble soapy_tx_range_max[8];
+  mydouble soapy_rx_gain_step;
+  mydouble soapy_rx_gain_min;
+  mydouble soapy_rx_gain_max;
+  mydouble soapy_tx_gain_step;
+  mydouble soapy_tx_gain_min;
+  mydouble soapy_tx_gain_max;
+  mydouble soapy_rx_gain_elem_step[8];
+  mydouble soapy_rx_gain_elem_min[8];
+  mydouble soapy_rx_gain_elem_max[8];
+  mydouble soapy_tx_gain_elem_step[8];
+  mydouble soapy_tx_gain_elem_min[8];
+  mydouble soapy_tx_gain_elem_max[8];
   //
   uint64_t frequency_calibration;
   uint64_t soapy_radio_sample_rate;

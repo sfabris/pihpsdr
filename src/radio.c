@@ -314,6 +314,7 @@ int optimize_for_touchscreen = 0;
 int duplex = FALSE;
 int mute_rx_while_transmitting = FALSE;
 
+double drive_min = 0.0;
 double drive_max = 100.0;
 double drive_digi_max = 100.0; // maximum drive in DIGU/DIGL
 
@@ -1126,6 +1127,7 @@ void radio_start_radio() {
   }
 
   // set the default power output and max drive value
+  drive_min = 0.0;
   drive_max = 100.0;
 
   switch (device) {
@@ -1163,11 +1165,13 @@ void radio_start_radio() {
     break;
 
   case SOAPYSDR_USB_DEVICE:
-    if (strcmp(radio->name, "lime") == 0) {
-      drive_max = 64.0;
-    } else if (strcmp(radio->name, "plutosdr") == 0) {
-      drive_max = 89.0;
-    }
+    drive_min = radio->info.soapy.tx_gain_min;
+    drive_max = radio->info.soapy.tx_gain_max;
+    //if (strcmp(radio->name, "lime") == 0) {
+    //  drive_max = 64.0;
+    //} else if (strcmp(radio->name, "plutosdr") == 0) {
+    //  drive_max = 89.0;
+    //}
 
     pa_power = PA_1W;
     break;
@@ -1459,11 +1463,9 @@ void radio_start_radio() {
   adc[0].agc = FALSE;
 
   if (device == SOAPYSDR_USB_DEVICE) {
-    if (radio->info.soapy.rx_gains > 0) {
-      adc[0].min_gain = radio->info.soapy.rx_range_min[0];
-      adc[0].max_gain = radio->info.soapy.rx_range_max[0];
-      adc[0].gain = adc[0].min_gain;
-    }
+    adc[0].min_gain = radio->info.soapy.rx_gain_min;
+    adc[0].max_gain = radio->info.soapy.rx_gain_max;
+    adc[0].gain = adc[0].min_gain;
   }
 
   adc[1].antenna = 0;
@@ -1480,11 +1482,9 @@ void radio_start_radio() {
   adc[1].agc = FALSE;
 
   if (device == SOAPYSDR_USB_DEVICE) {
-    if (radio->info.soapy.rx_gains > 0) {
-      adc[1].min_gain = radio->info.soapy.rx_range_min[0];
-      adc[1].max_gain = radio->info.soapy.rx_range_max[0];
-      adc[1].gain = adc[1].min_gain;
-    }
+    adc[1].min_gain = radio->info.soapy.rx_gain_min;
+    adc[1].max_gain = radio->info.soapy.rx_gain_max;
+    adc[1].gain = adc[1].min_gain;
 
     soapy_radio_sample_rate = radio->info.soapy.sample_rate;
   }
