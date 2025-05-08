@@ -1409,8 +1409,7 @@ static void tx_full_buffer(TRANSMITTER *tx) {
         //
         for (j = 0; j < tx->output_samples; j++) {
 #ifdef SOAPYSDR
-          double ramp = tx->cw_sig_rf[j];                   // between 0.0 and 1.0
-          soapy_protocol_iq_samples(0.0F, (float)ramp);     // SOAPY: just convert double to float
+          soapy_protocol_iq_samples(0.0F, (float)tx->cw_sig_rf[j]);     // SOAPY: just convert double to float
 #endif
         }
 
@@ -2191,12 +2190,11 @@ void tx_ps_onoff(TRANSMITTER *tx, int state) {
     tx->puresignal = SET(state);
     schedule_high_priority();
     schedule_receive_specific();
-#ifdef SOAPY_SDR
+    break;
 
-  case SOAPY_PROTOCOL:
+  case SOAPYSDR_PROTOCOL:
     // no feedback channels in SOAPY
     break;
-#endif
   }
 
   if (state) {

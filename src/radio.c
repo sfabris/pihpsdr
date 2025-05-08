@@ -261,6 +261,7 @@ int have_alex_att = 0;
 int have_preamp = 0;
 int have_dither = 1;
 int have_saturn_xdma = 0;
+int have_lime = 0;
 int have_radioberry1 = 0;
 int have_radioberry2 = 0;
 int rx_gain_calibration = 0;
@@ -1067,6 +1068,10 @@ void radio_start_radio() {
 
 #endif
 
+  if (device == SOAPYSDR_USB_DEVICE && !strcmp(radio->name, "lime")) {
+    have_lime = 1;
+  }
+
   if (device == NEW_DEVICE_SATURN && (strcmp(radio->info.network.interface_name, "XDMA") == 0)) {
     have_saturn_xdma = 1;
   }
@@ -1167,7 +1172,7 @@ void radio_start_radio() {
   case SOAPYSDR_USB_DEVICE:
     drive_min = radio->info.soapy.tx_gain_min;
     drive_max = radio->info.soapy.tx_gain_max;
-    //if (strcmp(radio->name, "lime") == 0) {
+    //if (have_lime) {
     //  drive_max = 64.0;
     //} else if (strcmp(radio->name, "plutosdr") == 0) {
     //  drive_max = 89.0;
@@ -1405,7 +1410,8 @@ void radio_start_radio() {
     break;
 
   case SOAPYSDR_USB_DEVICE:
-    if (strcmp(radio->name, "lime") == 0) {
+    //if (have_lime) == 0) {
+    if (radio->info.soapy.rx_channels > 1) {
       n_adc = 2;
     } else {
       n_adc = 1;

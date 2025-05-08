@@ -66,6 +66,11 @@ static void rx_gain_element_changed_cb(GtkWidget *widget, gpointer data) {
   if (device == SOAPYSDR_USB_DEVICE) {
     double gain = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
     adc[active_receiver->adc].gain = gain;
+
+    if (radio_is_remote) {
+      return;
+    }
+
 #ifdef SOAPYSDR
     soapy_protocol_set_gain_element(active_receiver, (char *)gtk_widget_get_name(widget), (int) gain);
 #endif
@@ -76,6 +81,11 @@ static void tx_gain_element_changed_cb(GtkWidget *widget, gpointer data) {
   if (can_transmit && device == SOAPYSDR_USB_DEVICE) {
     double gain = gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget));
     dac.gain = gain;
+
+    if (radio_is_remote) {
+      return;
+    }
+
 #ifdef SOAPYSDR
     soapy_protocol_set_tx_gain_element(transmitter, (char *)gtk_widget_get_name(widget), (int) gain);
 #endif
@@ -1018,7 +1028,6 @@ void radio_menu(GtkWidget *parent) {
         GtkWidget *rx_gain = gtk_spin_button_new_with_range(range_min, range_max, range_step);
         gtk_widget_set_name (rx_gain, radio->info.soapy.rx_gain_elem_name[i]);
 #ifdef SOAPYSDR
-        // TODO: request gain from server
         int value = soapy_protocol_get_gain_element(active_receiver, radio->info.soapy.rx_gain_elem_name[i]);
         gtk_spin_button_set_value(GTK_SPIN_BUTTON(rx_gain), (double)value);
 #endif

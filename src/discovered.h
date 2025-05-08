@@ -20,9 +20,6 @@
 #define _DISCOVERED_H_
 
 #include <netinet/in.h>
-#ifdef SOAPYSDR
-  #include <SoapySDR/Device.h>
-#endif
 
 #define MAX_DEVICES 16
 
@@ -33,7 +30,7 @@
 // To avoid probing both the protocol and the device, device numbers
 // need to be unique across protocols, and should be defined here
 // for all protocols, even if piHPSDR is not compiled for that
-// protocol (so define DEVICE_OZY and SOAPYSDR_USB_DEVICE in all cases!)
+// protocol
 //
 #define DEVICE_METIS               0
 #define DEVICE_HERMES              1
@@ -138,7 +135,6 @@ struct _DISCOVERED {
       char tx_gain_elem_name[8][64];
       int rx_has_automatic_gain;
       int    tx_channels;
-#ifdef SOAPYSDR
       char version[128];
       int rtlsdr_count;
       int sdrplay_count;
@@ -148,7 +144,6 @@ struct _DISCOVERED {
       char **sensor;
       gboolean has_temp;
       char address[64];
-#endif
     } soapy;
 
   } info;

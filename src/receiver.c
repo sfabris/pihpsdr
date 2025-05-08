@@ -725,9 +725,7 @@ RECEIVER *rx_create_receiver(int id, int pixels, int width, int height) {
   rx->sample_rate = 48000;
 
   if (device == SOAPYSDR_USB_DEVICE) {
-#ifdef SOAPYSDR
     rx->sample_rate = radio->info.soapy.sample_rate;
-#endif
     t_print("%s: RXid=%d sample_rate=%d\n", __FUNCTION__, rx->id, rx->sample_rate);
     rx->resampler = NULL;
     rx->resample_buffer = NULL;

@@ -39,10 +39,10 @@ static void get_info(char *driver) {
   const char *address = NULL;
   int rtlsdr_val = 0;
   int sdrplay_val = 0;
-  char fw_version[16];
-  char gw_version[16];
-  char hw_version[16];
-  char p_version[16];
+  char fw_version[32];
+  char gw_version[32];
+  char hw_version[32];
+  char p_version[32];
   t_print("soapy_discovery: get_info: %s\n", driver);
   snprintf(fw_version, sizeof(fw_version), "%s", "");
   snprintf(gw_version, sizeof(gw_version), "%s", "");
@@ -82,20 +82,20 @@ static void get_info(char *driver) {
     t_print("soapy_discovery: hardware info key=%s val=%s\n", info.keys[i], info.vals[i]);
 
     if (strcmp(info.keys[i], "firmwareVersion") == 0) {
-      snprintf(fw_version, sizeof(fw_version), "%s", info.vals[i]);
+      snprintf(fw_version, sizeof(fw_version), " fw=%s", info.vals[i]);
     }
 
     if (strcmp(info.keys[i], "gatewareVersion") == 0) {
-      snprintf(gw_version, sizeof(gw_version), "%s", info.vals[i]);
+      snprintf(gw_version, sizeof(gw_version), " gw=%s", info.vals[i]);
       software_version = (int)(atof(info.vals[i]) * 100.0);
     }
 
     if (strcmp(info.keys[i], "hardwareVersion") == 0) {
-      snprintf(hw_version, sizeof(hw_version), "%s", info.vals[i]);
+      snprintf(hw_version, sizeof(hw_version), " hw=%s", info.vals[i]);
     }
 
     if (strcmp(info.keys[i], "protocolVersion") == 0) {
-      snprintf(p_version, sizeof(p_version), "%s", info.vals[i]);
+      snprintf(p_version, sizeof(p_version), " p=%s", info.vals[i]);
     }
   }
 
@@ -238,21 +238,13 @@ static void get_info(char *driver) {
       discovered[devices].info.soapy.sdrplay_count = 0;
     }
 
-    if (strcmp(driver, "lime") == 0) {
-      snprintf(discovered[devices].info.soapy.version, sizeof(discovered[devices].info.soapy.version),
-               "fw=%s gw=%s hw=%s p=%s", fw_version, gw_version, hw_version,
-               p_version);
-    } else if (strcmp(driver, "radioberry") == 0) {
-      snprintf(discovered[devices].info.soapy.version, sizeof(discovered[devices].info.soapy.version),
-               "fw=%s gw=%s", fw_version, gw_version);
-    } else {
-      snprintf(discovered[devices].info.soapy.version, sizeof(discovered[devices].info.soapy.version), "%s", "");
-    }
+    snprintf(discovered[devices].info.soapy.version, sizeof(discovered[devices].info.soapy.version),
+               "%s%s%s%s", fw_version, gw_version, hw_version, p_version);
 
     //
-    // Client/Server version:
+    // Client/Server:
     // The RX/TX gains and antennas are now stored in "radio" in a fixed place,
-    // where we have up to 8 strings of max length (including trailing zero) of 64
+    // where we have up to 8 strings, each with max length (including trailing zero) of 64
     //
     if (rx_gains_length > 8) { rx_gains_length = 8; }
 
