@@ -3609,6 +3609,7 @@ static void *client_thread(void* arg) {
     break;
 
     case CMD_MOX: {
+      t_print("RCVD MOX=%d\n", header.b1);
       g_idle_add(ext_radio_remote_set_mox, GINT_TO_POINTER(header.b1));
     }
     break;
