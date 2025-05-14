@@ -355,6 +355,7 @@ void tx_save_state(const TRANSMITTER *tx) {
     SetPropI1("transmitter.%d.ps_ptol",                             tx->id,    tx->ps_ptol);
     SetPropF1("transmitter.%d.ps_moxdelay",                         tx->id,    tx->ps_moxdelay);
     SetPropF1("transmitter.%d.ps_loopdelay",                        tx->id,    tx->ps_loopdelay);
+    SetPropF1("transmitter.%d.ps_setpk",                            tx->id,    tx->ps_setpk);
     SetPropI1("transmitter.%d.attenuation",                         tx->id,    tx->attenuation);
     SetPropI1("transmitter.%d.ctcss_enabled",                       tx->id,    tx->ctcss_enabled);
     SetPropI1("transmitter.%d.ctcss",                               tx->id,    tx->ctcss);
@@ -437,6 +438,7 @@ void tx_restore_state(TRANSMITTER *tx) {
     GetPropI1("transmitter.%d.ps_ptol",                             tx->id,    tx->ps_ptol);
     GetPropF1("transmitter.%d.ps_moxdelay",                         tx->id,    tx->ps_moxdelay);
     GetPropF1("transmitter.%d.ps_loopdelay",                        tx->id,    tx->ps_loopdelay);
+    GetPropF1("transmitter.%d.ps_setpk",                            tx->id,    tx->ps_setpk);
     GetPropI1("transmitter.%d.attenuation",                         tx->id,    tx->attenuation);
     GetPropI1("transmitter.%d.ctcss_enabled",                       tx->id,    tx->ctcss_enabled);
     GetPropI1("transmitter.%d.ctcss",                               tx->id,    tx->ctcss);
@@ -1040,7 +1042,7 @@ TRANSMITTER *tx_create_transmitter(int id, int pixels, int width, int height) {
   tx->dexp_filter_low  =    1000;
   tx->dexp_filter_high =    2000;
   tx->local_microphone = 0;
-  snprintf(tx->microphone_name, sizeof(transmitter->microphone_name), "%s", "NO MIC");
+  snprintf(tx->microphone_name, sizeof(tx->microphone_name), "%s", "NO MIC");
   tx->dialog_x = -1;
   tx->dialog_y = -1;
   tx->dialog = NULL;
@@ -1080,6 +1082,57 @@ TRANSMITTER *tx_create_transmitter(int id, int pixels, int width, int height) {
   tx->display_detector_mode = DET_PEAK;
   tx->display_average_time  = 120.0;
   tx->display_average_mode  = AVG_LOGRECURSIVE;
+
+
+  //
+  // If the pk value is slightly too large, this does no harm, but
+  // if it is slightly too small, very strange things can happen.
+  // Therefore it is good to "measure" this value and then slightly
+  // increase it.
+  //
+  // Note the "Brick2" identifies itself as a HERMES but needs a
+  // non-standard SetPK value. Therefore we init the value here
+  // and let it overwrite through the props file
+  //
+  switch (protocol) {
+  case NEW_PROTOCOL:
+    switch (device) {
+    case NEW_DEVICE_SATURN:
+      tx->ps_setpk = 0.6121;
+      break;
+
+    default:
+      // recommended "new protocol value"
+      tx->ps_setpk = 0.2899;
+      break;
+    }
+
+    break;
+
+  case ORIGINAL_PROTOCOL:
+    switch (device) {
+    case DEVICE_HERMES_LITE2:
+      // measured value: 0.2386
+      tx->ps_setpk = 0.2400;
+      break;
+
+    case DEVICE_STEMLAB:
+      // measured value: 0.4155
+      tx->ps_setpk = 0.4160;
+      break;
+
+    default:
+      // recommended "old protocol" value
+      tx->ps_setpk = 0.4067;
+      break;
+    }
+
+    break;
+
+  default:
+    tx->ps_setpk = 1.000;
+    break;
+  }
   //
   // Modify these values from the props file
   //
@@ -1181,6 +1234,9 @@ TRANSMITTER *tx_create_transmitter(int id, int pixels, int width, int height) {
   tx_set_detector(tx);
   tx_set_average(tx);
   tx_create_visual(tx);
+  if (protocol == NEW_PROTOCOL || protocol == ORIGINAL_PROTOCOL) {
+    tx_ps_setparams(tx);
+  }
   return tx;
 }
 

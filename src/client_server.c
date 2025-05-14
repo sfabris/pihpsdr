@@ -437,7 +437,6 @@ void server_tx_audio(short sample) {
     return;
   }
 
-  int txmode = vfo_get_tx_mode();
   static short speak = 0;
 
   if (client_socket < 0) { return; }
@@ -449,6 +448,7 @@ void server_tx_audio(short sample) {
   txaudio_data.samples[txaudio_buffer_index++] = to_short(sample);
 
   if (txaudio_buffer_index >= AUDIO_DATA_SIZE) {
+    int txmode = vfo_get_tx_mode();
     if (radio_is_transmitting() && txmode != modeCWU && txmode != modeCWL && !tune && !transmitter->twotone) {
       //
       // The actual transmission of the mic audio samples only takes  place
@@ -1011,7 +1011,7 @@ static void send_rx_data(int sock, int id) {
   data.nr                    = rx->nr;
   data.nr_agc                = rx->nr_agc;
   data.nr2_ae                = rx->nr2_ae;
-  data.nr2_gain_method       = rx->nr2_ae;
+  data.nr2_gain_method       = rx->nr2_gain_method;
   data.nr2_npe_method        = rx->nr2_npe_method;
   data.anf                   = rx->anf;
   data.snb                   = rx->snb;
