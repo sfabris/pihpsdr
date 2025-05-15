@@ -2966,9 +2966,14 @@ the HermesLite-II running Protocol-1 (SetPK=0.240) and the Anan-G2 running Proto
 The SetPK value is determined by the FPGA firmware of the radio can can experimentally
 be determined by comparing the outgoing TX and the incoming TX feedback signal.
 It should match the value reported
-by the calibration algorithm in the GetPk field. The  value
-chosen by \pH can be incorrect if you use a highly experimental firmware on your
-HPSDR board with modified TX DAC filters, but this should normally not happen.
+by the calibration algorithm in the GetPk field. You can change the value in the SetPk
+field, the changed value is then also written to the props file and then restored
+upon the next program start. This should only be done if the radio hardware has
+a non-standard peak TX DAC value. One case I  know of is the "Brick2 SDR", which identifies
+itself as a HERMES board but needs a quite large SetPk value of about 0.7800. But such
+cases are easily identified when performing a two-tone test by a large difference
+between the values in the SetPk field and the GetPk value which is obtained from analysing
+the TX DAC data.
 
 \begin{figure}[t!]
 \center
@@ -4387,7 +4392,7 @@ than zero.
 Audio recording and replay is typically used in QSOs to let your QSO partner listen to its own transmission,
 and how it arrived at your site. It is not meant to do automatic SSB CQ calls etc., here a dedicated
 ,,voice keyer'' software should be used. The main restriction of the record\&replay facility in \pH is
-that only a single piece of audio can be stored, and that the maximum length of this piece is about 10 seconds.
+that only a single piece of audio can be stored, and that the maximum length of this piece is about 20 seconds.
 
 Because the main purpose of this feature is to play back a recorded transmission of your QSO partner,
 the RX equaliser is not used while recording (but noise reduction etc. is still active!). Likewise,
@@ -4407,7 +4412,7 @@ button has not yet been used since the start of the \pH program, or if the last 
 more then 30 seconds ago. If noting is on the screen, one has to push the \bltt{Capture} button once and
 a string \rett{Recorded} string in yellow colour will appear in the top right corner of the pan adapter,
 and below a horizontal progress bar that indicates how long the actual recording is: a full bar corresponds
-to maximum filling which corresponds to 10 seconds, but this can easily be changed at compile time.
+to maximum filling which corresponds to 20 seconds, but this can easily be changed at compile time.
 Fig. \ref{fig:capture1} shows the status bar, as it has been brought up by hitting the \bltt{Capture} button.
 
 \begin{figure}[ht]
