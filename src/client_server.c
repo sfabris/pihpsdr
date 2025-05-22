@@ -533,7 +533,13 @@ void remote_send_rxspectrum(int id) {
   if (numsamples > SPECTRUM_DATA_SIZE) { numsamples = SPECTRUM_DATA_SIZE; }
 
   for (int i = 0; i < numsamples; i++) {
-    spectrum_data.sample[i] = to_short(samples[i + rx->pan]);
+    int s = ((int) samples[i + rx->pan]) + 200;  // -200dBm ... 55dBm maps to 0 ... 55
+
+    if (s < 0) { s = 0; }
+
+    if (s > 255) { s = 255; }
+
+    spectrum_data.sample[i] = (uint8_t) s;
   }
 
   if (numsamples > 0) {
@@ -542,7 +548,7 @@ void remote_send_rxspectrum(int id) {
     // width of the screen. To this end, calculate the total number of bytes
     // in THIS command (xferlen) and the length  of the payload.
     //
-    int xferlen = sizeof(spectrum_data) - (SPECTRUM_DATA_SIZE - numsamples) * sizeof(uint16_t);
+    int xferlen = sizeof(spectrum_data) - (SPECTRUM_DATA_SIZE - numsamples) * sizeof(uint8_t);
     int payload = xferlen - sizeof(HEADER);
 
     //cppcheck-suppress knownConditionTrueFalse
@@ -587,7 +593,13 @@ void remote_send_txspectrum() {
   int offset = (tx->pixels - tx->width) / 2;
 
   for (int i = 0; i < numsamples; i++) {
-    spectrum_data.sample[i] = to_short(samples[i + offset]);
+    int s = ((int) samples[i + offset]) + 200;  // -200dBm ... 55dBm maps to 0 ... 55
+
+    if (s < 0) { s = 0; }
+
+    if (s > 255) { s = 255; }
+
+    spectrum_data.sample[i] = (uint8_t) s;
   }
 
   if (numsamples > 0) {
@@ -596,7 +608,7 @@ void remote_send_txspectrum() {
     // width of the screen. To this end, calculate the total number of bytes
     // in THIS command (xferlen) and the length  of the payload.
     //
-    int xferlen = sizeof(spectrum_data) - (SPECTRUM_DATA_SIZE - numsamples) * sizeof(uint16_t);
+    int xferlen = sizeof(spectrum_data) - (SPECTRUM_DATA_SIZE - numsamples) * sizeof(uint8_t);
     int payload = xferlen - sizeof(HEADER);
 
     //cppcheck-suppress knownConditionTrueFalse
@@ -3335,7 +3347,7 @@ static void *client_thread(void* arg) {
           }
 
           for (int i = 0; i < rx->width; i++) {
-            rx->pixel_samples[i] = (float)from_short(spectrum_data.sample[i]);
+            rx->pixel_samples[i] = (float)((int)spectrum_data.sample[i]-200);
           }
 
           g_mutex_unlock(&rx->display_mutex);
@@ -3356,7 +3368,7 @@ static void *client_thread(void* arg) {
 
         if (width == tx->width) {
           for (int i = 0; i < tx->width; i++) {
-            tx->pixel_samples[i] = (float)from_short(spectrum_data.sample[i]);
+            tx->pixel_samples[i] = (float)((int)spectrum_data.sample[i] - 200);
           }
 
           g_idle_add(ext_tx_remote_update_display, tx);

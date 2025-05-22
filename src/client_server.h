@@ -143,7 +143,7 @@ enum _header_type_enum {
   CLIENT_SERVER_COMMANDS,
 };
 
-#define CLIENT_SERVER_VERSION 0x01000007 // 32-bit version number
+#define CLIENT_SERVER_VERSION 0x01000008 // 32-bit version number
 #define SPECTRUM_DATA_SIZE 4096          // Maximum width of a panadapter
 #define AUDIO_DATA_SIZE 1024             // 1024 stereo samples
 
@@ -650,7 +650,7 @@ typedef struct __attribute__((__packed__)) _spectrum_data {
   mydouble fwd;
   mydouble swr;
   //
-  uint16_t sample[SPECTRUM_DATA_SIZE];
+  uint8_t sample[SPECTRUM_DATA_SIZE];
 } SPECTRUM_DATA;
 
 //
