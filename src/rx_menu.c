@@ -312,10 +312,12 @@ void rx_menu(GtkWidget *parent) {
     }
 
     //
-    // If there is more than one ADC, let the user associate an ADC
-    // with the current receiver.
+    // HPSDR:    If there is more than one ADC, let the user associate an ADC
+    //           with the current receiver.
+    // SOAPYSDR: RX1 is hard-wired to ADC0, and RX2 to ADC1, so rx->id and rx->adc are
+    //           the same for SOAPY.
     //
-    if (n_adc > 1) {
+    if (n_adc > 1 && protocol != SOAPYSDR_PROTOCOL) {
       GtkWidget *adc_label = gtk_label_new("Select ADC");
       gtk_widget_set_name(adc_label, "boldlabel");
       gtk_widget_set_halign(adc_label, GTK_ALIGN_END);
