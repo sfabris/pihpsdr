@@ -1128,7 +1128,6 @@ void radio_start_radio() {
     //} else if (strcmp(radio->name, "plutosdr") == 0) {
     //  drive_max = 89.0;
     //}
-
     pa_power = PA_1W;
     break;
 
@@ -1361,6 +1360,7 @@ void radio_start_radio() {
     break;
 
   case SOAPYSDR_USB_DEVICE:
+
     //if (have_lime) == 0) {
     if (radio->info.soapy.rx_channels > 1) {
       n_adc = 2;
@@ -1386,6 +1386,11 @@ void radio_start_radio() {
   if (device == SOAPYSDR_USB_DEVICE) {
     soapy_iqswap = 1;
     receivers = 1;
+
+    if (radio->info.soapy.rx_channels > 1) {   // have_lime
+      receivers = 2;
+    }
+
     filter_board = NO_FILTER_BOARD;
   }
 
@@ -1442,7 +1447,6 @@ void radio_start_radio() {
     adc[1].min_gain = radio->info.soapy.rx_gain_min;
     adc[1].max_gain = radio->info.soapy.rx_gain_max;
     adc[1].gain = adc[1].min_gain;
-
     soapy_radio_sample_rate = radio->info.soapy.sample_rate;
   }
 
@@ -1475,8 +1479,13 @@ void radio_start_radio() {
   case SOAPYSDR_PROTOCOL:
     t_print("%s: setup RECEIVERS SOAPYSDR\n", __FUNCTION__);
     RECEIVERS = 1;
-    PS_TX_FEEDBACK = 1;
-    PS_RX_FEEDBACK = 2;
+
+    if (radio->info.soapy.rx_channels > 1) {   // have_lime
+      RECEIVERS = 2;
+    }
+
+    PS_TX_FEEDBACK = RECEIVERS;
+    PS_RX_FEEDBACK = RECEIVERS + 1;
     break;
 
   default:
@@ -1521,10 +1530,12 @@ void radio_start_radio() {
   schedule_high_priority();
 
   if (protocol == SOAPYSDR_PROTOCOL) {
-    RECEIVER *rx = receiver[0];
+    for (int i = 0; i < RECEIVERS; i++) {
+      RECEIVER *rx = receiver[i];
 #ifdef SOAPYSDR
-    soapy_protocol_create_receiver(rx);
+       soapy_protocol_create_receiver(rx);
 #endif
+    }
 
     if (can_transmit) {
 #ifdef SOAPYSDR
@@ -1536,24 +1547,23 @@ void radio_start_radio() {
 #endif
     }
 
+    for (int id = 0; id < RECEIVERS; id++) {
+      RECEIVER *rx = receiver[id];
+      int rxadc = rx->adc;
 #ifdef SOAPYSDR
-    soapy_protocol_set_rx_antenna(rx, adc[0].antenna);
-    soapy_protocol_set_rx_frequency(rx, VFO_A);
-    soapy_protocol_set_automatic_gain(rx, adc[0].agc);
+      soapy_protocol_set_rx_antenna(rx, adc[rxadc].antenna);
+      soapy_protocol_set_rx_frequency(rx, id);
+      soapy_protocol_start_receiver(rx);
+      soapy_protocol_set_gain(rx);
+      soapy_protocol_set_automatic_gain(rx, adc[rxadc].agc);
 
-    if (!adc[0].agc) { soapy_protocol_set_gain(rx); }
-
+      if (!adc[rxadc].agc) { soapy_protocol_set_gain(rx); }
 #endif
 
-    if (vfo[0].ctun) {
-      rx_set_frequency(rx, vfo[0].ctun_frequency);
+      if (vfo[id].ctun) {
+        rx_set_frequency(rx, vfo[id].ctun_frequency);
+      }
     }
-
-#ifdef SOAPYSDR
-    soapy_protocol_start_receiver(rx);
-    //t_print("radio: set rf_gain=%f\n",rx->rf_gain);
-    soapy_protocol_set_gain(rx);
-#endif
   }
 
   g_idle_add(ext_vfo_update, NULL);
@@ -3161,10 +3171,7 @@ void radio_start_capture() {
   // - turn off  equalisers for both RX but keep the state in rx
   //
   for (int i = 0; i < receivers; i++) {
-    int eq = receiver[i]->eq_enable;
-    receiver[i]->eq_enable = 0;
-    rx_set_equalizer(receiver[i]);
-    receiver[i]->eq_enable = eq;
+    rx_capture_start(receiver[i]);
   }
 }
 
@@ -3201,57 +3208,19 @@ void radio_end_capture() {
   }
 
   //
-  // re-activate equalisers if they had been active before
+  // restore equalizer state
   //
   for (int i = 0; i < receivers; i++) {
-    rx_set_equalizer(receiver[i]);
+    rx_capture_end(receiver[i]);
   }
 }
 
 void radio_start_playback() {
-  //
-  // - turn off TX equaliser   but keep equaliser  info in transmitter->eq_enable
-  // - turn off TX compression but keep compressor info in transmitter->compression
-  // - set mic gain  to zero   but keep mic_gain   info in transmitter->mic_gain
-  // - disable CFC             but keep            info in transmitter->mic_gain
-  // - disable DEXP            but keep            info in transmitter->mic_gain
-  //
-  int  comp   = transmitter->compressor;
-  int  cfc    = transmitter->cfc;
-  int  cfc_eq = transmitter->cfc_eq;
-  int  eq     = transmitter->eq_enable;
-  int  dexp   = transmitter->dexp;
-  double gain = transmitter->mic_gain;
-  transmitter->eq_enable = 0;
-  transmitter->compressor = 0;
-  transmitter->mic_gain = 0.0;
-  transmitter->cfc = 0;
-  transmitter->cfc_eq = 0;
-  transmitter->dexp = 0;
-  tx_set_equalizer(transmitter);
-  tx_set_mic_gain(transmitter);
-  tx_set_compressor(transmitter);
-  tx_set_dexp(transmitter);
-  transmitter->compressor = comp;
-  transmitter->cfc = cfc;
-  transmitter->cfc_eq = cfc_eq;
-  transmitter->dexp = dexp;
-  transmitter->eq_enable  = eq;
-  transmitter->mic_gain = gain;
+  tx_playback_start(transmitter);
 }
 
 void radio_end_playback() {
-  //
-  // re-inforce settings stored in transmitter:
-  // - TX equaliser on/off
-  // - TX compressor on/off
-  // - TX mic gain setting
-  // - CFC and DEXP
-  //
-  tx_set_equalizer(transmitter);
-  tx_set_mic_gain(transmitter);
-  tx_set_compressor(transmitter);
-  tx_set_dexp(transmitter);
+  tx_playback_end(transmitter);
 }
 
 //

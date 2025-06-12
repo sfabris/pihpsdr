@@ -1083,7 +1083,6 @@ TRANSMITTER *tx_create_transmitter(int id, int pixels, int width, int height) {
   tx->display_average_time  = 120.0;
   tx->display_average_mode  = AVG_LOGRECURSIVE;
 
-
   //
   // If the pk value is slightly too large, this does no harm, but
   // if it is slightly too small, very strange things can happen.
@@ -1133,6 +1132,7 @@ TRANSMITTER *tx_create_transmitter(int id, int pixels, int width, int height) {
     tx->ps_setpk = 1.000;
     break;
   }
+
   //
   // Modify these values from the props file
   //
@@ -1234,9 +1234,11 @@ TRANSMITTER *tx_create_transmitter(int id, int pixels, int width, int height) {
   tx_set_detector(tx);
   tx_set_average(tx);
   tx_create_visual(tx);
+
   if (protocol == NEW_PROTOCOL || protocol == ORIGINAL_PROTOCOL) {
     tx_ps_setparams(tx);
   }
+
   return tx;
 }
 
@@ -1908,6 +1910,10 @@ void tx_set_filter(TRANSMITTER *tx) {
   }
 
   int txmode = vfo_get_tx_mode();
+  mode_settings[txmode].use_rx_filter  = tx->use_rx_filter;
+  mode_settings[txmode].tx_filter_low  = tx_filter_low;
+  mode_settings[txmode].tx_filter_high = tx_filter_high;
+  copy_mode_settings(txmode);
   // load default values (0 < low < high), defaults: low=150, high=2850
   int low  = tx_filter_low;
   int high = tx_filter_high;
@@ -2159,13 +2165,13 @@ void tx_ps_getinfo(TRANSMITTER *tx) {
 // cppcheck-suppress constParameterPointer
 void tx_ps_getmx(TRANSMITTER *tx) {
   ASSERT_SERVER();
-  GetPSMaxTX(tx->id, &transmitter->ps_getmx);
+  GetPSMaxTX(tx->id, &tx->ps_getmx);
 }
 
 // cppcheck-suppress constParameterPointer
 void tx_ps_getpk(TRANSMITTER *tx) {
   ASSERT_SERVER();
-  GetPSHWPeak(tx->id, &transmitter->ps_getpk);
+  GetPSHWPeak(tx->id, &tx->ps_getpk);
 }
 
 void tx_ps_mox(const TRANSMITTER *tx, int state) {
@@ -2371,6 +2377,19 @@ void tx_set_compressor(TRANSMITTER *tx) {
     return;
   }
 
+  int txmode = vfo_get_tx_mode();
+  mode_settings[txmode].compressor       = tx->compressor;
+  mode_settings[txmode].compressor_level = tx->compressor_level;
+  mode_settings[txmode].cfc              = tx->cfc;
+  mode_settings[txmode].cfc_eq           = tx->cfc_eq;
+
+  for (int i = 0; i < 11; i++) {
+    mode_settings[txmode].cfc_freq[i] = tx->cfc_freq[i];
+    mode_settings[txmode].cfc_lvl [i] = tx->cfc_lvl [i];
+    mode_settings[txmode].cfc_post[i] = tx->cfc_post[i];
+  }
+
+  copy_mode_settings(txmode);
   //
   // - Although I see not much juice therein, the
   //   usage of CFC alongside with the speech processor
@@ -2441,7 +2460,24 @@ void tx_set_deviation(const TRANSMITTER *tx) {
 }
 
 void tx_set_dexp(const TRANSMITTER *tx) {
-  ASSERT_SERVER();
+  if (radio_is_remote) {
+    send_dexp(client_socket);
+    return;
+  }
+
+  int txmode = vfo_get_tx_mode();
+  mode_settings[txmode].dexp             = tx->dexp;
+  mode_settings[txmode].dexp_filter      = tx->dexp_filter;
+  mode_settings[txmode].dexp_tau         = tx->dexp_tau;
+  mode_settings[txmode].dexp_attack      = tx->dexp_attack;
+  mode_settings[txmode].dexp_release     = tx->dexp_release;
+  mode_settings[txmode].dexp_hold        = tx->dexp_hold;
+  mode_settings[txmode].dexp_hyst        = tx->dexp_hyst;
+  mode_settings[txmode].dexp_trigger     = tx->dexp_trigger;
+  mode_settings[txmode].dexp_filter_low  = tx->dexp_filter_low;
+  mode_settings[txmode].dexp_filter_high = tx->dexp_filter_high;
+  mode_settings[txmode].dexp_exp         = tx->dexp_exp;
+  copy_mode_settings(txmode);
   //
   // Set all the parameters of the Downward Expander
   // Note the DEXP number must be between 0 and 3, so
@@ -2461,12 +2497,53 @@ void tx_set_dexp(const TRANSMITTER *tx) {
   SetDEXPRun(0, tx->dexp);
 }
 
+void tx_playback_start(const TRANSMITTER *tx) {
+  ASSERT_SERVER();
+  //
+  // Turn OFF compression etc. without affecting the mode_settings
+  // and without changing the TX data
+  //
+  SetTXAEQRun(tx->id, 0);
+  SetTXAPanelGain1(tx->id, 1.0);
+  SetTXALevelerSt(tx->id, 0);
+  SetTXACFCOMPPeqRun(tx->id, 0);
+  SetTXACFCOMPRun(tx->id, 0);
+  SetTXAosctrlRun(tx->id, 0);
+  SetTXACompressorRun(tx->id, 0);
+  SetDEXPRun(0, 0);
+}
+
+void tx_playback_end(const TRANSMITTER *tx) {
+  ASSERT_SERVER();
+  //
+  // Restore compression, mic gain etc. (without affecting the mode_settings)
+  // from the TX data
+  //
+  SetTXAEQRun(tx->id, tx->eq_enable);
+  SetTXAPanelGain1(tx->id, pow(10.0, tx->mic_gain * 0.05));
+  SetTXALevelerSt(tx->id, tx->compressor || tx->cfc);
+  SetTXACFCOMPPrePeq(tx->id, tx->cfc_post[0]);
+  SetTXACFCOMPRun(tx->id, tx->cfc);
+  SetTXAosctrlRun(tx->id, tx->compressor && (tx->compressor_level > 5.5));
+  SetTXACompressorRun(tx->id, tx->compressor);
+}
+
 void tx_set_equalizer(TRANSMITTER *tx) {
   if (radio_is_remote) {
     send_eq(client_socket, tx->id);
     return;
   }
 
+  int txmode = vfo_get_tx_mode();
+  mode_settings[txmode].en_txeq = tx->eq_enable;
+
+  for (int i = 0; i < 11; i++) {
+    mode_settings[txmode].tx_eq_freq[i] = tx->eq_freq[i];
+    mode_settings[txmode].tx_eq_gain[i] = tx->eq_gain[i];
+  }
+
+  copy_mode_settings(txmode);
+  g_idle_add(ext_vfo_update, NULL);
   SetTXAEQProfile(tx->id, 10, tx->eq_freq, tx->eq_gain);
   SetTXAEQRun(tx->id, tx->eq_enable);
 }
@@ -2486,6 +2563,9 @@ void tx_set_mic_gain(const TRANSMITTER *tx) {
     return;
   }
 
+  int txmode = vfo_get_tx_mode();
+  mode_settings[txmode].mic_gain = tx->mic_gain;
+  copy_mode_settings(txmode);
   SetTXAPanelGain1(tx->id, pow(10.0, tx->mic_gain * 0.05));
 }
 

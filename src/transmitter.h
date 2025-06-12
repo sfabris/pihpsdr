@@ -199,6 +199,9 @@ extern int    tx_get_pixels(TRANSMITTER *tx);
 extern void   tx_off(const TRANSMITTER *tx);
 extern void   tx_on(const TRANSMITTER *tx);
 
+extern void   tx_playback_start(const TRANSMITTER *tx);
+extern void   tx_playback_end(const TRANSMITTER *tx);
+
 extern void   tx_ps_getinfo(TRANSMITTER *tx);
 extern void   tx_ps_getmx(TRANSMITTER *tx);
 extern void   tx_ps_getpk(TRANSMITTER *tx);
@@ -238,6 +241,7 @@ extern void   tx_queue_cw_event(int state, int wait);
 extern void tx_create_remote(TRANSMITTER *rx);
 extern void tx_remote_update_display(TRANSMITTER *rx);
 extern void tx_remote_update_display(TRANSMITTER *tx);
+extern void tx_frequency_changed(TRANSMITTER *tx); // only for SOAPY
 
 #endif
 
