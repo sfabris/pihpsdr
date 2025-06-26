@@ -1601,6 +1601,12 @@ void radio_start_radio() {
 
   g_idle_add(ext_vfo_update, NULL);
   schedule_high_priority();
+
+  //
+  // Now the radio is up and running. Connect "Radio" keyboard interceptor
+  //
+  g_signal_handler_disconnect(top_window, keypress_signal_id);
+  keypress_signal_id = g_signal_connect(top_window, "key_press_event", G_CALLBACK(keypress_cb), NULL);
 }
 
 void radio_remote_change_receivers(int r) {
@@ -2960,6 +2966,11 @@ int radio_remote_start(void *data) {
 
   start_vfo_timer();
   remote_started = TRUE;
+  //
+  // Now the radio is up and running. Connect "Radio" keyboard interceptor
+  //
+  g_signal_handler_disconnect(top_window, keypress_signal_id);
+  keypress_signal_id = g_signal_connect(top_window, "key_press_event", G_CALLBACK(keypress_cb), NULL);
   return 0;
 }
 
