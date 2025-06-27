@@ -1,7 +1,7 @@
 # pihpsdr
 **SDR host program**,
 supporting both the old (P1) and new (P2) HPSDR protocols, as well as the SoapySDR framework.
-It runs on Linux (Raspberry Pi but also Desktop or Laptop computers running LINUX) and MacOS (Intel or AppleSilicon CPUs, using  "Homebrew" or "MacPorts").
+It runs on Linux (Raspberry Pi but also Desktop or Laptop computers running LINUX), macOS (Intel or AppleSilicon CPUs, using  "Homebrew" or "MacPorts"), and Windows (using MSYS2/MinGW64).
 
 **piHPSDR Manual: (Release 2.4 Version)** https://github.com/dl1ycf/pihpsdr/releases/download/v2.4/piHPSDR-Manual.pdf
 
@@ -9,6 +9,17 @@ It runs on Linux (Raspberry Pi but also Desktop or Laptop computers running LINU
 
 ***
 piHPSDR should be compiled from the sources, consult the Manual (**link given above**) on how to compile/install piHPSDR on your machine
+
+## Windows Installation (MSYS2/MinGW64)
+
+For Windows users, see the [Windows README](Windows/README.md) for detailed installation and build instructions.
+
+Quick start:
+1. Install MSYS2 from https://www.msys2.org/
+2. Run `./Windows/install.sh` from the MinGW64 terminal
+3. Copy `Windows/make.config.pihpsdr.example` to `make.config.pihpsdr`
+4. Run `make clean && make`
+
 ***
 
 Latest features:

@@ -19,16 +19,30 @@
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #include <math.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <semaphore.h>
+
+#ifdef _WIN32
+#include "../Windows/windows_compat.h"
+#include <sys/types.h>
+// Windows doesn't have utsname, so we'll define a simple version
+struct utsname {
+    char sysname[256];
+    char nodename[256]; 
+    char release[256];
+    char version[256];
+    char machine[256];
+};
+#else
+#include <unistd.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/resource.h>
 #include <sys/utsname.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#endif
 
 #include <wdsp.h>    // only needed for WDSPwisdom() and wisdom_get_status()
 
@@ -450,6 +464,14 @@ int main(int argc, char **argv) {
   int rc;
   char name[1024];
 
+#ifdef _WIN32
+  // Initialize Windows Sockets
+  if (init_winsock() != 0) {
+    fprintf(stderr, "Failed to initialize Windows Sockets\n");
+    return 1;
+  }
+#endif
+
   //
   // If invoked with -V, print version and FPGA firmware compatibility information
   //
@@ -459,6 +481,9 @@ int main(int argc, char **argv) {
 #ifdef SATURN
     fprintf(stderr, "SATURN min:max minor FPGA : %d:%d\n", saturn_minor_version_min(), saturn_minor_version_max());
     fprintf(stderr, "SATURN min:max major FPGA : %d:%d\n", saturn_major_version_min(), saturn_major_version_max());
+#endif
+#ifdef _WIN32
+    cleanup_winsock();
 #endif
     exit(0);
   }
@@ -486,19 +511,28 @@ int main(int argc, char **argv) {
   // privilege is there, it may help to run piHPSDR at a lower nice
   // value.
   //
+#ifndef _WIN32
   rc = getpriority(PRIO_PROCESS, 0);
   t_print("Base priority on startup: %d\n", rc);
   setpriority(PRIO_PROCESS, 0, -10);
   rc = getpriority(PRIO_PROCESS, 0);
   t_print("Base priority after adjustment: %d\n", rc);
+#endif
   startup(argv[0]);
+#ifdef _WIN32
+  snprintf(name, sizeof(name), "org.g0orx.pihpsdr.pid%d", GetCurrentProcessId());
+#else
   snprintf(name, sizeof(name), "org.g0orx.pihpsdr.pid%d", getpid());
+#endif
   //t_print("gtk_application_new: %s\n",name);
   pihpsdr = gtk_application_new(name, G_APPLICATION_FLAGS_NONE);
   g_signal_connect(pihpsdr, "activate", G_CALLBACK(activate_pihpsdr), NULL);
   rc = g_application_run(G_APPLICATION(pihpsdr), argc, argv);
   t_print("exiting ...\n");
   g_object_unref(pihpsdr);
+#ifdef _WIN32
+  cleanup_winsock();
+#endif
   return rc;
 }
 
