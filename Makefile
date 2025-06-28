@@ -428,7 +428,7 @@ endif
 
 ifeq ($(UNAME_S), Windows)
 SYSLIBS=-lws2_32 -lwsock32 -lole32 -loleaut32 -luuid
-WINDOWS_INCLUDE=-I./Windows -include ./Windows/auto_compat.h
+WINDOWS_INCLUDE=-I./Windows
 endif
 
 ##############################################################################

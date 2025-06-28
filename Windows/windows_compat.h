@@ -135,11 +135,7 @@ int pthread_mutexattr_settype(pthread_mutexattr_t *attr, int type);
 /* Signal handling compatibility */
 #define SIGPIPE 13
 #define SIG_IGN ((void (*)(int))1)
-static inline int signal(int sig, void (*handler)(int)) {
-    (void)sig;
-    (void)handler;
-    return 0;
-}
+/* Note: signal() function is already defined by Windows headers */
 
 #else
 /* Unix/Linux includes */
