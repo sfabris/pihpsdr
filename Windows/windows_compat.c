@@ -165,6 +165,14 @@ int pthread_mutex_lock(pthread_mutex_t *mutex) {
     return 0;
 }
 
+int pthread_mutex_trylock(pthread_mutex_t *mutex) {
+    if (TryEnterCriticalSection(mutex)) {
+        return 0;  /* Success */
+    } else {
+        return EBUSY;  /* Would block */
+    }
+}
+
 int pthread_mutex_unlock(pthread_mutex_t *mutex) {
     LeaveCriticalSection(mutex);
     return 0;
