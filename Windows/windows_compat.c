@@ -434,4 +434,84 @@ int inet_aton(const char *cp, struct in_addr *inp) {
     return 1;
 }
 
+/* Additional termios function implementations for Windows */
+
+int tcgetattr(int fd, struct termios *termios_p) {
+    /* Windows doesn't have direct equivalent - provide basic stub */
+    if (!termios_p) {
+        errno = EFAULT;
+        return -1;
+    }
+    
+    /* Initialize with default values */
+    memset(termios_p, 0, sizeof(struct termios));
+    termios_p->c_cflag = CS8 | CREAD | CLOCAL;
+    termios_p->c_iflag = IGNPAR;
+    termios_p->c_oflag = 0;
+    termios_p->c_lflag = 0;
+    termios_p->c_cc[VMIN] = 1;
+    termios_p->c_cc[VTIME] = 0;
+    
+    return 0;
+}
+
+int tcsetattr(int fd, int optional_actions, const struct termios *termios_p) {
+    /* Windows doesn't have direct equivalent - provide basic stub */
+    (void)fd;
+    (void)optional_actions;
+    (void)termios_p;
+    return 0;
+}
+
+int tcflush(int fd, int queue_selector) {
+    /* Windows doesn't have direct equivalent - provide basic stub */
+    (void)fd;
+    (void)queue_selector;
+    return 0;
+}
+
+int tcflow(int fd, int action) {
+    /* Windows doesn't have direct equivalent - provide basic stub */
+    (void)fd;
+    (void)action;
+    return 0;
+}
+
+speed_t cfgetispeed(const struct termios *termios_p) {
+    if (!termios_p) return B0;
+    return termios_p->c_ispeed;
+}
+
+speed_t cfgetospeed(const struct termios *termios_p) {
+    if (!termios_p) return B0;
+    return termios_p->c_ospeed;
+}
+
+int cfsetispeed(struct termios *termios_p, speed_t speed) {
+    if (!termios_p) {
+        errno = EFAULT;
+        return -1;
+    }
+    termios_p->c_ispeed = speed;
+    return 0;
+}
+
+int cfsetospeed(struct termios *termios_p, speed_t speed) {
+    if (!termios_p) {
+        errno = EFAULT;
+        return -1;
+    }
+    termios_p->c_ospeed = speed;
+    return 0;
+}
+
+int cfsetspeed(struct termios *termios_p, speed_t speed) {
+    if (!termios_p) {
+        errno = EFAULT;
+        return -1;
+    }
+    termios_p->c_ispeed = speed;
+    termios_p->c_ospeed = speed;
+    return 0;
+}
 #endif /* _WIN32 */
