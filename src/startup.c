@@ -176,13 +176,13 @@ void startup(const char *path) {
   snprintf(workdir, sizeof(workdir), "%s/Documents", homedir);
 
   if (stat(workdir, &statbuf) < 0) {
-    mkdir (workdir);
+    mkdir (workdir, 0700);
   }
 
   snprintf(workdir, sizeof(workdir), "%s/Documents/piHPSDR", homedir);
 
   if (stat(workdir, &statbuf) < 0) {
-    mkdir (workdir);
+    mkdir (workdir, 0700);
   }
 
 #else
