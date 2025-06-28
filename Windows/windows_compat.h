@@ -162,6 +162,7 @@ int pthread_mutexattr_settype(pthread_mutexattr_t *attr, int type);
 /* POSIX function declarations for Windows */
 int fcntl(int fd, int cmd, ...);
 void bcopy(const void *src, void *dest, size_t n);
+int inet_aton(const char *cp, struct in_addr *inp);
 
 /* Network interface enumeration functions */
 struct ifaddrs;
@@ -171,6 +172,10 @@ void freeifaddrs(struct ifaddrs *ifa);
 /* Socket constants not available on Windows */
 #ifndef SO_REUSEPORT
 #define SO_REUSEPORT SO_REUSEADDR  /* Windows doesn't have SO_REUSEPORT, use SO_REUSEADDR */
+#endif
+
+#ifndef SO_BROADCAST
+#define SO_BROADCAST 0x0020
 #endif
 
 #ifndef SOL_TCP

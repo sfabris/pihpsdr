@@ -419,4 +419,19 @@ void freeifaddrs(struct ifaddrs *ifa) {
     }
 }
 
+/* inet_aton - convert Internet host address from numbers-and-dots notation in string to binary form */
+int inet_aton(const char *cp, struct in_addr *inp) {
+    if (cp == NULL || inp == NULL) {
+        return 0;
+    }
+    
+    unsigned long addr = inet_addr(cp);
+    if (addr == INADDR_NONE) {
+        return 0;
+    }
+    
+    inp->s_addr = addr;
+    return 1;
+}
+
 #endif /* _WIN32 */
