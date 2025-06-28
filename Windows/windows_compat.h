@@ -162,6 +162,23 @@ int pthread_mutexattr_settype(pthread_mutexattr_t *attr, int type);
 int fcntl(int fd, int cmd, ...);
 void bcopy(const void *src, void *dest, size_t n);
 
+/* Socket constants not available on Windows */
+#ifndef SO_REUSEPORT
+#define SO_REUSEPORT SO_REUSEADDR  /* Windows doesn't have SO_REUSEPORT, use SO_REUSEADDR */
+#endif
+
+#ifndef SOL_TCP
+#define SOL_TCP IPPROTO_TCP  /* Windows uses IPPROTO_TCP instead of SOL_TCP */
+#endif
+
+/* Socket timeout options - Windows uses different constants */
+#ifndef SO_RCVTIMEO
+#define SO_RCVTIMEO 0x1006
+#endif
+#ifndef SO_SNDTIMEO  
+#define SO_SNDTIMEO 0x1005
+#endif
+
 /* Socket option compatibility - Windows uses char* for option values */
 #define GETSOCKOPT_TYPE char
 #define SETSOCKOPT_TYPE const char

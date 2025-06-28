@@ -1180,7 +1180,7 @@ static gpointer rigctl_server(gpointer data) {
     if (setsockopt(tcp_client[spare].fd, IPPROTO_TCP, TCP_NODELAY, (void *)&on, sizeof(on)) < 0) {
 #else
 
-    if (setsockopt(tcp_client[spare].fd, SOL_TCP, TCP_NODELAY, (void *)&on, sizeof(on)) < 0) {
+    if (SETSOCKOPT(tcp_client[spare].fd, SOL_TCP, TCP_NODELAY, &on, sizeof(on)) < 0) {
 #endif
       t_perror("TCP_NODELAY");
     }
