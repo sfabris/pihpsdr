@@ -26,14 +26,7 @@
 #ifdef _WIN32
 #include "../Windows/windows_compat.h"
 #include <sys/types.h>
-// Windows doesn't have utsname, so we'll define a simple version
-struct utsname {
-    char sysname[256];
-    char nodename[256]; 
-    char release[256];
-    char version[256];
-    char machine[256];
-};
+#include <sys/utsname.h>
 #else
 #include <unistd.h>
 #include <sys/socket.h>
