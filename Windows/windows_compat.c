@@ -18,11 +18,13 @@
 
 #ifdef _WIN32
 
+#include <errno.h>
+#include <string.h>
+#include <stdio.h>
 #include <windows.h>
 #include <time.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include <errno.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include "windows_compat.h"
@@ -232,6 +234,71 @@ int fcntl(int fd, int cmd, ...) {
 
 void bcopy(const void *src, void *dest, size_t n) {
     memmove(dest, src, n);
+}
+
+/* POSIX uname() implementation for Windows */
+int uname(struct utsname *buf) {
+    OSVERSIONINFOW osvi;
+    SYSTEM_INFO si;
+    DWORD size;
+    char hostname[_UTSNAME_LENGTH];
+
+    if (!buf) {
+        errno = EFAULT;
+        return -1;
+    }
+
+    memset(buf, 0, sizeof(struct utsname));
+
+    /* Operating system name */
+    strcpy(buf->sysname, "Windows");
+
+    /* Get hostname */
+    size = sizeof(hostname);
+    if (GetComputerNameA(hostname, &size)) {
+        strncpy(buf->nodename, hostname, _UTSNAME_LENGTH - 1);
+        buf->nodename[_UTSNAME_LENGTH - 1] = '\0';
+    } else {
+        strcpy(buf->nodename, "localhost");
+    }
+
+    /* Get Windows version information */
+    memset(&osvi, 0, sizeof(OSVERSIONINFOW));
+    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOW);
+
+    /* For Windows 10 and later, GetVersionEx may not return accurate info */
+    /* But we'll use what's available */
+    if (GetVersionExW(&osvi)) {
+        snprintf(buf->release, _UTSNAME_LENGTH - 1, "%lu.%lu", 
+                 osvi.dwMajorVersion, osvi.dwMinorVersion);
+        snprintf(buf->version, _UTSNAME_LENGTH - 1, "Build %lu", 
+                 osvi.dwBuildNumber);
+    } else {
+        strcpy(buf->release, "unknown");
+        strcpy(buf->version, "unknown");
+    }
+
+    /* Get processor architecture */
+    GetSystemInfo(&si);
+    switch (si.wProcessorArchitecture) {
+        case PROCESSOR_ARCHITECTURE_AMD64:
+            strcpy(buf->machine, "x86_64");
+            break;
+        case PROCESSOR_ARCHITECTURE_INTEL:
+            strcpy(buf->machine, "i386");
+            break;
+        case PROCESSOR_ARCHITECTURE_ARM:
+            strcpy(buf->machine, "arm");
+            break;
+        case PROCESSOR_ARCHITECTURE_ARM64:
+            strcpy(buf->machine, "aarch64");
+            break;
+        default:
+            strcpy(buf->machine, "unknown");
+            break;
+    }
+
+    return 0;
 }
 
 #endif /* _WIN32 */

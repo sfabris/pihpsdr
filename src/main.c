@@ -520,7 +520,7 @@ int main(int argc, char **argv) {
 #endif
   startup(argv[0]);
 #ifdef _WIN32
-  snprintf(name, sizeof(name), "org.g0orx.pihpsdr.pid%d", GetCurrentProcessId());
+  snprintf(name, sizeof(name), "org.g0orx.pihpsdr.pid%lu", (unsigned long)GetCurrentProcessId());
 #else
   snprintf(name, sizeof(name), "org.g0orx.pihpsdr.pid%d", getpid());
 #endif

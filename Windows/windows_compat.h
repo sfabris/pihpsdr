@@ -211,4 +211,7 @@ static inline void cleanup_winsock(void) { }
 
 #endif /* _WIN32 */
 
+/* POSIX uname functionality */
+#include "sys/utsname.h"
+
 #endif /* _WINDOWS_COMPAT_H_ */
