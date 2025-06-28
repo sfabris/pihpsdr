@@ -25,6 +25,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Ensure snprintf is available
+#ifndef snprintf
+#define snprintf _snprintf
+#endif
+
 #include "message.h"
 #include "../src/midi_menu.h"
 #include "../src/midi.h"
@@ -53,7 +58,7 @@ void CALLBACK MidiInProc(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance,
                 int velocity = data2;
                 
                 // Process the MIDI message
-                NewMidiNote(device_index, channel, note, velocity);
+                NewMidiEvent(MIDI_NOTE, channel, note, velocity);
             } else if ((status & 0xF0) == 0xB0) {
                 // Control change message
                 int channel = status & 0x0F;
@@ -61,7 +66,7 @@ void CALLBACK MidiInProc(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance,
                 int value = data2;
                 
                 // Process the MIDI control change
-                NewMidiCC(device_index, channel, controller, value);
+                NewMidiEvent(MIDI_CTRL, channel, controller, value);
             }
             break;
         }
@@ -178,11 +183,17 @@ void get_midi_devices() {
     }
 }
 
-void configure_midi_device(int index, int bank) {
+void configure_midi_device_windows(int index, int bank) {
     // Configure MIDI device (implementation can be extended)
     if (index >= 0 && index < n_midi_devices) {
         t_print("Configuring MIDI device %d for bank %d\n", index, bank);
     }
+}
+
+void configure_midi_device(gboolean state) {
+    // Configure MIDI device (standard interface)
+    t_print("Configure MIDI device called with state: %s\n", state ? "TRUE" : "FALSE");
+    // Implementation can be added later if needed
 }
 
 #endif // _WIN32
