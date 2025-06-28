@@ -117,6 +117,7 @@ typedef struct {
     int dummy;
 } pthread_mutexattr_t;
 
+#define PTHREAD_MUTEX_INITIALIZER {0}
 #define PTHREAD_CREATE_DETACHED 1
 #define PTHREAD_MUTEX_RECURSIVE 2
 
