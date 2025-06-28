@@ -130,6 +130,17 @@ GPIO=
 SATURN=
 endif
 
+# Windows/MinGW/MSYS2: Disable GPIO and SATURN
+ifneq ($(findstring MINGW,$(UNAME_S)),)
+GPIO=OFF
+SATURN=OFF
+endif
+
+ifneq ($(findstring MSYS,$(UNAME_S)),)
+GPIO=OFF
+SATURN=OFF
+endif
+
 ifeq ($(UNAME_S), Windows)
 GPIO=OFF
 SATURN=OFF
@@ -155,6 +166,20 @@ MIDI_SOURCES= src/alsa_midi.c src/midi2.c src/midi3.c src/midi_menu.c
 MIDI_OBJS= src/alsa_midi.o src/midi2.o src/midi3.o src/midi_menu.o
 MIDI_LIBS= -lasound
 endif
+
+# Windows/MinGW/MSYS2 MIDI
+ifneq ($(findstring MINGW,$(UNAME_S)),)
+MIDI_SOURCES= Windows/windows_midi.c src/midi2.c src/midi3.c src/midi_menu.c
+MIDI_OBJS= Windows/windows_midi.o src/midi2.o src/midi3.o src/midi_menu.o
+MIDI_LIBS= -lwinmm
+endif
+
+ifneq ($(findstring MSYS,$(UNAME_S)),)
+MIDI_SOURCES= Windows/windows_midi.c src/midi2.c src/midi3.c src/midi_menu.c
+MIDI_OBJS= Windows/windows_midi.o src/midi2.o src/midi3.o src/midi_menu.o
+MIDI_LIBS= -lwinmm
+endif
+
 ifeq ($(UNAME_S), Windows)
 MIDI_SOURCES= Windows/windows_midi.c src/midi2.c src/midi3.c src/midi_menu.c
 MIDI_OBJS= Windows/windows_midi.o src/midi2.o src/midi3.o src/midi_menu.o
@@ -186,6 +211,24 @@ TTS_HEADERS= src/tts.h src/MacTTS.h
 TTS_SOURCES= src/tts.c
 TTS_OBJS= src/tts.o
 endif
+
+# Windows/MinGW/MSYS2 TTS
+ifneq ($(findstring MINGW,$(UNAME_S)),)
+TTS_OPTIONS=-D TTS
+TTS_HEADERS= src/tts.h
+TTS_SOURCES= src/tts.c
+TTS_OBJS= src/tts.o
+TTS_LIBS= -lsapi
+endif
+
+ifneq ($(findstring MSYS,$(UNAME_S)),)
+TTS_OPTIONS=-D TTS
+TTS_HEADERS= src/tts.h
+TTS_SOURCES= src/tts.c
+TTS_OBJS= src/tts.o
+TTS_LIBS= -lsapi
+endif
+
 ifeq ($(UNAME_S), Windows)
 TTS_OPTIONS=-D TTS
 TTS_HEADERS= src/tts.h
@@ -325,6 +368,16 @@ ifeq ($(UNAME_S), Linux)
     AUDIO=PULSE
   endif
 endif
+
+# Windows/MinGW/MSYS2: Use PORTAUDIO
+ifneq ($(findstring MINGW,$(UNAME_S)),)
+  AUDIO=PORTAUDIO
+endif
+
+ifneq ($(findstring MSYS,$(UNAME_S)),)
+  AUDIO=PORTAUDIO
+endif
+
 ifeq ($(UNAME_S), Windows)
   AUDIO=PORTAUDIO
 endif
@@ -426,8 +479,19 @@ ifeq ($(UNAME_S), Darwin)
 SYSLIBS=-framework IOKit
 endif
 
+# Detect Windows/MinGW/MSYS2 environments
+ifneq ($(findstring MINGW,$(UNAME_S)),)
+SYSLIBS=-lws2_32 -lwsock32 -lole32 -loleaut32 -luuid -liphlpapi -lavrt -lwinmm
+WINDOWS_INCLUDE=-I./Windows
+endif
+
+ifneq ($(findstring MSYS,$(UNAME_S)),)
+SYSLIBS=-lws2_32 -lwsock32 -lole32 -loleaut32 -luuid -liphlpapi -lavrt -lwinmm
+WINDOWS_INCLUDE=-I./Windows
+endif
+
 ifeq ($(UNAME_S), Windows)
-SYSLIBS=-lws2_32 -lwsock32 -lole32 -loleaut32 -luuid
+SYSLIBS=-lws2_32 -lwsock32 -lole32 -loleaut32 -luuid -liphlpapi -lavrt -lwinmm
 WINDOWS_INCLUDE=-I./Windows
 endif
 
@@ -461,6 +525,17 @@ COMPILE=$(CC) $(CFLAGS) $(OPTIONS) $(INCLUDES)
 # Special compilation rules for Windows files
 #
 ##############################################################################
+
+# Windows/MinGW/MSYS2 compilation rules
+ifneq ($(findstring MINGW,$(UNAME_S)),)
+Windows/%.o: Windows/%.c
+	$(COMPILE) -c -o $@ $<
+endif
+
+ifneq ($(findstring MSYS,$(UNAME_S)),)
+Windows/%.o: Windows/%.c
+	$(COMPILE) -c -o $@ $<
+endif
 
 ifeq ($(UNAME_S), Windows)
 Windows/%.o: Windows/%.c

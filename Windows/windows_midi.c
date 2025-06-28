@@ -35,6 +35,10 @@
 #include "../src/midi.h"
 #include "../src/actions.h"
 
+/* Global MIDI variables */
+MIDI_DEVICE midi_devices[MAX_MIDI_DEVICES];
+int n_midi_devices = 0;
+
 static HMIDIIN hMidiIn[MAX_MIDI_DEVICES];
 static BOOL midi_device_opened[MAX_MIDI_DEVICES];
 
