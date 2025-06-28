@@ -51,7 +51,7 @@ int andromeda_execute_button(int v, int p) {
     case 26:
     case 27:
     case 28:
-      schedule_action(toolbar_switches[p - 21].switch_function, (v == 0) ? PRESSED : RELEASED, 0);
+      schedule_action(toolbar_switches[p - 21].switch_function, (v == 0) ? ACTION_PRESSED : ACTION_RELEASED, 0);
       break;
 
     case 46: // SDR On
@@ -72,58 +72,58 @@ int andromeda_execute_button(int v, int p) {
 
   if (numpad_active && v == 0) switch (p) {
     case 30: // Band Buttons
-      schedule_action(NUMPAD_1, PRESSED, 0);
+      schedule_action(NUMPAD_1, ACTION_PRESSED, 0);
       break;
 
     case 31:
-      schedule_action(NUMPAD_2, PRESSED, 0);
+      schedule_action(NUMPAD_2, ACTION_PRESSED, 0);
       break;
 
     case 32:
-      schedule_action(NUMPAD_3, PRESSED, 0);
+      schedule_action(NUMPAD_3, ACTION_PRESSED, 0);
       break;
 
     case 33:
-      schedule_action(NUMPAD_4, PRESSED, 0);
+      schedule_action(NUMPAD_4, ACTION_PRESSED, 0);
       break;
 
     case 34:
-      schedule_action(NUMPAD_5, PRESSED, 0);
+      schedule_action(NUMPAD_5, ACTION_PRESSED, 0);
       break;
 
     case 35:
-      schedule_action(NUMPAD_6, PRESSED, 0);
+      schedule_action(NUMPAD_6, ACTION_PRESSED, 0);
       break;
 
     case 36:
-      schedule_action(NUMPAD_7, PRESSED, 0);
+      schedule_action(NUMPAD_7, ACTION_PRESSED, 0);
       break;
 
     case 37:
-      schedule_action(NUMPAD_8, PRESSED, 0);
+      schedule_action(NUMPAD_8, ACTION_PRESSED, 0);
       break;
 
     case 38:
-      schedule_action(NUMPAD_9, PRESSED, 0);
+      schedule_action(NUMPAD_9, ACTION_PRESSED, 0);
       break;
 
     case 39:
-      schedule_action(NUMPAD_DEC, PRESSED, 0);
+      schedule_action(NUMPAD_DEC, ACTION_PRESSED, 0);
       break;
 
     case 40:
-      schedule_action(NUMPAD_0, PRESSED, 0);
+      schedule_action(NUMPAD_0, ACTION_PRESSED, 0);
       break;
 
     case 41: {
-      schedule_action(NUMPAD_ENTER, PRESSED, 0);
+      schedule_action(NUMPAD_ENTER, ACTION_PRESSED, 0);
       numpad_active = 0;
       locked = 0;
     }
     break;
 
     case 45: {
-      schedule_action(NUMPAD_MHZ, PRESSED, 0);
+      schedule_action(NUMPAD_MHZ, ACTION_PRESSED, 0);
       numpad_active = 0;
       locked = 0;
     }
@@ -139,19 +139,19 @@ int andromeda_execute_button(int v, int p) {
       break;
 
     case 5: // Filter Cut Defaults
-      schedule_action(FILTER_CUT_DEFAULT, (v == 0) ? PRESSED : RELEASED, 0);
+      schedule_action(FILTER_CUT_DEFAULT, (v == 0) ? ACTION_PRESSED : ACTION_RELEASED, 0);
       break;
 
     case 7: // Diversity Enable
       if (RECEIVERS == 2 && n_adc > 1) {
-        schedule_action(DIV, (v == 0) ? PRESSED : RELEASED, 0);
+        schedule_action(DIV, (v == 0) ? ACTION_PRESSED : ACTION_RELEASED, 0);
       }
 
       break;
 
     case 9: // RIT/XIT Clear
-      schedule_action(RIT_CLEAR, (v == 0) ? PRESSED : RELEASED, 0);
-      schedule_action(XIT_CLEAR, (v == 0) ? PRESSED : RELEASED, 0);
+      schedule_action(RIT_CLEAR, (v == 0) ? ACTION_PRESSED : ACTION_RELEASED, 0);
+      schedule_action(XIT_CLEAR, (v == 0) ? ACTION_PRESSED : ACTION_RELEASED, 0);
       break;
 
     case 29: // Shift
@@ -193,22 +193,22 @@ int andromeda_execute_button(int v, int p) {
         shift = 0;
       } else if (!shift && v == 1) {
         if (p == 30) { start_tx(); }                                  // MODE DATA
-        else if (p == 31) { schedule_action(MODE_PLUS, PRESSED, 0); } // MODE+
-        else if (p == 32) { schedule_action(FILTER_PLUS, PRESSED, 0); } // FILTER+
+        else if (p == 31) { schedule_action(MODE_PLUS, ACTION_PRESSED, 0); } // MODE+
+        else if (p == 32) { schedule_action(FILTER_PLUS, ACTION_PRESSED, 0); } // FILTER+
         else if (p == 33) { radio_change_receivers(receivers == 1 ? 2 : 1); } // RX2
-        else if (p == 34) { schedule_action(MODE_MINUS, PRESSED, 0); } // MODE-
-        else if (p == 35) { schedule_action(FILTER_MINUS, PRESSED, 0); } // FILTER-
-        else if (p == 36) { schedule_action(A_TO_B, PRESSED, 0); }    // A>B
-        else if (p == 37) { schedule_action(B_TO_A, PRESSED, 0); }    // B>A
-        else if (p == 38) { schedule_action(SPLIT, PRESSED, 0); }     // SPLIT
-        else if (p == 39) { schedule_action(NB, PRESSED, 0); }        // U1 (use NB)
-        else if (p == 40) { schedule_action(NR, PRESSED, 0); }        // U2 (use NR)
+        else if (p == 34) { schedule_action(MODE_MINUS, ACTION_PRESSED, 0); } // MODE-
+        else if (p == 35) { schedule_action(FILTER_MINUS, ACTION_PRESSED, 0); } // FILTER-
+        else if (p == 36) { schedule_action(A_TO_B, ACTION_PRESSED, 0); }    // A>B
+        else if (p == 37) { schedule_action(B_TO_A, ACTION_PRESSED, 0); }    // B>A
+        else if (p == 38) { schedule_action(SPLIT, ACTION_PRESSED, 0); }     // SPLIT
+        else if (p == 39) { schedule_action(NB, ACTION_PRESSED, 0); }        // U1 (use NB)
+        else if (p == 40) { schedule_action(NR, ACTION_PRESSED, 0); }        // U2 (use NR)
       } else if (p == 41) {
         if (v == 0 || v == 2) {
           numpad_active = 1;
           locked = 1;
           g_idle_add(ext_vfo_update, NULL);
-          schedule_action(NUMPAD_CL, PRESSED, 0);               // U3 start Freq entry
+          schedule_action(NUMPAD_CL, ACTION_PRESSED, 0);               // U3 start Freq entry
         }
       }
 
@@ -238,9 +238,9 @@ int andromeda_execute_button(int v, int p) {
       if (receivers == 2) {
         if (v == 0) {
           if (active_receiver->id == 0) {
-            schedule_action(RX2, PRESSED, 0);
+            schedule_action(RX2, ACTION_PRESSED, 0);
           } else {
-            schedule_action(RX1, PRESSED, 0);
+            schedule_action(RX1, ACTION_PRESSED, 0);
           }
 
           g_idle_add(ext_vfo_update, NULL);
@@ -251,7 +251,7 @@ int andromeda_execute_button(int v, int p) {
 
     case 45: // ctune
       if (v == 1) {
-        schedule_action(CTUN, PRESSED, 0);
+        schedule_action(CTUN, ACTION_PRESSED, 0);
         g_idle_add(ext_vfo_update, NULL);
       }
 
@@ -274,7 +274,7 @@ int andromeda_execute_button(int v, int p) {
       break;
 
     case 50: // TWO TONE
-      schedule_action(TWO_TONE, (v == 0) ? PRESSED : RELEASED, 0);
+      schedule_action(TWO_TONE, (v == 0) ? ACTION_PRESSED : ACTION_RELEASED, 0);
       break;
 
     case 49: // PS ON
@@ -297,7 +297,7 @@ int andromeda_execute_button(int v, int p) {
   if (p == 44) { // VFO lock
     if (v == 0) {
       if (numpad_active) {
-        schedule_action(NUMPAD_KHZ, PRESSED, 0);
+        schedule_action(NUMPAD_KHZ, ACTION_PRESSED, 0);
         numpad_active = 0;
         locked = 0;
       } else {
@@ -322,56 +322,56 @@ void andromeda_execute_encoder(int p, int v) {
   if (!locked) switch (p) {
     // Enc1/2: "RX1 AF/RF"
     case 1:
-      schedule_action(AF_GAIN_RX1, RELATIVE, v);
+      schedule_action(AF_GAIN_RX1, ACTION_RELATIVE, v);
       break;
 
     case 2:
-      schedule_action(AGC_GAIN_RX1, RELATIVE, v);
+      schedule_action(AGC_GAIN_RX1, ACTION_RELATIVE, v);
       break;
 
     // Enc3/4: "RX2 AF/RF"
     case 3:
-      schedule_action(AF_GAIN_RX2, RELATIVE, v);
+      schedule_action(AF_GAIN_RX2, ACTION_RELATIVE, v);
       break;
 
     case 4:
-      schedule_action(AGC_GAIN_RX2, RELATIVE, v);
+      schedule_action(AGC_GAIN_RX2, ACTION_RELATIVE, v);
       break;
 
     // Enc5/6: "IF FILTER HIGH/LOW CUT"
     case 5:
-      schedule_action(FILTER_CUT_HIGH, RELATIVE, v);
+      schedule_action(FILTER_CUT_HIGH, ACTION_RELATIVE, v);
       break;
 
     case 6:
-      schedule_action(FILTER_CUT_LOW, RELATIVE, v);
+      schedule_action(FILTER_CUT_LOW, ACTION_RELATIVE, v);
       break;
 
     // Enc7/8: "DIVERSITY GAIN/PHASE"
     case 7:
-      schedule_action(DIV_GAIN, RELATIVE, v);
+      schedule_action(DIV_GAIN, ACTION_RELATIVE, v);
       break;
 
     case 8:
-      schedule_action(DIV_PHASE, RELATIVE, v);
+      schedule_action(DIV_PHASE, ACTION_RELATIVE, v);
       break;
 
     // Enc9/10: "RIT/XIT"
     case 9: // RIT of the VFO of the active receiver
-      schedule_action(RIT, RELATIVE, v);
+      schedule_action(RIT, ACTION_RELATIVE, v);
       break;
 
     case 10:
-      schedule_action(XIT, RELATIVE, v);
+      schedule_action(XIT, ACTION_RELATIVE, v);
       break;
 
     //Enc11/12: "MULTI/DRIVE", but here implemented as "MIC/DRIVE"
     case 11:
-      schedule_action(MIC_GAIN, RELATIVE, v);
+      schedule_action(MIC_GAIN, ACTION_RELATIVE, v);
       break;
 
     case 12:
-      schedule_action(DRIVE, RELATIVE, v);
+      schedule_action(DRIVE, ACTION_RELATIVE, v);
       break;
     }
 }

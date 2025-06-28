@@ -139,8 +139,14 @@ int pthread_mutexattr_settype(pthread_mutexattr_t *attr, int type);
 
 /* File control compatibility */
 #include <fcntl.h>
+#ifndef F_GETFL
+#define F_GETFL 3
+#endif
+#ifndef F_SETFL
+#define F_SETFL 4
+#endif
 #ifndef O_NONBLOCK
-#define O_NONBLOCK 0
+#define O_NONBLOCK 0x800
 #endif
 
 /* Signal handling compatibility */

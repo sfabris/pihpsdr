@@ -273,25 +273,25 @@ void g2panel_execute_button(int type, const int *vec, int button, int tr01, int 
   switch (action) {
   case BAND_PLUS:
   case BAND_MINUS:
-    if (tr10) { schedule_action(action, PRESSED, 0); }
+    if (tr10) { schedule_action(action, ACTION_PRESSED, 0); }
 
-    if (tr12) { schedule_action(MENU_BAND, PRESSED, 0); }
+    if (tr12) { schedule_action(MENU_BAND, ACTION_PRESSED, 0); }
 
     break;
 
   case FILTER_PLUS:
   case FILTER_MINUS:
-    if (tr10) { schedule_action(action, PRESSED, 0); }
+    if (tr10) { schedule_action(action, ACTION_PRESSED, 0); }
 
-    if (tr12) { schedule_action(MENU_FILTER, PRESSED, 0); }
+    if (tr12) { schedule_action(MENU_FILTER, ACTION_PRESSED, 0); }
 
     break;
 
   case MODE_PLUS:
   case MODE_MINUS:
-    if (tr10) { schedule_action(action, PRESSED, 0); }
+    if (tr10) { schedule_action(action, ACTION_PRESSED, 0); }
 
-    if (tr12) { schedule_action(MENU_MODE, PRESSED, 0); }
+    if (tr12) { schedule_action(MENU_MODE, ACTION_PRESSED, 0); }
 
     break;
 
@@ -299,23 +299,23 @@ void g2panel_execute_button(int type, const int *vec, int button, int tr01, int 
   case SNB:
   case NB:
   case NR:
-    if (tr10) { schedule_action(action, PRESSED, 0); }
+    if (tr10) { schedule_action(action, ACTION_PRESSED, 0); }
 
-    if (tr12) { schedule_action(MENU_NOISE, PRESSED, 0); }
+    if (tr12) { schedule_action(MENU_NOISE, ACTION_PRESSED, 0); }
 
     break;
 
   case TWO_TONE:
-    if (tr10) { schedule_action(action, PRESSED, 0); }
+    if (tr10) { schedule_action(action, ACTION_PRESSED, 0); }
 
-    if (tr12) { schedule_action(MENU_PS, PRESSED, 0); }
+    if (tr12) { schedule_action(MENU_PS, ACTION_PRESSED, 0); }
 
     break;
 
   default:
-    if (tr01) { schedule_action(action, PRESSED, 0); }
+    if (tr01) { schedule_action(action, ACTION_PRESSED, 0); }
 
-    if (tr10 || tr20) { schedule_action(action, RELEASED, 0); }
+    if (tr10 || tr20) { schedule_action(action, ACTION_RELEASED, 0); }
 
     break;
   }
@@ -330,7 +330,7 @@ void g2panel_execute_encoder(int type, const int *vec, int encoder, int val) {
 
   if (action == NO_ACTION) { return; }
 
-  schedule_action(action, RELATIVE, val);
+  schedule_action(action, ACTION_RELATIVE, val);
 }
 
 //

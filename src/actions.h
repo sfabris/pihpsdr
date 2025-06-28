@@ -239,10 +239,10 @@ typedef struct _multi_table {
 } MULTI_TABLE;
 
 enum ACTION_MODE {
-  RELATIVE,
-  ABSOLUTE,
-  PRESSED,
-  RELEASED
+  ACTION_RELATIVE,
+  ACTION_ABSOLUTE,
+  ACTION_PRESSED,
+  ACTION_RELEASED
 };
 
 typedef struct process_action {

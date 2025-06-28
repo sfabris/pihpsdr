@@ -21,6 +21,10 @@
 #include <windows.h>
 #include <time.h>
 #include <stdlib.h>
+#include <stdarg.h>
+#include <errno.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #include "windows_compat.h"
 
 /* Windows implementation of clock_gettime */
@@ -188,6 +192,41 @@ int pthread_mutexattr_settype(pthread_mutexattr_t *attr, int type) {
     (void)attr;
     (void)type;
     return 0;
+}
+
+/* Additional POSIX compatibility function implementations */
+
+int fcntl(int fd, int cmd, ...) {
+    va_list args;
+    va_start(args, cmd);
+    
+    switch (cmd) {
+        case F_GETFL: {
+            // On Windows, we can't really get socket flags like O_NONBLOCK
+            // Return 0 as a reasonable default
+            va_end(args);
+            return 0;
+        }
+        case F_SETFL: {
+            int flags = va_arg(args, int);
+            va_end(args);
+            
+            if (flags & O_NONBLOCK) {
+                // Set socket to non-blocking mode
+                u_long mode = 1;
+                return ioctlsocket(fd, FIONBIO, &mode);
+            }
+            return 0;
+        }
+        default:
+            va_end(args);
+            errno = EINVAL;
+            return -1;
+    }
+}
+
+void bcopy(const void *src, void *dest, size_t n) {
+    memmove(dest, src, n);
 }
 
 #endif /* _WIN32 */

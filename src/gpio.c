@@ -522,7 +522,7 @@ static gpointer rotary_encoder_thread(gpointer data) {
       if (encoders[i].bottom_encoder_enabled && encoders[i].bottom_encoder_pos != 0) {
         //t_print("%s: BOTTOM encoder %d pos=%d\n",__FUNCTION__,i,encoders[i].bottom_encoder_pos);
         action = encoders[i].bottom_encoder_function;
-        mode = RELATIVE;
+        mode = ACTION_RELATIVE;
         val = encoders[i].bottom_encoder_pos;
         encoders[i].bottom_encoder_pos = 0;
         schedule_action(action, mode, val);
@@ -531,7 +531,7 @@ static gpointer rotary_encoder_thread(gpointer data) {
       if (encoders[i].top_encoder_enabled && encoders[i].top_encoder_pos != 0) {
         //t_print("%s: TOP encoder %d pos=%d\n",__FUNCTION__,i,encoders[i].top_encoder_pos);
         action = encoders[i].top_encoder_function;
-        mode = RELATIVE;
+        mode = ACTION_RELATIVE;
         val = encoders[i].top_encoder_pos;
         encoders[i].top_encoder_pos = 0;
         schedule_action(action, mode, val);
@@ -678,22 +678,22 @@ static void process_edge(int offset, int value) {
   for (i = 0; i < MAX_ENCODERS; i++) {
     if (encoders[i].bottom_encoder_enabled && encoders[i].bottom_encoder_address_a == offset) {
       //t_print("%s: found %d encoder %d bottom A\n",__FUNCTION__,offset,i);
-      process_encoder(i, BOTTOM_ENCODER, A, SET(value == PRESSED));
+      process_encoder(i, BOTTOM_ENCODER, A, SET(value == ACTION_PRESSED));
       found = TRUE;
       break;
     } else if (encoders[i].bottom_encoder_enabled && encoders[i].bottom_encoder_address_b == offset) {
       //t_print("%s: found %d encoder %d bottom B\n",__FUNCTION__,offset,i);
-      process_encoder(i, BOTTOM_ENCODER, B, SET(value == PRESSED));
+      process_encoder(i, BOTTOM_ENCODER, B, SET(value == ACTION_PRESSED));
       found = TRUE;
       break;
     } else if (encoders[i].top_encoder_enabled && encoders[i].top_encoder_address_a == offset) {
       //t_print("%s: found %d encoder %d top A\n",__FUNCTION__,offset,i);
-      process_encoder(i, TOP_ENCODER, A, SET(value == PRESSED));
+      process_encoder(i, TOP_ENCODER, A, SET(value == ACTION_PRESSED));
       found = TRUE;
       break;
     } else if (encoders[i].top_encoder_enabled && encoders[i].top_encoder_address_b == offset) {
       //t_print("%s: found %d encoder %d top B\n",__FUNCTION__,offset,i);
-      process_encoder(i, TOP_ENCODER, B, SET(value == PRESSED));
+      process_encoder(i, TOP_ENCODER, B, SET(value == ACTION_PRESSED));
       found = TRUE;
       break;
     } else if (encoders[i].switch_enabled && encoders[i].switch_address == offset) {
@@ -745,7 +745,7 @@ static void process_edge(int offset, int value) {
   //
   if (controller == CONTROLLER2_V1 || controller == CONTROLLER2_V2 || controller == G2_FRONTPANEL) {
     if (I2C_INTERRUPT == offset) {
-      if (value == PRESSED) {
+      if (value == ACTION_PRESSED) {
         i2c_interrupt();
       }
 
@@ -791,12 +791,12 @@ static int interrupt_cb(int event_type, unsigned int line, const struct timespec
 
   case GPIOD_CTXLESS_EVENT_CB_RISING_EDGE:
     //t_print("%s: Ignore RISING EDGE\n",__FUNCTION__);
-    process_edge(line, RELEASED);
+    process_edge(line, ACTION_RELEASED);
     break;
 
   case GPIOD_CTXLESS_EVENT_CB_FALLING_EDGE:
     //t_print("%s: Process FALLING EDGE\n",__FUNCTION__);
-    process_edge(line, PRESSED);
+    process_edge(line, ACTION_PRESSED);
     break;
   }
 

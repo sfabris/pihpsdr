@@ -4769,7 +4769,7 @@ static int remote_command(void *data) {
   break;
 
   case CMD_CAPTURE: {
-    schedule_action(CAPTURE, PRESSED, 0);
+    schedule_action(CAPTURE, ACTION_PRESSED, 0);
   }
   break;
 

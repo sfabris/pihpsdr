@@ -1118,7 +1118,7 @@ static void rx_process_buffer(RECEIVER *rx) {
         // switching the state to RECORD_DONE takes care that the
         // CAPTURE switch is "pressed" only once
         capture_state = CAP_RECORD_DONE;
-        schedule_action(CAPTURE, PRESSED, 0);
+        schedule_action(CAPTURE, ACTION_PRESSED, 0);
       }
     }
 
