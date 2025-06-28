@@ -22,10 +22,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/* Include wdsp.h before our Windows compatibility headers to avoid conflicts */
-#define WDSP_BEFORE_WINDOWS
+/* Use our Windows-compatible wdsp wrapper */
+#ifdef _WIN32
+#include "../Windows/wdsp_wrapper.h"
+#else
 #include <wdsp.h>
-#undef WDSP_BEFORE_WINDOWS
+#endif
 
 #include "agc.h"
 #include "audio.h"
