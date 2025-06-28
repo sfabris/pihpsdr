@@ -34,6 +34,15 @@
 #include <io.h>
 #include <direct.h>
 
+/* Handle conflicts with wdsp.h */
+#ifdef WDSP_BEFORE_WINDOWS
+/* wdsp.h was included first, need to handle type conflicts */
+#ifdef DWORD
+#undef DWORD
+#define DWORD DWORD  /* Use Windows definition */
+#endif
+#endif
+
 /* Windows typedef conflicts - undefine after Windows headers */
 #ifdef SNB
 #undef SNB
