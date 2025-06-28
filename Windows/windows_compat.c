@@ -246,6 +246,10 @@ void bcopy(const void *src, void *dest, size_t n) {
     memmove(dest, src, n);
 }
 
+pid_t getpid(void) {
+    return (pid_t)GetCurrentProcessId();
+}
+
 char *realpath(const char *path, char *resolved_path) {
     DWORD length;
     static char static_buffer[PATH_MAX];

@@ -104,6 +104,16 @@ int clock_gettime(int clk_id, struct timespec *tp);
 #define PATH_MAX 260
 #endif
 
+/* POSIX type definitions */
+typedef unsigned int uid_t;
+typedef unsigned int gid_t;
+typedef int pid_t;
+
+/* File type macros for stat() - Windows doesn't have symbolic links */
+#ifndef S_ISLNK
+#define S_ISLNK(m) 0  /* Windows doesn't have symbolic links, always false */
+#endif
+
 /* POSIX semaphore compatibility for Windows */
 #ifndef SEM_FAILED
 #define SEM_FAILED ((sem_t*)0)
@@ -178,6 +188,7 @@ int pthread_mutexattr_settype(pthread_mutexattr_t *attr, int type);
 /* POSIX function declarations for Windows */
 int fcntl(int fd, int cmd, ...);
 void bcopy(const void *src, void *dest, size_t n);
+pid_t getpid(void);
 char *realpath(const char *path, char *resolved_path);
 int inet_aton(const char *cp, struct in_addr *inp);
 
