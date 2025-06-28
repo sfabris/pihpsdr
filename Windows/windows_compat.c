@@ -120,22 +120,36 @@ int pthread_detach(pthread_t thread) {
 
 int pthread_mutex_init(pthread_mutex_t *mutex, const pthread_mutexattr_t *attr) {
     (void)attr; // Ignored for simplicity
-    InitializeCriticalSection(mutex);
+    InitializeCriticalSection(&mutex->cs);
+    mutex->initialized = 1;
     return 0;
 }
 
 int pthread_mutex_destroy(pthread_mutex_t *mutex) {
-    DeleteCriticalSection(mutex);
+    if (mutex->initialized) {
+        DeleteCriticalSection(&mutex->cs);
+        mutex->initialized = 0;
+    }
     return 0;
 }
 
 int pthread_mutex_lock(pthread_mutex_t *mutex) {
-    EnterCriticalSection(mutex);
+    // Lazy initialization for statically initialized mutexes
+    if (!mutex->initialized) {
+        InitializeCriticalSection(&mutex->cs);
+        mutex->initialized = 1;
+    }
+    EnterCriticalSection(&mutex->cs);
     return 0;
 }
 
 int pthread_mutex_trylock(pthread_mutex_t *mutex) {
-    if (TryEnterCriticalSection(mutex)) {
+    // Lazy initialization for statically initialized mutexes
+    if (!mutex->initialized) {
+        InitializeCriticalSection(&mutex->cs);
+        mutex->initialized = 1;
+    }
+    if (TryEnterCriticalSection(&mutex->cs)) {
         return 0;  /* Success */
     } else {
         return EBUSY;  /* Would block */
@@ -143,7 +157,9 @@ int pthread_mutex_trylock(pthread_mutex_t *mutex) {
 }
 
 int pthread_mutex_unlock(pthread_mutex_t *mutex) {
-    LeaveCriticalSection(mutex);
+    if (mutex->initialized) {
+        LeaveCriticalSection(&mutex->cs);
+    }
     return 0;
 }
 
