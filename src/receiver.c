@@ -58,8 +58,12 @@
 #include "waterfall.h"
 #include "zoompan.h"
 
+#ifndef min
 #define min(x,y) (x<y?x:y)
+#endif
+#ifndef max
 #define max(x,y) (x<y?y:x)
+#endif
 
 static int last_x;
 static gboolean has_moved = FALSE;

@@ -175,7 +175,7 @@ enum ACTION {
   RX2,
   SAT,
   SHUTDOWN,
-  SNB,
+  ACTION_SNB,
   SPLIT,
   SQUELCH,
   SQUELCH_RX1,
