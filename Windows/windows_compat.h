@@ -21,12 +21,23 @@
 
 #ifdef _WIN32
 
+/* Prevent Windows headers from defining problematic symbols */
+#define WIN32_LEAN_AND_MEAN
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
 /* Windows-specific includes and compatibility layer */
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <windows.h>
 #include <io.h>
 #include <direct.h>
+
+/* Windows typedef conflicts - undefine after Windows headers */
+#ifdef SNB
+#undef SNB
+#endif
 
 /* Socket compatibility */
 #define close(s) closesocket(s)
@@ -133,8 +144,12 @@ int pthread_mutexattr_settype(pthread_mutexattr_t *attr, int type);
 #endif
 
 /* Signal handling compatibility */
+#ifndef SIGPIPE
 #define SIGPIPE 13
+#endif
+#ifndef SIG_IGN
 #define SIG_IGN ((void (*)(int))1)
+#endif
 /* Note: signal() function is already defined by Windows headers */
 
 #else
