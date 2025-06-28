@@ -3,7 +3,7 @@
 #define _WINDOWS_SEMAPHORE_H
 
 #ifdef _WIN32
-#include "../windows_compat.h"
+#include "windows_compat.h"
 #else
 #include_next <semaphore.h>
 #endif
