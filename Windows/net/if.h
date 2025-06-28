@@ -24,16 +24,36 @@ struct ifreq {
 };
 
 /* Interface flags - basic definitions */
+#ifndef IFF_UP
 #define IFF_UP          0x1
+#endif
+#ifndef IFF_BROADCAST
 #define IFF_BROADCAST   0x2
+#endif
+#ifndef IFF_DEBUG
 #define IFF_DEBUG       0x4
+#endif
+#ifndef IFF_LOOPBACK
 #define IFF_LOOPBACK    0x8
+#endif
+#ifndef IFF_POINTOPOINT
 #define IFF_POINTOPOINT 0x10
+#endif
+#ifndef IFF_RUNNING
 #define IFF_RUNNING     0x40
+#endif
+#ifndef IFF_NOARP
 #define IFF_NOARP       0x80
+#endif
+#ifndef IFF_PROMISC
 #define IFF_PROMISC     0x100
+#endif
+#ifndef IFF_ALLMULTI
 #define IFF_ALLMULTI    0x200
+#endif
+#ifndef IFF_MULTICAST
 #define IFF_MULTICAST   0x1000
+#endif
 
 /* ioctl commands - basic definitions */
 #define SIOCGIFFLAGS    0x8913
