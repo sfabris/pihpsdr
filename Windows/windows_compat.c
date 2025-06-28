@@ -21,13 +21,14 @@
 #include <errno.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdint.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #include <windows.h>
 #include <lmcons.h>
 #include <time.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include <winsock2.h>
-#include <ws2tcpip.h>
 #include <iphlpapi.h>
 #include "windows_compat.h"
 
