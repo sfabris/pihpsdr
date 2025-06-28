@@ -27,6 +27,7 @@
 #include <stdarg.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <iphlpapi.h>
 #include "windows_compat.h"
 
 /* Windows implementation of clock_gettime */
@@ -299,6 +300,123 @@ int uname(struct utsname *buf) {
     }
 
     return 0;
+}
+
+/* Network interface enumeration functions */
+int getifaddrs(struct ifaddrs **ifap) {
+    PIP_ADAPTER_ADDRESSES pAddresses = NULL;
+    ULONG outBufLen = 0;
+    ULONG flags = GAA_FLAG_INCLUDE_PREFIX;
+    DWORD dwRetVal = 0;
+    struct ifaddrs *ifa_head = NULL, *ifa_tail = NULL;
+    PIP_ADAPTER_ADDRESSES pCurrAddresses = NULL;
+    PIP_ADAPTER_UNICAST_ADDRESS pUnicast = NULL;
+
+    if (!ifap) {
+        return -1;
+    }
+
+    *ifap = NULL;
+
+    /* Get the size needed for adapter addresses */
+    dwRetVal = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, pAddresses, &outBufLen);
+    if (dwRetVal == ERROR_BUFFER_OVERFLOW) {
+        pAddresses = (IP_ADAPTER_ADDRESSES *) malloc(outBufLen);
+        if (pAddresses == NULL) {
+            return -1;
+        }
+    }
+
+    /* Make the actual call */
+    dwRetVal = GetAdaptersAddresses(AF_UNSPEC, flags, NULL, pAddresses, &outBufLen);
+
+    if (dwRetVal == NO_ERROR) {
+        pCurrAddresses = pAddresses;
+        while (pCurrAddresses) {
+            pUnicast = pCurrAddresses->FirstUnicastAddress;
+            while (pUnicast != NULL) {
+                struct ifaddrs *ifa = (struct ifaddrs *)malloc(sizeof(struct ifaddrs));
+                if (!ifa) {
+                    freeifaddrs(ifa_head);
+                    free(pAddresses);
+                    return -1;
+                }
+
+                memset(ifa, 0, sizeof(struct ifaddrs));
+
+                /* Convert adapter name from wide char to char */
+                int name_len = WideCharToMultiByte(CP_UTF8, 0, pCurrAddresses->FriendlyName, -1, NULL, 0, NULL, NULL);
+                ifa->ifa_name = (char *)malloc(name_len);
+                if (ifa->ifa_name) {
+                    WideCharToMultiByte(CP_UTF8, 0, pCurrAddresses->FriendlyName, -1, ifa->ifa_name, name_len, NULL, NULL);
+                }
+
+                /* Set interface flags */
+                ifa->ifa_flags = 0;
+                if (pCurrAddresses->OperStatus == IfOperStatusUp) {
+                    ifa->ifa_flags |= IFF_UP | IFF_RUNNING;
+                }
+                if (pCurrAddresses->IfType == IF_TYPE_SOFTWARE_LOOPBACK) {
+                    ifa->ifa_flags |= IFF_LOOPBACK;
+                }
+                if (pCurrAddresses->IfType == IF_TYPE_ETHERNET_CSMACD ||
+                    pCurrAddresses->IfType == IF_TYPE_IEEE80211) {
+                    ifa->ifa_flags |= IFF_BROADCAST | IFF_MULTICAST;
+                }
+
+                /* Copy the address */
+                if (pUnicast->Address.lpSockaddr) {
+                    int addr_len = pUnicast->Address.iSockaddrLength;
+                    ifa->ifa_addr = (struct sockaddr *)malloc(addr_len);
+                    if (ifa->ifa_addr) {
+                        memcpy(ifa->ifa_addr, pUnicast->Address.lpSockaddr, addr_len);
+                    }
+                }
+
+                /* Add to list */
+                if (!ifa_head) {
+                    ifa_head = ifa_tail = ifa;
+                } else {
+                    ifa_tail->ifa_next = ifa;
+                    ifa_tail = ifa;
+                }
+
+                pUnicast = pUnicast->Next;
+            }
+            pCurrAddresses = pCurrAddresses->Next;
+        }
+    }
+
+    if (pAddresses) {
+        free(pAddresses);
+    }
+
+    *ifap = ifa_head;
+    return 0;
+}
+
+void freeifaddrs(struct ifaddrs *ifa) {
+    struct ifaddrs *next;
+    
+    while (ifa) {
+        next = ifa->ifa_next;
+        
+        if (ifa->ifa_name) {
+            free(ifa->ifa_name);
+        }
+        if (ifa->ifa_addr) {
+            free(ifa->ifa_addr);
+        }
+        if (ifa->ifa_netmask) {
+            free(ifa->ifa_netmask);
+        }
+        if (ifa->ifa_broadaddr) {
+            free(ifa->ifa_broadaddr);
+        }
+        
+        free(ifa);
+        ifa = next;
+    }
 }
 
 #endif /* _WIN32 */

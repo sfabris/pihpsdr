@@ -163,6 +163,11 @@ int pthread_mutexattr_settype(pthread_mutexattr_t *attr, int type);
 int fcntl(int fd, int cmd, ...);
 void bcopy(const void *src, void *dest, size_t n);
 
+/* Network interface enumeration functions */
+struct ifaddrs;
+int getifaddrs(struct ifaddrs **ifap);
+void freeifaddrs(struct ifaddrs *ifa);
+
 /* Socket constants not available on Windows */
 #ifndef SO_REUSEPORT
 #define SO_REUSEPORT SO_REUSEADDR  /* Windows doesn't have SO_REUSEPORT, use SO_REUSEADDR */
