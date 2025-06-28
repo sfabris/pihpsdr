@@ -31,45 +31,7 @@
 #include <iphlpapi.h>
 #include "windows_compat.h"
 
-/* Windows implementation of clock_gettime */
-int clock_gettime(int clk_id, struct timespec *tp) {
-    static LARGE_INTEGER frequency;
-    static BOOL frequency_initialized = FALSE;
-    LARGE_INTEGER count;
-    
-    if (!frequency_initialized) {
-        QueryPerformanceFrequency(&frequency);
-        frequency_initialized = TRUE;
-    }
-    
-    switch (clk_id) {
-        case CLOCK_REALTIME: {
-            FILETIME ft;
-            ULARGE_INTEGER ui;
-            GetSystemTimeAsFileTime(&ft);
-            ui.LowPart = ft.dwLowDateTime;
-            ui.HighPart = ft.dwHighDateTime;
-            
-            /* Convert from 100ns intervals since 1601-01-01 to seconds since 1970-01-01 */
-            ui.QuadPart -= 116444736000000000ULL;
-            tp->tv_sec = ui.QuadPart / 10000000ULL;
-            tp->tv_nsec = (ui.QuadPart % 10000000ULL) * 100;
-            return 0;
-        }
-        
-        case CLOCK_MONOTONIC: {
-            if (QueryPerformanceCounter(&count)) {
-                tp->tv_sec = count.QuadPart / frequency.QuadPart;
-                tp->tv_nsec = (long)((count.QuadPart % frequency.QuadPart) * 1000000000LL / frequency.QuadPart);
-                return 0;
-            }
-            return -1;
-        }
-        
-        default:
-            return -1;
-    }
-}
+/* clock_gettime is already provided by MinGW, so we don't need our implementation */
 
 /* POSIX semaphore implementation for Windows */
 int sem_init(sem_t *sem, int pshared, unsigned int value) {
