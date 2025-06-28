@@ -123,6 +123,29 @@ void audio_get_cards() {
     return;
   }
 
+  // Print PortAudio version and host API information
+  t_print("%s: PortAudio Version: %s\n", __FUNCTION__, Pa_GetVersionText());
+  
+  int numHostApis = Pa_GetHostApiCount();
+  t_print("%s: Available Host APIs: %d\n", __FUNCTION__, numHostApis);
+  
+  for (int api = 0; api < numHostApis; api++) {
+    const PaHostApiInfo *hostApiInfo = Pa_GetHostApiInfo(api);
+    if (hostApiInfo) {
+      const char *apiType = "Unknown";
+      switch (hostApiInfo->type) {
+        case paDirectSound: apiType = "DirectSound"; break;
+        case paMME: apiType = "MME"; break;
+        case paASIO: apiType = "ASIO"; break;
+        case paWASAPI: apiType = "WASAPI"; break;
+        case paWDMKS: apiType = "WDM-KS"; break;
+        default: apiType = "Other"; break;
+      }
+      t_print("%s: Host API %d: %s (%s) - %d devices\n", 
+              __FUNCTION__, api, hostApiInfo->name, apiType, hostApiInfo->deviceCount);
+    }
+  }
+
   numDevices = Pa_GetDeviceCount();
 
   if ( numDevices < 0 ) { return; }
@@ -132,6 +155,21 @@ void audio_get_cards() {
 
   for (int  i = 0; i < numDevices; i++ ) {
     const PaDeviceInfo *deviceInfo = Pa_GetDeviceInfo( i );
+    const PaHostApiInfo *hostApiInfo = Pa_GetHostApiInfo(deviceInfo->hostApi);
+    
+    // Get host API type for this device
+    const char *apiType = "Unknown";
+    if (hostApiInfo) {
+      switch (hostApiInfo->type) {
+        case paDirectSound: apiType = "DirectSound"; break;
+        case paMME: apiType = "MME"; break;
+        case paASIO: apiType = "ASIO"; break;
+        case paWASAPI: apiType = "WASAPI"; break;
+        case paWDMKS: apiType = "WDM-KS"; break;
+        default: apiType = "Other"; break;
+      }
+    }
+    
     inputParameters.device = i;
     inputParameters.channelCount = 1;  // Microphone samples are mono
     inputParameters.sampleFormat = paFloat32;
@@ -151,7 +189,9 @@ void audio_get_cards() {
         n_input_devices++;
       }
 
-      t_print("%s: INPUT DEVICE, No=%d, Name=%s\n", __FUNCTION__, i, deviceInfo->name);
+      t_print("%s: INPUT DEVICE, No=%d, Name=%s [%s], MaxInputChannels=%d, DefaultSampleRate=%.0f\n", 
+              __FUNCTION__, i, deviceInfo->name, apiType, 
+              deviceInfo->maxInputChannels, deviceInfo->defaultSampleRate);
     }
 
     outputParameters.device = i;
@@ -168,9 +208,14 @@ void audio_get_cards() {
         n_output_devices++;
       }
 
-      t_print("%s: OUTPUT DEVICE, No=%d, Name=%s\n", __FUNCTION__, i, deviceInfo->name);
+      t_print("%s: OUTPUT DEVICE, No=%d, Name=%s [%s], MaxOutputChannels=%d, DefaultSampleRate=%.0f\n", 
+              __FUNCTION__, i, deviceInfo->name, apiType, 
+              deviceInfo->maxOutputChannels, deviceInfo->defaultSampleRate);
     }
   }
+  
+  t_print("%s: Total compatible devices: %d input, %d output\n", 
+          __FUNCTION__, n_input_devices, n_output_devices);
 }
 
 //
