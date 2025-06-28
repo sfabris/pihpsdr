@@ -380,6 +380,27 @@ int getifaddrs(struct ifaddrs **ifap) {
                     }
                 }
 
+                /* Create netmask based on prefix length */
+                if (pUnicast->Address.lpSockaddr && pUnicast->Address.lpSockaddr->sa_family == AF_INET) {
+                    struct sockaddr_in *netmask = (struct sockaddr_in *)malloc(sizeof(struct sockaddr_in));
+                    if (netmask) {
+                        memset(netmask, 0, sizeof(struct sockaddr_in));
+                        netmask->sin_family = AF_INET;
+                        
+                        /* Convert prefix length to netmask */
+                        int prefix_len = pUnicast->OnLinkPrefixLength;
+                        if (prefix_len > 0 && prefix_len <= 32) {
+                            uint32_t mask = 0xffffffff << (32 - prefix_len);
+                            netmask->sin_addr.s_addr = htonl(mask);
+                        } else {
+                            /* Default netmask for Class C */
+                            netmask->sin_addr.s_addr = htonl(0xffffff00);
+                        }
+                        
+                        ifa->ifa_netmask = (struct sockaddr *)netmask;
+                    }
+                }
+
                 /* Add to list */
                 if (!ifa_head) {
                     ifa_head = ifa_tail = ifa;
