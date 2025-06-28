@@ -26,14 +26,7 @@
 #ifdef _WIN32
 #include "../Windows/windows_compat.h"
 #include <sys/types.h>
-// Windows doesn't have utsname, so we'll define a simple version
-struct utsname {
-    char sysname[256];
-    char nodename[256]; 
-    char release[256];
-    char version[256];
-    char machine[256];
-};
+#include <sys/utsname.h>
 #else
 #include <unistd.h>
 #include <sys/socket.h>
@@ -44,7 +37,7 @@ struct utsname {
 #include <arpa/inet.h>
 #endif
 
-#include <wdsp.h>    // only needed for WDSPwisdom() and wisdom_get_status()
+#include "../Windows/wdsp_wrapper.h"    // only needed for WDSPwisdom() and wisdom_get_status()
 
 #include "actions.h"
 #include "appearance.h"
@@ -520,7 +513,7 @@ int main(int argc, char **argv) {
 #endif
   startup(argv[0]);
 #ifdef _WIN32
-  snprintf(name, sizeof(name), "org.g0orx.pihpsdr.pid%d", GetCurrentProcessId());
+  snprintf(name, sizeof(name), "org.g0orx.pihpsdr.pid%lu", (unsigned long)GetCurrentProcessId());
 #else
   snprintf(name, sizeof(name), "org.g0orx.pihpsdr.pid%d", getpid());
 #endif

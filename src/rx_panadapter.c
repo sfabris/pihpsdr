@@ -950,7 +950,7 @@ void display_panadapter_messages(cairo_t *cr, int width, unsigned int fps) {
 
       if (cap_count > 30 * fps) {
         capture_state = CAP_GOTOSLEEP;
-        schedule_action(CAPTURE, PRESSED, 0);
+        schedule_action(CAPTURE, ACTION_PRESSED, 0);
         cap_count = 0;
       }
 

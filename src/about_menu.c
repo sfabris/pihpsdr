@@ -25,7 +25,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <wdsp.h>             // only needed for GetWDSPVersion
+#include "../Windows/wdsp_wrapper.h"             // only needed for GetWDSPVersion
 
 #include "about_menu.h"
 #include "discovered.h"

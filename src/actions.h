@@ -175,7 +175,7 @@ enum ACTION {
   RX2,
   SAT,
   SHUTDOWN,
-  SNB,
+  ACTION_SNB,
   SPLIT,
   SQUELCH,
   SQUELCH_RX1,
@@ -239,10 +239,10 @@ typedef struct _multi_table {
 } MULTI_TABLE;
 
 enum ACTION_MODE {
-  RELATIVE,
-  ABSOLUTE,
-  PRESSED,
-  RELEASED
+  ACTION_RELATIVE,
+  ACTION_ABSOLUTE,
+  ACTION_PRESSED,
+  ACTION_RELEASED
 };
 
 typedef struct process_action {

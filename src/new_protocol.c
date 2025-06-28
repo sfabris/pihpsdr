@@ -531,8 +531,8 @@ void new_protocol_init() {
 
     int optval = 1;
     socklen_t optlen = sizeof(optval);
-    setsockopt(data_socket, SOL_SOCKET, SO_REUSEADDR, &optval, optlen);
-    setsockopt(data_socket, SOL_SOCKET, SO_REUSEPORT, &optval, optlen);
+    SETSOCKOPT(data_socket, SOL_SOCKET, SO_REUSEADDR, &optval, optlen);
+    SETSOCKOPT(data_socket, SOL_SOCKET, SO_REUSEPORT, &optval, optlen);
     //
     // We need a receive buffer with a decent size, to be able to
     // store several incoming packets if they arrive in a burst.
@@ -552,19 +552,19 @@ void new_protocol_init() {
     //
     optval = 0x40000;
 
-    if (setsockopt(data_socket, SOL_SOCKET, SO_RCVBUF, &optval, optlen) < 0) {
+    if (SETSOCKOPT(data_socket, SOL_SOCKET, SO_RCVBUF, &optval, optlen) < 0) {
       t_perror("data_socket: set SO_RCVBUF");
     }
 
     optval = 0x10000;
 
-    if (setsockopt(data_socket, SOL_SOCKET, SO_SNDBUF, &optval, optlen) < 0) {
+    if (SETSOCKOPT(data_socket, SOL_SOCKET, SO_SNDBUF, &optval, optlen) < 0) {
       t_perror("data_socket: set SO_SNDBUF");
     }
 
     optlen = sizeof(optval);
 
-    if (getsockopt(data_socket, SOL_SOCKET, SO_RCVBUF, &optval, &optlen) < 0) {
+    if (GETSOCKOPT(data_socket, SOL_SOCKET, SO_RCVBUF, &optval, &optlen) < 0) {
       t_perror("data_socket: get SO_RCVBUF");
     } else {
       if (optlen == sizeof(optval)) { t_print("UDP Socket RCV buf size=%d\n", optval); }
@@ -572,7 +572,7 @@ void new_protocol_init() {
 
     optlen = sizeof(optval);
 
-    if (getsockopt(data_socket, SOL_SOCKET, SO_SNDBUF, &optval, &optlen) < 0) {
+    if (GETSOCKOPT(data_socket, SOL_SOCKET, SO_SNDBUF, &optval, &optlen) < 0) {
       t_perror("data_socket: get SO_SNDBUF");
     } else {
       if (optlen == sizeof(optval)) { t_print("UDP Socket SND buf size=%d\n", optval); }
@@ -590,7 +590,7 @@ void new_protocol_init() {
     optval = 0xB8;
 #endif
 
-    if (setsockopt(data_socket, IPPROTO_IP, IP_TOS, &optval, optlen) < 0) {
+    if (SETSOCKOPT(data_socket, IPPROTO_IP, IP_TOS, &optval, optlen) < 0) {
       t_perror("data_socket: IP_TOS");
     }
 

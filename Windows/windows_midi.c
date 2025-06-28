@@ -25,10 +25,19 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Ensure snprintf is available
+#ifndef snprintf
+#define snprintf _snprintf
+#endif
+
 #include "message.h"
 #include "../src/midi_menu.h"
 #include "../src/midi.h"
 #include "../src/actions.h"
+
+/* Global MIDI variables */
+MIDI_DEVICE midi_devices[MAX_MIDI_DEVICES];
+int n_midi_devices = 0;
 
 static HMIDIIN hMidiIn[MAX_MIDI_DEVICES];
 static BOOL midi_device_opened[MAX_MIDI_DEVICES];
@@ -53,7 +62,7 @@ void CALLBACK MidiInProc(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance,
                 int velocity = data2;
                 
                 // Process the MIDI message
-                NewMidiNote(device_index, channel, note, velocity);
+                NewMidiEvent(MIDI_NOTE, channel, note, velocity);
             } else if ((status & 0xF0) == 0xB0) {
                 // Control change message
                 int channel = status & 0x0F;
@@ -61,7 +70,7 @@ void CALLBACK MidiInProc(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance,
                 int value = data2;
                 
                 // Process the MIDI control change
-                NewMidiCC(device_index, channel, controller, value);
+                NewMidiEvent(MIDI_CTRL, channel, controller, value);
             }
             break;
         }
@@ -151,6 +160,8 @@ void get_midi_devices() {
     for (int i = 0; i < MAX_MIDI_DEVICES; i++) {
         midi_device_opened[i] = FALSE;
         hMidiIn[i] = NULL;
+        midi_devices[i].name = NULL;  // Initialize name pointer
+        midi_devices[i].active = 0;
     }
     
     // Get number of MIDI input devices
@@ -167,22 +178,52 @@ void get_midi_devices() {
     for (int i = 0; i < devices; i++) {
         MMRESULT result = midiInGetDevCaps(i, &caps, sizeof(caps));
         if (result == MMSYSERR_NOERROR) {
-            strncpy(midi_devices[i].name, caps.szPname, sizeof(midi_devices[i].name) - 1);
-            midi_devices[i].name[sizeof(midi_devices[i].name) - 1] = '\0';
+            // Allocate memory for device name
+            midi_devices[i].name = malloc(strlen(caps.szPname) + 1);
+            if (midi_devices[i].name) {
+                strcpy(midi_devices[i].name, caps.szPname);
+            } else {
+                midi_devices[i].name = malloc(32);
+                if (midi_devices[i].name) {
+                    strcpy(midi_devices[i].name, "Unknown Device");
+                }
+            }
             midi_devices[i].active = 0;
-            t_print("MIDI device %d: %s\n", i, midi_devices[i].name);
+            t_print("MIDI device %d: %s\n", i, midi_devices[i].name ? midi_devices[i].name : "NULL");
         } else {
-            snprintf(midi_devices[i].name, sizeof(midi_devices[i].name), "Unknown Device %d", i);
+            // Allocate memory for unknown device name
+            midi_devices[i].name = malloc(32);
+            if (midi_devices[i].name) {
+                snprintf(midi_devices[i].name, 32, "Unknown Device %d", i);
+            }
             midi_devices[i].active = 0;
         }
     }
 }
 
-void configure_midi_device(int index, int bank) {
+void configure_midi_device_windows(int index, int bank) {
     // Configure MIDI device (implementation can be extended)
     if (index >= 0 && index < n_midi_devices) {
         t_print("Configuring MIDI device %d for bank %d\n", index, bank);
     }
+}
+
+void configure_midi_device(gboolean state) {
+    // Configure MIDI device (standard interface)
+    t_print("Configure MIDI device called with state: %s\n", state ? "TRUE" : "FALSE");
+    // Implementation can be added later if needed
+}
+
+void cleanup_midi_devices() {
+    // Free allocated memory for device names
+    for (int i = 0; i < MAX_MIDI_DEVICES; i++) {
+        if (midi_devices[i].name) {
+            free(midi_devices[i].name);
+            midi_devices[i].name = NULL;
+        }
+        midi_devices[i].active = 0;
+    }
+    n_midi_devices = 0;
 }
 
 #endif // _WIN32
