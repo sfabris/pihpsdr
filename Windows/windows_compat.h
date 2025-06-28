@@ -90,6 +90,11 @@ int clock_gettime(int clk_id, struct timespec *tp);
 /* Path separator */
 #define PATH_SEPARATOR "\\"
 
+/* PATH_MAX definition for Windows */
+#ifndef PATH_MAX
+#define PATH_MAX 260
+#endif
+
 /* POSIX semaphore compatibility for Windows */
 #ifndef SEM_FAILED
 #define SEM_FAILED ((sem_t*)0)
@@ -164,6 +169,7 @@ int pthread_mutexattr_settype(pthread_mutexattr_t *attr, int type);
 /* POSIX function declarations for Windows */
 int fcntl(int fd, int cmd, ...);
 void bcopy(const void *src, void *dest, size_t n);
+char *realpath(const char *path, char *resolved_path);
 int inet_aton(const char *cp, struct in_addr *inp);
 
 /* Network interface enumeration functions */

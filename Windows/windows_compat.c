@@ -245,6 +245,37 @@ void bcopy(const void *src, void *dest, size_t n) {
     memmove(dest, src, n);
 }
 
+char *realpath(const char *path, char *resolved_path) {
+    DWORD length;
+    static char static_buffer[PATH_MAX];
+    char *buffer = resolved_path ? resolved_path : static_buffer;
+    
+    if (!path) {
+        errno = EINVAL;
+        return NULL;
+    }
+    
+    length = GetFullPathNameA(path, PATH_MAX, buffer, NULL);
+    if (length == 0) {
+        errno = ENOENT;
+        return NULL;
+    }
+    
+    if (length >= PATH_MAX) {
+        errno = ENAMETOOLONG;
+        return NULL;
+    }
+    
+    // Check if file exists
+    DWORD attributes = GetFileAttributesA(buffer);
+    if (attributes == INVALID_FILE_ATTRIBUTES) {
+        errno = ENOENT;
+        return NULL;
+    }
+    
+    return buffer;
+}
+
 /* POSIX uname() implementation for Windows */
 int uname(struct utsname *buf) {
     OSVERSIONINFOW osvi;
