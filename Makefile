@@ -427,7 +427,7 @@ SYSLIBS=-framework IOKit
 endif
 
 ifeq ($(UNAME_S), Windows)
-SYSLIBS=-lws2_32 -lwsock32 -lole32 -loleaut32 -luuid
+SYSLIBS=-lws2_32 -lwsock32 -lole32 -loleaut32 -luuid -liphlpapi -lavrt -lwinmm
 WINDOWS_INCLUDE=-I./Windows
 endif
 
