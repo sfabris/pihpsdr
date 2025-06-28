@@ -293,7 +293,11 @@ static int init(void *data) {
   //
   gtk_widget_add_events(top_window, GDK_KEY_PRESS_MASK);
   keypress_signal_id = g_signal_connect(top_window, "key_press_event", G_CALLBACK(discovery_keypress_cb), NULL);
+  printf("DEBUG: About to call audio_get_cards()\n");
+  fflush(stdout);
   audio_get_cards();
+  printf("DEBUG: audio_get_cards() completed\n");
+  fflush(stdout);
   cursor_arrow = gdk_cursor_new(GDK_ARROW);
   cursor_watch = gdk_cursor_new(GDK_WATCH);
   gdk_window_set_cursor(gtk_widget_get_window(top_window), cursor_watch);

@@ -112,10 +112,16 @@ static int cwmode = 0;  // used to detect TRX transitions in CW
 // This inits PortAudio and looks for suitable input and output channels
 //
 void audio_get_cards() {
+  printf("DEBUG: audio_get_cards() called - PORTAUDIO is defined\n");
+  fflush(stdout);
+  
   int numDevices;
   PaStreamParameters inputParameters, outputParameters;
   PaError err;
   g_mutex_init(&audio_mutex);
+  
+  printf("DEBUG: About to call Pa_Initialize()\n");
+  fflush(stdout);
   err = Pa_Initialize();
 
   if ( err != paNoError ) {
@@ -844,4 +850,12 @@ int cw_audio_write(RECEIVER *rx, float sample) {
   return 0;
 }
 
+#endif
+
+#ifndef PORTAUDIO
+// If PORTAUDIO is not defined, provide a stub function
+void audio_get_cards() {
+  printf("DEBUG: audio_get_cards() called - PORTAUDIO is NOT defined (using ALSA)\n");
+  fflush(stdout);
+}
 #endif
