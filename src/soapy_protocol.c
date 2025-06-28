@@ -28,7 +28,7 @@
 #include <SoapySDR/Version.h>
 #include <SoapySDR/Logger.h>
 
-#include <wdsp.h>   // only needed for the resampler
+#include "../Windows/wdsp_wrapper.h"   // only needed for the resampler
 
 #include "audio.h"
 #include "band.h"

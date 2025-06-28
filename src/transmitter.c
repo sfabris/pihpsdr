@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <wdsp.h>
+#include "../Windows/wdsp_wrapper.h"
 
 #include "audio.h"
 #include "band.h"
@@ -740,7 +740,7 @@ static gboolean tx_update_display(gpointer data) {
         int i;
 
         //
-        // The TX panadapter shows a RELATIVE signal strength. A CW or single-tone signal at
+        // The TX panadapter shows a ACTION_RELATIVE signal strength. A CW or single-tone signal at
         // full drive appears at 0dBm, the two peaks of a full-drive two-tone signal appear
         // at -6 dBm each. THIS DOES NOT DEPEND ON THE POSITION OF THE DRIVE LEVEL SLIDER.
         // The strength of the feedback signal, however, depends on the drive, on the PA and
@@ -1603,7 +1603,7 @@ void tx_add_mic_sample(TRANSMITTER *tx, short next_mic_sample) {
       // switching the state to REPLAY_DONE takes care that the
       // CAPTURE switch is "pressed" only once
       capture_state = CAP_REPLAY_DONE;
-      schedule_action(CAPTURE, PRESSED, 0);
+      schedule_action(CAPTURE, ACTION_PRESSED, 0);
     }
   }
 

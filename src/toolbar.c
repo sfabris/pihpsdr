@@ -101,9 +101,9 @@ static void toolbar_button_press_cb(GtkWidget *widget, GdkEventButton *event, gp
   // cycles backwards
   //
   if (i == 7  && event->button == GDK_BUTTON_SECONDARY) {
-    schedule_action(FUNCTIONREV, PRESSED, 0);
+    schedule_action(FUNCTIONREV, ACTION_PRESSED, 0);
   } else {
-    schedule_action(toolbar_switches[i].switch_function, PRESSED, 0);
+    schedule_action(toolbar_switches[i].switch_function, ACTION_PRESSED, 0);
   }
 }
 
@@ -111,7 +111,7 @@ static void toolbar_button_press_cb(GtkWidget *widget, GdkEventButton *event, gp
 static void toolbar_button_released_cb(GtkWidget *widget, GdkEventButton *event, gpointer data) {
   int i = GPOINTER_TO_INT(data);
   //t_print("%s: %d action=%d\n",__FUNCTION__,i,toolbar_switches[i].switch_function);
-  schedule_action(toolbar_switches[i].switch_function, RELEASED, 0);
+  schedule_action(toolbar_switches[i].switch_function, ACTION_RELEASED, 0);
 }
 
 GtkWidget *toolbar_init(int my_width, int my_height) {

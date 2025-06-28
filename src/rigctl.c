@@ -1103,8 +1103,8 @@ static gpointer rigctl_server(gpointer data) {
     return NULL;
   }
 
-  setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
-  setsockopt(server_socket, SOL_SOCKET, SO_REUSEPORT, &on, sizeof(on));
+  SETSOCKOPT(server_socket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+  SETSOCKOPT(server_socket, SOL_SOCKET, SO_REUSEPORT, &on, sizeof(on));
   // bind to listening port
   memset(&server_address, 0, sizeof(server_address));
   server_address.sin_family = AF_INET;
@@ -1180,7 +1180,7 @@ static gpointer rigctl_server(gpointer data) {
     if (setsockopt(tcp_client[spare].fd, IPPROTO_TCP, TCP_NODELAY, (void *)&on, sizeof(on)) < 0) {
 #else
 
-    if (setsockopt(tcp_client[spare].fd, SOL_TCP, TCP_NODELAY, (void *)&on, sizeof(on)) < 0) {
+    if (SETSOCKOPT(tcp_client[spare].fd, SOL_TCP, TCP_NODELAY, &on, sizeof(on)) < 0) {
 #endif
       t_perror("TCP_NODELAY");
     }
@@ -2797,7 +2797,7 @@ static gboolean parse_extended_cmd (const char *command, CLIENT *client) {
 
       //DO NOT DOCUMENT, THIS WILL BE REMOVED
       if (command[4] == ';') {
-        schedule_action(RIT_CLEAR, PRESSED, 0);
+        schedule_action(RIT_CLEAR, ACTION_PRESSED, 0);
       }
 
       break;
@@ -3100,7 +3100,7 @@ static gboolean parse_extended_cmd (const char *command, CLIENT *client) {
     switch (command[3]) {
     case 'C': //ZZXC
       //DO NOT DOCUMENT, THIS WILL BE REMOVED
-      schedule_action(XIT_CLEAR, PRESSED, 0);
+      schedule_action(XIT_CLEAR, ACTION_PRESSED, 0);
       break;
 
     case 'F': //ZZXF
@@ -3294,7 +3294,7 @@ static gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         int v = atoi(&command[4]);
 
         if (v >= 0 && v < receivers) {
-          schedule_action(v == 0 ? RX1 : RX2, PRESSED, 0);
+          schedule_action(v == 0 ? RX1 : RX2, ACTION_PRESSED, 0);
         } else {
           implemented = FALSE;
         }
@@ -3334,7 +3334,7 @@ static gboolean parse_extended_cmd (const char *command, CLIENT *client) {
           steps *= andromeda_vfo_speedup[31];
         }
 
-        schedule_action(VFO, RELATIVE, -steps);
+        schedule_action(VFO, ACTION_RELATIVE, -steps);
       } else {
         // unexpected command format
         implemented = FALSE;
@@ -3425,9 +3425,9 @@ static gboolean parse_extended_cmd (const char *command, CLIENT *client) {
         // between a short and a long press but "long" buttons may generate different actions for short
         // and long presses.
         //
-        // "Normal" buttons should generate a "PRESSED" upon tr01 and (if required) a "RELEASED" upon (tr10 || tr20).
-        // "Long" buttons generate a "PRESSED" for the short-press event upon tr10,
-        // and a "PRESSED" for the long-press event upon tr12.
+        // "Normal" buttons should generate a "ACTION_PRESSED" upon tr01 and (if required) a "ACTION_RELEASED" upon (tr10 || tr20).
+        // "Long" buttons generate a "ACTION_PRESSED" for the short-press event upon tr10,
+        // and a "ACTION_PRESSED" for the long-press event upon tr12.
         //
         // ATTENTION: no RELEASE event is ever triggered for a "long" button. Such events are currently required
         //            only for PTT, RIT_PLUS, RIT_MINS, XIT_PLUS, XIT_MINUS, and CW keyer actions, which may be associated
@@ -3548,7 +3548,7 @@ static gboolean parse_extended_cmd (const char *command, CLIENT *client) {
           steps *= andromeda_vfo_speedup[31];
         }
 
-        schedule_action(VFO, RELATIVE, steps);
+        schedule_action(VFO, ACTION_RELATIVE, steps);
       }
 
       break;
@@ -3585,7 +3585,7 @@ static int parse_cmd(void *data) {
     //SET       \#S;
     //ENDDEF
     if (command[1] == 'S' && command[2] == ';') {
-      schedule_action(SHUTDOWN, PRESSED, 0);
+      schedule_action(SHUTDOWN, ACTION_PRESSED, 0);
     } else {
       implemented = FALSE;
     }
@@ -3920,7 +3920,7 @@ static int parse_cmd(void *data) {
         send_resp(client->fd, reply) ;
       } else if (command[3] == ';') {
         int id = SET(command[2] == '1');
-        RXCHECK(id, schedule_action(id == 0 ? RX1 : RX2, PRESSED, 0));
+        RXCHECK(id, schedule_action(id == 0 ? RX1 : RX2, ACTION_PRESSED, 0));
         g_idle_add(ext_vfo_update, NULL);
       }
 
@@ -4614,7 +4614,7 @@ static int parse_cmd(void *data) {
         int pwrc = atoi(&command[2]);
 
         if ( pwrc == 0 ) {
-          schedule_action(SHUTDOWN, PRESSED, 0);
+          schedule_action(SHUTDOWN, ACTION_PRESSED, 0);
         } else {
           // power-on command. Should there be a reply?
           // snprintf(reply,  sizeof(reply), "PS1;");

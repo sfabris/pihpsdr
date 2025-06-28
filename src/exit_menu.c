@@ -97,7 +97,7 @@ static gboolean reboot_cb (GtkWidget *widget, GdkEventButton *event, gpointer da
 
 // cppcheck-suppress constParameterCallback
 static gboolean shutdown_cb (GtkWidget *widget, GdkEventButton *event, gpointer data) {
-  schedule_action(SHUTDOWN, PRESSED, 0);
+  schedule_action(SHUTDOWN, ACTION_PRESSED, 0);
   return TRUE;
 }
 

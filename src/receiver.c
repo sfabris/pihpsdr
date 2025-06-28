@@ -22,7 +22,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/* Use our Windows-compatible wdsp wrapper */
+#ifdef _WIN32
+#include "../Windows/wdsp_wrapper.h"
+#else
 #include <wdsp.h>
+#endif
 
 #include "agc.h"
 #include "audio.h"
@@ -53,8 +58,12 @@
 #include "waterfall.h"
 #include "zoompan.h"
 
+#ifndef min
 #define min(x,y) (x<y?x:y)
+#endif
+#ifndef max
 #define max(x,y) (x<y?y:x)
+#endif
 
 static int last_x;
 static gboolean has_moved = FALSE;
@@ -1118,7 +1127,7 @@ static void rx_process_buffer(RECEIVER *rx) {
         // switching the state to RECORD_DONE takes care that the
         // CAPTURE switch is "pressed" only once
         capture_state = CAP_RECORD_DONE;
-        schedule_action(CAPTURE, PRESSED, 0);
+        schedule_action(CAPTURE, ACTION_PRESSED, 0);
       }
     }
 

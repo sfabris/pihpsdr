@@ -1,0 +1,29 @@
+# Windows-specific configuration for piHPSDR
+# Copy this file to make.config.pihpsdr to customize build options
+
+# Audio: Use PortAudio on Windows (only supported option)
+AUDIO=PORTAUDIO
+
+# GPIO: Disabled on Windows (not supported)
+GPIO=OFF
+
+# SATURN: Disabled on Windows (not supported)
+SATURN=OFF
+
+# MIDI: Enabled with Windows MIDI API
+MIDI=ON
+
+# SoapySDR: Optional - set to ON if you have SoapySDR installed
+SOAPYSDR=OFF
+
+# USB OZY: Enabled for legacy USB OZY radios
+USBOZY=ON
+
+# STEMlab: Enabled for RedPitaya support via web interface
+STEMLAB=ON
+
+# TTS: Text-to-speech support
+TTS=ON
+
+# Extended Noise Reduction: Use built-in WDSP (recommended)
+EXTENDED_NR=OFF
