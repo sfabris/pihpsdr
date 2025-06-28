@@ -22,6 +22,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <windows.h>
+#include <lmcons.h>
 #include <time.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -552,5 +553,44 @@ int cfsetspeed(struct termios *termios_p, speed_t speed) {
     termios_p->c_ispeed = speed;
     termios_p->c_ospeed = speed;
     return 0;
+}
+
+/* User database access functions */
+static struct passwd pwd_entry = {0};
+static char username_buffer[UNLEN + 1];
+static char homedir_buffer[MAX_PATH];
+
+struct passwd *getpwuid(uid_t uid) {
+    (void)uid; /* Unused on Windows */
+    
+    DWORD username_len = UNLEN + 1;
+    if (!GetUserNameA(username_buffer, &username_len)) {
+        return NULL;
+    }
+    
+    /* Get home directory */
+    DWORD homedir_len = MAX_PATH;
+    if (GetEnvironmentVariableA("USERPROFILE", homedir_buffer, homedir_len) == 0) {
+        strcpy(homedir_buffer, "C:\\Users\\Default");
+    }
+    
+    /* Fill passwd structure */
+    pwd_entry.pw_name = username_buffer;
+    pwd_entry.pw_passwd = "*";  /* No password access */
+    pwd_entry.pw_uid = 1000;    /* Fake UID */
+    pwd_entry.pw_gid = 1000;    /* Fake GID */
+    pwd_entry.pw_gecos = username_buffer;
+    pwd_entry.pw_dir = homedir_buffer;
+    pwd_entry.pw_shell = "cmd.exe";
+    
+    return &pwd_entry;
+}
+
+uid_t getuid(void) {
+    return 1000;  /* Fake UID for Windows */
+}
+
+gid_t getgid(void) {
+    return 1000;  /* Fake GID for Windows */
 }
 #endif /* _WIN32 */
