@@ -115,6 +115,13 @@ void audio_get_cards() {
   printf("DEBUG: audio_get_cards() called - PORTAUDIO is defined\n");
   fflush(stdout);
   
+  // Also write debug info to a file for Windows compatibility
+  FILE *debug_file = fopen("audio_debug.txt", "w");
+  if (debug_file) {
+    fprintf(debug_file, "DEBUG: audio_get_cards() called - PORTAUDIO is defined\n");
+    fflush(debug_file);
+  }
+  
   int numDevices;
   PaStreamParameters inputParameters, outputParameters;
   PaError err;
@@ -122,10 +129,19 @@ void audio_get_cards() {
   
   printf("DEBUG: About to call Pa_Initialize()\n");
   fflush(stdout);
+  if (debug_file) {
+    fprintf(debug_file, "DEBUG: About to call Pa_Initialize()\n");
+    fflush(debug_file);
+  }
+  
   err = Pa_Initialize();
 
   if ( err != paNoError ) {
     t_print("%s: init error %s\n", __FUNCTION__, Pa_GetErrorText(err));
+    if (debug_file) {
+      fprintf(debug_file, "%s: init error %s\n", __FUNCTION__, Pa_GetErrorText(err));
+      fclose(debug_file);
+    }
     return;
   }
 
@@ -133,11 +149,19 @@ void audio_get_cards() {
   t_print("%s: PortAudio Version: %s\n", __FUNCTION__, Pa_GetVersionText());
   printf("PORTAUDIO DEBUG: PortAudio Version: %s\n", Pa_GetVersionText());
   fflush(stdout);
+  if (debug_file) {
+    fprintf(debug_file, "%s: PortAudio Version: %s\n", __FUNCTION__, Pa_GetVersionText());
+    fflush(debug_file);
+  }
   
   int numHostApis = Pa_GetHostApiCount();
   t_print("%s: Available Host APIs: %d\n", __FUNCTION__, numHostApis);
   printf("PORTAUDIO DEBUG: Available Host APIs: %d\n", numHostApis);
   fflush(stdout);
+  if (debug_file) {
+    fprintf(debug_file, "%s: Available Host APIs: %d\n", __FUNCTION__, numHostApis);
+    fflush(debug_file);
+  }
   
   for (int api = 0; api < numHostApis; api++) {
     const PaHostApiInfo *hostApiInfo = Pa_GetHostApiInfo(api);
@@ -156,6 +180,11 @@ void audio_get_cards() {
       printf("PORTAUDIO DEBUG: Host API %d: %s (%s) - %d devices\n", 
              api, hostApiInfo->name, apiType, hostApiInfo->deviceCount);
       fflush(stdout);
+      if (debug_file) {
+        fprintf(debug_file, "%s: Host API %d: %s (%s) - %d devices\n", 
+                __FUNCTION__, api, hostApiInfo->name, apiType, hostApiInfo->deviceCount);
+        fflush(debug_file);
+      }
     }
   }
 
@@ -205,6 +234,12 @@ void audio_get_cards() {
       t_print("%s: INPUT DEVICE, No=%d, Name=%s [%s], MaxInputChannels=%d, DefaultSampleRate=%.0f\n", 
               __FUNCTION__, i, deviceInfo->name, apiType, 
               deviceInfo->maxInputChannels, deviceInfo->defaultSampleRate);
+      if (debug_file) {
+        fprintf(debug_file, "%s: INPUT DEVICE, No=%d, Name=%s [%s], MaxInputChannels=%d, DefaultSampleRate=%.0f\n", 
+                __FUNCTION__, i, deviceInfo->name, apiType, 
+                deviceInfo->maxInputChannels, deviceInfo->defaultSampleRate);
+        fflush(debug_file);
+      }
     }
 
     outputParameters.device = i;
@@ -224,11 +259,22 @@ void audio_get_cards() {
       t_print("%s: OUTPUT DEVICE, No=%d, Name=%s [%s], MaxOutputChannels=%d, DefaultSampleRate=%.0f\n", 
               __FUNCTION__, i, deviceInfo->name, apiType, 
               deviceInfo->maxOutputChannels, deviceInfo->defaultSampleRate);
+      if (debug_file) {
+        fprintf(debug_file, "%s: OUTPUT DEVICE, No=%d, Name=%s [%s], MaxOutputChannels=%d, DefaultSampleRate=%.0f\n", 
+                __FUNCTION__, i, deviceInfo->name, apiType, 
+                deviceInfo->maxOutputChannels, deviceInfo->defaultSampleRate);
+        fflush(debug_file);
+      }
     }
   }
   
   t_print("%s: Total compatible devices: %d input, %d output\n", 
           __FUNCTION__, n_input_devices, n_output_devices);
+  if (debug_file) {
+    fprintf(debug_file, "%s: Total compatible devices: %d input, %d output\n", 
+            __FUNCTION__, n_input_devices, n_output_devices);
+    fclose(debug_file);
+  }
 }
 
 //

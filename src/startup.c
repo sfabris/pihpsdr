@@ -46,11 +46,16 @@
 
 #include <stdio.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+#ifdef _WIN32
+#include "../Windows/windows_compat.h"
+#else
+#include <unistd.h>
 #include <pwd.h>
+#endif
 
 #ifdef __APPLE__
   #include <IOKit/IOKitLib.h>
@@ -67,7 +72,17 @@ void startup(const char *path) {
   int found;
   int rc;
   const char *homedir;
+#ifndef _WIN32
   const struct passwd *pwd;
+#endif
+
+#ifdef _WIN32
+  t_print("%s: Windows port - running startup for path: %s\n", __FUNCTION__, path ? path : "(null)");
+  // Debug: Print current working directory
+  if (getcwd(workdir, sizeof(workdir)) != NULL) {
+    t_print("%s: Current working directory: %s\n", __FUNCTION__, workdir);
+  }
+#endif
 #ifdef __APPLE__
   static IOPMAssertionID keep_awake = 0;
   //
@@ -117,10 +132,17 @@ void startup(const char *path) {
   // Try to locate
   // - on LINUX: $HOME/.config/pihpsdr
   // - on MacOS: $HOME/Library/Application Support/piHPSDR
+  // - on Windows: %USERPROFILE%/Documents/piHPSDR
   // and if this exists, chdir to that directory.
   //
   homedir = getenv("HOME");
 
+#ifdef _WIN32
+  // On Windows, try USERPROFILE if HOME is not set
+  if (homedir == NULL) {
+    homedir = getenv("USERPROFILE");
+  }
+#else
   if (homedir == NULL) {
     pwd = getpwuid(getuid());
 
@@ -128,6 +150,7 @@ void startup(const char *path) {
       homedir = pwd->pw_dir;
     }
   }
+#endif
 
   if (homedir == NULL) {
     // non-recoverable error
@@ -146,6 +169,20 @@ void startup(const char *path) {
 
   if (rc < 0 || !S_ISDIR(statbuf.st_mode)) {
     snprintf(workdir, sizeof(workdir), "%s", homedir);
+  }
+
+#elif defined(_WIN32)
+  // On Windows, use %USERPROFILE%/Documents/piHPSDR
+  snprintf(workdir, sizeof(workdir), "%s/Documents", homedir);
+
+  if (stat(workdir, &statbuf) < 0) {
+    mkdir (workdir);
+  }
+
+  snprintf(workdir, sizeof(workdir), "%s/Documents/piHPSDR", homedir);
+
+  if (stat(workdir, &statbuf) < 0) {
+    mkdir (workdir);
   }
 
 #else
@@ -188,4 +225,9 @@ void startup(const char *path) {
   (void) freopen("pihpsdr.stdout", "w", stdout);
   (void) freopen("pihpsdr.stderr", "w", stderr);
   t_print("%s: working dir changed to %s\n", __FUNCTION__, workdir);
+
+#ifdef _WIN32
+  t_print("%s: Windows port - stdout/stderr redirected to files\n", __FUNCTION__);
+  t_print("%s: Debug output will now be in pihpsdr.stdout/pihpsdr.stderr\n", __FUNCTION__);
+#endif
 }
