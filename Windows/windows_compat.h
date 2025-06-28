@@ -194,6 +194,8 @@ int fcntl(int fd, int cmd, ...);
 void bcopy(const void *src, void *dest, size_t n);
 char *realpath(const char *path, char *resolved_path);
 int inet_aton(const char *cp, struct in_addr *inp);
+char *index(const char *s, int c);
+char *rindex(const char *s, int c);
 
 /* Network interface enumeration functions */
 struct ifaddrs;

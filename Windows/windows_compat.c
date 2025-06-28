@@ -474,6 +474,15 @@ int inet_aton(const char *cp, struct in_addr *inp) {
     return 1;
 }
 
+/* String functions - index and rindex are POSIX functions similar to strchr/strrchr */
+char *index(const char *s, int c) {
+    return strchr(s, c);
+}
+
+char *rindex(const char *s, int c) {
+    return strrchr(s, c);
+}
+
 /* Additional termios function implementations for Windows */
 
 int tcgetattr(int fd, struct termios *termios_p) {
