@@ -136,7 +136,12 @@ int sem_close(sem_t *sem);
 
 /* POSIX thread compatibility */
 typedef HANDLE pthread_t;
-typedef CRITICAL_SECTION pthread_mutex_t;
+
+typedef struct {
+    CRITICAL_SECTION cs;
+    int initialized;
+} pthread_mutex_t;
+
 typedef struct {
     int dummy;
 } pthread_attr_t;
@@ -145,7 +150,7 @@ typedef struct {
     int dummy;
 } pthread_mutexattr_t;
 
-#define PTHREAD_MUTEX_INITIALIZER {0}
+#define PTHREAD_MUTEX_INITIALIZER {{0}, 0}
 #define PTHREAD_CREATE_DETACHED 1
 #define PTHREAD_MUTEX_RECURSIVE 2
 
