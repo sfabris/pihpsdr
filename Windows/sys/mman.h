@@ -104,7 +104,7 @@ static inline void *mmap(void *addr, size_t length, int prot, int flags, int fd,
     }
     
     result = MapViewOfFile(hMapping, dwDesiredAccess, 
-                          (DWORD)(offset >> 32), (DWORD)offset, length);
+                          (DWORD)((offset >> 32) & 0xFFFFFFFF), (DWORD)(offset & 0xFFFFFFFF), length);
     
     CloseHandle(hMapping);
     

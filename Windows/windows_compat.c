@@ -98,6 +98,11 @@ int sem_post(sem_t *sem) {
     return ReleaseSemaphore(sem->handle, 1, NULL) ? 0 : -1;
 }
 
+int sem_close(sem_t *sem) {
+    // For unnamed semaphores, sem_close is the same as sem_destroy
+    return sem_destroy(sem);
+}
+
 /* POSIX thread implementation for Windows */
 typedef struct {
     void *(*start_routine)(void*);
