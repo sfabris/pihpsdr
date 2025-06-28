@@ -439,7 +439,7 @@ static const SWITCH switches_controller2_v1[MAX_SWITCHES] = {
   {FALSE, FALSE, 0, BAND_PLUS,        0L},
   {FALSE, FALSE, 0, XIT_ENABLE,       0L},
   {FALSE, FALSE, 0, NB,               0L},
-  {FALSE, FALSE, 0, SNB,              0L},
+  {FALSE, FALSE, 0, ACTION_SNB,              0L},
   {FALSE, FALSE, 0, LOCK,             0L},
   {FALSE, FALSE, 0, CTUN,             0L}
 };
@@ -451,7 +451,7 @@ static const SWITCH switches_controller2_v2[MAX_SWITCHES] = {
   {FALSE, FALSE, 0, TWO_TONE,         0L},  //GPB4 SW5
   {FALSE, FALSE, 0, NR,               0L},  //GPA3 SW6
   {FALSE, FALSE, 0, NB,               0L},  //GPB3 SW14
-  {FALSE, FALSE, 0, SNB,              0L},  //GPB2 SW15
+  {FALSE, FALSE, 0, ACTION_SNB,              0L},  //GPB2 SW15
   {FALSE, FALSE, 0, XIT_ENABLE,       0L},  //GPA7 SW13
   {FALSE, FALSE, 0, BAND_PLUS,        0L},  //GPA6 SW12
   {FALSE, FALSE, 0, MODE_PLUS,        0L},  //GPA5 SW11

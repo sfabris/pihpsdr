@@ -138,7 +138,7 @@ int *g2panel_default_buttons(int andromeda_type) {
     // 4x3 pad row 3 col 3, silk print: "12/SPLIT", "no Band", default: SPLIT
     result[22] = SPLIT;
     // 4x3 pad row 4 col 1, silk print: "10/F1", "no Band", default: SNB
-    result[23] = SNB;
+    result[23] = ACTION_SNB;
     // 4x3 pad row 4 col 2, silk print: "6/F2", "no Band", default: NB
     result[24] = NB;
     // 4x3 pad row 4 col 3, silk print: "LF/HF/F3", "no Band", default: NR
@@ -296,7 +296,7 @@ void g2panel_execute_button(int type, const int *vec, int button, int tr01, int 
     break;
 
   case ANF:
-  case SNB:
+  case ACTION_SNB:
   case NB:
   case NR:
     if (tr10) { schedule_action(action, ACTION_PRESSED, 0); }
