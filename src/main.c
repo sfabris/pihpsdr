@@ -457,16 +457,23 @@ static void activate_pihpsdr(GtkApplication *app, gpointer data) {
 }
 
 int main(int argc, char **argv) {
+  printf("DEBUG: piHPSDR starting - main() called\n");
+  fflush(stdout);
+  
   GtkApplication *pihpsdr;
   int rc;
   char name[1024];
 
 #ifdef _WIN32
+  printf("DEBUG: Windows build detected\n");
+  fflush(stdout);
   // Initialize Windows Sockets
   if (init_winsock() != 0) {
     fprintf(stderr, "Failed to initialize Windows Sockets\n");
     return 1;
   }
+  printf("DEBUG: Windows Sockets initialized\n");
+  fflush(stdout);
 #endif
 
   //
@@ -515,15 +522,25 @@ int main(int argc, char **argv) {
   rc = getpriority(PRIO_PROCESS, 0);
   t_print("Base priority after adjustment: %d\n", rc);
 #endif
+  printf("DEBUG: About to call startup()\n");
+  fflush(stdout);
   startup(argv[0]);
+  printf("DEBUG: startup() completed\n");
+  fflush(stdout);
 #ifdef _WIN32
   snprintf(name, sizeof(name), "org.g0orx.pihpsdr.pid%lu", (unsigned long)GetCurrentProcessId());
 #else
   snprintf(name, sizeof(name), "org.g0orx.pihpsdr.pid%d", getpid());
 #endif
   //t_print("gtk_application_new: %s\n",name);
+  printf("DEBUG: About to create GTK application: %s\n", name);
+  fflush(stdout);
   pihpsdr = gtk_application_new(name, G_APPLICATION_FLAGS_NONE);
+  printf("DEBUG: GTK application created, connecting signals\n");
+  fflush(stdout);
   g_signal_connect(pihpsdr, "activate", G_CALLBACK(activate_pihpsdr), NULL);
+  printf("DEBUG: About to run GTK application\n");
+  fflush(stdout);
   rc = g_application_run(G_APPLICATION(pihpsdr), argc, argv);
   t_print("exiting ...\n");
   g_object_unref(pihpsdr);
