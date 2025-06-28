@@ -37,7 +37,7 @@
 #include <arpa/inet.h>
 #endif
 
-#include <wdsp.h>    // only needed for WDSPwisdom() and wisdom_get_status()
+#include "../Windows/wdsp_wrapper.h"    // only needed for WDSPwisdom() and wisdom_get_status()
 
 #include "actions.h"
 #include "appearance.h"

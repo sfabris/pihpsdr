@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <wdsp.h>
+#include "../Windows/wdsp_wrapper.h"
 
 #include "audio.h"
 #include "band.h"
