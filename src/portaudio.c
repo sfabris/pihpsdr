@@ -125,9 +125,13 @@ void audio_get_cards() {
 
   // Print PortAudio version and host API information
   t_print("%s: PortAudio Version: %s\n", __FUNCTION__, Pa_GetVersionText());
+  printf("PORTAUDIO DEBUG: PortAudio Version: %s\n", Pa_GetVersionText());
+  fflush(stdout);
   
   int numHostApis = Pa_GetHostApiCount();
   t_print("%s: Available Host APIs: %d\n", __FUNCTION__, numHostApis);
+  printf("PORTAUDIO DEBUG: Available Host APIs: %d\n", numHostApis);
+  fflush(stdout);
   
   for (int api = 0; api < numHostApis; api++) {
     const PaHostApiInfo *hostApiInfo = Pa_GetHostApiInfo(api);
@@ -143,6 +147,9 @@ void audio_get_cards() {
       }
       t_print("%s: Host API %d: %s (%s) - %d devices\n", 
               __FUNCTION__, api, hostApiInfo->name, apiType, hostApiInfo->deviceCount);
+      printf("PORTAUDIO DEBUG: Host API %d: %s (%s) - %d devices\n", 
+             api, hostApiInfo->name, apiType, hostApiInfo->deviceCount);
+      fflush(stdout);
     }
   }
 
