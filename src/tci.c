@@ -121,7 +121,7 @@ static void force_close(CLIENT *client) {
   if (client->fd  != -1) {
     // No error checking since the socket may have been close in a race condition
     // in the listener
-    setsockopt(client->fd, SOL_SOCKET, SO_LINGER, (const char *)&linger, sizeof(linger));
+    SETSOCKOPT(client->fd, SOL_SOCKET, SO_LINGER, &linger, sizeof(linger));
     close(client->fd);
     client->fd = -1;
   }
@@ -165,7 +165,7 @@ void shutdown_tci() {
     linger.l_linger = 0;
     // No error checking since the socket may be closed
     // in a race condition by the server thread
-    setsockopt(server_socket, SOL_SOCKET, SO_LINGER, (const char *)&linger, sizeof(linger));
+    SETSOCKOPT(server_socket, SOL_SOCKET, SO_LINGER, &linger, sizeof(linger));
     close(server_socket);
     server_socket = -1;
   }
@@ -580,15 +580,15 @@ static gpointer tci_server(gpointer data) {
     return NULL;
   }
 
-  if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0) {
+  if (SETSOCKOPT(server_socket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) < 0) {
     t_perror("TCISrvReuseAddr");
   }
 
-  if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEPORT, &on, sizeof(on)) < 0) {
+  if (SETSOCKOPT(server_socket, SOL_SOCKET, SO_REUSEPORT, &on, sizeof(on)) < 0) {
     t_perror("TCISrvReUsePort");
   }
 
-  if (setsockopt(server_socket, SOL_SOCKET, SO_RCVTIMEO,  &tv, sizeof(tv)) < 0) {
+  if (SETSOCKOPT(server_socket, SOL_SOCKET, SO_RCVTIMEO,  &tv, sizeof(tv)) < 0) {
     t_perror("TCISrvTimeOut");
   }
 
@@ -656,7 +656,7 @@ static gpointer tci_server(gpointer data) {
 
     t_print("%s: slot= %d connected with fd=%d\n", __FUNCTION__, spare, fd);
 
-    if (setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO,  &tv, sizeof(tv)) < 0) {
+    if (SETSOCKOPT(fd, SOL_SOCKET, SO_RCVTIMEO,  &tv, sizeof(tv)) < 0) {
       t_perror("TCIClntSetTimeOut");
     }
 
@@ -666,10 +666,10 @@ static gpointer tci_server(gpointer data) {
     //
 #ifdef __APPLE__
 
-    if (setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (void *)&on, sizeof(on)) < 0) {
+    if (SETSOCKOPT(fd, IPPROTO_TCP, TCP_NODELAY, &on, sizeof(on)) < 0) {
 #else
 
-    if (setsockopt(fd, SOL_TCP, TCP_NODELAY, (void *)&on, sizeof(on)) < 0) {
+    if (SETSOCKOPT(fd, SOL_TCP, TCP_NODELAY, &on, sizeof(on)) < 0) {
 #endif
       t_perror("TCP_NODELAY");
     }

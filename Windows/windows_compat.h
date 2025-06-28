@@ -158,6 +158,20 @@ int pthread_mutexattr_settype(pthread_mutexattr_t *attr, int type);
 #endif
 /* Note: signal() function is already defined by Windows headers */
 
+/* POSIX function declarations for Windows */
+int fcntl(int fd, int cmd, ...);
+void bcopy(const void *src, void *dest, size_t n);
+
+/* Socket option compatibility - Windows uses char* for option values */
+#define GETSOCKOPT_TYPE char
+#define SETSOCKOPT_TYPE const char
+
+/* Socket option wrapper macros for Windows */
+#define SETSOCKOPT(sockfd, level, optname, optval, optlen) \
+    setsockopt(sockfd, level, optname, (SETSOCKOPT_TYPE*)(optval), optlen)
+#define GETSOCKOPT(sockfd, level, optname, optval, optlen) \
+    getsockopt(sockfd, level, optname, (GETSOCKOPT_TYPE*)(optval), optlen)
+
 #else
 /* Unix/Linux includes */
 #include <sys/socket.h>
@@ -167,6 +181,12 @@ int pthread_mutexattr_settype(pthread_mutexattr_t *attr, int type);
 #include <unistd.h>
 
 #define PATH_SEPARATOR "/"
+
+/* Socket option wrapper macros for Unix/Linux (pass-through) */
+#define SETSOCKOPT(sockfd, level, optname, optval, optlen) \
+    setsockopt(sockfd, level, optname, optval, optlen)
+#define GETSOCKOPT(sockfd, level, optname, optval, optlen) \
+    getsockopt(sockfd, level, optname, optval, optlen)
 
 static inline int init_winsock(void) { return 0; }
 static inline void cleanup_winsock(void) { }

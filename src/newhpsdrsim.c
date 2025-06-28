@@ -417,11 +417,11 @@ void *ddc_specific_thread(void *data) {
     return NULL;
   }
 
-  setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (void *)&yes, sizeof(yes));
-  setsockopt(sock, SOL_SOCKET, SO_REUSEPORT, (void *)&yes, sizeof(yes));
+  SETSOCKOPT(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
+  SETSOCKOPT(sock, SOL_SOCKET, SO_REUSEPORT, &yes, sizeof(yes));
   tv.tv_sec = 0;
   tv.tv_usec = 10000;
-  setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (void *)&tv, sizeof(tv));
+  SETSOCKOPT(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
   memset(&addr, 0, sizeof(addr));
   addr.sin_family = AF_INET;
   addr.sin_addr.s_addr = htonl(INADDR_ANY);

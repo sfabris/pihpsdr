@@ -316,7 +316,7 @@ static int connect_wait (int sockno, struct sockaddr * addr, size_t addrlen, str
     socklen_t len = sizeof (opt);
 
     // check for errors in socket layer
-    if (getsockopt (sockno, SOL_SOCKET, SO_ERROR, &opt, &len) < 0) {
+    if (GETSOCKOPT(sockno, SOL_SOCKET, SO_ERROR, &opt, &len) < 0) {
       return -1;
     }
 
@@ -2535,8 +2535,8 @@ static void *listen_thread(void *arg) {
       return NULL;
     }
 
-    setsockopt(listen_socket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
-    setsockopt(listen_socket, SOL_SOCKET, SO_REUSEPORT, &on, sizeof(on));
+    SETSOCKOPT(listen_socket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+    SETSOCKOPT(listen_socket, SOL_SOCKET, SO_REUSEPORT, &on, sizeof(on));
     // bind to listening port
     memset(&address, 0, sizeof(address));
     address.sin_family = AF_INET;
@@ -2570,9 +2570,9 @@ static void *listen_thread(void *arg) {
     //
     timeout.tv_sec = 30;
     timeout.tv_usec = 0;
-    setsockopt(remoteclient.socket, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+    SETSOCKOPT(remoteclient.socket, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
     timeout.tv_sec =  1;
-    setsockopt(remoteclient.socket, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+    SETSOCKOPT(remoteclient.socket, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
     unsigned char s[2 * SHA512_DIGEST_LENGTH];
     unsigned char sha[SHA512_DIGEST_LENGTH];
     inet_ntop(AF_INET, &(((struct sockaddr_in *)&remoteclient.address)->sin_addr), (char *)s, 2 * SHA512_DIGEST_LENGTH);
@@ -3690,8 +3690,8 @@ int radio_connect_remote(char *host, int port, const char *pwd) {
     return -1;
   }
 
-  setsockopt(client_socket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
-  setsockopt(client_socket, SOL_SOCKET, SO_REUSEPORT, &on, sizeof(on));
+  SETSOCKOPT(client_socket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+  SETSOCKOPT(client_socket, SOL_SOCKET, SO_REUSEPORT, &on, sizeof(on));
   struct hostent *server = gethostbyname(host);
 
   if (server == NULL) {
