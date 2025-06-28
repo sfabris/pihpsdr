@@ -22,6 +22,7 @@ AUDIO=PULSE
 EXTENDED_NR=OFF
 TTS=OFF
 
+
 #######################################################################################
 #
 # Explanation of compile time options
