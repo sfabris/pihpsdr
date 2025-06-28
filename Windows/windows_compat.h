@@ -74,6 +74,10 @@
 /* Network compatibility */
 typedef int socklen_t;
 
+/* Include standard types */
+#include <sys/types.h>  /* For pid_t and other standard types */
+#include <process.h>    /* For Windows process functions */
+
 /* Initialize Windows Sockets */
 static inline int init_winsock(void) {
     WSADATA wsaData;
