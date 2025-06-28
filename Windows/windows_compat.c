@@ -31,6 +31,11 @@
 #include <iphlpapi.h>
 #include "windows_compat.h"
 
+/* Include our compatibility headers to get struct definitions */
+#include "ifaddrs.h"
+#include "termios.h"
+#include "pwd.h"
+
 /* clock_gettime is already provided by MinGW, so we don't need our implementation */
 
 /* POSIX semaphore implementation for Windows */
