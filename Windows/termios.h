@@ -56,6 +56,7 @@ typedef unsigned int speed_t;
 #define PARODD  0001000
 #define HUPCL   0002000
 #define CLOCAL  0004000
+#define CRTSCTS 0020000000  /* Hardware flow control */
 
 /* Local flags */
 #define ISIG    0000001

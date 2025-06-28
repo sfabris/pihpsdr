@@ -1103,8 +1103,8 @@ static gpointer rigctl_server(gpointer data) {
     return NULL;
   }
 
-  setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
-  setsockopt(server_socket, SOL_SOCKET, SO_REUSEPORT, &on, sizeof(on));
+  SETSOCKOPT(server_socket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+  SETSOCKOPT(server_socket, SOL_SOCKET, SO_REUSEPORT, &on, sizeof(on));
   // bind to listening port
   memset(&server_address, 0, sizeof(server_address));
   server_address.sin_family = AF_INET;
