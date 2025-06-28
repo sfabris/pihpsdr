@@ -107,7 +107,7 @@ int clock_gettime(int clk_id, struct timespec *tp);
 /* POSIX type definitions */
 typedef unsigned int uid_t;
 typedef unsigned int gid_t;
-typedef int pid_t;
+/* pid_t is already defined by the system, don't redefine it */
 
 /* File type macros for stat() - Windows doesn't have symbolic links */
 #ifndef S_ISLNK
