@@ -192,7 +192,6 @@ int pthread_mutexattr_settype(pthread_mutexattr_t *attr, int type);
 /* POSIX function declarations for Windows */
 int fcntl(int fd, int cmd, ...);
 void bcopy(const void *src, void *dest, size_t n);
-pid_t getpid(void);
 char *realpath(const char *path, char *resolved_path);
 int inet_aton(const char *cp, struct in_addr *inp);
 
