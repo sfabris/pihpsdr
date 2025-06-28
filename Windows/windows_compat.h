@@ -197,6 +197,9 @@ int inet_aton(const char *cp, struct in_addr *inp);
 char *index(const char *s, int c);
 char *rindex(const char *s, int c);
 
+/* String functions compatibility */
+#define bzero(ptr, size) memset(ptr, 0, size)
+
 /* Network interface enumeration functions */
 struct ifaddrs;
 int getifaddrs(struct ifaddrs **ifap);
