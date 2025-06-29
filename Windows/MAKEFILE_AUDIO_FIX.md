@@ -4,25 +4,60 @@
 
 ### 1. **Incorrect Hardcoded Audio Backend**
 - **Problem**: Line 21 had `AUDIO=PORTAUDIO` hardcoded, which overrode the OS-specific logic
-- **Solution**: Removed the hardcoded assignment to allow OS-specific defaults to work
+- **Solution**: Changed to `AUDIO=` (empty) to allow OS-specific defaults to work
 
 ### 2. **Always Compiling All Audio Backends**
 - **Problem**: Audio backend defines (`-DPULSEAUDIO`, `-DALSA`, `-DPORTAUDIO`) were always added regardless of the `$(AUDIO)` setting
 - **Solution**: Moved the defines inside their respective conditional blocks
 
+### 3. **Improved Logic for Empty AUDIO Setting**
+- **Problem**: Logic didn't handle empty AUDIO setting properly
+- **Solution**: Added explicit check for empty AUDIO on Linux
+
 ## Current Behavior (Fixed)
 
-### Default Audio Backends by OS:
-- **Linux**: `PULSE` (PulseAudio) - unless overridden with `AUDIO=ALSA`
-- **macOS**: `PORTAUDIO` (only option)
-- **Windows**: `PORTAUDIO` (only option)
+### How to Set Audio Backend:
 
-### To Override Defaults:
-Create a `make.config.pihpsdr` file with:
+#### Method 1: Edit Makefile directly
 ```makefile
+AUDIO=PULSE     # Use PulseAudio
+AUDIO=ALSA      # Use ALSA
+AUDIO=PORTAUDIO # Use PortAudio
+AUDIO=          # Use OS default (Linux=PULSE, macOS/Windows=PORTAUDIO)
+```
+
+#### Method 2: Create make.config.pihpsdr file
+```makefile
+AUDIO=PULSE     # For Linux PulseAudio
 AUDIO=ALSA      # For Linux ALSA instead of PulseAudio
-AUDIO=PULSE     # For Linux PulseAudio (default anyway)
 AUDIO=PORTAUDIO # For any OS to use PortAudio
+```
+
+#### Method 3: Command line override
+```bash
+make AUDIO=PULSE
+make AUDIO=ALSA
+make AUDIO=PORTAUDIO
+```
+
+## Troubleshooting
+
+### If you see `-DPORTAUDIO` when you set `AUDIO=PULSE`:
+
+1. **Check your setting**: Run `make -n | grep AUDIO` to see what audio backend is detected
+2. **Clean build**: Run `make clean` then `make` to ensure old objects are rebuilt
+3. **Verify OS detection**: Check if `UNAME_S` is detected correctly as `Linux`
+
+### Debug Commands:
+```bash
+# See what AUDIO backend is selected
+make -n | head -20 | grep AUDIO
+
+# See OS detection
+make -n | head -10 | grep UNAME
+
+# Clean build
+make clean && make AUDIO=PULSE
 ```
 
 ## Changes Made
