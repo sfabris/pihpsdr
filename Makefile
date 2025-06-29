@@ -69,6 +69,9 @@ ifeq ($(findstring MSYS,$(UNAME_S)),MSYS)
     UNAME_S := Windows
 endif
 
+$(info DEBUG: Early UNAME_S = $(UNAME_S))
+$(info DEBUG: Early AUDIO = $(AUDIO))
+
 # Get git commit version and date
 GIT_DATE := $(firstword $(shell git --no-pager show --date=short --format="%ai" --name-only))
 GIT_VERSION := $(shell git describe --abbrev=0 --tags --always --dirty)
