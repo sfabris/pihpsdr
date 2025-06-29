@@ -69,9 +69,6 @@ ifeq ($(findstring MSYS,$(UNAME_S)),MSYS)
     UNAME_S := Windows
 endif
 
-$(info DEBUG: Early UNAME_S = $(UNAME_S))
-$(info DEBUG: Early AUDIO = $(AUDIO))
-
 # Get git commit version and date
 GIT_DATE := $(firstword $(shell git --no-pager show --date=short --format="%ai" --name-only))
 GIT_VERSION := $(shell git describe --abbrev=0 --tags --always --dirty)
@@ -393,11 +390,6 @@ ifneq ($(findstring MINGW,$(UNAME_S)),)
   endif
 endif
 
-# Debug: Let's see what's happening
-$(info DEBUG: UNAME_S = $(UNAME_S))
-$(info DEBUG: AUDIO before conditionals = $(AUDIO))
-$(info DEBUG: findstring MINGW result = $(findstring MINGW,$(UNAME_S)))
-
 ifneq ($(findstring MSYS,$(UNAME_S)),)
   ifeq ($(AUDIO),)
     AUDIO=PORTAUDIO
@@ -409,8 +401,6 @@ ifeq ($(UNAME_S), Windows)
     AUDIO=PORTAUDIO
   endif
 endif
-
-$(info DEBUG: AUDIO after all conditionals = $(AUDIO))
 
 ##############################################################################
 #
