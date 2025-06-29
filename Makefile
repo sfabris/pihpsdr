@@ -18,7 +18,7 @@ SATURN=OFF
 USBOZY=OFF
 SOAPYSDR=OFF
 STEMLAB=OFF
-AUDIO=PORTAUDIO
+AUDIO=
 EXTENDED_NR=OFF
 TTS=OFF
 
@@ -33,7 +33,9 @@ TTS=OFF
 # USBOZY       | If ON, piHPSDR can talk to legacy USB OZY radios (needs  libusb-1.0)
 # SOAPYSDR     | If ON, piHPSDR can talk to radios via SoapySDR library
 # STEMLAB      | If ON, piHPSDR can start SDR app on RedPitay via Web interface (needs libcurl)
-# AUDIO        | If AUDIO=ALSA, use ALSA rather than PulseAudio on Linux
+# AUDIO        | Set to ALSA, PULSE, or PORTAUDIO to override OS defaults
+#              | Leave empty (AUDIO=) to use OS-specific defaults:
+#              |   Linux: PULSE (PulseAudio), macOS/Windows: PORTAUDIO
 #
 # If you want to use a non-default compile time option, write them
 # into a file "make.config.pihpsdr". So, for example, if you want to
@@ -42,6 +44,12 @@ TTS=OFF
 #
 # GPIO=OFF
 # AUDIO=ALSA
+#
+# To change the default audio backend globally, edit the AUDIO= line above.
+# Audio backend defaults (when AUDIO= is empty):
+# - Linux: PULSE (PulseAudio)
+# - macOS: PORTAUDIO  
+# - Windows: PORTAUDIO
 #
 #######################################################################################
 
@@ -365,8 +373,13 @@ ifeq ($(UNAME_S), Darwin)
   AUDIO=PORTAUDIO
 endif
 ifeq ($(UNAME_S), Linux)
-  ifneq ($(AUDIO) , ALSA)
+  ifeq ($(AUDIO),)
     AUDIO=PULSE
+  endif
+  ifneq ($(AUDIO), ALSA)
+    ifneq ($(AUDIO), PORTAUDIO)
+      AUDIO=PULSE
+    endif
   endif
 endif
 
@@ -400,9 +413,9 @@ ifeq ($(UNAME_S), Darwin)
 endif
 AUDIO_SOURCES=src/pulseaudio.c
 AUDIO_OBJS=src/pulseaudio.o
-endif
 CPP_DEFINES += -DPULSEAUDIO
 CPP_SOURCES += src/pulseaudio.c
+endif
 
 ##############################################################################
 #
@@ -416,9 +429,9 @@ AUDIO_INCLUDE=
 AUDIO_LIBS=-lasound
 AUDIO_SOURCES=src/audio.c
 AUDIO_OBJS=src/audio.o
-endif
 CPP_DEFINES += -DALSA
 CPP_SOURCES += src/audio.c
+endif
 
 ##############################################################################
 #
@@ -432,12 +445,12 @@ AUDIO_INCLUDE=`$(PKG_CONFIG) --cflags portaudio-2.0`
 AUDIO_LIBS=`$(PKG_CONFIG) --libs portaudio-2.0`
 AUDIO_SOURCES=src/portaudio.c
 AUDIO_OBJS=src/portaudio.o
-endif
 CPP_DEFINES += -DPORTAUDIO
 CPP_SOURCES += src/portaudio.c
 ifeq ($(UNAME_S), Darwin)
 # does not exist on RaspPi
 CPP_INCLUDE += `$(PKG_CONFIG) --cflags portaudio-2.0`
+endif
 endif
 
 ##############################################################################
