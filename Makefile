@@ -390,6 +390,11 @@ ifneq ($(findstring MINGW,$(UNAME_S)),)
   endif
 endif
 
+# Debug: Let's see what's happening
+$(info DEBUG: UNAME_S = $(UNAME_S))
+$(info DEBUG: AUDIO before conditionals = $(AUDIO))
+$(info DEBUG: findstring MINGW result = $(findstring MINGW,$(UNAME_S)))
+
 ifneq ($(findstring MSYS,$(UNAME_S)),)
   ifeq ($(AUDIO),)
     AUDIO=PORTAUDIO
@@ -401,6 +406,8 @@ ifeq ($(UNAME_S), Windows)
     AUDIO=PORTAUDIO
   endif
 endif
+
+$(info DEBUG: AUDIO after all conditionals = $(AUDIO))
 
 ##############################################################################
 #
