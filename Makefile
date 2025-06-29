@@ -417,6 +417,10 @@ endif
 ifeq ($(UNAME_S), Darwin)
   AUDIO_LIBS=-lpulse-simple -lpulse
 endif
+ifeq ($(UNAME_S), Windows)
+  # Windows PulseAudio libraries (if installed via MSYS2: pacman -S mingw-w64-ucrt-x86_64-pulseaudio)
+  AUDIO_LIBS=-lpulse-simple -lpulse -lpulse-mainloop-glib
+endif
 AUDIO_SOURCES=src/pulseaudio.c
 AUDIO_OBJS=src/pulseaudio.o
 CPP_DEFINES += -DPULSEAUDIO
