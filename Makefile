@@ -363,9 +363,9 @@ CPP_INCLUDE += `$(PKG_CONFIG) --cflags libcurl`
 ##############################################################################
 #
 # Options for audio module
-#  - MacOS: only PORTAUDIO
-#  - Linux: either PULSEAUDIO (default) or ALSA (upon request)
-#  - Windows: only PORTAUDIO
+#  - MacOS: only PORTAUDIO (forced)
+#  - Linux: PULSE (default), ALSA, or PORTAUDIO (user choice)
+#  - Windows: PORTAUDIO (default), but PULSE/ALSA can be forced if installed
 #
 ##############################################################################
 
@@ -383,17 +383,23 @@ ifeq ($(UNAME_S), Linux)
   endif
 endif
 
-# Windows/MinGW/MSYS2: Use PORTAUDIO
+# Windows/MinGW/MSYS2: Use PORTAUDIO by default, but allow override
 ifneq ($(findstring MINGW,$(UNAME_S)),)
-  AUDIO=PORTAUDIO
+  ifeq ($(AUDIO),)
+    AUDIO=PORTAUDIO
+  endif
 endif
 
 ifneq ($(findstring MSYS,$(UNAME_S)),)
-  AUDIO=PORTAUDIO
+  ifeq ($(AUDIO),)
+    AUDIO=PORTAUDIO
+  endif
 endif
 
 ifeq ($(UNAME_S), Windows)
-  AUDIO=PORTAUDIO
+  ifeq ($(AUDIO),)
+    AUDIO=PORTAUDIO
+  endif
 endif
 
 ##############################################################################
